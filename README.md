@@ -1,4 +1,4 @@
 # B
 ## Congnostics
 
-Link: [click here](https://github.com/iDataVisualizationLab/B/tree/master/congnostics)
+Link: [click here](https://idatavisualizationlab.github.io/B/congnostics/)
