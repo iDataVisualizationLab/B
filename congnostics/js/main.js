@@ -668,6 +668,7 @@ function draw() {
             colorMode(HSB,timedata.length);
             stroke(s,timedata.length/2,timedata.length/2);
             line(x1,y1,x2,y2);
+            colorMode(RGB,255);
             // var ex = x2 - x1;
             // var ey = y2 - y1;
             // var ee = Math.sqrt(ex*ex+ey*ey);
