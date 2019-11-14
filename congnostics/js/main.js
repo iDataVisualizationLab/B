@@ -606,14 +606,12 @@ function draw() {
 
         // draw rectangles
         fill(255);
-        strokeWeight(1);
         stroke(0);
         rect(xstartpos+0.1*plotsize+j*4.5*plotsize,ystartpos+0.2*plotsize+i*1.4*plotsize,plotsize,plotsize);  // CS
         fill(220);
         noStroke();
         rect(xstartpos+1.3*plotsize+j*4.5*plotsize,ystartpos+0.2*plotsize+i*1.4*plotsize,plotsize,plotsize);  // x-var
         rect(xstartpos+2.5*plotsize+j*4.5*plotsize,ystartpos+0.2*plotsize+i*1.4*plotsize,plotsize,plotsize);  // y-var
-        strokeWeight(1);
         stroke(0);
         line(xstartpos+1.3*plotsize+j*4.5*plotsize,ystartpos+0.2*plotsize+i*1.4*plotsize,xstartpos+1.3*plotsize+j*4.5*plotsize,ystartpos+1.2*plotsize+i*1.4*plotsize);  // x-var
         line(xstartpos+1.3*plotsize+j*4.5*plotsize,ystartpos+1.2*plotsize+i*1.4*plotsize,xstartpos+2.3*plotsize+j*4.5*plotsize,ystartpos+1.2*plotsize+i*1.4*plotsize);
@@ -621,21 +619,18 @@ function draw() {
         line(xstartpos+2.5*plotsize+j*4.5*plotsize,ystartpos+1.2*plotsize+i*1.4*plotsize,xstartpos+3.5*plotsize+j*4.5*plotsize,ystartpos+1.2*plotsize+i*1.4*plotsize);
 
         // write scagnostic's values
-        strokeWeight(1);
         stroke(255,0,0);
         fill(255,0,0);
         textSize(16);
         text(Math.round(valuedrawed*1000)/1000,xstartpos+0.1*plotsize+j*4.5*plotsize,ystartpos+0.15*plotsize+i*1.4*plotsize);
 
         // write data point notation
-        strokeWeight(1);
         stroke(0,0,255);
         fill(0,0,255);
         textSize(16);
         text(mappoint2.get(pointdrawed),xstartpos+1.3*plotsize+j*4.5*plotsize,ystartpos+0.15*plotsize+i*1.4*plotsize);
 
         // write x-variable notation
-        strokeWeight(1);
         stroke(0);
         fill(0);
         textSize(12);
@@ -645,7 +640,6 @@ function draw() {
 
         //write y-variable notation
         push();
-        strokeWeight(1);
         stroke(0);
         fill(0);
         textSize(12);
@@ -664,7 +658,7 @@ function draw() {
             var y1 = ystartpos+0.2*plotsize+i*1.4*plotsize+plotsize*(1-drawdata[pointdrawed][yvardrawed][s-1]);
             var x2 = xstartpos+0.1*plotsize+j*4.5*plotsize+plotsize*drawdata[pointdrawed][xvardrawed][s];
             var y2 = ystartpos+0.2*plotsize+i*1.4*plotsize+plotsize*(1-drawdata[pointdrawed][yvardrawed][s]);
-            strokeWeight(1+2*(timedata.length-s)/timedata.length);
+            // strokeWeight(1+2*(timedata.length-s)/timedata.length);
             colorMode(HSB,timedata.length);
             stroke(s,timedata.length,timedata.length);
             line(x1,y1,x2,y2);
@@ -708,7 +702,6 @@ function draw() {
             var y1 = ystartpos+0.2 *plotsize+i*1.4*plotsize+plotsize*(1-drawdata[pointdrawed][xvardrawed][s-1]);
             var x2 = xstartpos+1.3*plotsize+j*4.5*plotsize+(s+1)*plotsize/(timedata.length+1);
             var y2 = ystartpos+0.2*plotsize+i*1.4*plotsize+plotsize*(1-drawdata[pointdrawed][xvardrawed][s]);
-            strokeWeight(1);
             stroke(0);
             line(x1,y1,x2,y2);
 
@@ -717,7 +710,6 @@ function draw() {
             var y1 = ystartpos+0.2*plotsize+i*1.4*plotsize+plotsize*(1-drawdata[pointdrawed][yvardrawed][s-1]);
             var x2 = xstartpos+2.5*plotsize+j*4.5*plotsize+(s+1)*plotsize/(timedata.length+1);
             var y2 = ystartpos+0.2*plotsize+i*1.4*plotsize+plotsize*(1-drawdata[pointdrawed][yvardrawed][s]);
-            strokeWeight(1);
             stroke(0);
             line(x1,y1,x2,y2);
           }
