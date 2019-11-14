@@ -659,10 +659,11 @@ function draw() {
             var x2 = xstartpos+0.1*plotsize+j*4.5*plotsize+plotsize*drawdata[pointdrawed][xvardrawed][s];
             var y2 = ystartpos+0.2*plotsize+i*1.4*plotsize+plotsize*(1-drawdata[pointdrawed][yvardrawed][s]);
             // strokeWeight(1+2*(timedata.length-s)/timedata.length);
-            colorMode(HSB,timedata.length);
-            stroke(s,timedata.length,timedata.length);
+            // colorMode(HSB,timedata.length);
+            if (s<timedata.length/2) stroke(0,0,255-255*s/(timedata.length/2));
+            else stroke((s-timedata.length/2)*255/(timedata.length/2),0,0);
             line(x1,y1,x2,y2);
-            colorMode(RGB,255);
+            // colorMode(RGB,255);
             // var ex = x2 - x1;
             // var ey = y2 - y1;
             // var ee = Math.sqrt(ex*ex+ey*ey);
