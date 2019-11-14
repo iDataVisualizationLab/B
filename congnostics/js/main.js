@@ -35,7 +35,7 @@ let displayplot = [];  // displayplot[scagnostic index][0->numplot-1:lowest, num
 let numscag = 6;
 
 // VARIABLES FOR VISUALIZATION
-let selectedscag = 3;
+let selectedscag = 0;
 let numplot = 5;    // number of scatter plots in each column
 let plotsize;     // size of each scatter plots
 let plotsizet;
@@ -540,6 +540,7 @@ Promise.all([
 ///////////////////
 // SET UP FUNCTION
 //////////////////
+let sel;
 function setup() {
   createCanvas(windowWidth,windowHeight);
   frameRate(30);
@@ -548,6 +549,15 @@ function setup() {
   plotsize = (0.08*windowWidth < 0.125*windowHeight) ? 0.08*(windowWidth-xblank) : 0.125*(windowHeight - yblank);
   ystartpos = yblank/2+plotsize;
   plotsizet = 0.8*plotsize;
+
+  sel = createSelect();
+  sel.position(50, 50);
+  sel.option('path');
+  sel.option('monotonic trend');
+  sel.option('outlying');
+  sel.option('crossing');
+  sel.option('straight');
+  sel.option('sum of angles');
 }
 ///////////////////////////
 // END OF SET UP FUNCTION
@@ -564,6 +574,28 @@ function draw() {
 
   if (doneanalyzation) {
 
+    // CHOOSE SCAGNOSTIC
+    switch (sel.value()) {
+      case 'path':
+        selectedscag = 0;
+        break;
+      case 'monotonic trend':
+        selectedscag = 1;
+        break;
+      case 'outlying':
+        selectedscag = 2;
+        break;
+      case 'crossing':
+        selectedscag = 3;
+        break;
+      case 'straight':
+        selectedscag = 4;
+        break;
+      case 'sum of angles':
+          selectedscag = 5;
+          break;
+    }
+
     for (var i = 0; i < numplot; i++) {
       for (var j = 0; j < 3; j++) {
 
@@ -572,36 +604,16 @@ function draw() {
         var yvardrawed = displayplot[selectedscag][i+j*numplot][2];
         var valuedrawed = displayplot[selectedscag][i+j*numplot][3];
 
-        // write scag name
-        stroke(0);
-        textSize(30);
-        switch (selectedscag) {
-          case 0:
-            text("path",20,20);
-            break;
-          case 1:
-            text("monotonic trend",20,20);
-            break;
-          case 2:
-            text("outlying",20,20);
-            break;
-          case 3:
-            text("crossing",20,20);
-            break;
-          case 4:
-            text("straight",20,20);
-          case 5:
-            text("sum of angle",20,20);
-        }
-
         // draw rectangles
-        fill(180);
+        fill(255);
+        strokeWeight(1);
         stroke(0);
         rect(xstartpos+0.1*plotsize+j*4.5*plotsize,ystartpos+0.2*plotsize+i*1.4*plotsize,plotsize,plotsize);  // CS
         fill(220);
         noStroke();
         rect(xstartpos+1.3*plotsize+j*4.5*plotsize,ystartpos+0.2*plotsize+i*1.4*plotsize,plotsize,plotsize);  // x-var
         rect(xstartpos+2.5*plotsize+j*4.5*plotsize,ystartpos+0.2*plotsize+i*1.4*plotsize,plotsize,plotsize);  // y-var
+        strokeWeight(1);
         stroke(0);
         line(xstartpos+1.3*plotsize+j*4.5*plotsize,ystartpos+0.2*plotsize+i*1.4*plotsize,xstartpos+1.3*plotsize+j*4.5*plotsize,ystartpos+1.2*plotsize+i*1.4*plotsize);  // x-var
         line(xstartpos+1.3*plotsize+j*4.5*plotsize,ystartpos+1.2*plotsize+i*1.4*plotsize,xstartpos+2.3*plotsize+j*4.5*plotsize,ystartpos+1.2*plotsize+i*1.4*plotsize);
@@ -609,18 +621,21 @@ function draw() {
         line(xstartpos+2.5*plotsize+j*4.5*plotsize,ystartpos+1.2*plotsize+i*1.4*plotsize,xstartpos+3.5*plotsize+j*4.5*plotsize,ystartpos+1.2*plotsize+i*1.4*plotsize);
 
         // write scagnostic's values
+        strokeWeight(1);
         stroke(255,0,0);
         fill(255,0,0);
         textSize(16);
         text(Math.round(valuedrawed*1000)/1000,xstartpos+0.1*plotsize+j*4.5*plotsize,ystartpos+0.15*plotsize+i*1.4*plotsize);
 
         // write data point notation
+        strokeWeight(1);
         stroke(0,0,255);
         fill(0,0,255);
         textSize(16);
         text(mappoint2.get(pointdrawed),xstartpos+1.3*plotsize+j*4.5*plotsize,ystartpos+0.15*plotsize+i*1.4*plotsize);
 
         // write x-variable notation
+        strokeWeight(1);
         stroke(0);
         fill(0);
         textSize(12);
@@ -630,6 +645,7 @@ function draw() {
 
         //write y-variable notation
         push();
+        strokeWeight(1);
         stroke(0);
         fill(0);
         textSize(12);
@@ -648,11 +664,13 @@ function draw() {
             var y1 = ystartpos+0.2*plotsize+i*1.4*plotsize+plotsize*(1-drawdata[pointdrawed][yvardrawed][s-1]);
             var x2 = xstartpos+0.1*plotsize+j*4.5*plotsize+plotsize*drawdata[pointdrawed][xvardrawed][s];
             var y2 = ystartpos+0.2*plotsize+i*1.4*plotsize+plotsize*(1-drawdata[pointdrawed][yvardrawed][s]);
-            stroke(0);
+            strokeWeight(1+2*(timedata.length-s)/timedata.length);
+            colorMode(HSB,timedata.length);
+            stroke(s,timedata.length/2,timedata.length/2);
             line(x1,y1,x2,y2);
-            var ex = x2 - x1;
-            var ey = y2 - y1;
-            var ee = Math.sqrt(ex*ex+ey*ey);
+            // var ex = x2 - x1;
+            // var ey = y2 - y1;
+            // var ee = Math.sqrt(ex*ex+ey*ey);
             // if (ey >= 0.00001*plotsize) {
             //   var delta = ee*Math.sin(dirangle)*dirsize/ey;
             //   var xc = x2 - (dirsize*ee*ex*Math.cos(dirangle)/Math.pow(ey,2)+delta)/(1+ex*ex/(ey*ey));
@@ -676,19 +694,20 @@ function draw() {
             //   fill(0);
             //   triangle(x2,y2,xc,yc,xd,yd);
             // }
-            var delta = ee*Math.sin(dirangle)*dirsize/ey;
-            var xc = x2 - (dirsize*ee*ex*Math.cos(dirangle)/Math.pow(ey,2)+delta)/(1+ex*ex/(ey*ey));
-            var xd = x2 - (dirsize*ee*ex*Math.cos(dirangle)/Math.pow(ey,2)-delta)/(1+ex*ex/(ey*ey));
-            var yc = y2 - (ee*dirsize*Math.cos(dirangle)-ex*(x2-xc))/ey;
-            var yd = y2 - (ee*dirsize*Math.cos(dirangle)-ex*(x2-xd))/ey;
-            fill(0);
-            triangle(x2,y2,xc,yc,xd,yd);
+            // var delta = ee*Math.sin(dirangle)*dirsize/ey;
+            // var xc = x2 - (dirsize*ee*ex*Math.cos(dirangle)/Math.pow(ey,2)+delta)/(1+ex*ex/(ey*ey));
+            // var xd = x2 - (dirsize*ee*ex*Math.cos(dirangle)/Math.pow(ey,2)-delta)/(1+ex*ex/(ey*ey));
+            // var yc = y2 - (ee*dirsize*Math.cos(dirangle)-ex*(x2-xc))/ey;
+            // var yd = y2 - (ee*dirsize*Math.cos(dirangle)-ex*(x2-xd))/ey;
+            // fill(0);
+            // triangle(x2,y2,xc,yc,xd,yd);
 
             // x-var time series
             var x1 = xstartpos+1.3*plotsize+j*4.5*plotsize+s*plotsize/(timedata.length+1);
             var y1 = ystartpos+0.2 *plotsize+i*1.4*plotsize+plotsize*(1-drawdata[pointdrawed][xvardrawed][s-1]);
             var x2 = xstartpos+1.3*plotsize+j*4.5*plotsize+(s+1)*plotsize/(timedata.length+1);
             var y2 = ystartpos+0.2*plotsize+i*1.4*plotsize+plotsize*(1-drawdata[pointdrawed][xvardrawed][s]);
+            strokeWeight(1);
             stroke(0);
             line(x1,y1,x2,y2);
 
@@ -697,6 +716,7 @@ function draw() {
             var y1 = ystartpos+0.2*plotsize+i*1.4*plotsize+plotsize*(1-drawdata[pointdrawed][yvardrawed][s-1]);
             var x2 = xstartpos+2.5*plotsize+j*4.5*plotsize+(s+1)*plotsize/(timedata.length+1);
             var y2 = ystartpos+0.2*plotsize+i*1.4*plotsize+plotsize*(1-drawdata[pointdrawed][yvardrawed][s]);
+            strokeWeight(1);
             stroke(0);
             line(x1,y1,x2,y2);
           }
