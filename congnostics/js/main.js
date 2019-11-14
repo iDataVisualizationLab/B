@@ -666,7 +666,7 @@ function draw() {
             var y2 = ystartpos+0.2*plotsize+i*1.4*plotsize+plotsize*(1-drawdata[pointdrawed][yvardrawed][s]);
             strokeWeight(1+2*(timedata.length-s)/timedata.length);
             colorMode(HSB,timedata.length);
-            stroke(s,timedata.length/2,timedata.length/2);
+            stroke(s,timedata.length,timedata.length);
             line(x1,y1,x2,y2);
             colorMode(RGB,255);
             // var ex = x2 - x1;
