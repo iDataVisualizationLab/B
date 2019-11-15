@@ -6,10 +6,10 @@ crossing === 3
 straight === 4
 sum of angle === 5
 */
-let scagname = ["travel distance",
+let scagname = ["edge distance",
     "monotonic trend",
     "outlying",
-    "crossing",
+    "number of edge crossing",
     "straight",
     "sum of angle",
 ];
@@ -574,11 +574,11 @@ function setup() {
   plotsizet = 0.8*plotsize;
 
   sel = createSelect();
-  sel.position(windowWidth/2, 80);
-  sel.option('travel distance');
+  sel.position(windowWidth/3, 80);
+  sel.option('edge distance');
   sel.option('monotonic trend');
   sel.option('outlying');
-  sel.option('crossing');
+  sel.option('number of edge crossing');
   sel.option('straight');
   sel.option('sum of angles');
 }
@@ -599,7 +599,7 @@ function draw() {
 
     // CHOOSE SCAGNOSTIC
     switch (sel.value()) {
-      case 'travel distance':
+      case 'edge distance':
         selectedscag = 0;
         break;
       case 'monotonic trend':
@@ -608,7 +608,7 @@ function draw() {
       case 'outlying':
         selectedscag = 2;
         break;
-      case 'crossing':
+      case 'number of edge crossing':
         selectedscag = 3;
         break;
       case 'straight':
@@ -619,10 +619,17 @@ function draw() {
           break;
     }
 
-    // Write scagnostic name
+    // Write instructions
+    textFont('Arial');
     stroke(0);
     textSize(16);
-    text('select measures',windowWidth/2-150,100);
+    text('select measures:',windowWidth/3-150,85);
+
+    // Write group notation
+    textSize(20);
+    text('Lowest values',xstartpos+1.3*plotsize,150);
+    text('Middle values',xstartpos+5.8*plotsize,150);
+    text('Highest values',xstartpos+10.3*plotsize,150);
 
     for (var i = 0; i < numplot; i++) {
       for (var j = 0; j < 3; j++) {
@@ -647,7 +654,6 @@ function draw() {
         line(xstartpos+2.5*plotsize+j*4.5*plotsize,ystartpos+1.2*plotsize+i*1.4*plotsize,xstartpos+3.5*plotsize+j*4.5*plotsize,ystartpos+1.2*plotsize+i*1.4*plotsize);
 
         // write scagnostic's values
-        textFont('Arial');
         stroke(255,255,255);
         fill(255,255,255);
         textSize(plotsize/9);
