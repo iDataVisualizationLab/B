@@ -564,17 +564,21 @@ Promise.all([
 // SET UP FUNCTION
 //////////////////
 let sel;
+let canvas_height = 2000;
+let canvas_width = 3000;
 function setup() {
-  createCanvas(windowWidth,windowHeight);
+  // createCanvas(canvas_width,canvas_height);
+  createCanvas(canvas_width,canvas_height);
   frameRate(30);
 
   // some P5 dependent variables
-  plotsize = (0.08*windowWidth < 0.125*windowHeight) ? 0.08*(windowWidth-xblank) : 0.125*(windowHeight - yblank);
+  plotsize = (0.08*canvas_width < 0.125*canvas_height) ? 0.08*(canvas_width-xblank) : 0.125*(canvas_height - yblank);
   ystartpos = yblank/2+plotsize;
   plotsizet = 0.8*plotsize;
 
   sel = createSelect();
-  sel.position(windowWidth/3, windowHeight/12);
+  sel.id('selectTool');
+  sel.parent('holder');
   sel.option('edge distance');
   sel.option('monotonic trend');
   sel.option('outlying');
@@ -586,6 +590,13 @@ function setup() {
 // END OF SET UP FUNCTION
 //////////////////////////
 
+
+function windowResized() {
+  if (windowWidth<1000)
+    resizeCanvas(canvas_width, canvas_height*3);
+  else
+    resizeCanvas(canvas_width, canvas_height);
+}
 
 
 //////////////////
@@ -619,19 +630,14 @@ function draw() {
           break;
     }
 
-    // Write instructions
     textFont('Courier New');
-    // textAlign(CENTER);
-    stroke(0);
-    textSize(windowHeight/50);
-    text('select measures:',windowWidth/3,windowHeight/15);
-    // textAlign(LEFT);
-
     // Write group notation
-    textSize(windowHeight/40);
-    text('Lowest values',xstartpos+1.3*plotsize,windowHeight/8);
-    text('Middle values',xstartpos+5.8*plotsize,windowHeight/8);
-    text('Highest values',xstartpos+10.3*plotsize,windowHeight/8);
+    stroke(0);
+    fill(0);
+    textSize(canvas_height/50);
+    text('Lowest values',xstartpos+1.3*plotsize,canvas_height/10);
+    text('Middle values',xstartpos+5.8*plotsize,canvas_height/10);
+    text('Highest values',xstartpos+10.3*plotsize,canvas_height/10);
 
     for (var i = 0; i < numplot; i++) {
       for (var j = 0; j < 3; j++) {

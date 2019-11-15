@@ -9,13 +9,30 @@
 
   <!-- Place favicon.ico in the root directory -->
 
-
-
-
-
 <!--import libraries-->
   <script src = "lib/p5.min.js"></script>
   <script src="lib/d3/d3.min.js"></script>
+
+    <style>
+        body{
+
+            background-color: #c8c8c8;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+
+        }
+        .p5Canvas {
+            width: 100%!important;
+            height: auto!important;
+        }
+        #holder {
+            margin-top: 20px;
+            margin-left: auto;
+            margin-right: auto;
+            font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
+        }
+    </style>
 
 </head>
 
@@ -23,7 +40,9 @@
   <!--[if IE]>
     <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
   <![endif]-->
-
+    <div id = "holder">
+        <label for="selectTool">select measure</label>
+    </div>
   <!-- Add your site or application content here -->
   <script src="js/vendor/modernizr-3.7.1.min.js"></script>
   <script src="js/vendor/jquery-3.4.1.min.js"></script>
@@ -36,6 +55,8 @@
     ga('create', 'UA-XXXXX-Y', 'auto'); ga('set','transport','beacon'); ga('send', 'pageview')
   </script>
   <script src="https://www.google-analytics.com/analytics.js" async></script>
+
+
 </body>
 
 </html>
