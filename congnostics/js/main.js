@@ -621,15 +621,17 @@ function draw() {
 
     // Write instructions
     textFont('Courier New');
+    textAlign(CENTER);
     stroke(0);
     textSize(windowHeight/50);
-    text('select measures:',windowWidth/3-130,windowHeight/12);
+    text('select measures:',windowWidth/3,windowHeight/15);
+    textAlign(LEFT);
 
     // Write group notation
     textSize(windowHeight/40);
-    text('Lowest values',xstartpos+1.3*plotsize,windowHeight/7);
-    text('Middle values',xstartpos+5.8*plotsize,windowHeight/7);
-    text('Highest values',xstartpos+10.3*plotsize,windowHeight/7);
+    text('Lowest values',xstartpos+1.3*plotsize,windowHeight/8);
+    text('Middle values',xstartpos+5.8*plotsize,windowHeight/8);
+    text('Highest values',xstartpos+10.3*plotsize,windowHeight/8);
 
     for (var i = 0; i < numplot; i++) {
       for (var j = 0; j < 3; j++) {
