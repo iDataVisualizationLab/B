@@ -574,7 +574,7 @@ function setup() {
   plotsizet = 0.8*plotsize;
 
   sel = createSelect();
-  sel.position(windowWidth/3, 80);
+  sel.position(windowWidth/3, windowHeight/12);
   sel.option('edge distance');
   sel.option('monotonic trend');
   sel.option('outlying');
@@ -623,13 +623,13 @@ function draw() {
     textFont('Arial');
     stroke(0);
     textSize(16);
-    text('select measures:',windowWidth/3-150,85);
+    text('select measures:',windowWidth/3-150,windowHeight/12);
 
     // Write group notation
     textSize(20);
-    text('Lowest values',xstartpos+1.3*plotsize,150);
-    text('Middle values',xstartpos+5.8*plotsize,150);
-    text('Highest values',xstartpos+10.3*plotsize,150);
+    text('Lowest values',xstartpos+1.3*plotsize,windowHeight/8);
+    text('Middle values',xstartpos+5.8*plotsize,windowHeight/8);
+    text('Highest values',xstartpos+10.3*plotsize,windowHeight/8);
 
     for (var i = 0; i < numplot; i++) {
       for (var j = 0; j < 3; j++) {
