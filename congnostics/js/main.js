@@ -622,14 +622,14 @@ function draw() {
     // Write instructions
     textFont('Arial');
     stroke(0);
-    textSize(16);
-    text('select measures:',windowWidth/3-150,windowHeight/12);
+    textSize(windowHeight/50);
+    text('select measures:',windowWidth/3-130,windowHeight/12);
 
     // Write group notation
-    textSize(20);
-    text('Lowest values',xstartpos+1.3*plotsize,windowHeight/8);
-    text('Middle values',xstartpos+5.8*plotsize,windowHeight/8);
-    text('Highest values',xstartpos+10.3*plotsize,windowHeight/8);
+    textSize(windowHeight/40);
+    text('Lowest values',xstartpos+1.3*plotsize,windowHeight/7);
+    text('Middle values',xstartpos+5.8*plotsize,windowHeight/7);
+    text('Highest values',xstartpos+10.3*plotsize,windowHeight/7);
 
     for (var i = 0; i < numplot; i++) {
       for (var j = 0; j < 3; j++) {
