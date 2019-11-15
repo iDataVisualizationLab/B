@@ -621,11 +621,11 @@ function draw() {
 
     // Write instructions
     textFont('Courier New');
-    textAlign(CENTER);
+    // textAlign(CENTER);
     stroke(0);
     textSize(windowHeight/50);
     text('select measures:',windowWidth/3,windowHeight/15);
-    textAlign(LEFT);
+    // textAlign(LEFT);
 
     // Write group notation
     textSize(windowHeight/40);
