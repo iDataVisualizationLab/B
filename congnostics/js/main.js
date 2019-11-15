@@ -1,11 +1,18 @@
 /* Note:
-path === 0
-monotonictrend === 1
+travel distance === 0
+monotonic trend === 1
 outling === 2
 crossing === 3
 straight === 4
-sumangle === 5
+sum of angle === 5
 */
+let scagname = ["travel distance",
+    "monotonic trend",
+    "outlying",
+    "crossing",
+    "straight",
+    "sum of angle",
+];
 
 /////////////////////
 /////////////////////
@@ -285,7 +292,7 @@ Promise.all([
               }
             }
             // intersection[p][intersectionidex][2] /= (xdata.length - 2)*(xdata.length - 3)/2;
-            crossing[p][crossingindex][2] /= xdata.length*3;
+            crossing[p][crossingindex][2] /= xdata.length;
             if (crossing[p][crossingindex][2] > 1) crossing[p][crossingindex][2] = 1;
           }
           crossingindex += 1;
@@ -317,6 +324,22 @@ Promise.all([
             sumangle[p][sumangleindex][2] = 1 - sumangle[p][sumangleindex][2]/((xdata.length-2)*Math.PI);
           }
           sumangleindex += 1;
+
+          // SMOOTH DATA
+          // var smoothxdata = [];
+          // var smoothydata = [];
+          // if (crossing[p][crossingindex-1][2]>0.8) {
+          //   xdata.forEach(function(x,xi){
+          //     if (xi < 10) {
+          //       smoothxdata[xi] = x;
+          //       smoothydata[xi] = ydata[xi];
+          //     } else {
+          //       smoothxdata[xi] = 0;
+          //       smoothydata[xi] = 0;
+          //
+          //     }
+          //   });
+          // }
 
 
         }
@@ -551,8 +574,8 @@ function setup() {
   plotsizet = 0.8*plotsize;
 
   sel = createSelect();
-  sel.position(50, 50);
-  sel.option('path');
+  sel.position(windowWidth/2, 80);
+  sel.option('travel distance');
   sel.option('monotonic trend');
   sel.option('outlying');
   sel.option('crossing');
@@ -570,13 +593,13 @@ function setup() {
 /////////////////
 function draw() {
 
-  background(255);
+  background(200);
 
   if (doneanalyzation) {
 
     // CHOOSE SCAGNOSTIC
     switch (sel.value()) {
-      case 'path':
+      case 'travel distance':
         selectedscag = 0;
         break;
       case 'monotonic trend':
@@ -596,6 +619,11 @@ function draw() {
           break;
     }
 
+    // Write scagnostic name
+    stroke(0);
+    textSize(16);
+    text('select measures',windowWidth/2-150,100);
+
     for (var i = 0; i < numplot; i++) {
       for (var j = 0; j < 3; j++) {
 
@@ -608,7 +636,7 @@ function draw() {
         fill(255);
         stroke(0);
         rect(xstartpos+0.1*plotsize+j*4.5*plotsize,ystartpos+0.2*plotsize+i*1.4*plotsize,plotsize,plotsize);  // CS
-        fill(220);
+        fill(240);
         noStroke();
         rect(xstartpos+1.3*plotsize+j*4.5*plotsize,ystartpos+0.2*plotsize+i*1.4*plotsize,plotsize,plotsize);  // x-var
         rect(xstartpos+2.5*plotsize+j*4.5*plotsize,ystartpos+0.2*plotsize+i*1.4*plotsize,plotsize,plotsize);  // y-var
@@ -619,21 +647,22 @@ function draw() {
         line(xstartpos+2.5*plotsize+j*4.5*plotsize,ystartpos+1.2*plotsize+i*1.4*plotsize,xstartpos+3.5*plotsize+j*4.5*plotsize,ystartpos+1.2*plotsize+i*1.4*plotsize);
 
         // write scagnostic's values
-        stroke(255,0,0);
-        fill(255,0,0);
-        textSize(plotsize/10);
-        text(Math.round(valuedrawed*1000)/1000,xstartpos+0.1*plotsize+j*4.5*plotsize,ystartpos+0.15*plotsize+i*1.4*plotsize);
+        textFont('Arial');
+        stroke(255,255,255);
+        fill(255,255,255);
+        textSize(plotsize/9);
+        text(scagname[selectedscag]+' = '+Math.round(valuedrawed*100)/100,xstartpos+0.1*plotsize+j*4.5*plotsize,ystartpos+0.15*plotsize+i*1.4*plotsize);
 
         // write data point notation
-        stroke(0,0,255);
-        fill(0,0,255);
-        textSize(plotsize/10);
-        text(mappoint2.get(pointdrawed),xstartpos+1.3*plotsize+j*4.5*plotsize,ystartpos+0.15*plotsize+i*1.4*plotsize);
+        stroke(0,0,0);
+        fill(0,0,0);
+        textSize(plotsize/9);
+        text(mappoint2.get(pointdrawed),xstartpos+1.6*plotsize+j*4.5*plotsize,ystartpos+0.15*plotsize+i*1.4*plotsize);
 
         // write x-variable notation
         stroke(0);
         fill(0);
-        textSize(plotsize/12);
+        textSize(plotsize/15);
         text(mapvar2.get(xvardrawed),xstartpos+0.1*plotsize+j*4.5*plotsize,ystartpos+1.3*plotsize+i*1.4*plotsize);
         text("time",xstartpos+1.7*plotsize+j*4.5*plotsize,ystartpos+1.3*plotsize+i*1.4*plotsize);
         text("time",xstartpos+2.9*plotsize+j*4.5*plotsize,ystartpos+1.3*plotsize+i*1.4*plotsize);
@@ -642,7 +671,7 @@ function draw() {
         push();
         stroke(0);
         fill(0);
-        textSize(plotsize/12);
+        textSize(plotsize/15);
         translate(xstartpos+0.05*plotsize+j*4.5*plotsize,ystartpos+1.2*plotsize+i*1.4*plotsize);
         rotate(-PI/2);
         text(mapvar2.get(yvardrawed),0,0);
@@ -703,7 +732,7 @@ function draw() {
             var y1 = ystartpos+0.2 *plotsize+i*1.4*plotsize+plotsize*(1-drawdata[pointdrawed][xvardrawed][s-1]);
             var x2 = xstartpos+1.3*plotsize+j*4.5*plotsize+(s+1)*plotsize/(timedata.length+1);
             var y2 = ystartpos+0.2*plotsize+i*1.4*plotsize+plotsize*(1-drawdata[pointdrawed][xvardrawed][s]);
-            stroke(0);
+            // stroke(0);
             line(x1,y1,x2,y2);
 
             // y-var time series
@@ -711,7 +740,7 @@ function draw() {
             var y1 = ystartpos+0.2*plotsize+i*1.4*plotsize+plotsize*(1-drawdata[pointdrawed][yvardrawed][s-1]);
             var x2 = xstartpos+2.5*plotsize+j*4.5*plotsize+(s+1)*plotsize/(timedata.length+1);
             var y2 = ystartpos+0.2*plotsize+i*1.4*plotsize+plotsize*(1-drawdata[pointdrawed][yvardrawed][s]);
-            stroke(0);
+            // stroke(0);
             line(x1,y1,x2,y2);
           }
 
