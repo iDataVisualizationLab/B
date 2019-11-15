@@ -620,7 +620,7 @@ function draw() {
     }
 
     // Write instructions
-    textFont('Arial');
+    textFont('Courier New');
     stroke(0);
     textSize(windowHeight/50);
     text('select measures:',windowWidth/3-130,windowHeight/12);
