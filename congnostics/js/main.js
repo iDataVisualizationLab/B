@@ -12,6 +12,8 @@ let scagname = ["edge distance",
     "number of edge crossing",
     "straight",
     "sum of angle",
+    "count angles",
+    "clumpy"
 ];
 
 /////////////////////
@@ -38,8 +40,10 @@ let outlying = [];  // outlying[data point][x-var,y-var,outlying], outlying = -1
 let crossing = [];  // crossing[data point][x-var,y-var,crossing], crossing = -1 means no data
 let straight = [];  // straight[data point][x-var,y-var,straight], straight = -1 means no data
 let sumangle = [];  // sumangle[data point][x-var,y-var,sumangle], sumangle = -1 means no data
+let countangle = [];  // countangle[data point][x-var,y-var,countangle], countangle = -1 means no data
+let clumpy = [];  // clumpy[data point][x-var,y-var,clumpy], clumpy = -1 means no data
 let displayplot = [];  // displayplot[scagnostic index][0->numplot-1:lowest, numplot->2numplot-1: middle, 2numplot->3numplot-1: highest][data point, x-var, y-var,value]
-let numscag = 6;
+let numscag = 8;
 
 // VARIABLES FOR VISUALIZATION
 let selectedscag = 0;
@@ -181,6 +185,8 @@ Promise.all([
       crossing[p] = [];
       straight[p] = [];
       sumangle[p] = [];
+      countangle[p] = [];
+      clumpy[p] = [];
 
       var pathindex = 0;  // declare index for scagnostic arrays
       var monotonictrendindex = 0;
@@ -188,6 +194,8 @@ Promise.all([
       var crossingindex = 0;
       var straightindex = 0;
       var sumangleindex = 0;
+      var countangleindex = 0;
+      var clumpyindex = 0;
 
       for (var myy = 0; myy < mapvar0.size; myy++) {
         for (var myx = 0; myx < myy; myx++) {
@@ -198,6 +206,8 @@ Promise.all([
           crossing[p][crossingindex] = [myx,myy,-1];
           straight[p][straightindex] = [myx,myy,-1];
           sumangle[p][sumangleindex] = [myx,myy,-1];
+          countangle[p][countangleindex] = [myx,myy,-1];
+          clumpy[p][clumpyindex] = [myx,myy,-1];
 
           var xdata = point[myx].map(function(x){return x});
           var ydata = point[myy].map(function(y){return y});
@@ -326,20 +336,75 @@ Promise.all([
           sumangleindex += 1;
 
           // SMOOTH DATA
+          // using moving average with window = 10
           // var smoothxdata = [];
           // var smoothydata = [];
-          // if (crossing[p][crossingindex-1][2]>0.8) {
+          // if (crossing[p][crossingindex-1][2] === 1) {
           //   xdata.forEach(function(x,xi){
-          //     if (xi < 10) {
+          //     if (xi < 9) {
           //       smoothxdata[xi] = x;
           //       smoothydata[xi] = ydata[xi];
           //     } else {
           //       smoothxdata[xi] = 0;
           //       smoothydata[xi] = 0;
-          //
+          //       for (var i = xi-9; i < xi+1; i++) {
+          //         smoothxdata[xi] += xdata[i]/10;
+          //         smoothydata[xi] += ydata[i]/10;
+          //       }
           //     }
           //   });
           // }
+
+          // FIND SHAPE
+          // count angles 0 < angle < 90
+          // divide by #point - 2
+          if (xdata.length > 2) {
+            countangle[p][countangleindex][2] = 0;
+            xdata.forEach(function(x,xi){
+              if (xi >= 2) {
+                if ((calculateangle(xdata[xi-2],ydata[xi-2],xdata[xi-1],ydata[xi-1],x,ydata[xi]) > radians(10)) && (calculateangle(xdata[xi-2],ydata[xi-2],xdata[xi-1],ydata[xi-1],x,ydata[xi]) < radians(90)))
+                  countangle[p][countangleindex][2] += 1;
+              }
+            });
+            countangle[p][countangleindex][2] /= xdata.length - 2;
+            countangleindex += 1;
+          }
+
+          // CALCULATE CLUMPY
+          // go to each member, search in 2 directions
+          // calculate sum of edge length in each direction
+          // get the larger value
+          // compare with that of other edges
+          // get the max
+          if (xdata.length > 1) {
+            for (var i = 0; i < xdata.length -1; i++) {
+              var ex = xdata[i+1] - xdata[i];
+              var ey = ydata[i+1] - ydata[i];
+              var ee = Math.sqrt(ex*ex+ey*ey);
+              var leftsum = 0;
+              var rightsum = 0;
+              var leftindex = i - 1;
+              var rightindex = i + 1;
+              while (leftindex >= 0) {
+                var edgex = xdata(leftindex+1)-xdata(leftindex);
+                var edgey = ydata(leftindex+1)-ydata(leftindex);
+                var edge = Math.sqrt(edgex*edgex+edgey*edgey);
+                if (edge <= ee) {leftsum += edge; leftindex -= 1;}
+                else break;
+              }
+              while (rightindex <= xdata.length) {
+                var edgex = xdata(rightindex+1)-xdata(rightindex);
+                var edgey = ydata(rightindex+1)-ydata(rightindex);
+                var edge = Math.sqrt(edgex*edgex+edgey*edgey);
+                if (edge <= ee) {rightsum += edge; rightindex += 1;}
+                else break;
+              }
+              var maxsum = (rightsum > leftsum) ? rightsum : leftsum;
+              maxsum = 1 - maxsum/path[p][pathindex][2];
+              clumpy[p][clumpyindex][2] = (clumpy[p][clumpyindex][2] < maxsum) ? maxsum : clumpy[p][clumpyindex][2];
+            }
+            clumpyindex += 1;
+          }
 
 
         }
@@ -482,6 +547,46 @@ Promise.all([
             displayplot[i][j] = sortscagarr[i][sortscagarr[i].length+j-3*numplot];
           }
           break;
+        case 6:
+          sortscagarr[i] = [];
+          countangle.forEach(function (p,pi) {
+            p.forEach(function (sc) {
+              sortscagarr[i][sortindex] = [pi,sc[0],sc[1],sc[2]];
+              sortindex += 1;
+            });
+          });
+          sortscagarr[i] = sortscagarr[i].filter(function(a){return a[3] >= 0});
+          sortscagarr[i].sort(function(b,n){return b[3]-n[3]});  // ascending sort
+          for (var j = 0; j < numplot; j++) {  // get the lowest paths
+            displayplot[i][j] = sortscagarr[i][j];
+          }
+          for (var j = numplot; j < 2*numplot; j++) {  // get the middle paths
+            displayplot[i][j] = sortscagarr[i][Math.floor(sortscagarr[i].length*0.5)+j];
+          }
+          for (var j = 2*numplot; j < 3*numplot; j++) {  // get the highest paths
+            displayplot[i][j] = sortscagarr[i][sortscagarr[i].length+j-3*numplot];
+          }
+          break;
+        case 7:
+          sortscagarr[i] = [];
+          clumpy.forEach(function (p,pi) {
+            p.forEach(function (sc) {
+              sortscagarr[i][sortindex] = [pi,sc[0],sc[1],sc[2]];
+              sortindex += 1;
+            });
+          });
+          sortscagarr[i] = sortscagarr[i].filter(function(a){return a[3] >= 0});
+          sortscagarr[i].sort(function(b,n){return b[3]-n[3]});  // ascending sort
+          for (var j = 0; j < numplot; j++) {  // get the lowest paths
+            displayplot[i][j] = sortscagarr[i][j];
+          }
+          for (var j = numplot; j < 2*numplot; j++) {  // get the middle paths
+            displayplot[i][j] = sortscagarr[i][Math.floor(sortscagarr[i].length*0.5)+j];
+          }
+          for (var j = 2*numplot; j < 3*numplot; j++) {  // get the highest paths
+            displayplot[i][j] = sortscagarr[i][sortscagarr[i].length+j-3*numplot];
+          }
+          break;
       }
     }
   }
@@ -585,6 +690,8 @@ function setup() {
   sel.option('number of edge crossing');
   sel.option('straight');
   sel.option('sum of angles');
+  sel.option('count angles');
+  sel.option('clumpy');
 }
 ///////////////////////////
 // END OF SET UP FUNCTION
@@ -626,8 +733,14 @@ function draw() {
         selectedscag = 4;
         break;
       case 'sum of angles':
-          selectedscag = 5;
-          break;
+        selectedscag = 5;
+        break;
+      case 'count angles':
+        selectedscag = 6;
+        break;
+      case 'clumpy':
+        selectedscag = 7;
+        break;
     }
 
     textFont('Courier New');
