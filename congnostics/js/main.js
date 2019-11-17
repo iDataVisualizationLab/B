@@ -377,8 +377,8 @@ Promise.all([
               var ex = xdata[i+1] - xdata[i];
               var ey = ydata[i+1] - ydata[i];
               var ee = Math.sqrt(ex*ex+ey*ey);
-              var leftsum = 0;
-              var rightsum = 0;
+              var leftmax = 0;
+              var rightmax = 0;
               var leftcount = 0;
               var rightcount = 0;
               var leftindex = i - 1;
@@ -387,19 +387,27 @@ Promise.all([
                 var edgex = xdata[leftindex+1]-xdata[leftindex];
                 var edgey = ydata[leftindex+1]-ydata[leftindex];
                 var edge = Math.sqrt(edgex*edgex+edgey*edgey);
-                if (edge <= ee) {leftsum += edge; leftindex -= 1; leftcount += 1;}
+                if (edge < ee) {
+                  leftmax = (leftmax < edge) ? edge : leftmax;
+                  leftindex -= 1;
+                  leftcount += 1;
+                }
                 else break;
               }
               while (rightindex <= xdata.length) {
                 var edgex = xdata[rightindex+1]-xdata[rightindex];
                 var edgey = ydata[rightindex+1]-ydata[rightindex];
                 var edge = Math.sqrt(edgex*edgex+edgey*edgey);
-                if (edge <= ee) {rightsum += edge; rightindex += 1; rightcount += 1;}
+                if (edge < ee) {
+                  rightmax = (rightmax < edge) ? edge : rightmax;
+                  rightindex += 1;
+                  rightcount += 1;
+                }
                 else break;
               }
-              if (leftsum != 0 || rightsum != 0) {
-                var maxsum = (rightsum > leftsum) ? rightsum/rightcount : leftsum/leftcount;
-                maxsum = 1 - maxsum*(xdata.length-1)/path[p][pathindex-1][2];
+              if (leftcount > 0 || rightcount > 0) {
+                var maxsum = (rightcount > leftcount) ? rightmax/ee : leftmax/ee;
+                maxsum = 1 - maxsum;
                 clumpy[p][clumpyindex][2] = (clumpy[p][clumpyindex][2] < maxsum) ? maxsum : clumpy[p][clumpyindex][2];
               }
             }
