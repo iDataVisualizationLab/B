@@ -16,7 +16,8 @@ let scagname = ["edge distance",
     "clumpy",
     "skewed",
     "loop",
-    "noise"
+    "noise",
+    "L-shape"
 ];
 
 /////////////////////
@@ -48,12 +49,13 @@ let clumpy = [];  // clumpy[data point][x-var,y-var,clumpy], clumpy = -1 means n
 let skewed = [];  // skewed[data point][x-var,y-var,skewed], skewed = -1 means no data
 let loop = [];    // loop[data point][x-var,y-var,loop], loop = -1 means no data
 let noise = [];
+let Lshape = [];
 let displayplot = [];  // displayplot[scagnostic index][0->numplot-1:lowest, numplot->2numplot-1: middle, 2numplot->3numplot-1: highest][data point, x-var, y-var,value]
-let numscag = 11;
+let numscag = 12;
 
 // VARIABLES FOR VISUALIZATION
 let selectedscag = 0;
-let numplot = 10;    // number of scatter plots in each column
+let numplot = 20;    // number of scatter plots in each column
 let plotsize;     // size of each scatter plots
 let plotsizet;
 let xblank = 200;   // total blank size in x-direction
@@ -185,6 +187,7 @@ Promise.all([
   //       seriesarr.push(data[p][v]);
   //     }
   //   }
+  //   seriesarr
   //   // WRITE DATA TO DRAWDATA[]
   //   data.forEach(function (point,p) {
   //     drawdata[p] = [];
@@ -214,6 +217,7 @@ Promise.all([
       skewed[p] = [];
       loop[p] = [];
       noise[p] = [];
+      Lshape[p] = [];
 
 
       var pathindex = 0;  // declare index for scagnostic arrays
@@ -227,6 +231,7 @@ Promise.all([
       var skewedindex = 0;
       var loopindex = 0;
       var noiseindex = 0;
+      var Lshapeindex = 0;
 
       for (var myy = 0; myy < mapvar0.size; myy++) {
         for (var myx = 0; myx < myy; myx++) {
@@ -242,6 +247,7 @@ Promise.all([
           skewed[p][skewedindex] = [myx,myy,-1];
           loop[p][loopindex] = [myx,myy,-1];
           noise[p][noiseindex] = [myx,myy,-1];
+          Lshape[p][Lshapeindex] = [myx,myy,-1];
 
           var xdata = point[myx].map(function(x){return x});
           var ydata = point[myy].map(function(y){return y});
@@ -462,55 +468,82 @@ Promise.all([
 
           //SMOOTH DATA
           // using moving average with window = 10
-          var smoothxdata = [];
-          var smoothydata = [];
-          if (crossing[p][crossingindex-1][2] > 0.5) {
-            xdata.forEach(function(x,xi){
-              if (xi < 9) {
-                smoothxdata[xi] = x;
-                smoothydata[xi] = ydata[xi];
-              } else {
-                smoothxdata[xi] = 0;
-                smoothydata[xi] = 0;
-                for (var i = xi-9; i < xi+1; i++) {
-                  smoothxdata[xi] += xdata[i]/10;
-                  smoothydata[xi] += ydata[i]/10;
-                }
-              }
-            });
-          }
+          // var smoothxdata = [];
+          // var smoothydata = [];
+          // if (crossing[p][crossingindex-1][2] > 0.5) {
+          //   xdata.forEach(function(x,xi){
+          //     if (xi < 9) {
+          //       smoothxdata[xi] = x;
+          //       smoothydata[xi] = ydata[xi];
+          //     } else {
+          //       smoothxdata[xi] = 0;
+          //       smoothydata[xi] = 0;
+          //       for (var i = xi-9; i < xi+1; i++) {
+          //         smoothxdata[xi] += xdata[i]/10;
+          //         smoothydata[xi] += ydata[i]/10;
+          //       }
+          //     }
+          //   });
+          // }
+
+          // CALCULATE L-SHAPE
+          // L-shape means at least 1 series has only a few values
+          // CS look like a parallel line to one of the axis
+          // count number of angles in 90 or 0 compared to x-axis
+          var countshape = 0;
+          xdata.forEach(function (x,xi) {
+            if (xi) {
+              if (x === xdata[xi-1] || ydata[xi] === ydata[xi-1]) countshape += 1;
+            }
+          });
+          Lshape[p][Lshapeindex][2] = (xdata.length > 0) ? countshape/(xdata.length-1) : Lshape[p][Lshapeindex][2];
+          if (Lshape[p][Lshapeindex][2] > 1) Lshape[p][Lshapeindex][2] = 1;
+          Lshapeindex += 1;
+
 
           // CALCULATE LOOP
-          if (noise[p][noiseindex-1][2] < 0.5 && outlying[p][outlyingindex-1][2] < 0.1) {
-            var looplength = 0;
-            var i = 0;
-            while (i < xdata.length - 3) {
-              var j = i + 2;
-              while (j < xdata.length - 1) {
-                if (checkintersection(xdata[i],ydata[i],xdata[i+1],ydata[i+1],xdata[j],ydata[j],xdata[j+1],ydata[j+1])) {
-                  var count = 0;
-                  var ii = i + 1;
-                  while (ii < j -2) {
-                    var jj = ii + 2;
-                    while (jj < j) {
-                      if (checkintersection(xdata[ii],ydata[ii],xdata[ii+1],ydata[ii+1],xdata[jj],ydata[jj],xdata[jj+1],ydata[jj+1]))
-                        count += 1;
-                        jj += 1;
+          //  var countlooplength = 2*xdata.length;
+          // if (Lshape[p][Lshapeindex-1][2] < 0.8) {
+          //   for (var i = 0; i < xdata.length-3; i++) {
+          //     for (var j = i+2; j < xdata.length-1; j++) {
+          //       if (checkintersection(xdata[i],ydata[i],xdata[i+1],ydata[i+1],xdata[j],ydata[j],xdata[j+1],ydata[j+1])) {
+          //         countlooplength = (countlooplength > j-i) ? j-i : countlooplength;
+          //         break;
+          //       }
+          //     }
+          //   }
+          //   loop[p][loopindex][2] = (countlooplength < xdata.length) ? countlooplength/(xdata.length-1) : loop[p][loopindex][2];
+          //   if (loop[p][loopindex][2] > 1) loop[p][loopindex][2] = 1;
+          // }
+          var countlooplength = 0;
+          var first = 0;
+          if (Lshape[p][Lshapeindex-1][2] < 0.8) {
+            while (first < xdata.length-3) {
+              var second = first + 2;
+              while (second < xdata.length-1) {
+                if (checkintersection(xdata[first],ydata[first],xdata[first+1],ydata[first+1],xdata[second],ydata[second],xdata[second+1],ydata[second+1])) {
+                  var innercount = 2*xdata.length;
+                  for (var i = first + 1; i < second - 2; i++) {
+                    for (var j = i + 2; j < second; j++) {
+                      if (checkintersection(xdata[i],ydata[i],xdata[i+1],ydata[i+1],xdata[j],ydata[j],xdata[j+1],ydata[j+1])) {
+                        innercount = (innercount > j-i) ? j-i : innercount;
+                      }
                     }
-                    ii += 1;
                   }
-                  looplength = (looplength < j - i - count) ? j - i- count : looplength;
-                  i = j;
+                  countlooplength = (countlooplength < innercount) ? innercount : countlooplength;
+                  first = second;
                   break;
                 }
-                j += 1;
+                second += 1;
               }
-              i += 1;
+              first += 1;
             }
-            loop[p][loopindex][2] = looplength/(0.3*(xdata.length-1));
+            loop[p][loopindex][2] = (xdata.length > 0) ? countlooplength/(timedata.length*0.5) : loop[p][loopindex][2];
             if (loop[p][loopindex][2] > 1) loop[p][loopindex][2] = 1;
           }
           loopindex += 1;
+
+
 
 
 
@@ -756,6 +789,26 @@ Promise.all([
             displayplot[i][j] = sortscagarr[i][sortscagarr[i].length+j-3*numplot];
           }
           break;
+        case 11:
+          sortscagarr[i] = [];
+          Lshape.forEach(function (p,pi) {
+            p.forEach(function (sc) {
+              sortscagarr[i][sortindex] = [pi,sc[0],sc[1],sc[2]];
+              sortindex += 1;
+            });
+          });
+          sortscagarr[i] = sortscagarr[i].filter(function(a){return a[3] >= 0});
+          sortscagarr[i].sort(function(b,n){return b[3]-n[3]});  // ascending sort
+          for (var j = 0; j < numplot; j++) {  // get the lowest paths
+            displayplot[i][j] = sortscagarr[i][j];
+          }
+          for (var j = numplot; j < 2*numplot; j++) {  // get the middle paths
+            displayplot[i][j] = sortscagarr[i][Math.floor(sortscagarr[i].length*0.5)+j];
+          }
+          for (var j = 2*numplot; j < 3*numplot; j++) {  // get the highest paths
+            displayplot[i][j] = sortscagarr[i][sortscagarr[i].length+j-3*numplot];
+          }
+          break;
       }
     }
   }
@@ -864,6 +917,7 @@ function setup() {
   sel.option('skewed');
   sel.option('loop');
   sel.option('noise');
+  sel.option('Lshape');
 }
 ///////////////////////////
 // END OF SET UP FUNCTION
@@ -926,6 +980,9 @@ function draw() {
         break;
       case 'noise':
         selectedscag = 10;
+        break;
+      case 'Lshape':
+        selectedscag = 11;
         break;
     }
 
