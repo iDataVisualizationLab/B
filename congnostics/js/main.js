@@ -13,7 +13,10 @@ let scagname = ["edge distance",
     "straight",
     "sum of angle",
     "count angles",
-    "clumpy"
+    "clumpy",
+    "skewed",
+    "loop",
+    "noise"
 ];
 
 /////////////////////
@@ -42,12 +45,15 @@ let straight = [];  // straight[data point][x-var,y-var,straight], straight = -1
 let sumangle = [];  // sumangle[data point][x-var,y-var,sumangle], sumangle = -1 means no data
 let countangle = [];  // countangle[data point][x-var,y-var,countangle], countangle = -1 means no data
 let clumpy = [];  // clumpy[data point][x-var,y-var,clumpy], clumpy = -1 means no data
+let skewed = [];  // skewed[data point][x-var,y-var,skewed], skewed = -1 means no data
+let loop = [];    // loop[data point][x-var,y-var,loop], loop = -1 means no data
+let noise = [];
 let displayplot = [];  // displayplot[scagnostic index][0->numplot-1:lowest, numplot->2numplot-1: middle, 2numplot->3numplot-1: highest][data point, x-var, y-var,value]
-let numscag = 8;
+let numscag = 11;
 
 // VARIABLES FOR VISUALIZATION
 let selectedscag = 0;
-let numplot = 5;    // number of scatter plots in each column
+let numplot = 10;    // number of scatter plots in each column
 let plotsize;     // size of each scatter plots
 let plotsizet;
 let xblank = 200;   // total blank size in x-direction
@@ -187,6 +193,10 @@ Promise.all([
       sumangle[p] = [];
       countangle[p] = [];
       clumpy[p] = [];
+      skewed[p] = [];
+      loop[p] = [];
+      noise[p] = [];
+
 
       var pathindex = 0;  // declare index for scagnostic arrays
       var monotonictrendindex = 0;
@@ -196,6 +206,9 @@ Promise.all([
       var sumangleindex = 0;
       var countangleindex = 0;
       var clumpyindex = 0;
+      var skewedindex = 0;
+      var loopindex = 0;
+      var noiseindex = 0;
 
       for (var myy = 0; myy < mapvar0.size; myy++) {
         for (var myx = 0; myx < myy; myx++) {
@@ -208,6 +221,9 @@ Promise.all([
           sumangle[p][sumangleindex] = [myx,myy,-1];
           countangle[p][countangleindex] = [myx,myy,-1];
           clumpy[p][clumpyindex] = [myx,myy,-1];
+          skewed[p][skewedindex] = [myx,myy,-1];
+          loop[p][loopindex] = [myx,myy,-1];
+          noise[p][noiseindex] = [myx,myy,-1];
 
           var xdata = point[myx].map(function(x){return x});
           var ydata = point[myy].map(function(y){return y});
@@ -335,26 +351,6 @@ Promise.all([
           }
           sumangleindex += 1;
 
-          // SMOOTH DATA
-          // using moving average with window = 10
-          // var smoothxdata = [];
-          // var smoothydata = [];
-          // if (crossing[p][crossingindex-1][2] === 1) {
-          //   xdata.forEach(function(x,xi){
-          //     if (xi < 9) {
-          //       smoothxdata[xi] = x;
-          //       smoothydata[xi] = ydata[xi];
-          //     } else {
-          //       smoothxdata[xi] = 0;
-          //       smoothydata[xi] = 0;
-          //       for (var i = xi-9; i < xi+1; i++) {
-          //         smoothxdata[xi] += xdata[i]/10;
-          //         smoothydata[xi] += ydata[i]/10;
-          //       }
-          //     }
-          //   });
-          // }
-
           // FIND SHAPE
           // count angles 0 < angle < 90
           // divide by #point - 2
@@ -367,8 +363,8 @@ Promise.all([
               }
             });
             countangle[p][countangleindex][2] /= xdata.length - 2;
-            countangleindex += 1;
           }
+          countangleindex += 1;
 
           // CALCULATE CLUMPY
           // go to each member, search in 2 directions
@@ -383,28 +379,115 @@ Promise.all([
               var ee = Math.sqrt(ex*ex+ey*ey);
               var leftsum = 0;
               var rightsum = 0;
+              var leftcount = 0;
+              var rightcount = 0;
               var leftindex = i - 1;
               var rightindex = i + 1;
               while (leftindex >= 0) {
-                var edgex = xdata(leftindex+1)-xdata(leftindex);
-                var edgey = ydata(leftindex+1)-ydata(leftindex);
+                var edgex = xdata[leftindex+1]-xdata[leftindex];
+                var edgey = ydata[leftindex+1]-ydata[leftindex];
                 var edge = Math.sqrt(edgex*edgex+edgey*edgey);
-                if (edge <= ee) {leftsum += edge; leftindex -= 1;}
+                if (edge <= ee) {leftsum += edge; leftindex -= 1; leftcount += 1;}
                 else break;
               }
               while (rightindex <= xdata.length) {
-                var edgex = xdata(rightindex+1)-xdata(rightindex);
-                var edgey = ydata(rightindex+1)-ydata(rightindex);
+                var edgex = xdata[rightindex+1]-xdata[rightindex];
+                var edgey = ydata[rightindex+1]-ydata[rightindex];
                 var edge = Math.sqrt(edgex*edgex+edgey*edgey);
-                if (edge <= ee) {rightsum += edge; rightindex += 1;}
+                if (edge <= ee) {rightsum += edge; rightindex += 1; rightcount += 1;}
                 else break;
               }
-              var maxsum = (rightsum > leftsum) ? rightsum : leftsum;
-              maxsum = 1 - maxsum/path[p][pathindex][2];
-              clumpy[p][clumpyindex][2] = (clumpy[p][clumpyindex][2] < maxsum) ? maxsum : clumpy[p][clumpyindex][2];
+              if (leftsum != 0 || rightsum != 0) {
+                var maxsum = (rightsum > leftsum) ? rightsum/rightcount : leftsum/leftcount;
+                maxsum = 1 - maxsum*(xdata.length-1)/path[p][pathindex-1][2];
+                clumpy[p][clumpyindex][2] = (clumpy[p][clumpyindex][2] < maxsum) ? maxsum : clumpy[p][clumpyindex][2];
+              }
             }
-            clumpyindex += 1;
           }
+          clumpyindex += 1;
+
+          // CALCULATE SKEWED
+          // skewed = (q90-q50)/(q90-q10)
+          if (xdata.length > 0) {
+            var q10 = edgearr[Math.floor(edgearr.length*0.1)];
+            var q50 = edgearr[Math.floor(edgearr.length*0.5)];
+            var q90 = edgearr[Math.floor(edgearr.length*0.9)];
+            skewed[p][skewedindex][2] = (q50-q10)/(q90-q10);
+          }
+          skewedindex += 1;
+
+          // NOISE
+          var countsignx = 0;
+          var countsigny = 0;
+          xdata.forEach(function (x,xi) {
+            if (xi > 1) {
+              var deltax1 = xdata[xi-1]-xdata[xi-2];
+              var deltax2 = x - xdata[xi-1];
+              var deltay1 = ydata[xi-1]-ydata[xi-2];
+              var deltay2 = ydata[xi]-ydata[xi-2];
+              if (deltax1*deltax2) countsignx += 1;
+              if (deltay2*deltay1) countsigny += 1;
+            }
+          });
+          if (xdata.length>0) {
+            noise[p][noiseindex][2] = (countsignx > countsigny) ? countsignx/(xdata.length-2) : countsigny/(xdata.length-2);
+          }
+          noiseindex += 1;
+
+          //SMOOTH DATA
+          // using moving average with window = 10
+          var smoothxdata = [];
+          var smoothydata = [];
+          if (crossing[p][crossingindex-1][2] > 0.5) {
+            xdata.forEach(function(x,xi){
+              if (xi < 9) {
+                smoothxdata[xi] = x;
+                smoothydata[xi] = ydata[xi];
+              } else {
+                smoothxdata[xi] = 0;
+                smoothydata[xi] = 0;
+                for (var i = xi-9; i < xi+1; i++) {
+                  smoothxdata[xi] += xdata[i]/10;
+                  smoothydata[xi] += ydata[i]/10;
+                }
+              }
+            });
+          }
+
+          // CALCULATE LOOP
+          if (noise[p][noiseindex-1][2] < 0.5 && outlying[p][outlyingindex-1][2] < 0.1) {
+            var looplength = 0;
+            var i = 0;
+            while (i < xdata.length - 3) {
+              var j = i + 2;
+              while (j < xdata.length - 1) {
+                if (checkintersection(xdata[i],ydata[i],xdata[i+1],ydata[i+1],xdata[j],ydata[j],xdata[j+1],ydata[j+1])) {
+                  var count = 0;
+                  var ii = i + 1;
+                  while (ii < j -2) {
+                    var jj = ii + 2;
+                    while (jj < j) {
+                      if (checkintersection(xdata[ii],ydata[ii],xdata[ii+1],ydata[ii+1],xdata[jj],ydata[jj],xdata[jj+1],ydata[jj+1]))
+                        count += 1;
+                        jj += 1;
+                    }
+                    ii += 1;
+                  }
+                  looplength = (looplength < j - i - count) ? j - i- count : looplength;
+                  i = j;
+                  break;
+                }
+                j += 1;
+              }
+              i += 1;
+            }
+            loop[p][loopindex][2] = looplength/(0.3*(xdata.length-1));
+            if (loop[p][loopindex][2] > 1) loop[p][loopindex][2] = 1;
+          }
+          loopindex += 1;
+
+
+
 
 
         }
@@ -587,6 +670,66 @@ Promise.all([
             displayplot[i][j] = sortscagarr[i][sortscagarr[i].length+j-3*numplot];
           }
           break;
+        case 8:
+          sortscagarr[i] = [];
+          skewed.forEach(function (p,pi) {
+            p.forEach(function (sc) {
+              sortscagarr[i][sortindex] = [pi,sc[0],sc[1],sc[2]];
+              sortindex += 1;
+            });
+          });
+          sortscagarr[i] = sortscagarr[i].filter(function(a){return a[3] >= 0});
+          sortscagarr[i].sort(function(b,n){return b[3]-n[3]});  // ascending sort
+          for (var j = 0; j < numplot; j++) {  // get the lowest paths
+            displayplot[i][j] = sortscagarr[i][j];
+          }
+          for (var j = numplot; j < 2*numplot; j++) {  // get the middle paths
+            displayplot[i][j] = sortscagarr[i][Math.floor(sortscagarr[i].length*0.5)+j];
+          }
+          for (var j = 2*numplot; j < 3*numplot; j++) {  // get the highest paths
+            displayplot[i][j] = sortscagarr[i][sortscagarr[i].length+j-3*numplot];
+          }
+          break;
+        case 9:
+          sortscagarr[i] = [];
+          loop.forEach(function (p,pi) {
+            p.forEach(function (sc) {
+              sortscagarr[i][sortindex] = [pi,sc[0],sc[1],sc[2]];
+              sortindex += 1;
+            });
+          });
+          sortscagarr[i] = sortscagarr[i].filter(function(a){return a[3] >= 0});
+          sortscagarr[i].sort(function(b,n){return b[3]-n[3]});  // ascending sort
+          for (var j = 0; j < numplot; j++) {  // get the lowest paths
+            displayplot[i][j] = sortscagarr[i][j];
+          }
+          for (var j = numplot; j < 2*numplot; j++) {  // get the middle paths
+            displayplot[i][j] = sortscagarr[i][Math.floor(sortscagarr[i].length*0.5)+j];
+          }
+          for (var j = 2*numplot; j < 3*numplot; j++) {  // get the highest paths
+            displayplot[i][j] = sortscagarr[i][sortscagarr[i].length+j-3*numplot];
+          }
+          break;
+        case 10:
+          sortscagarr[i] = [];
+          noise.forEach(function (p,pi) {
+            p.forEach(function (sc) {
+              sortscagarr[i][sortindex] = [pi,sc[0],sc[1],sc[2]];
+              sortindex += 1;
+            });
+          });
+          sortscagarr[i] = sortscagarr[i].filter(function(a){return a[3] >= 0});
+          sortscagarr[i].sort(function(b,n){return b[3]-n[3]});  // ascending sort
+          for (var j = 0; j < numplot; j++) {  // get the lowest paths
+            displayplot[i][j] = sortscagarr[i][j];
+          }
+          for (var j = numplot; j < 2*numplot; j++) {  // get the middle paths
+            displayplot[i][j] = sortscagarr[i][Math.floor(sortscagarr[i].length*0.5)+j];
+          }
+          for (var j = 2*numplot; j < 3*numplot; j++) {  // get the highest paths
+            displayplot[i][j] = sortscagarr[i][sortscagarr[i].length+j-3*numplot];
+          }
+          break;
       }
     }
   }
@@ -669,8 +812,8 @@ Promise.all([
 // SET UP FUNCTION
 //////////////////
 let sel;
-let canvas_height = 2000;
-let canvas_width = 3000;
+let canvas_height = 8000;
+let canvas_width = 4000;
 function setup() {
   // createCanvas(canvas_width,canvas_height);
   createCanvas(canvas_width,canvas_height);
@@ -692,6 +835,9 @@ function setup() {
   sel.option('sum of angles');
   sel.option('count angles');
   sel.option('clumpy');
+  sel.option('skewed');
+  sel.option('loop');
+  sel.option('noise');
 }
 ///////////////////////////
 // END OF SET UP FUNCTION
@@ -712,6 +858,7 @@ function windowResized() {
 function draw() {
 
   background(200);
+  let old = false;
 
   if (doneanalyzation) {
 
@@ -725,12 +872,14 @@ function draw() {
         break;
       case 'outlying':
         selectedscag = 2;
+        old = true;
         break;
       case 'number of edge crossing':
         selectedscag = 3;
         break;
       case 'straight':
         selectedscag = 4;
+        old = true;
         break;
       case 'sum of angles':
         selectedscag = 5;
@@ -740,17 +889,28 @@ function draw() {
         break;
       case 'clumpy':
         selectedscag = 7;
+        old = true;
+        break;
+      case 'skewed':
+        selectedscag = 8;
+        old = true;
+        break;
+      case 'loop':
+        selectedscag = 9;
+        break;
+      case 'noise':
+        selectedscag = 10;
         break;
     }
 
-    textFont('Courier New');
+    textFont('Arial Unicode MS');
     // Write group notation
     stroke(0);
     fill(0);
-    textSize(canvas_height/50);
-    text('Lowest values',xstartpos+1.3*plotsize,canvas_height/10);
-    text('Middle values',xstartpos+5.8*plotsize,canvas_height/10);
-    text('Highest values',xstartpos+10.3*plotsize,canvas_height/10);
+    textSize(canvas_height/150);
+    text('Lowest values',xstartpos+1.3*plotsize,canvas_height/40);
+    text('Middle values',xstartpos+5.8*plotsize,canvas_height/40);
+    text('Highest values',xstartpos+10.3*plotsize,canvas_height/40);
 
     for (var i = 0; i < numplot; i++) {
       for (var j = 0; j < 3; j++) {
@@ -761,10 +921,10 @@ function draw() {
         var valuedrawed = displayplot[selectedscag][i+j*numplot][3];
 
         // draw rectangles
-        fill(255);
+        if (old) fill(255,255,0); else fill(255);
         stroke(0);
         rect(xstartpos+0.1*plotsize+j*4.5*plotsize,ystartpos+0.2*plotsize+i*1.4*plotsize,plotsize,plotsize);  // CS
-        fill(240);
+        if (old) fill(200,200,0); else fill(240);
         noStroke();
         rect(xstartpos+1.3*plotsize+j*4.5*plotsize,ystartpos+0.2*plotsize+i*1.4*plotsize,plotsize,plotsize);  // x-var
         rect(xstartpos+2.5*plotsize+j*4.5*plotsize,ystartpos+0.2*plotsize+i*1.4*plotsize,plotsize,plotsize);  // y-var
