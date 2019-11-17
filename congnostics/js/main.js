@@ -176,6 +176,24 @@ Promise.all([
       });
     });
   }
+  // normalization of each variable over all data points
+  // function normalization() {
+  //   var seriesarr = [];
+  //   for (var v = 0; v < data[0].length; v++) {
+  //     seriesarr[v] = [];
+  //     for (var p = 0; p < data.length; p++) {
+  //       seriesarr.push(data[p][v]);
+  //     }
+  //   }
+  //   // WRITE DATA TO DRAWDATA[]
+  //   data.forEach(function (point,p) {
+  //     drawdata[p] = [];
+  //     point.forEach(function (variable,v) {
+  //       drawdata[p][v] = variable.filter(function(step){return step >=0});
+  //     });
+  //   });
+  // }
+
 
 // CALCULATE SCAGNOSTICS OF CONNECTED SCATTER PLOTS
 // each data point -> each pair of variables
@@ -394,7 +412,7 @@ Promise.all([
                 }
                 else break;
               }
-              while (rightindex <= xdata.length) {
+              while (rightindex < xdata.length-1) {
                 var edgex = xdata[rightindex+1]-xdata[rightindex];
                 var edgey = ydata[rightindex+1]-ydata[rightindex];
                 var edge = Math.sqrt(edgex*edgex+edgey*edgey);
@@ -929,10 +947,10 @@ function draw() {
         var valuedrawed = displayplot[selectedscag][i+j*numplot][3];
 
         // draw rectangles
-        if (old) fill(255,255,0); else fill(255);
+        fill(255);
         stroke(0);
         rect(xstartpos+0.1*plotsize+j*4.5*plotsize,ystartpos+0.2*plotsize+i*1.4*plotsize,plotsize,plotsize);  // CS
-        if (old) fill(200,200,0); else fill(240);
+        fill(240);
         noStroke();
         rect(xstartpos+1.3*plotsize+j*4.5*plotsize,ystartpos+0.2*plotsize+i*1.4*plotsize,plotsize,plotsize);  // x-var
         rect(xstartpos+2.5*plotsize+j*4.5*plotsize,ystartpos+0.2*plotsize+i*1.4*plotsize,plotsize,plotsize);  // y-var
