@@ -466,6 +466,20 @@ Promise.all([
           }
           noiseindex += 1;
 
+          // CALCULATE L-SHAPE
+          // L-shape means at least 1 series has only a few values
+          // CS look like a parallel line to one of the axis
+          // count number of angles in 90 or 0 compared to x-axis
+          var countshape = 0;
+          xdata.forEach(function (x,xi) {
+            if (xi) {
+              if (x === xdata[xi-1] || ydata[xi] === ydata[xi-1]) countshape += 1;
+            }
+          });
+          Lshape[p][Lshapeindex][2] = (xdata.length > 0) ? countshape/(xdata.length-1) : Lshape[p][Lshapeindex][2];
+          if (Lshape[p][Lshapeindex][2] > 1) Lshape[p][Lshapeindex][2] = 1;
+          Lshapeindex += 1;
+
           //SMOOTH DATA
           // using moving average with window = 10
           // var smoothxdata = [];
@@ -486,61 +500,48 @@ Promise.all([
           //   });
           // }
 
-          // CALCULATE L-SHAPE
-          // L-shape means at least 1 series has only a few values
-          // CS look like a parallel line to one of the axis
-          // count number of angles in 90 or 0 compared to x-axis
-          var countshape = 0;
-          xdata.forEach(function (x,xi) {
-            if (xi) {
-              if (x === xdata[xi-1] || ydata[xi] === ydata[xi-1]) countshape += 1;
-            }
-          });
-          Lshape[p][Lshapeindex][2] = (xdata.length > 0) ? countshape/(xdata.length-1) : Lshape[p][Lshapeindex][2];
-          if (Lshape[p][Lshapeindex][2] > 1) Lshape[p][Lshapeindex][2] = 1;
-          Lshapeindex += 1;
-
-
           // CALCULATE LOOP
-          //  var countlooplength = 2*xdata.length;
+           if (xdata.length > 0) {
+             var countlooplength = 0;
+             if (Lshape[p][Lshapeindex-1][2] < 0.8 && crossing[p][crossingindex-1][2] < 0.5) {
+               for (var i = 0; i < xdata.length-3; i++) {
+                 for (var j = i+2; j < xdata.length-1; j++) {
+                   if (checkintersection(xdata[i],ydata[i],xdata[i+1],ydata[i+1],xdata[j],ydata[j],xdata[j+1],ydata[j+1])) {
+                     countlooplength = (countlooplength < j-i) ? j-i : countlooplength;
+                     break;
+                   }
+                 }
+               }
+               loop[p][loopindex][2] = (countlooplength < xdata.length) ? countlooplength/(timedata.length-1) : loop[p][loopindex][2];
+               if (loop[p][loopindex][2] > 1) loop[p][loopindex][2] = 1;
+             }
+           }
+          // var countlooplength = 0;
+          // var first = 0;
           // if (Lshape[p][Lshapeindex-1][2] < 0.8) {
-          //   for (var i = 0; i < xdata.length-3; i++) {
-          //     for (var j = i+2; j < xdata.length-1; j++) {
-          //       if (checkintersection(xdata[i],ydata[i],xdata[i+1],ydata[i+1],xdata[j],ydata[j],xdata[j+1],ydata[j+1])) {
-          //         countlooplength = (countlooplength > j-i) ? j-i : countlooplength;
+          //   while (first < xdata.length-3) {
+          //     var second = first + 2;
+          //     while (second < xdata.length-1) {
+          //       if (checkintersection(xdata[first],ydata[first],xdata[first+1],ydata[first+1],xdata[second],ydata[second],xdata[second+1],ydata[second+1])) {
+          //         var innercount = 2*xdata.length;
+          //         for (var i = first + 1; i < second - 2; i++) {
+          //           for (var j = i + 2; j < second; j++) {
+          //             if (checkintersection(xdata[i],ydata[i],xdata[i+1],ydata[i+1],xdata[j],ydata[j],xdata[j+1],ydata[j+1])) {
+          //               innercount = (innercount > j-i) ? j-i : innercount;
+          //             }
+          //           }
+          //         }
+          //         countlooplength = (countlooplength < innercount) ? innercount : countlooplength;
+          //         first = second;
           //         break;
           //       }
+          //       second += 1;
           //     }
+          //     first += 1;
           //   }
-          //   loop[p][loopindex][2] = (countlooplength < xdata.length) ? countlooplength/(xdata.length-1) : loop[p][loopindex][2];
+          //   loop[p][loopindex][2] = (xdata.length > 0) ? countlooplength/(timedata.length*0.5) : loop[p][loopindex][2];
           //   if (loop[p][loopindex][2] > 1) loop[p][loopindex][2] = 1;
           // }
-          var countlooplength = 0;
-          var first = 0;
-          if (Lshape[p][Lshapeindex-1][2] < 0.8) {
-            while (first < xdata.length-3) {
-              var second = first + 2;
-              while (second < xdata.length-1) {
-                if (checkintersection(xdata[first],ydata[first],xdata[first+1],ydata[first+1],xdata[second],ydata[second],xdata[second+1],ydata[second+1])) {
-                  var innercount = 2*xdata.length;
-                  for (var i = first + 1; i < second - 2; i++) {
-                    for (var j = i + 2; j < second; j++) {
-                      if (checkintersection(xdata[i],ydata[i],xdata[i+1],ydata[i+1],xdata[j],ydata[j],xdata[j+1],ydata[j+1])) {
-                        innercount = (innercount > j-i) ? j-i : innercount;
-                      }
-                    }
-                  }
-                  countlooplength = (countlooplength < innercount) ? innercount : countlooplength;
-                  first = second;
-                  break;
-                }
-                second += 1;
-              }
-              first += 1;
-            }
-            loop[p][loopindex][2] = (xdata.length > 0) ? countlooplength/(timedata.length*0.5) : loop[p][loopindex][2];
-            if (loop[p][loopindex][2] > 1) loop[p][loopindex][2] = 1;
-          }
           loopindex += 1;
 
 
@@ -973,7 +974,6 @@ function draw() {
         break;
       case 'skewed':
         selectedscag = 8;
-        old = true;
         break;
       case 'loop':
         selectedscag = 9;
