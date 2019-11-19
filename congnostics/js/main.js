@@ -1,79 +1,50 @@
-/* Note:
-travel distance === 0
-monotonic trend === 1
-outling === 2
-crossing === 3
-straight === 4
-sum of angle === 5
-*/
-let scagname = ["edge distance",
-    "monotonic trend",
-    "outlying",
-    "number of edge crossing",
-    "straight",
-    "sum of angle",
-    "count angles",
-    "clumpy",
-    "skewed",
-    "loop",
-    "noise",
-    "L-shape"
-];
-
 /////////////////////
 /////////////////////
 // DECLARE VARIABLES
 /////////////////////
 ////////////////////
 
+let measures = [];  // measures[index][sample][x-var,y-var,value], value = -1 means no data
+let nummeasure = 8;
+for (var i=0; i<nummeasure; i++) {
+  measures[i] = [];
+}
+let measurename = [
+  'Outlying',
+  'L-shape',
+  'Length',
+  'Trend',
+  'Intersections',
+  'Loop',
+  'Clumpy',
+  'Curve'
+];
+
 // VARIABLES FOR STORING DATA
-let data = []; // data[data point][variable][time step]
-let drawdata = [];  // remove negative data in data[]
-let mappoint0 = new Map(); // code -> data point name
-let mappoint1 = new Map(); // data point name -> index in data[data point]
-let mappoint2 = new Map(); // index -> data point name
+let data = []; // data[sample][variable][time step] for raw data
+let mapsample0 = new Map(); // code -> data sample name
+let mapsample1 = new Map(); // data sample name -> index in data[data sample]
+let mapsample2 = new Map(); // index -> data sample name
 let mapvar0 = new Map();  // code -> variable name
 let mapvar1 = new Map();  // variable name -> index in data[variable]
 let mapvar2 = new Map(); // index -> variable name
 let timedata =[]; // store indices of time steps
 
-// VARIABLES FOR CALCULATIONS
-let path = [];  // path[data point][x-var,y-var,path], path = 0 means no data
-let monotonictrend = [];  // monotonic[data point][x-var,y-var,monotonic], monotonic = -1 means no data
-let outlying = [];  // outlying[data point][x-var,y-var,outlying], outlying = -1 means no data
-let crossing = [];  // crossing[data point][x-var,y-var,crossing], crossing = -1 means no data
-let straight = [];  // straight[data point][x-var,y-var,straight], straight = -1 means no data
-let sumangle = [];  // sumangle[data point][x-var,y-var,sumangle], sumangle = -1 means no data
-let countangle = [];  // countangle[data point][x-var,y-var,countangle], countangle = -1 means no data
-let clumpy = [];  // clumpy[data point][x-var,y-var,clumpy], clumpy = -1 means no data
-let skewed = [];  // skewed[data point][x-var,y-var,skewed], skewed = -1 means no data
-let loop = [];    // loop[data point][x-var,y-var,loop], loop = -1 means no data
-let noise = [];
-let Lshape = [];
-let displayplot = [];  // displayplot[scagnostic index][0->numplot-1:lowest, numplot->2numplot-1: middle, 2numplot->3numplot-1: highest][data point, x-var, y-var,value]
-let numscag = 12;
+// VARIABLES FOR CONTROLLING
+let donecalculation = false;
 
 // VARIABLES FOR VISUALIZATION
-let selectedscag = 0;
-let numplot = 20;    // number of scatter plots in each column
-let plotsize;     // size of each scatter plots
-let plotsizet;
-let xblank = 200;   // total blank size in x-direction
-let yblank = 60;    // total blank size in y-direction, except for a space of picking data point
-let xstartpos = xblank/2;   // start positions
-let ystartpos;
-let dirsize = 4;
-let dirangle = 0.314;
-
-// VARIABLES FOR CONTROLS
-let doneanalyzation = false;
-
-//////////////////////////////
-//////////////////////////////
-// END OF DECLARING VARIABLES
-/////////////////////////////
-/////////////////////////////
-
+let displayplot = [];   // displayplot[measure index][0->numplot-1:lowest, numplot->2numplot-1: middle, 2numplot->3numplot-1: highest][sample, x-var, y-var,value]
+let width = 3000;
+let height = 6000;
+let plotsize = width/10;
+let splotsize = width/15;
+let numplot = 10;
+let selectedmeasure = 0;
+let choose = false;   // for selections
+let type = [0,1,2,0,2,1,0,2];   // for type of measures in selection button
+let xstartpos = width*0.05;
+let ystartpos = 250;
 
 
 
@@ -89,20 +60,16 @@ Promise.all([
   d3.tsv("data/statecode.txt"),
   d3.tsv("data/Industrycode.txt"),
 ]).then(function(files) {
-  // files[0] is file1.txt
-  // Add more files: next elements => do not change the indices
-
-
-
-/////////////////////////////////////
+  
+///////////////////////////////////////
 // READ DATA TO RESTORING VARIABLES
-///////////////////////////////////
+//////////////////////////////////////
 
-  // MAP DATA POINT
-  files[1].forEach(function(point,p){
-    if (!mappoint0.get(point.code)) mappoint0.set(point.code,point.name);  // code-string to name-string
-    if (!mappoint1.get(point.name)) mappoint1.set(point.name,p);  // name-string to index-number
-    if (!mappoint2.get(p)) mappoint2.set(p,point.name);   // index-number to name-string
+  // MAP DATA sample
+  files[1].forEach(function(sample,p){
+    if (!mapsample0.get(sample.code)) mapsample0.set(sample.code,sample.name);  // code-string to name-string
+    if (!mapsample1.get(sample.name)) mapsample1.set(sample.name,p);  // name-string to index-number
+    if (!mapsample2.get(p)) mapsample2.set(p,sample.name);   // index-number to name-string
     data[p] = [];
   });
 
@@ -120,18 +87,18 @@ Promise.all([
   timedata = files[0].columns.filter(function(step){return step !== "Series ID"});
 
   // WRITE DATA TO DATA[]
-  data.forEach(function(point){
-    point.forEach(function (variable) {
+  data.forEach(function(sample){
+    sample.forEach(function (variable) {
       timedata.forEach(function (step,s) {
         variable[s] = -1;
       });
     });
   });
   files[0].forEach(function(line){
-    var pointindex = mappoint1.get(mappoint0.get(line["Series ID"].substr(3,2)));
+    var sampleindex = mapsample1.get(mapsample0.get(line["Series ID"].substr(3,2)));
     var varindex = mapvar1.get(mapvar0.get(line["Series ID"].substr(10,8)));
     timedata.forEach(function(step,s){
-      data[pointindex][varindex][s] = isNaN(parseFloat(line[step])) ? -1 : parseFloat(line[step]);
+      data[sampleindex][varindex][s] = isNaN(parseFloat(line[step])) ? -1 : parseFloat(line[step]);
     });
   });
 
@@ -139,28 +106,23 @@ Promise.all([
 // END OF READING DATA
 ///////////////////////
 
-
-
 ///////////////////////
-// CALCULATION HERE
+// CALCULATION CODE
 /////////////////////
 
-// CONTROL CALCULATION
+  // CONTROL CALCULATION
   normalization();
-  calculatescagnostics();
-  sortscag();
-  console.log(data);
-  console.log(path);
-  console.log(displayplot);
-  console.log(drawdata);
+  calculatemeasures();
+  sortmeasures();
+  console.log(measures);
 
-// NORMALIZE THE DATA OVER TIME
-// each data point -> each variable
-// -> find min and max of time series -> data = (data-min)/(max-min)
-// -> write drawdata[] for later uses
+
+  // NORMALIZE DATA
+  // find min and max of each series -> normalize
+  // local normalization
   function normalization() {
-    data.forEach(function(point,p) {
-      point.forEach(function(variable,v) {
+    data.forEach(function(sample,p) {
+      sample.forEach(function(variable,v) {
         var svariable = variable.filter(function(d){return d >= 0});
         var mymax = Math.max(...svariable);
         var mymin = Math.min(...svariable);
@@ -171,86 +133,36 @@ Promise.all([
       });
     });
     // WRITE DATA TO DRAWDATA[]
-    data.forEach(function (point,p) {
-      drawdata[p] = [];
-      point.forEach(function (variable,v) {
-        drawdata[p][v] = variable.filter(function(step){return step >=0});
-      });
-    });
+    // data.forEach(function (sample,p) {
+    //   drawdata[p] = [];
+    //   sample.forEach(function (variable,v) {
+    //     drawdata[p][v] = variable.filter(function(step){return step >=0});
+    //   });
+    // });
   }
-  // normalization of each variable over all data points
-  // function normalization() {
-  //   var seriesarr = [];
-  //   for (var v = 0; v < data[0].length; v++) {
-  //     seriesarr[v] = [];
-  //     for (var p = 0; p < data.length; p++) {
-  //       seriesarr.push(data[p][v]);
-  //     }
-  //   }
-  //   seriesarr
-  //   // WRITE DATA TO DRAWDATA[]
-  //   data.forEach(function (point,p) {
-  //     drawdata[p] = [];
-  //     point.forEach(function (variable,v) {
-  //       drawdata[p][v] = variable.filter(function(step){return step >=0});
-  //     });
-  //   });
-  // }
 
+  // CALCULATE MEASURES FOR TIME SERIES
+  function calculatemeasures () {
 
-// CALCULATE SCAGNOSTICS OF CONNECTED SCATTER PLOTS
-// each data point -> each pair of variables
-// give -1 to each series's value if corresponding value in another series is -1
-// -> filter non-negative numbers -> calculate scagnostics
-// -> normalize them
-  function calculatescagnostics() {
-    data.forEach(function(point,p){
+    data.forEach(function (sample,p) {
 
-      path[p] = [];  // declare array of scagnostics
-      monotonictrend[p] = [];
-      outlying[p] = [];
-      crossing[p] = [];
-      straight[p] = [];
-      sumangle[p] = [];
-      countangle[p] = [];
-      clumpy[p] = [];
-      skewed[p] = [];
-      loop[p] = [];
-      noise[p] = [];
-      Lshape[p] = [];
+      // Declare measure structures
+      for (var i=0; i< nummeasure; i++) {
+        measures[i][p] = [];
+      }
+      var index = 0;
+      // Each plot
+      for (var yvar = 0; yvar < mapvar0.size; yvar++) {
+        for (var xvar = 0; xvar < yvar; xvar++) {
 
+          // Initialize measure values
+          for (var i = 0; i < nummeasure; i++) {
+            measures[i][p][index] = [xvar,yvar,-1];
+          }
 
-      var pathindex = 0;  // declare index for scagnostic arrays
-      var monotonictrendindex = 0;
-      var outlyingindex = 0;
-      var crossingindex = 0;
-      var straightindex = 0;
-      var sumangleindex = 0;
-      var countangleindex = 0;
-      var clumpyindex = 0;
-      var skewedindex = 0;
-      var loopindex = 0;
-      var noiseindex = 0;
-      var Lshapeindex = 0;
-
-      for (var myy = 0; myy < mapvar0.size; myy++) {
-        for (var myx = 0; myx < myy; myx++) {
-
-          path[p][pathindex] = [myx,myy,0];  // declare array of scagnostics
-          monotonictrend[p][monotonictrendindex] = [myx,myy,-1];
-          outlying[p][outlyingindex] = [myx,myy,-1];
-          crossing[p][crossingindex] = [myx,myy,-1];
-          straight[p][straightindex] = [myx,myy,-1];
-          sumangle[p][sumangleindex] = [myx,myy,-1];
-          countangle[p][countangleindex] = [myx,myy,-1];
-          clumpy[p][clumpyindex] = [myx,myy,-1];
-          skewed[p][skewedindex] = [myx,myy,-1];
-          loop[p][loopindex] = [myx,myy,-1];
-          noise[p][noiseindex] = [myx,myy,-1];
-          Lshape[p][Lshapeindex] = [myx,myy,-1];
-
-          var xdata = point[myx].map(function(x){return x});
-          var ydata = point[myy].map(function(y){return y});
+          // create calculation data
+          var xdata = sample[xvar].map(function (x) {return x});
+          var ydata = sample[yvar].map(function (y) {return y});
           xdata.forEach(function(x,ix){
             ydata[ix] = (x === -1) ? -1 : ydata[ix];
           });
@@ -260,565 +172,203 @@ Promise.all([
           xdata = xdata.filter(function(x){return x !== -1});
           ydata = ydata.filter(function(y){return y !== -1});
           if (xdata.length !== ydata.length)
-            console.log("calculatepath -> 2 series have different length at: point = " + p + ", xvar = " + myx + ", yvar = " + myy);
+            console.log("2 series have different length at: sample = " + p + ", x-var = " + xvar + ", y-var = " + yvar);
 
-          // CALCULATE PATH
-          if (xdata.length > 1) {
-            var prex = xdata[0], prey = ydata[0];
-            xdata.forEach(function(x,ix){
-              if (ix !== 0) {
-                var edgex = x - prex;
-                prex = x;
-                var edgey = ydata[ix] - prey;
-                prey = ydata[ix];
-                path[p][pathindex][2] += Math.sqrt(edgex*edgex+edgey*edgey);
-              }
-            });
-            //path[p][pathindex][2] /= ((xdata.length-1)*Math.sqrt(2));
-            path[p][pathindex][2] /= ((xdata.length-1))/7;  // normalize
-            if ( path[p][pathindex][2] > 1)  path[p][pathindex][2] = 1.00;  // boundary condition
-          }
-          pathindex += 1;
-          // END OF PATH
-
-          // CALCULATE MY MONOTONIC TREND
-          // go to each element
-          // -> get sign due to Mann-Kendall sense
-          // -> consider relationships between a step's value with all steps' values after it
-          // -> add to arr[I,II,III,IV]
-          // -> mod/no. of edge
-          var countedgedir = [0,0,0,0];
-          for (var i = 0; i < xdata.length-1; i++) {
-            for (var j = 0; j < xdata.length; j++) {
-              var edgex = xdata[j] - xdata[i];
-              var edgey = ydata[j] - ydata[i];
-              if (edgex > 0 && edgey > 0) countedgedir[0] += 1;
-              if (edgex < 0 && edgey > 0) countedgedir[1] += 1;
-              if (edgex < 0 && edgey < 0) countedgedir[2] += 1;
-              if (edgex > 0 && edgey < 0) countedgedir[3] += 1;
-            }
-          }
-          countedgedir.forEach(function(c,i){
-            monotonictrend[p][monotonictrendindex][2] = (monotonictrend[p][monotonictrendindex][2] < c) ? c : monotonictrend[p][monotonictrendindex][2];
-          });
-          monotonictrend[p][monotonictrendindex][2] /= xdata.length*(xdata.length - 1)/2;
-          monotonictrendindex += 1;
-          // END OF MONOTONIC TREND
-
-          // CALCULATE OUTLIER
-          // calculate edge lengths
-          // sort them
-          // get q1 and q3
-          // calculate outlyinglength
-          var edgearr = [];
+          // CALCULATIONS RELATED LENGTH
+          var edgelength = [];
+          var sumlength = 0;
           xdata.forEach(function (x,xi) {
             if (xi) {
-              var edgex = x - xdata[xi-1];
-              var edgey = ydata[xi] - ydata[xi-1];
-              edgearr[xi-1] = Math.sqrt(edgex*edgex+edgey*edgey);
+              var xlength = x - xdata[xi-1];
+              var ylength = ydata[xi] - ydata[xi-1];
+              edgelength[xi-1] = Math.sqrt(xlength*xlength+ylength*ylength);
+              sumlength += edgelength[xi-1];
             }
           });
-          edgearr.sort(function(b,n){return b-n});  // ascending sort
-          var q1 = edgearr[Math.floor(0.25*edgearr.length)];
-          var q3 = edgearr[Math.floor(0.75*edgearr.length)];
-          var outlyingedge = 0;
-          var countindex = edgearr.length - 1;
-          var outcondition = q3+3*(q3-q1);
-          while (edgearr[countindex] > outcondition) {
-            outlyingedge += edgearr[countindex]*7/(xdata.length-1);
-            countindex -= 1;
-          }
-          outlying[p][outlyingindex][2] = outlyingedge/path[p][pathindex-1][2];
-          outlyingindex += 1;
-          // END OF OUTLYING
+          var sortlength = edgelength.map(function (v) {return v});
+          sortlength.sort(function (b,n) {return b-n});   // ascending
 
-          // CALCULATE NUMBER OF INTERSECTION - NOISE - CROSSING
+
+          // OUTLYING
           if (xdata.length > 1) {
-            crossing[p][crossingindex][2] = 0;
-            for (var i = 0; i < xdata.length - 3; i++) {
-              for (var j = i+2; j < xdata.length - 1; j++) {
-                if (checkintersection(xdata[i],ydata[i],xdata[i+1],ydata[i+1],xdata[j],ydata[j],xdata[j+1],ydata[j+1]))
-                  crossing[p][crossingindex][2] += 1;
+            measures[0][p][index][2] = 0;
+            var outlier = [];
+            var sindex = 0;
+            var q1 = sortlength[Math.floor(sortlength.length*0.25)];
+            var q3 = sortlength[Math.floor(sortlength.length*0.75)];
+            var upperlimit = q3 + 1.5*(q3 - q1);
+            edgelength.forEach(function (e,ei) {
+              if (ei === 0 ) {
+                if (e > upperlimit) {
+                  outlier[sindex] = ei;
+                  measures[0][p][index][2] += e;
+                  sindex += 1;
+                }
               }
-            }
-            // intersection[p][intersectionidex][2] /= (xdata.length - 2)*(xdata.length - 3)/2;
-            crossing[p][crossingindex][2] /= xdata.length;
-            if (crossing[p][crossingindex][2] > 1) crossing[p][crossingindex][2] = 1;
-          }
-          crossingindex += 1;
-          // END OF CALCULATE NUMBER OF INTERSECTION
-
-          // CALCULATE STRAIGHT
-          // Euclidean distance / path
-          if (xdata.length > 2) {
-            straight[p][straightindex][2] = Math.sqrt(Math.pow((xdata[xdata.length-1]-xdata[0]),2)+Math.pow(ydata[ydata.length-1]-ydata[0],2));
-            straight[p][straightindex][2] /= path[p][pathindex-1][2]*(xdata.length-1)/7;
-          }
-          straightindex += 1;
-          // END OF STRAIGHT
-
-          // CALCULATE SUM OF ANGLES
-          // if (xdata.length > 2){
-          //   var anglearr = [];
-          //   for (var i = 0; i < xdata.length - 2; i++) {
-          //     anglearr[i] = 2*(Math.PI/2 - calculateangle(xdata[i],ydata[i],xdata[i+1],ydata[i+1],xdata[i+2],ydata[i+2]))/Math.PI;
-          //   }
-          //   anglearr.sort(function(a,b){return a - b});
-          //   sumangle[p][sumangleindex][2] = anglearr[Math.floor(anglearr.length*0.9)];
-          // }
-          if (xdata.length > 2){
-            sumangle[p][sumangleindex][2] = 0;
-            for (var i = 0; i < xdata.length - 2; i++) {
-              sumangle[p][sumangleindex][2] += calculateangle(xdata[i],ydata[i],xdata[i+1],ydata[i+1],xdata[i+2],ydata[i+2]);
-            }
-            sumangle[p][sumangleindex][2] = 1 - sumangle[p][sumangleindex][2]/((xdata.length-2)*Math.PI);
-          }
-          sumangleindex += 1;
-
-          // FIND SHAPE
-          // count angles 0 < angle < 90
-          // divide by #point - 2
-          if (xdata.length > 2) {
-            countangle[p][countangleindex][2] = 0;
-            xdata.forEach(function(x,xi){
-              if (xi >= 2) {
-                if ((calculateangle(xdata[xi-2],ydata[xi-2],xdata[xi-1],ydata[xi-1],x,ydata[xi]) > radians(10)) && (calculateangle(xdata[xi-2],ydata[xi-2],xdata[xi-1],ydata[xi-1],x,ydata[xi]) < radians(90)))
-                  countangle[p][countangleindex][2] += 1;
+              else if (ei === edgelength.length - 1) {
+                if (e > upperlimit) {
+                  outlier[sindex] = ei + 1;
+                  measures[0][p][index][2] += e;
+                  sindex += 1;
+                }
+              }
+              else {
+                if (e > upperlimit && edgelength[ei-1] > upperlimit) {
+                  outlier[sindex] = ei;
+                  measures[0][p][index][2] += e + edgelength[ei-1];
+                  sindex += 1;
+                }
               }
             });
-            countangle[p][countangleindex][2] /= xdata.length - 2;
+            measures[0][p][index][2] /= sumlength;
+            var adjust = 0;
+            outlier.forEach(function (v) {
+              xdata.splice(v-adjust,1);
+              ydata.splice(v-adjust,1);
+              adjust += 1;
+            });
           }
-          countangleindex += 1;
 
-          // CALCULATE CLUMPY
-          // go to each member, search in 2 directions
-          // calculate sum of edge length in each direction
-          // get the larger value
-          // compare with that of other edges
-          // get the max
-          if (xdata.length > 1) {
-            for (var i = 0; i < xdata.length -1; i++) {
-              var ex = xdata[i+1] - xdata[i];
-              var ey = ydata[i+1] - ydata[i];
-              var ee = Math.sqrt(ex*ex+ey*ey);
-              var leftmax = 0;
-              var rightmax = 0;
-              var leftcount = 0;
-              var rightcount = 0;
-              var leftindex = i - 1;
-              var rightindex = i + 1;
-              while (leftindex >= 0) {
-                var edgex = xdata[leftindex+1]-xdata[leftindex];
-                var edgey = ydata[leftindex+1]-ydata[leftindex];
-                var edge = Math.sqrt(edgex*edgex+edgey*edgey);
-                if (edge < ee) {
-                  leftmax = (leftmax < edge) ? edge : leftmax;
-                  leftindex -= 1;
-                  leftcount += 1;
-                }
-                else break;
-              }
-              while (rightindex < xdata.length-1) {
-                var edgex = xdata[rightindex+1]-xdata[rightindex];
-                var edgey = ydata[rightindex+1]-ydata[rightindex];
-                var edge = Math.sqrt(edgex*edgex+edgey*edgey);
-                if (edge < ee) {
-                  rightmax = (rightmax < edge) ? edge : rightmax;
-                  rightindex += 1;
-                  rightcount += 1;
-                }
-                else break;
-              }
-              if (leftcount > 0 || rightcount > 0) {
-                var maxsum = (rightcount > leftcount) ? rightmax/ee : leftmax/ee;
-                maxsum = 1 - maxsum;
-                clumpy[p][clumpyindex][2] = (clumpy[p][clumpyindex][2] < maxsum) ? maxsum : clumpy[p][clumpyindex][2];
-              }
-            }
-          }
-          clumpyindex += 1;
-
-          // CALCULATE SKEWED
-          // skewed = (q90-q50)/(q90-q10)
-          if (xdata.length > 0) {
-            var q10 = edgearr[Math.floor(edgearr.length*0.1)];
-            var q50 = edgearr[Math.floor(edgearr.length*0.5)];
-            var q90 = edgearr[Math.floor(edgearr.length*0.9)];
-            skewed[p][skewedindex][2] = (q50-q10)/(q90-q10);
-          }
-          skewedindex += 1;
-
-          // NOISE
-          var countsignx = 0;
-          var countsigny = 0;
-          xdata.forEach(function (x,xi) {
-            if (xi > 1) {
-              var deltax1 = xdata[xi-1]-xdata[xi-2];
-              var deltax2 = x - xdata[xi-1];
-              var deltay1 = ydata[xi-1]-ydata[xi-2];
-              var deltay2 = ydata[xi]-ydata[xi-2];
-              if (deltax1*deltax2) countsignx += 1;
-              if (deltay2*deltay1) countsigny += 1;
-            }
-          });
-          if (xdata.length>0) {
-            noise[p][noiseindex][2] = (countsignx > countsigny) ? countsignx/(xdata.length-2) : countsigny/(xdata.length-2);
-          }
-          noiseindex += 1;
-
-          // CALCULATE L-SHAPE
-          // L-shape means at least 1 series has only a few values
-          // CS look like a parallel line to one of the axis
-          // count number of angles in 90 or 0 compared to x-axis
-          var countshape = 0;
+          // CALCULATIONS RELATED LENGTH AFTER REMOVING OUTLIERS
+          var edgelengtha = [];
+          var sumlengtha = 0;
           xdata.forEach(function (x,xi) {
             if (xi) {
-              if (x === xdata[xi-1] || ydata[xi] === ydata[xi-1]) countshape += 1;
+              var xlength = x - xdata[xi-1];
+              var ylength = ydata[xi] - ydata[xi-1];
+              edgelengtha[xi-1] = Math.sqrt(xlength*xlength+ylength*ylength);
+              sumlengtha += edgelengtha[xi-1];
             }
           });
-          Lshape[p][Lshapeindex][2] = (xdata.length > 0) ? countshape/(xdata.length-1) : Lshape[p][Lshapeindex][2];
-          if (Lshape[p][Lshapeindex][2] > 1) Lshape[p][Lshapeindex][2] = 1;
-          Lshapeindex += 1;
+          var sortlengtha = edgelengtha.map(function (v) {return v});
+          sortlengtha.sort(function (b,n) {return b-n});   // ascending
 
-          //SMOOTH DATA
-          // using moving average with window = 10
-          // var smoothxdata = [];
-          // var smoothydata = [];
-          // if (crossing[p][crossingindex-1][2] > 0.5) {
-          //   xdata.forEach(function(x,xi){
-          //     if (xi < 9) {
-          //       smoothxdata[xi] = x;
-          //       smoothydata[xi] = ydata[xi];
-          //     } else {
-          //       smoothxdata[xi] = 0;
-          //       smoothydata[xi] = 0;
-          //       for (var i = xi-9; i < xi+1; i++) {
-          //         smoothxdata[xi] += xdata[i]/10;
-          //         smoothydata[xi] += ydata[i]/10;
-          //       }
-          //     }
-          //   });
-          // }
+          // L-SHAPE
+          if (xdata.length > 1) {
+            measures[1][p][index][2] = 0;
+            var count = 0;
+            xdata.forEach(function (x,xi) {
+              if (xi) {
+                if (x === xdata[xi - 1] || ydata[xi] === ydata[xi - 1]) count += 1;
+              }
+            });
+            // L-SHAPE
+            measures[1][p][index][2] = count/xdata.length;  // or timedata.length
+          }
 
-          // CALCULATE LOOP
-           if (xdata.length > 0) {
-             var countlooplength = 0;
-             if (Lshape[p][Lshapeindex-1][2] < 0.8 && crossing[p][crossingindex-1][2] < 0.5) {
-               for (var i = 0; i < xdata.length-3; i++) {
-                 for (var j = i+2; j < xdata.length-1; j++) {
-                   if (checkintersection(xdata[i],ydata[i],xdata[i+1],ydata[i+1],xdata[j],ydata[j],xdata[j+1],ydata[j+1])) {
-                     countlooplength = (countlooplength < j-i) ? j-i : countlooplength;
-                     break;
-                   }
-                 }
-               }
-               loop[p][loopindex][2] = (countlooplength < xdata.length) ? countlooplength/(timedata.length-1) : loop[p][loopindex][2];
-               if (loop[p][loopindex][2] > 1) loop[p][loopindex][2] = 1;
-             }
-           }
-          // var countlooplength = 0;
-          // var first = 0;
-          // if (Lshape[p][Lshapeindex-1][2] < 0.8) {
-          //   while (first < xdata.length-3) {
-          //     var second = first + 2;
-          //     while (second < xdata.length-1) {
-          //       if (checkintersection(xdata[first],ydata[first],xdata[first+1],ydata[first+1],xdata[second],ydata[second],xdata[second+1],ydata[second+1])) {
-          //         var innercount = 2*xdata.length;
-          //         for (var i = first + 1; i < second - 2; i++) {
-          //           for (var j = i + 2; j < second; j++) {
-          //             if (checkintersection(xdata[i],ydata[i],xdata[i+1],ydata[i+1],xdata[j],ydata[j],xdata[j+1],ydata[j+1])) {
-          //               innercount = (innercount > j-i) ? j-i : innercount;
-          //             }
-          //           }
-          //         }
-          //         countlooplength = (countlooplength < innercount) ? innercount : countlooplength;
-          //         first = second;
-          //         break;
-          //       }
-          //       second += 1;
-          //     }
-          //     first += 1;
-          //   }
-          //   loop[p][loopindex][2] = (xdata.length > 0) ? countlooplength/(timedata.length*0.5) : loop[p][loopindex][2];
-          //   if (loop[p][loopindex][2] > 1) loop[p][loopindex][2] = 1;
-          // }
-          loopindex += 1;
+          // CALCULATE SOME MEASURES
+          // do not consider outliers and L-shape plots
+          // The threshold here is 0.6
+          if (xdata.length > 1 && measures[1][p][index][2] < 0.6) {
+            var dir = [0,0,0,0];    // count directions for Trend
+            var countcrossing = 0;  // count #intersections
+            var possignx = 0;   // count #vertex in sequence of similar sign for Curve
+            var possigny = 0;
+            var negsignx = 0;
+            var negsigny = 0;
+            xdata.forEach(function (x,xi) {
+              for (var i = xi + 1; i < xdata.length; i++) {   // for all data after x
+                // count directions for MONOTONIC TREND
+                var xx = xdata[i] - x;
+                var yy = ydata[i] - ydata[xi];
+                if (xx > 0 && yy > 0) dir[0] += 1;
+                if (xx < 0 && yy > 0) dir[1] += 1;
+                if (xx < 0 && yy < 0) dir[2] += 1;
+                if (xx > 0 && yy < 0) dir[3] += 1;
+                // check intersections for INTERSECTIONS
+                if (i > xi + 1 && i < xdata.length-1 && xi < xdata.length-3) {
+                  if (checkintersection(x,ydata[xi],xdata[xi+1],ydata[xi+1],xdata[i],ydata[i],xdata[i+1],ydata[i+1])) countcrossing += 1;
+                }
+              }
+              //count sign of second order derivatives for curve
+              if (xi > 0 && xi + 1 < xdata.length - 1) {
+                var secderx = (ydata[xi+1]-2*ydata[xi]+ydata[xi-1])/Math.pow(x-xdata[xi-1],2);  // symmetric quotients
+                var secdery = (xdata[xi+1]-2*x+xdata[xi-1])/Math.pow(ydata[xi]-ydata[xi-1],2);  // symmetric quotients
+                if (secderx > 0) possignx += 1;
+                if (secderx < 0) negsignx += 1;
+                if (secdery > 0) possigny += 1;
+                if (secdery < 0) negsigny += 1;
+              }
+            });
+            // LENGTH
+            measures[2][p][index][2] = sumlengtha/Math.sqrt(2);
+            // MONOTONIC TREND
+            measures[3][p][index][2] = Math.max(...dir)/(xdata.length*(xdata.length-1)/2);
+            // INTERSECTIONS
+            measures[4][p][index][2] = countcrossing;
+            // CURVE
+            measures[7][p][index][2] = (Math.abs(possignx-negsignx)>Math.abs(possigny-negsigny)) ? Math.abs(possignx-negsignx) : Math.abs(possigny-negsigny);
+
+            // CLUMPY
+            xdata.forEach(function (x,xi) {
+              var countleft = 0;
+              var countright = 0;
+              var maxleft = 0;
+              var maxright = 0;
+              for (var j = xi - 1; j >= 0; j--) {
+                if (edgelengtha[j] >= edgelengtha[xi]) break;
+                countleft += 1;
+                maxleft = (maxleft < edgelengtha[j]) ? edgelengtha[j] : maxleft;
+              }
+              for (j = xi+1; j < xdata.length; j++) {
+                if (edgelengtha[j] >= edgelengtha[xi]) break;
+                countright += 1;
+                maxright = (maxright < edgelengtha[j]) ? edgelengtha[j] : maxright;
+              }
+              var maxxi = (countright > countleft) ? maxright : maxleft;
+              maxxi /= edgelengtha[xi];
+              maxxi = 1 - maxxi;
+              measures[6][p][index][2] = (measures[6][p][index][2] < maxxi) ? maxxi : measures[6][p][index][2];
+            });
 
 
 
+          }
 
 
 
+          
 
+          
+
+          // increase index
+          index += 1;
         }
       }
+
     });
   }
 
-// SORT SCAGNOSTICS
-// create a sortscagarr = array(total plots)
-// each element is an array(4)
-// [data point, x-variable, y-variable, scag]
-// remove meaningless values
-// for path = 0 ===> no data
-// for monotonictrend = -1 ===> no data
-// sort the sortscagarr by scag
-// get array in the middle and two ends
-  function sortscag() {
-    var sortscagarr = [];
-    var sortindex = 0;
-    for (var i = 0; i < numscag; i++) {
+  // SORT MEASURES AND WRITE DISPLAYPLOT
+  function sortmeasures() {
+    for (var i = 0; i < nummeasure; i++) {
+      var sortarr = [];
+      var index = 0;
+      measures[i].forEach(function (sample,si) {
+        sample.forEach(function (arr) {
+          sortarr[index] = [si,arr[0],arr[1],arr[2]];
+          index += 1;
+        });
+      });
+      sortarr = sortarr.filter(function (b) {return b[3] >= 0});
+      sortarr.sort(function (b,n) {return b[3] - n[3]});    // ascending
       displayplot[i] = [];
-      switch (i) {
-        case 0:
-          sortscagarr[i] = [];
-          path.forEach(function(p,pi){
-            p.forEach(function(v){
-              sortscagarr[i][sortindex] = [pi,v[0],v[1],v[2]];
-              sortindex += 1;
-            });
-          });
-          sortscagarr[i] = sortscagarr[i].filter(function(a){return a[3]});
-          sortscagarr[i].sort(function(b,n){return b[3]-n[3]});  // ascending sort
-          for (var j = 0; j < numplot; j++) {  // get the lowest paths
-            displayplot[i][j] = sortscagarr[i][j];
-          }
-          for (var j = numplot; j < 2*numplot; j++) {  // get the middle paths
-            displayplot[i][j] = sortscagarr[i][Math.floor(sortscagarr[i].length*0.5)+j];
-          }
-          for (var j = 2*numplot; j < 3*numplot; j++) {  // get the highest paths
-            displayplot[i][j] = sortscagarr[i][sortscagarr[i].length+j-3*numplot];
-          }
-          break;
-        case 1:
-          sortscagarr[i] = [];
-          monotonictrend.forEach(function (p,pi) {
-            p.forEach(function (mt) {
-              sortscagarr[i][sortindex] = [pi,mt[0],mt[1],mt[2]];
-              sortindex += 1;
-            });
-          });
-          sortscagarr[i] = sortscagarr[i].filter(function(a){return a[3] >= 0});
-          sortscagarr[i].sort(function(b,n){return b[3]-n[3]});  // ascending sort
-          for (var j = 0; j < numplot; j++) {  // get the lowest paths
-            displayplot[i][j] = sortscagarr[i][j];
-          }
-          for (var j = numplot; j < 2*numplot; j++) {  // get the middle paths
-            displayplot[i][j] = sortscagarr[i][Math.floor(sortscagarr[i].length*0.5)+j];
-          }
-          for (var j = 2*numplot; j < 3*numplot; j++) {  // get the highest paths
-            displayplot[i][j] = sortscagarr[i][sortscagarr[i].length+j-3*numplot];
-          }
-          break;
-        case 2:
-          sortscagarr[i] = [];
-          outlying.forEach(function (p,pi) {
-            p.forEach(function (sc) {
-              sortscagarr[i][sortindex] = [pi,sc[0],sc[1],sc[2]];
-              sortindex += 1;
-            });
-          });
-          sortscagarr[i] = sortscagarr[i].filter(function(a){return a[3] >= 0});
-          sortscagarr[i].sort(function(b,n){return b[3]-n[3]});  // ascending sort
-          for (var j = 0; j < numplot; j++) {  // get the lowest paths
-            displayplot[i][j] = sortscagarr[i][j];
-          }
-          for (var j = numplot; j < 2*numplot; j++) {  // get the middle paths
-            displayplot[i][j] = sortscagarr[i][Math.floor(sortscagarr[i].length*0.5)+j];
-          }
-          for (var j = 2*numplot; j < 3*numplot; j++) {  // get the highest paths
-            displayplot[i][j] = sortscagarr[i][sortscagarr[i].length+j-3*numplot];
-          }
-          break;
-        case 3:
-          sortscagarr[i] = [];
-          crossing.forEach(function (p,pi) {
-            p.forEach(function (sc) {
-              sortscagarr[i][sortindex] = [pi,sc[0],sc[1],sc[2]];
-              sortindex += 1;
-            });
-          });
-          sortscagarr[i] = sortscagarr[i].filter(function(a){return a[3] >= 0});
-          sortscagarr[i].sort(function(b,n){return b[3]-n[3]});  // ascending sort
-          for (var j = 0; j < numplot; j++) {  // get the lowest paths
-            displayplot[i][j] = sortscagarr[i][j];
-          }
-          for (var j = numplot; j < 2*numplot; j++) {  // get the middle paths
-            displayplot[i][j] = sortscagarr[i][Math.floor(sortscagarr[i].length*0.5)+j];
-          }
-          for (var j = 2*numplot; j < 3*numplot; j++) {  // get the highest paths
-            displayplot[i][j] = sortscagarr[i][sortscagarr[i].length+j-3*numplot];
-          }
-          break;
-        case 4:
-          sortscagarr[i] = [];
-          straight.forEach(function (p,pi) {
-            p.forEach(function (sc) {
-              sortscagarr[i][sortindex] = [pi,sc[0],sc[1],sc[2]];
-              sortindex += 1;
-            });
-          });
-          sortscagarr[i] = sortscagarr[i].filter(function(a){return a[3] >= 0});
-          sortscagarr[i].sort(function(b,n){return b[3]-n[3]});  // ascending sort
-          for (var j = 0; j < numplot; j++) {  // get the lowest paths
-            displayplot[i][j] = sortscagarr[i][j];
-          }
-          for (var j = numplot; j < 2*numplot; j++) {  // get the middle paths
-            displayplot[i][j] = sortscagarr[i][Math.floor(sortscagarr[i].length*0.5)+j];
-          }
-          for (var j = 2*numplot; j < 3*numplot; j++) {  // get the highest paths
-            displayplot[i][j] = sortscagarr[i][sortscagarr[i].length+j-3*numplot];
-          }
-          break;
-        case 5:
-          sortscagarr[i] = [];
-          sumangle.forEach(function (p,pi) {
-            p.forEach(function (sc) {
-              sortscagarr[i][sortindex] = [pi,sc[0],sc[1],sc[2]];
-              sortindex += 1;
-            });
-          });
-          sortscagarr[i] = sortscagarr[i].filter(function(a){return a[3] >= 0});
-          sortscagarr[i].sort(function(b,n){return b[3]-n[3]});  // ascending sort
-          for (var j = 0; j < numplot; j++) {  // get the lowest paths
-            displayplot[i][j] = sortscagarr[i][j];
-          }
-          for (var j = numplot; j < 2*numplot; j++) {  // get the middle paths
-            displayplot[i][j] = sortscagarr[i][Math.floor(sortscagarr[i].length*0.5)+j];
-          }
-          for (var j = 2*numplot; j < 3*numplot; j++) {  // get the highest paths
-            displayplot[i][j] = sortscagarr[i][sortscagarr[i].length+j-3*numplot];
-          }
-          break;
-        case 6:
-          sortscagarr[i] = [];
-          countangle.forEach(function (p,pi) {
-            p.forEach(function (sc) {
-              sortscagarr[i][sortindex] = [pi,sc[0],sc[1],sc[2]];
-              sortindex += 1;
-            });
-          });
-          sortscagarr[i] = sortscagarr[i].filter(function(a){return a[3] >= 0});
-          sortscagarr[i].sort(function(b,n){return b[3]-n[3]});  // ascending sort
-          for (var j = 0; j < numplot; j++) {  // get the lowest paths
-            displayplot[i][j] = sortscagarr[i][j];
-          }
-          for (var j = numplot; j < 2*numplot; j++) {  // get the middle paths
-            displayplot[i][j] = sortscagarr[i][Math.floor(sortscagarr[i].length*0.5)+j];
-          }
-          for (var j = 2*numplot; j < 3*numplot; j++) {  // get the highest paths
-            displayplot[i][j] = sortscagarr[i][sortscagarr[i].length+j-3*numplot];
-          }
-          break;
-        case 7:
-          sortscagarr[i] = [];
-          clumpy.forEach(function (p,pi) {
-            p.forEach(function (sc) {
-              sortscagarr[i][sortindex] = [pi,sc[0],sc[1],sc[2]];
-              sortindex += 1;
-            });
-          });
-          sortscagarr[i] = sortscagarr[i].filter(function(a){return a[3] >= 0});
-          sortscagarr[i].sort(function(b,n){return b[3]-n[3]});  // ascending sort
-          for (var j = 0; j < numplot; j++) {  // get the lowest paths
-            displayplot[i][j] = sortscagarr[i][j];
-          }
-          for (var j = numplot; j < 2*numplot; j++) {  // get the middle paths
-            displayplot[i][j] = sortscagarr[i][Math.floor(sortscagarr[i].length*0.5)+j];
-          }
-          for (var j = 2*numplot; j < 3*numplot; j++) {  // get the highest paths
-            displayplot[i][j] = sortscagarr[i][sortscagarr[i].length+j-3*numplot];
-          }
-          break;
-        case 8:
-          sortscagarr[i] = [];
-          skewed.forEach(function (p,pi) {
-            p.forEach(function (sc) {
-              sortscagarr[i][sortindex] = [pi,sc[0],sc[1],sc[2]];
-              sortindex += 1;
-            });
-          });
-          sortscagarr[i] = sortscagarr[i].filter(function(a){return a[3] >= 0});
-          sortscagarr[i].sort(function(b,n){return b[3]-n[3]});  // ascending sort
-          for (var j = 0; j < numplot; j++) {  // get the lowest paths
-            displayplot[i][j] = sortscagarr[i][j];
-          }
-          for (var j = numplot; j < 2*numplot; j++) {  // get the middle paths
-            displayplot[i][j] = sortscagarr[i][Math.floor(sortscagarr[i].length*0.5)+j];
-          }
-          for (var j = 2*numplot; j < 3*numplot; j++) {  // get the highest paths
-            displayplot[i][j] = sortscagarr[i][sortscagarr[i].length+j-3*numplot];
-          }
-          break;
-        case 9:
-          sortscagarr[i] = [];
-          loop.forEach(function (p,pi) {
-            p.forEach(function (sc) {
-              sortscagarr[i][sortindex] = [pi,sc[0],sc[1],sc[2]];
-              sortindex += 1;
-            });
-          });
-          sortscagarr[i] = sortscagarr[i].filter(function(a){return a[3] >= 0});
-          sortscagarr[i].sort(function(b,n){return b[3]-n[3]});  // ascending sort
-          for (var j = 0; j < numplot; j++) {  // get the lowest paths
-            displayplot[i][j] = sortscagarr[i][j];
-          }
-          for (var j = numplot; j < 2*numplot; j++) {  // get the middle paths
-            displayplot[i][j] = sortscagarr[i][Math.floor(sortscagarr[i].length*0.5)+j];
-          }
-          for (var j = 2*numplot; j < 3*numplot; j++) {  // get the highest paths
-            displayplot[i][j] = sortscagarr[i][sortscagarr[i].length+j-3*numplot];
-          }
-          break;
-        case 10:
-          sortscagarr[i] = [];
-          noise.forEach(function (p,pi) {
-            p.forEach(function (sc) {
-              sortscagarr[i][sortindex] = [pi,sc[0],sc[1],sc[2]];
-              sortindex += 1;
-            });
-          });
-          sortscagarr[i] = sortscagarr[i].filter(function(a){return a[3] >= 0});
-          sortscagarr[i].sort(function(b,n){return b[3]-n[3]});  // ascending sort
-          for (var j = 0; j < numplot; j++) {  // get the lowest paths
-            displayplot[i][j] = sortscagarr[i][j];
-          }
-          for (var j = numplot; j < 2*numplot; j++) {  // get the middle paths
-            displayplot[i][j] = sortscagarr[i][Math.floor(sortscagarr[i].length*0.5)+j];
-          }
-          for (var j = 2*numplot; j < 3*numplot; j++) {  // get the highest paths
-            displayplot[i][j] = sortscagarr[i][sortscagarr[i].length+j-3*numplot];
-          }
-          break;
-        case 11:
-          sortscagarr[i] = [];
-          Lshape.forEach(function (p,pi) {
-            p.forEach(function (sc) {
-              sortscagarr[i][sortindex] = [pi,sc[0],sc[1],sc[2]];
-              sortindex += 1;
-            });
-          });
-          sortscagarr[i] = sortscagarr[i].filter(function(a){return a[3] >= 0});
-          sortscagarr[i].sort(function(b,n){return b[3]-n[3]});  // ascending sort
-          for (var j = 0; j < numplot; j++) {  // get the lowest paths
-            displayplot[i][j] = sortscagarr[i][j];
-          }
-          for (var j = numplot; j < 2*numplot; j++) {  // get the middle paths
-            displayplot[i][j] = sortscagarr[i][Math.floor(sortscagarr[i].length*0.5)+j];
-          }
-          for (var j = 2*numplot; j < 3*numplot; j++) {  // get the highest paths
-            displayplot[i][j] = sortscagarr[i][sortscagarr[i].length+j-3*numplot];
-          }
-          break;
+      // for (var j = 0; j < numplot; j++) {  // get the lowest paths
+      //   displayplot[i][j] = sortarr[j];
+      // }
+      // for (var j = numplot; j < 2*numplot; j++) {  // get the middle paths
+      //   displayplot[i][j] = sortarr[Math.floor(sortarr.length*0.5)+j-numplot];
+      // }
+      // for (var j = 2*numplot; j < 3*numplot; j++) {  // get the highest paths
+      //   displayplot[i][j] = sortarr[sortarr.length+j-3*numplot];
+      // }
+      for (var j = 0; j <3*numplot; j++) {    // look at highest values only
+        displayplot[i][j] = sortarr[sortarr.length+j-3*numplot];
       }
     }
   }
 
-  // FIND INTERSECTION
-  // input: coordinates of 2 line segments
-  // check orientation for each line segments
-  // if both are true, return true
-  // if not, return false
+  // CHECK INTERSECTIONS
   function checkintersection(x1_,y1_,x2_,y2_,x3_,y3_,x4_,y4_) {
     var x1 = x1_;
     var y1 = y1_;
@@ -844,31 +394,11 @@ Promise.all([
     return check;
   }
 
-  // CALCULATE ANGLES
-  // input: coordinates of 3 points: 1, 2 and 3
-  // construct vector 1->2 and 2->3
-  // calculate dot product of 2 vectors
-  // get the angle
-  function calculateangle(x1_,y1_,x2_,y2_,x3_,y3_) {
-    var v1x = x2_ - x1_;
-    var v1y = y2_ - y1_;
-    var v2x = x3_ - x2_;
-    var v2y = y3_ - y2_;
-    var dotproduct = v1x*v2x+v1y*v2y;
-    var v1 = Math.sqrt(v1x*v1x+v1y*v1y);
-    var v2 = Math.sqrt(v2x*v2x+v2y*v2y);
-    var angle = Math.acos(dotproduct/(v1*v2));
-    return angle;
-  }
-
-
+  
+  donecalculation = true;
 ///////////////////////
 // END OF CALCULATION
 ///////////////////////
-
-
-
-  doneanalyzation = true;
 });
 /////////////////////
 ////////////////////
@@ -891,234 +421,197 @@ Promise.all([
 ///////////////////
 // SET UP FUNCTION
 //////////////////
-let sel;
-let canvas_height = 8000;
-let canvas_width = 4000;
 function setup() {
-  // createCanvas(canvas_width,canvas_height);
-  createCanvas(canvas_width,canvas_height);
+  createCanvas(width,height);
   frameRate(30);
-
-  // some P5 dependent variables
-  plotsize = (0.08*canvas_width < 0.125*canvas_height) ? 0.08*(canvas_width-xblank) : 0.125*(canvas_height - yblank);
-  ystartpos = yblank/2+plotsize;
-  plotsizet = 0.8*plotsize;
-
-  sel = createSelect();
-  sel.id('selectTool');
-  sel.parent('holder');
-  sel.option('edge distance');
-  sel.option('monotonic trend');
-  sel.option('outlying');
-  sel.option('number of edge crossing');
-  sel.option('straight');
-  sel.option('sum of angles');
-  sel.option('count angles');
-  sel.option('clumpy');
-  sel.option('skewed');
-  sel.option('loop');
-  sel.option('noise');
-  sel.option('Lshape');
 }
+
+// function windowResized() {
+//   if (windowWidth<1000)
+//     resizeCanvas(width, height*3);
+//   else
+//     resizeCanvas(width, height);
+// }
+
 ///////////////////////////
 // END OF SET UP FUNCTION
 //////////////////////////
 
-
-function windowResized() {
-  if (windowWidth<1000)
-    resizeCanvas(canvas_width, canvas_height*3);
-  else
-    resizeCanvas(canvas_width, canvas_height);
-}
 
 
 //////////////////
 // DRAW FUNCTION
 /////////////////
 function draw() {
+  background(180);
 
-  background(200);
-  let old = false;
+  if (donecalculation) {
+    textFont('Arial Unicode MS');
 
-  if (doneanalyzation) {
+    // Write group notation
+    fill(0);
+    noStroke();
+    textSize(width/100);
+    text('Lowest values',xstartpos,180);
 
-    // CHOOSE SCAGNOSTIC
-    switch (sel.value()) {
-      case 'edge distance':
-        selectedscag = 0;
-        break;
-      case 'monotonic trend':
-        selectedscag = 1;
-        break;
-      case 'outlying':
-        selectedscag = 2;
-        old = true;
-        break;
-      case 'number of edge crossing':
-        selectedscag = 3;
-        break;
-      case 'straight':
-        selectedscag = 4;
-        old = true;
-        break;
-      case 'sum of angles':
-        selectedscag = 5;
-        break;
-      case 'count angles':
-        selectedscag = 6;
-        break;
-      case 'clumpy':
-        selectedscag = 7;
-        old = true;
-        break;
-      case 'skewed':
-        selectedscag = 8;
-        break;
-      case 'loop':
-        selectedscag = 9;
-        break;
-      case 'noise':
-        selectedscag = 10;
-        break;
-      case 'Lshape':
-        selectedscag = 11;
-        break;
+    // Create list button
+    if (!choose) {
+      switch (type[selectedmeasure]) {
+        case 0:
+          fill(255,0,0);
+          break;
+        case 1:
+          fill(0,255,0);
+          break;
+        case 2:
+          fill(0,0,255);
+          break;
+      }
+      stroke(0);
+      rect(width/3,50,150,width/150);
+      fill(255);
+      noStroke();
+      textSize(13);
+      text(measurename[selectedmeasure],width/3+20,45+width/150);
+    } else {
+      for (var i = 0; i < nummeasure; i++) {
+        switch (type[i]) {
+          case 0:
+            fill(255,0,0);
+            break;
+          case 1:
+            fill(0,255,0);
+            break;
+          case 2:
+            fill(0,0,255);
+            break;
+        }
+        noStroke();
+        rect(width/3,50+i*20,150,width/150);
+        fill(255);
+        noStroke();
+        textSize(13);
+        text(measurename[i],width/3+20,45+width/150*(i+1));
+      }
     }
 
-    textFont('Arial Unicode MS');
-    // Write group notation
-    stroke(0);
-    fill(0);
-    textSize(canvas_height/150);
-    text('Lowest values',xstartpos+1.3*plotsize,canvas_height/40);
-    text('Middle values',xstartpos+5.8*plotsize,canvas_height/40);
-    text('Highest values',xstartpos+10.3*plotsize,canvas_height/40);
-
+    // Draw plots
     for (var i = 0; i < numplot; i++) {
       for (var j = 0; j < 3; j++) {
 
-        var pointdrawed = displayplot[selectedscag][i+j*numplot][0];
-        var xvardrawed = displayplot[selectedscag][i+j*numplot][1];
-        var yvardrawed = displayplot[selectedscag][i+j*numplot][2];
-        var valuedrawed = displayplot[selectedscag][i+j*numplot][3];
+        var sample = displayplot[selectedmeasure][i+j*numplot][0];
+        var xvar = displayplot[selectedmeasure][i+j*numplot][1];
+        var yvar = displayplot[selectedmeasure][i+j*numplot][2];
+        var value = displayplot[selectedmeasure][i+j*numplot][3];
 
-        // draw rectangles
+        // draw rectangles for CS
         fill(255);
         stroke(0);
-        rect(xstartpos+0.1*plotsize+j*4.5*plotsize,ystartpos+0.2*plotsize+i*1.4*plotsize,plotsize,plotsize);  // CS
-        fill(240);
+        rect(xstartpos+0.1*plotsize+j*(1.3*(plotsize+2*splotsize)),ystartpos+0.2*plotsize+i*1.4*plotsize,plotsize,plotsize);
+
+        // draw rectangles for time series
+        fill(220);
         noStroke();
-        rect(xstartpos+1.3*plotsize+j*4.5*plotsize,ystartpos+0.2*plotsize+i*1.4*plotsize,plotsize,plotsize);  // x-var
-        rect(xstartpos+2.5*plotsize+j*4.5*plotsize,ystartpos+0.2*plotsize+i*1.4*plotsize,plotsize,plotsize);  // y-var
+        rect(xstartpos+1.3*plotsize+j*(1.3*(plotsize+2*splotsize)),ystartpos+1.2*plotsize+i*1.4*plotsize-splotsize,splotsize,splotsize); // x-data
         stroke(0);
-        line(xstartpos+1.3*plotsize+j*4.5*plotsize,ystartpos+0.2*plotsize+i*1.4*plotsize,xstartpos+1.3*plotsize+j*4.5*plotsize,ystartpos+1.2*plotsize+i*1.4*plotsize);  // x-var
-        line(xstartpos+1.3*plotsize+j*4.5*plotsize,ystartpos+1.2*plotsize+i*1.4*plotsize,xstartpos+2.3*plotsize+j*4.5*plotsize,ystartpos+1.2*plotsize+i*1.4*plotsize);
-        line(xstartpos+2.5*plotsize+j*4.5*plotsize,ystartpos+0.2*plotsize+i*1.4*plotsize,xstartpos+2.5*plotsize+j*4.5*plotsize,ystartpos+1.2*plotsize+i*1.4*plotsize);  // y-var
-        line(xstartpos+2.5*plotsize+j*4.5*plotsize,ystartpos+1.2*plotsize+i*1.4*plotsize,xstartpos+3.5*plotsize+j*4.5*plotsize,ystartpos+1.2*plotsize+i*1.4*plotsize);
+        line(xstartpos+1.3*plotsize+j*(1.3*(plotsize+2*splotsize)),ystartpos+1.2*plotsize+i*1.4*plotsize-splotsize,xstartpos+1.3*plotsize+j*(1.3*(plotsize+2*splotsize)),ystartpos+1.2*plotsize+i*1.4*plotsize);
+        line(xstartpos+1.3*plotsize+j*(1.3*(plotsize+2*splotsize)),ystartpos+1.2*plotsize+i*1.4*plotsize,xstartpos+1.3*plotsize+j*(1.3*(plotsize+2*splotsize))+splotsize,ystartpos+1.2*plotsize+i*1.4*plotsize);
+        noStroke();
+        rect(xstartpos+1.3*(plotsize+splotsize)+j*(1.3*(plotsize+2*splotsize)),ystartpos+1.2*plotsize+i*1.4*plotsize-splotsize,splotsize,splotsize); // y-data
+        stroke(0);
+        line(xstartpos+1.3*(plotsize+splotsize)+j*(1.3*(plotsize+2*splotsize)),ystartpos+1.2*plotsize+i*1.4*plotsize-splotsize,xstartpos+1.3*(plotsize+splotsize)+j*(1.3*(plotsize+2*splotsize)),ystartpos+1.2*plotsize+i*1.4*plotsize);
+        line(xstartpos+1.3*(plotsize+splotsize)+j*(1.3*(plotsize+2*splotsize)),ystartpos+1.2*plotsize+i*1.4*plotsize,xstartpos+1.3*(plotsize+splotsize)+j*(1.3*(plotsize+2*splotsize))+splotsize,ystartpos+1.2*plotsize+i*1.4*plotsize);
 
-        // write scagnostic's values
-        stroke(255,255,255);
-        fill(255,255,255);
-        textSize(plotsize/9);
-        text(scagname[selectedscag]+' = '+Math.round(valuedrawed*100)/100,xstartpos+0.1*plotsize+j*4.5*plotsize,ystartpos+0.15*plotsize+i*1.4*plotsize);
 
-        // write data point notation
-        stroke(0,0,0);
-        fill(0,0,0);
-        textSize(plotsize/9);
-        text(mappoint2.get(pointdrawed),xstartpos+1.6*plotsize+j*4.5*plotsize,ystartpos+0.15*plotsize+i*1.4*plotsize);
+        // write value of measure
+        noStroke();
+        fill(0);
+        textSize(plotsize/12);
+        text(measurename[selectedmeasure]+' = '+Math.round(value*100)/100,xstartpos+0.1*plotsize+j*(1.3*(plotsize+2*splotsize)),ystartpos+0.15*plotsize+i*1.4*plotsize);
+
+        // write sample notation
+        noStroke();
+        fill(0);
+        textSize(plotsize/12);
+        text(mapsample2.get(sample),xstartpos+1.3*plotsize+j*(1.3*(plotsize+2*splotsize)),ystartpos+0.15*plotsize+i*1.4*plotsize);
 
         // write x-variable notation
-        stroke(0);
+        noStroke();
         fill(0);
-        textSize(plotsize/15);
-        text(mapvar2.get(xvardrawed),xstartpos+0.1*plotsize+j*4.5*plotsize,ystartpos+1.3*plotsize+i*1.4*plotsize);
-        text("time",xstartpos+1.7*plotsize+j*4.5*plotsize,ystartpos+1.3*plotsize+i*1.4*plotsize);
-        text("time",xstartpos+2.9*plotsize+j*4.5*plotsize,ystartpos+1.3*plotsize+i*1.4*plotsize);
+        textSize(plotsize/18);
+        text(mapvar2.get(xvar),xstartpos+0.1*plotsize+j*(1.3*(plotsize+2*splotsize)),ystartpos+1.3*plotsize+i*1.4*plotsize);
+        text("time",xstartpos+1.3*plotsize+j*(1.3*(plotsize+2*splotsize)),ystartpos+1.3*plotsize+i*1.4*plotsize);
+        text("time",xstartpos+1.3*(plotsize+splotsize)+j*(1.3*(plotsize+2*splotsize)),ystartpos+1.3*plotsize+i*1.4*plotsize);
 
         //write y-variable notation
         push();
-        stroke(0);
+        noStroke();
         fill(0);
-        textSize(plotsize/15);
-        translate(xstartpos+0.05*plotsize+j*4.5*plotsize,ystartpos+1.2*plotsize+i*1.4*plotsize);
+        textSize(plotsize/18);
+        translate(xstartpos+0.05*plotsize+j*(1.3*(plotsize+2*splotsize)),ystartpos+1.2*plotsize+i*1.4*plotsize);
         rotate(-PI/2);
-        text(mapvar2.get(yvardrawed),0,0);
-        text(mapvar2.get(xvardrawed),0,1.2*plotsize);
-        text(mapvar2.get(yvardrawed),0,2.4*plotsize);
+        text(mapvar2.get(yvar),0,0);
+        text(mapvar2.get(xvar),0,1.2*plotsize);
+        text(mapvar2.get(yvar),0,1.2*plotsize+1.3*splotsize);
         pop();
 
+
         // draw plots
-        timedata.forEach(function(step,s){
-          if (s) {
-            // CS
-            var x1 = xstartpos+0.1*plotsize+j*4.5*plotsize+plotsize*drawdata[pointdrawed][xvardrawed][s-1];
-            var y1 = ystartpos+0.2*plotsize+i*1.4*plotsize+plotsize*(1-drawdata[pointdrawed][yvardrawed][s-1]);
-            var x2 = xstartpos+0.1*plotsize+j*4.5*plotsize+plotsize*drawdata[pointdrawed][xvardrawed][s];
-            var y2 = ystartpos+0.2*plotsize+i*1.4*plotsize+plotsize*(1-drawdata[pointdrawed][yvardrawed][s]);
-            // strokeWeight(1+2*(timedata.length-s)/timedata.length);
-            // colorMode(HSB,timedata.length);
-            if (s<timedata.length/2) stroke(0,0,255-255*s/(timedata.length/2));
-            else stroke((s-timedata.length/2)*255/(timedata.length/2),0,0);
-            line(x1,y1,x2,y2);
-            // colorMode(RGB,255);
-            // var ex = x2 - x1;
-            // var ey = y2 - y1;
-            // var ee = Math.sqrt(ex*ex+ey*ey);
-            // if (ey >= 0.00001*plotsize) {
-            //   var delta = ee*Math.sin(dirangle)*dirsize/ey;
-            //   var xc = x2 - (dirsize*ee*ex*Math.cos(dirangle)/Math.pow(ey,2)+delta)/(1+ex*ex/(ey*ey));
-            //   var xd = x2 - (dirsize*ee*ex*Math.cos(dirangle)/Math.pow(ey,2)-delta)/(1+ex*ex/(ey*ey));
-            //   var yc = y2-(ee*dirsize*Math.cos(dirangle)-ex*(x2-xc))/ey;
-            //   var yd = y2-(ee*dirsize*Math.cos(dirangle)-ex*(x2-xd))/ey;
-            //   fill(0);
-            //   triangle(x2,y2,xc,yc,xd,yd);
-            // } else if (x1 < x2) {
-            //   var xc = x2 - dirsize*Math.cos(dirangle);
-            //   var xd = x2 - dirsize*Math.cos(dirangle);
-            //   var yc = y2 - dirsize*Math.sin(dirangle);
-            //   var yd = y2 + dirsize*Math.sin(dirangle);
-            //   fill(0);
-            //   triangle(x2,y2,xc,yc,xd,yd);
-            // } else {
-            //   var xc = x2 + dirsize*Math.cos(dirangle);
-            //   var xd = x2 + dirsize*Math.cos(dirangle);
-            //   var yc = y2 - dirsize*Math.sin(dirangle);
-            //   var yd = y2 + dirsize*Math.sin(dirangle);
-            //   fill(0);
-            //   triangle(x2,y2,xc,yc,xd,yd);
-            // }
-            // var delta = ee*Math.sin(dirangle)*dirsize/ey;
-            // var xc = x2 - (dirsize*ee*ex*Math.cos(dirangle)/Math.pow(ey,2)+delta)/(1+ex*ex/(ey*ey));
-            // var xd = x2 - (dirsize*ee*ex*Math.cos(dirangle)/Math.pow(ey,2)-delta)/(1+ex*ex/(ey*ey));
-            // var yc = y2 - (ee*dirsize*Math.cos(dirangle)-ex*(x2-xc))/ey;
-            // var yd = y2 - (ee*dirsize*Math.cos(dirangle)-ex*(x2-xd))/ey;
-            // fill(0);
-            // triangle(x2,y2,xc,yc,xd,yd);
-
-            // x-var time series
-            var x1 = xstartpos+1.3*plotsize+j*4.5*plotsize+s*plotsize/(timedata.length+1);
-            var y1 = ystartpos+0.2 *plotsize+i*1.4*plotsize+plotsize*(1-drawdata[pointdrawed][xvardrawed][s-1]);
-            var x2 = xstartpos+1.3*plotsize+j*4.5*plotsize+(s+1)*plotsize/(timedata.length+1);
-            var y2 = ystartpos+0.2*plotsize+i*1.4*plotsize+plotsize*(1-drawdata[pointdrawed][xvardrawed][s]);
-            // stroke(0);
-            line(x1,y1,x2,y2);
-
-            // y-var time series
-            var x1 = xstartpos+2.5*plotsize+j*4.5*plotsize+s*plotsize/(timedata.length+1);
-            var y1 = ystartpos+0.2*plotsize+i*1.4*plotsize+plotsize*(1-drawdata[pointdrawed][yvardrawed][s-1]);
-            var x2 = xstartpos+2.5*plotsize+j*4.5*plotsize+(s+1)*plotsize/(timedata.length+1);
-            var y2 = ystartpos+0.2*plotsize+i*1.4*plotsize+plotsize*(1-drawdata[pointdrawed][yvardrawed][s]);
-            // stroke(0);
-            line(x1,y1,x2,y2);
+        timedata.forEach(function (time,step) {
+          if(step) {
+            // CS plots
+            if(data[sample][xvar][step]>=0 && data[sample][xvar][step-1]>=0 && data[sample][yvar][step]>=0 && data[sample][yvar][step-1]>=0) {
+              var x1 = xstartpos+0.1*plotsize+j*(1.3*(plotsize+2*splotsize))+plotsize*data[sample][xvar][step-1];
+              var x2 = xstartpos+0.1*plotsize+j*(1.3*(plotsize+2*splotsize))+plotsize*data[sample][xvar][step];
+              var y1 = ystartpos+1.2*plotsize+i*1.4*plotsize-plotsize*data[sample][yvar][step-1];
+              var y2 = ystartpos+1.2*plotsize+i*1.4*plotsize-plotsize*data[sample][yvar][step];
+              if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
+              else stroke((step-timedata.length/2)*255/(timedata.length/2),0,0);
+              line(x1,y1,x2,y2);
+            }
+            // X-var plots
+            if(data[sample][xvar][step]>=0 && data[sample][xvar][step-1]>=0) {
+              var x1 = xstartpos+1.3*plotsize+j*(1.3*(plotsize+2*splotsize))+splotsize*(step-1)/timedata.length;
+              var x2 = xstartpos+1.3*plotsize+j*(1.3*(plotsize+2*splotsize))+splotsize*step/timedata.length;
+              var y1 = ystartpos+1.2*plotsize+i*1.4*plotsize-splotsize*data[sample][xvar][step-1];
+              var y2 = ystartpos+1.2*plotsize+i*1.4*plotsize-splotsize*data[sample][xvar][step];
+              if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
+              else stroke((step-timedata.length/2)*255/(timedata.length/2),0,0);
+              line(x1,y1,x2,y2);
+            }
+            // Y-var plots
+            if(data[sample][yvar][step]>=0 && data[sample][yvar][step-1]>=0) {
+              var x1 = xstartpos+1.3*(plotsize+splotsize)+j*(1.3*(plotsize+2*splotsize))+splotsize*(step-1)/timedata.length;
+              var x2 = xstartpos+1.3*(plotsize+splotsize)+j*(1.3*(plotsize+2*splotsize))+splotsize*step/timedata.length;
+              var y1 = ystartpos+1.2*plotsize+i*1.4*plotsize-splotsize*data[sample][yvar][step-1];
+              var y2 = ystartpos+1.2*plotsize+i*1.4*plotsize-splotsize*data[sample][yvar][step];
+              if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
+              else stroke((step-timedata.length/2)*255/(timedata.length/2),0,0);
+              line(x1,y1,x2,y2);
+            }
           }
-
         });
 
 
       }
     }
+  }
+}
 
+function mousePressed() {
+  if(!choose) {
+    if (mouseX > width/3 && mouseX < width/3+150 && mouseY > 50 && mouseY < 50+width/150) {
+      choose = true;
+    }
+  } else {
+    for (var i = 0; i < nummeasure; i++) {
+      if (mouseX > width/3 && mouseX < width/3+150 && mouseY > 50+i*width/150 && mouseY < 50+(i+1)*width/150) {
+        selectedmeasure = i;
+        choose = false;
+      }
+    }
+    if (mouseX < width/3 || mouseX > width/3+150 || mouseY < 50 || mouseY > 50 + width*(nummeasure+1)/150) {
+      choose = false;
+    }
   }
 }
