@@ -37,16 +37,19 @@ let donecalculation = false;
 
 // VARIABLES FOR VISUALIZATION
 let displayplot = [];   // displayplot[measure index][0->numplot-1:lowest, numplot->2numplot-1: middle, 2numplot->3numplot-1: highest][sample, x-var, y-var,value]
-let width = 3000;
+let width = 2000;
 let height = 6000;
-let plotsize = width/10;
-let splotsize = width/15;
+let plotsize = width*0.11;
+let splotsize = width*0.075;
 let numplot = 10;
 let selectedmeasure = 0;
 let choose = false;   // for selections
 let type = [0,0,0,0,0,1,2,2,2,2];   // for type of measures in selection button
-let xstartpos = width*0.05;
+let xstartpos = width*0.05;   // starting position of plots
 let ystartpos = 250;
+let xblank1 = splotsize/10;
+let xblank2 = plotsize/8;
+
 
 
 
@@ -365,16 +368,13 @@ Promise.all([
       sortarr = sortarr.filter(function (b) {return b[3] >= 0});
       sortarr.sort(function (b,n) {return b[3] - n[3]});    // ascending
       displayplot[i] = [];
-      // for (var j = 0; j < numplot; j++) {  // get the lowest paths
-      //   displayplot[i][j] = sortarr[j];
-      // }
-      // for (var j = numplot; j < 2*numplot; j++) {  // get the middle paths
-      //   displayplot[i][j] = sortarr[Math.floor(sortarr.length*0.5)+j-numplot];
-      // }
-      // for (var j = 2*numplot; j < 3*numplot; j++) {  // get the highest paths
-      //   displayplot[i][j] = sortarr[sortarr.length+j-3*numplot];
-      // }
-      for (var j = 0; j <3*numplot; j++) {    // look at highest values only
+      for (var j = 0; j < numplot; j++) {  // get the lowest paths
+        displayplot[i][j] = sortarr[j];
+      }
+      for (var j = numplot; j < 2*numplot; j++) {  // get the middle paths
+        displayplot[i][j] = sortarr[Math.floor(sortarr.length*0.5)+j-numplot];
+      }
+      for (var j = 2*numplot; j < 3*numplot; j++) {  // get the highest paths
         displayplot[i][j] = sortarr[sortarr.length+j-3*numplot];
       }
     }
@@ -488,40 +488,40 @@ function draw() {
     if (!choose) {
       switch (type[selectedmeasure]) {
         case 0:
-          fill(239,138,98);
+          fill(179,226,205);
           break;
         case 1:
-          fill(247,247,247);
+          fill(253,205,172);
           break;
         case 2:
-          fill(103,169,207);
+          fill(203,213,232);
           break;
       }
-      noStroke();
-      rect(width/3,50,150,width/150);
+      stroke(0);
+      rect(width/3,50,150,plotsize/11);
       fill(0);
       noStroke();
-      textSize(13);
-      text(measurename[selectedmeasure],width/3+20,45+width/150);
+      textSize(plotsize/15);
+      text(measurename[selectedmeasure],width/3+20,43+plotsize/11);
     } else {
       for (var i = 0; i < nummeasure; i++) {
         switch (type[i]) {
           case 0:
-            fill(239,138,98);
+            fill(179,226,205);
             break;
           case 1:
-            fill(247,247,247);
+            fill(253,205,172);
             break;
           case 2:
-            fill(103,169,207);
+            fill(203,213,232);
             break;
         }
-        noStroke();
-        rect(width/3,50+i*20,150,width/150);
+        stroke(0);
+        rect(width/3,50+i*plotsize/11,150,plotsize/11);
         fill(0);
         noStroke();
-        textSize(13);
-        text(measurename[i],width/3+20,45+width/150*(i+1));
+        textSize(plotsize/15);
+        text(measurename[i],width/3+20,43+(plotsize/11)*(i+1));
       }
     }
 
