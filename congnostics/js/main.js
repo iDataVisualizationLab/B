@@ -5,19 +5,21 @@
 ////////////////////
 
 let measures = [];  // measures[index][sample][x-var,y-var,value], value = -1 means no data
-let nummeasure = 8;
+let nummeasure = 10;
 for (var i=0; i<nummeasure; i++) {
   measures[i] = [];
 }
 let measurename = [
   'Outlying',
+  'Straight',
+  'Striated',
+  'Clumpy',
+  'Skewed',
+  'Trend',
   'L-shape',
   'Length',
-  'Trend',
-  'Intersections',
-  'Loop',
-  'Clumpy',
-  'Curve'
+  "Intersections",
+  "Loop"
 ];
 
 // VARIABLES FOR STORING DATA
@@ -42,7 +44,7 @@ let splotsize = width/15;
 let numplot = 10;
 let selectedmeasure = 0;
 let choose = false;   // for selections
-let type = [0,1,2,0,2,1,0,2];   // for type of measures in selection button
+let type = [0,0,0,0,0,1,2,2,2,2];   // for type of measures in selection button
 let xstartpos = width*0.05;
 let ystartpos = 250;
 
@@ -245,7 +247,7 @@ Promise.all([
 
           // L-SHAPE
           if (xdata.length > 1) {
-            measures[1][p][index][2] = 0;
+            measures[6][p][index][2] = 0;
             var count = 0;
             xdata.forEach(function (x,xi) {
               if (xi) {
@@ -253,19 +255,16 @@ Promise.all([
               }
             });
             // L-SHAPE
-            measures[1][p][index][2] = count/xdata.length;  // or timedata.length
+            measures[6][p][index][2] = count/xdata.length;  // or timedata.length
           }
 
           // CALCULATE SOME MEASURES
           // do not consider outliers and L-shape plots
           // The threshold here is 0.6
-          if (xdata.length > 1 && measures[1][p][index][2] < 0.6) {
+          if (xdata.length > 1 && measures[6][p][index][2] < 0.6) {
             var dir = [0,0,0,0];    // count directions for Trend
             var countcrossing = 0;  // count #intersections
-            var possignx = 0;   // count #vertex in sequence of similar sign for Curve
-            var possigny = 0;
-            var negsignx = 0;
-            var negsigny = 0;
+            var sumcos = 0;   // sum of cosine of angles
             xdata.forEach(function (x,xi) {
               for (var i = xi + 1; i < xdata.length; i++) {   // for all data after x
                 // count directions for MONOTONIC TREND
@@ -280,24 +279,20 @@ Promise.all([
                   if (checkintersection(x,ydata[xi],xdata[xi+1],ydata[xi+1],xdata[i],ydata[i],xdata[i+1],ydata[i+1])) countcrossing += 1;
                 }
               }
-              //count sign of second order derivatives for curve
-              if (xi > 0 && xi + 1 < xdata.length - 1) {
-                var secderx = (ydata[xi+1]-2*ydata[xi]+ydata[xi-1])/Math.pow(x-xdata[xi-1],2);  // symmetric quotients
-                var secdery = (xdata[xi+1]-2*x+xdata[xi-1])/Math.pow(ydata[xi]-ydata[xi-1],2);  // symmetric quotients
-                if (secderx > 0) possignx += 1;
-                if (secderx < 0) negsignx += 1;
-                if (secdery > 0) possigny += 1;
-                if (secdery < 0) negsigny += 1;
+              if (xi > 0 && xi < xdata.length - 1) {
+                sumcos += Math.abs(calculatecos(xdata[xi-1],ydata[xi-1],x,ydata[xi],xdata[xi+1],ydata[xi+1]));
               }
             });
             // LENGTH
-            measures[2][p][index][2] = sumlengtha/Math.sqrt(2);
+            measures[7][p][index][2] = sumlengtha/Math.sqrt(2);
             // MONOTONIC TREND
-            measures[3][p][index][2] = Math.max(...dir)/(xdata.length*(xdata.length-1)/2);
+            measures[5][p][index][2] = Math.max(...dir)/(xdata.length*(xdata.length-1)/2);
             // INTERSECTIONS
-            measures[4][p][index][2] = countcrossing;
-            // CURVE
-            measures[7][p][index][2] = (Math.abs(possignx-negsignx)>Math.abs(possigny-negsigny)) ? Math.abs(possignx-negsignx) : Math.abs(possigny-negsigny);
+            measures[8][p][index][2] = countcrossing;
+            // STRIATED
+            measures[2][p][index][2] = sumcos/(xdata.length-2);
+            // STRAIGHT
+            measures[1][p][index][2] = Math.sqrt(Math.pow(xdata[xdata.length-1]-xdata[0],2)+Math.pow(ydata[ydata.length-1]-ydata[0],2))/sumlengtha;
 
             // CLUMPY
             xdata.forEach(function (x,xi) {
@@ -318,7 +313,7 @@ Promise.all([
               var maxxi = (countright > countleft) ? maxright : maxleft;
               maxxi /= edgelengtha[xi];
               maxxi = 1 - maxxi;
-              measures[6][p][index][2] = (measures[6][p][index][2] < maxxi) ? maxxi : measures[6][p][index][2];
+              measures[3][p][index][2] = (measures[3][p][index][2] < maxxi) ? maxxi : measures[3][p][index][2];
             });
 
 
@@ -394,7 +389,25 @@ Promise.all([
     return check;
   }
 
-  
+  // CALCULATE COSINE OF ANGLES
+  // input: coordinates of 3 points: 1, 2 and 3
+  // construct vector 1->2 and 2->3
+  // calculate dot product of 2 vectors
+  // get the angle
+  function calculatecos(x1_,y1_,x2_,y2_,x3_,y3_) {
+    var v1x = x2_ - x1_;
+    var v1y = y2_ - y1_;
+    var v2x = x3_ - x2_;
+    var v2y = y3_ - y2_;
+    var dotproduct = v1x*v2x+v1y*v2y;
+    var v1 = Math.sqrt(v1x*v1x+v1y*v1y);
+    var v2 = Math.sqrt(v2x*v2x+v2y*v2y);
+    var cosangle = dotproduct/(v1*v2);
+    return cosangle;
+  }
+
+
+
   donecalculation = true;
 ///////////////////////
 // END OF CALCULATION
@@ -449,27 +462,27 @@ function draw() {
     textFont('Arial Unicode MS');
 
     // Write group notation
-    fill(0);
+    fill(255,0,0);
     noStroke();
     textSize(width/100);
-    text('Lowest values',xstartpos,180);
+    text('Highest values',xstartpos,180);
 
     // Create list button
     if (!choose) {
       switch (type[selectedmeasure]) {
         case 0:
-          fill(255,0,0);
+          fill(239,138,98);
           break;
         case 1:
-          fill(0,255,0);
+          fill(247,247,247);
           break;
         case 2:
-          fill(0,0,255);
+          fill(103,169,207);
           break;
       }
-      stroke(0);
+      noStroke();
       rect(width/3,50,150,width/150);
-      fill(255);
+      fill(0);
       noStroke();
       textSize(13);
       text(measurename[selectedmeasure],width/3+20,45+width/150);
@@ -477,18 +490,18 @@ function draw() {
       for (var i = 0; i < nummeasure; i++) {
         switch (type[i]) {
           case 0:
-            fill(255,0,0);
+            fill(239,138,98);
             break;
           case 1:
-            fill(0,255,0);
+            fill(247,247,247);
             break;
           case 2:
-            fill(0,0,255);
+            fill(103,169,207);
             break;
         }
         noStroke();
         rect(width/3,50+i*20,150,width/150);
-        fill(255);
+        fill(0);
         noStroke();
         textSize(13);
         text(measurename[i],width/3+20,45+width/150*(i+1));
