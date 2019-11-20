@@ -319,10 +319,12 @@ Promise.all([
                 countright += 1;
                 maxright = (maxright < edgelengtha[j]) ? edgelengtha[j] : maxright;
               }
-              var maxxi = (countright > countleft) ? maxright : maxleft;
-              maxxi /= edgelengtha[xi];
-              maxxi = 1 - maxxi;
-              measures[3][p][index][2] = (measures[3][p][index][2] < maxxi) ? maxxi : measures[3][p][index][2];
+              if (countleft > 0 && countright > 0) {
+                var maxxi = (countright > countleft) ? maxright : maxleft;
+                maxxi /= edgelengtha[xi];
+                maxxi = 1 - maxxi;
+                measures[3][p][index][2] = (measures[3][p][index][2] < maxxi) ? maxxi : measures[3][p][index][2];
+              }
             });
 
             // LOOP
