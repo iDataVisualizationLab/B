@@ -321,6 +321,18 @@ Promise.all([
               measures[3][p][index][2] = (measures[3][p][index][2] < maxxi) ? maxxi : measures[3][p][index][2];
             });
 
+            // LOOP
+            var mincurve = Infinity;
+            xdata.forEach(function (x,xi) {
+              var locallength = 0;
+              for (var j = xi + 1; j < xdata.length; j++) {
+                locallength += edgelengtha[j-1];
+                var Edistance = Math.sqrt(Math.pow(xdata[j] - x,2)+Math.pow(ydata[j] - ydata[xi],2));
+                mincurve = (mincurve > Edistance/locallength) ? Edistance/locallength : mincurve;
+              }
+            });
+            measures[9][p][index][2] = 1 - mincurve;
+
 
 
           }
