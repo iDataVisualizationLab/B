@@ -39,16 +39,17 @@ let donecalculation = false;
 let displayplot = [];   // displayplot[measure index][0->numplot-1:lowest, numplot->2numplot-1: middle, 2numplot->3numplot-1: highest][sample, x-var, y-var,value]
 let width = 2000;
 let height = 6000;
-let plotsize = width*0.11;
-let splotsize = width*0.075;
+let plotsize = width*0.09;
+let splotsize = width*0.06;
 let numplot = 10;
 let selectedmeasure = 0;
 let choose = false;   // for selections
 let type = [0,0,0,0,0,1,2,2,2,2];   // for type of measures in selection button
 let xstartpos = width*0.05;   // starting position of plots
-let ystartpos = 250;
-let xblank1 = splotsize/10;
-let xblank2 = plotsize/8;
+let ystartpos = 200;
+let xblank1 = splotsize*0.3;
+let xblank2 = plotsize*0.8;
+let yblank = plotsize*0.3;
 
 
 
@@ -479,10 +480,25 @@ function draw() {
     textFont('Arial Unicode MS');
 
     // Write group notation
-    fill(255,0,0);
+    fill(0);
     noStroke();
-    textSize(width/100);
-    text('Highest values',xstartpos,180);
+    textSize(plotsize/8);
+    text('Lowest values',xstartpos+plotsize,ystartpos-50);
+    text('Middle values',xstartpos+2*plotsize+2*xblank1+2*splotsize+xblank2,ystartpos-50);
+    text('Highest values',xstartpos+3*plotsize+4*xblank1+4*splotsize+2*xblank2,ystartpos-50);
+    textSize(plotsize/15);
+    text('select measure',xstartpos+plotsize+xblank1+splotsize,46+plotsize/11);
+    // Color explanation
+    fill(179,226,205);
+    rect(2*plotsize+4*xblank1+3*splotsize+xblank2,50,plotsize/12,plotsize/12);
+    fill(253,205,172);
+    rect(2*plotsize+4*xblank1+3*splotsize+xblank2,60+plotsize/12,plotsize/12,plotsize/12);
+    fill(203,213,232);
+    rect(2*plotsize+4*xblank1+3*splotsize+xblank2,70+plotsize/6,plotsize/12,plotsize/12);
+    fill(0);
+    text('Measures from Scagnostics of non time series data',2*plotsize+4*xblank1+3*splotsize+xblank2+plotsize/12+10,46+plotsize/11);
+    text('Measures from time series analysis',2*plotsize+4*xblank1+3*splotsize+xblank2+plotsize/12+10,56+plotsize/6);
+    text('Measures from features of connected scatterplot',2*plotsize+4*xblank1+3*splotsize+xblank2+plotsize/12+10,66+plotsize/4);
 
     // Create list button
     if (!choose) {
@@ -498,11 +514,13 @@ function draw() {
           break;
       }
       stroke(0);
-      rect(width/3,50,150,plotsize/11);
+      rect(xstartpos+plotsize+2*xblank1+1.5*splotsize,50,100,plotsize/11);
       fill(0);
       noStroke();
       textSize(plotsize/15);
-      text(measurename[selectedmeasure],width/3+20,43+plotsize/11);
+      textAlign(CENTER);
+      text(measurename[selectedmeasure],xstartpos+plotsize+2*xblank1+1.5*splotsize+50,46+plotsize/11);
+      textAlign(LEFT);
     } else {
       for (var i = 0; i < nummeasure; i++) {
         switch (type[i]) {
@@ -517,11 +535,13 @@ function draw() {
             break;
         }
         stroke(0);
-        rect(width/3,50+i*plotsize/11,150,plotsize/11);
+        rect(xstartpos+plotsize+2*xblank1+1.5*splotsize,50+i*plotsize/11,100,plotsize/11);
         fill(0);
         noStroke();
         textSize(plotsize/15);
-        text(measurename[i],width/3+20,43+(plotsize/11)*(i+1));
+        textAlign(CENTER);
+        text(measurename[i],xstartpos+plotsize+2*xblank1+1.5*splotsize+50,46+(i+1)*plotsize/11);
+        textAlign(LEFT);
       }
     }
 
@@ -537,52 +557,52 @@ function draw() {
         // draw rectangles for CS
         fill(255);
         stroke(0);
-        rect(xstartpos+0.1*plotsize+j*(1.3*(plotsize+2*splotsize)),ystartpos+0.2*plotsize+i*1.4*plotsize,plotsize,plotsize);
+        rect(xstartpos+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+i*(plotsize+yblank),plotsize,plotsize);
 
         // draw rectangles for time series
         fill(220);
         noStroke();
-        rect(xstartpos+1.3*plotsize+j*(1.3*(plotsize+2*splotsize)),ystartpos+1.2*plotsize+i*1.4*plotsize-splotsize,splotsize,splotsize); // x-data
+        rect(xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank)-splotsize,splotsize,splotsize); // x-data
         stroke(0);
-        line(xstartpos+1.3*plotsize+j*(1.3*(plotsize+2*splotsize)),ystartpos+1.2*plotsize+i*1.4*plotsize-splotsize,xstartpos+1.3*plotsize+j*(1.3*(plotsize+2*splotsize)),ystartpos+1.2*plotsize+i*1.4*plotsize);
-        line(xstartpos+1.3*plotsize+j*(1.3*(plotsize+2*splotsize)),ystartpos+1.2*plotsize+i*1.4*plotsize,xstartpos+1.3*plotsize+j*(1.3*(plotsize+2*splotsize))+splotsize,ystartpos+1.2*plotsize+i*1.4*plotsize);
+        line(xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank)-splotsize,xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank));
+        line(xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank),xstartpos+plotsize+splotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank));
         noStroke();
-        rect(xstartpos+1.3*(plotsize+splotsize)+j*(1.3*(plotsize+2*splotsize)),ystartpos+1.2*plotsize+i*1.4*plotsize-splotsize,splotsize,splotsize); // y-data
+        rect(xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank)-splotsize,splotsize,splotsize); // y-data
         stroke(0);
-        line(xstartpos+1.3*(plotsize+splotsize)+j*(1.3*(plotsize+2*splotsize)),ystartpos+1.2*plotsize+i*1.4*plotsize-splotsize,xstartpos+1.3*(plotsize+splotsize)+j*(1.3*(plotsize+2*splotsize)),ystartpos+1.2*plotsize+i*1.4*plotsize);
-        line(xstartpos+1.3*(plotsize+splotsize)+j*(1.3*(plotsize+2*splotsize)),ystartpos+1.2*plotsize+i*1.4*plotsize,xstartpos+1.3*(plotsize+splotsize)+j*(1.3*(plotsize+2*splotsize))+splotsize,ystartpos+1.2*plotsize+i*1.4*plotsize);
+        line(xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank)-splotsize,xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank));
+        line(xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank),xstartpos+plotsize+2*splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank));
 
 
         // write value of measure
         noStroke();
-        fill(0);
+        fill(255);
         textSize(plotsize/12);
-        text(measurename[selectedmeasure]+' = '+Math.round(value*100)/100,xstartpos+0.1*plotsize+j*(1.3*(plotsize+2*splotsize)),ystartpos+0.15*plotsize+i*1.4*plotsize);
+        text(measurename[selectedmeasure]+' = '+Math.round(value*100)/100,xstartpos+j*(plotsize+2*splotsize+2*xblank1+xblank2)+plotsize*0.6,ystartpos+i*(plotsize+yblank)-5);
 
         // write sample notation
         noStroke();
         fill(0);
         textSize(plotsize/12);
-        text(mapsample2.get(sample),xstartpos+1.3*plotsize+j*(1.3*(plotsize+2*splotsize)),ystartpos+0.15*plotsize+i*1.4*plotsize);
+        text(mapsample2.get(sample),xstartpos+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+i*(plotsize+yblank)-5);
 
         // write x-variable notation
         noStroke();
         fill(0);
         textSize(plotsize/18);
-        text(mapvar2.get(xvar),xstartpos+0.1*plotsize+j*(1.3*(plotsize+2*splotsize)),ystartpos+1.3*plotsize+i*1.4*plotsize);
-        text("time",xstartpos+1.3*plotsize+j*(1.3*(plotsize+2*splotsize)),ystartpos+1.3*plotsize+i*1.4*plotsize);
-        text("time",xstartpos+1.3*(plotsize+splotsize)+j*(1.3*(plotsize+2*splotsize)),ystartpos+1.3*plotsize+i*1.4*plotsize);
+        text(mapvar2.get(xvar),xstartpos+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+i*(plotsize+yblank)+1.08*plotsize);
+        text("time",xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+0.4*splotsize,ystartpos+i*(plotsize+yblank)+1.08*plotsize);
+        text("time",xstartpos+plotsize+1.4*splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+i*(plotsize+yblank)+1.08*plotsize);
 
         //write y-variable notation
         push();
         noStroke();
         fill(0);
         textSize(plotsize/18);
-        translate(xstartpos+0.05*plotsize+j*(1.3*(plotsize+2*splotsize)),ystartpos+1.2*plotsize+i*1.4*plotsize);
+        translate(xstartpos+j*(plotsize+2*splotsize+2*xblank1+xblank2)-0.02*plotsize,ystartpos+i*(plotsize+yblank)+plotsize);
         rotate(-PI/2);
         text(mapvar2.get(yvar),0,0);
-        text(mapvar2.get(xvar),0,1.2*plotsize);
-        text(mapvar2.get(yvar),0,1.2*plotsize+1.3*splotsize);
+        text(mapvar2.get(xvar),0,plotsize+xblank1);
+        text(mapvar2.get(yvar),0,plotsize+splotsize+2*xblank1);
         pop();
 
 
@@ -591,30 +611,30 @@ function draw() {
           if(step) {
             // CS plots
             if(data[sample][xvar][step]>=0 && data[sample][xvar][step-1]>=0 && data[sample][yvar][step]>=0 && data[sample][yvar][step-1]>=0) {
-              var x1 = xstartpos+0.1*plotsize+j*(1.3*(plotsize+2*splotsize))+plotsize*data[sample][xvar][step-1];
-              var x2 = xstartpos+0.1*plotsize+j*(1.3*(plotsize+2*splotsize))+plotsize*data[sample][xvar][step];
-              var y1 = ystartpos+1.2*plotsize+i*1.4*plotsize-plotsize*data[sample][yvar][step-1];
-              var y2 = ystartpos+1.2*plotsize+i*1.4*plotsize-plotsize*data[sample][yvar][step];
+              var x1 = xstartpos+j*(plotsize+2*splotsize+2*xblank1+xblank2)+plotsize*data[sample][xvar][step-1];
+              var x2 = xstartpos+j*(plotsize+2*splotsize+2*xblank1+xblank2)+plotsize*data[sample][xvar][step];
+              var y1 = ystartpos+i*(plotsize+yblank)+plotsize-plotsize*data[sample][yvar][step-1];
+              var y2 = ystartpos+i*(plotsize+yblank)+plotsize-plotsize*data[sample][yvar][step];
               if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
               else stroke((step-timedata.length/2)*255/(timedata.length/2),0,0);
               line(x1,y1,x2,y2);
             }
             // X-var plots
             if(data[sample][xvar][step]>=0 && data[sample][xvar][step-1]>=0) {
-              var x1 = xstartpos+1.3*plotsize+j*(1.3*(plotsize+2*splotsize))+splotsize*(step-1)/timedata.length;
-              var x2 = xstartpos+1.3*plotsize+j*(1.3*(plotsize+2*splotsize))+splotsize*step/timedata.length;
-              var y1 = ystartpos+1.2*plotsize+i*1.4*plotsize-splotsize*data[sample][xvar][step-1];
-              var y2 = ystartpos+1.2*plotsize+i*1.4*plotsize-splotsize*data[sample][xvar][step];
+              var x1 = xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+splotsize*(step-1)/timedata.length;
+              var x2 = xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+splotsize*step/timedata.length;
+              var y1 = ystartpos+plotsize+i*(plotsize+yblank)-splotsize*data[sample][xvar][step-1];
+              var y2 = ystartpos+plotsize+i*(plotsize+yblank)-splotsize*data[sample][xvar][step];
               if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
               else stroke((step-timedata.length/2)*255/(timedata.length/2),0,0);
               line(x1,y1,x2,y2);
             }
             // Y-var plots
             if(data[sample][yvar][step]>=0 && data[sample][yvar][step-1]>=0) {
-              var x1 = xstartpos+1.3*(plotsize+splotsize)+j*(1.3*(plotsize+2*splotsize))+splotsize*(step-1)/timedata.length;
-              var x2 = xstartpos+1.3*(plotsize+splotsize)+j*(1.3*(plotsize+2*splotsize))+splotsize*step/timedata.length;
-              var y1 = ystartpos+1.2*plotsize+i*1.4*plotsize-splotsize*data[sample][yvar][step-1];
-              var y2 = ystartpos+1.2*plotsize+i*1.4*plotsize-splotsize*data[sample][yvar][step];
+              var x1 = xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+splotsize*(step-1)/timedata.length;
+              var x2 = xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+splotsize*step/timedata.length;
+              var y1 = ystartpos+plotsize+i*(plotsize+yblank)-splotsize*data[sample][yvar][step-1];
+              var y2 = ystartpos+plotsize+i*(plotsize+yblank)-splotsize*data[sample][yvar][step];
               if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
               else stroke((step-timedata.length/2)*255/(timedata.length/2),0,0);
               line(x1,y1,x2,y2);
@@ -630,17 +650,17 @@ function draw() {
 
 function mousePressed() {
   if(!choose) {
-    if (mouseX > width/3 && mouseX < width/3+150 && mouseY > 50 && mouseY < 50+width/150) {
+    if (mouseX > xstartpos+plotsize+2*xblank1+1.5*splotsize && mouseX < xstartpos+plotsize+2*xblank1+1.5*splotsize+100 && mouseY > 50 && mouseY < 50+plotsize/11) {
       choose = true;
     }
   } else {
     for (var i = 0; i < nummeasure; i++) {
-      if (mouseX > width/3 && mouseX < width/3+150 && mouseY > 50+i*width/150 && mouseY < 50+(i+1)*width/150) {
+      if (mouseX > xstartpos+plotsize+2*xblank1+1.5*splotsize && mouseX < xstartpos+plotsize+2*xblank1+1.5*splotsize+100 && mouseY > 50+i*plotsize/11 && mouseY < 50+(i+1)*plotsize/11) {
         selectedmeasure = i;
         choose = false;
       }
     }
-    if (mouseX < width/3 || mouseX > width/3+150 || mouseY < 50 || mouseY > 50 + width*(nummeasure+1)/150) {
+    if (mouseX < xstartpos+plotsize+2*xblank1+1.5*splotsize || mouseX > xstartpos+plotsize+2*xblank1+1.5*splotsize+100 || mouseY < 50 || mouseY > 50 + plotsize*(nummeasure+1)/11) {
       choose = false;
     }
   }
