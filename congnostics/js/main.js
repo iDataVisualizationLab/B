@@ -514,9 +514,15 @@ function draw() {
         case 2:
           fill(203,213,232);
           break;
+        case 3:
+          fill(244,202,228);
+          break;
       }
       stroke(0);
       rect(xstartpos+plotsize+2*xblank1+1.5*splotsize,50,100,plotsize/11);
+      fill(255);
+      triangle(xstartpos+plotsize+2*xblank1+1.5*splotsize+98,51+plotsize/22,xstartpos+plotsize+2*xblank1+1.5*splotsize+98-plotsize/33,51+plotsize/22,xstartpos+plotsize+2*xblank1+1.5*splotsize+98-plotsize/66,49+plotsize/11);
+      triangle(xstartpos+plotsize+2*xblank1+1.5*splotsize+98,49+plotsize/22,xstartpos+plotsize+2*xblank1+1.5*splotsize+98-plotsize/33,49+plotsize/22,xstartpos+plotsize+2*xblank1+1.5*splotsize+98-plotsize/66,51);
       fill(0);
       noStroke();
       textSize(plotsize/15);
@@ -525,27 +531,40 @@ function draw() {
       textAlign(LEFT);
     } else {
       for (var i = 0; i < nummeasure; i++) {
-        switch (type[i]) {
-          case 0:
-            fill(179,226,205);
-            break;
-          case 1:
-            fill(253,205,172);
-            break;
-          case 2:
-            fill(203,213,232);
-            break;
-        }
+        if (mouseX > xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize && mouseX < xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize + 100 && mouseY > 50 + i * plotsize / 11 && mouseY < 50 + (i + 1) * plotsize / 11) {
+          fill(255);
+        } else
+          switch (type[i]) {
+            case 0:
+              fill(179, 226, 205);
+              break;
+            case 1:
+              fill(253, 205, 172);
+              break;
+            case 2:
+              fill(203, 213, 232);
+              break;
+            case 3:
+              fill(244, 202, 228);
+              break;
+          }
         stroke(0);
-        rect(xstartpos+plotsize+2*xblank1+1.5*splotsize,50+i*plotsize/11,100,plotsize/11);
+        rect(xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize, 50 + i * plotsize / 11, 100, plotsize / 11);
         fill(0);
         noStroke();
-        textSize(plotsize/15);
+        textSize(plotsize / 15);
         textAlign(CENTER);
-        text(measurename[i],xstartpos+plotsize+2*xblank1+1.5*splotsize+50,46+(i+1)*plotsize/11);
+        text(measurename[i], xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize + 50, 46 + (i + 1) * plotsize / 11);
         textAlign(LEFT);
+        if (i === selectedmeasure) {
+          strokeWeight(2);
+          stroke(0);
+          line(xstartpos+plotsize+2*xblank1+1.5*splotsize+5,50+i*plotsize/11+plotsize/22,xstartpos+plotsize+2*xblank1+1.5*splotsize+5+plotsize/66,50+i*plotsize/11+2*plotsize/33);
+          line(xstartpos+plotsize+2*xblank1+1.5*splotsize+5+plotsize/66,50+i*plotsize/11+2*plotsize/33,xstartpos+plotsize+2*xblank1+1.5*splotsize+5+plotsize/33,50+i*plotsize/11+plotsize/33);
+        }
       }
     }
+
 
     // Draw plots
     for (var i = 0; i < numplot; i++) {
