@@ -5,7 +5,7 @@
 ////////////////////
 
 let measures = [];  // measures[index][sample][x-var,y-var,value], value = -1 means no data
-let nummeasure = 10;
+let nummeasure = 11;
 for (var i=0; i<nummeasure; i++) {
   measures[i] = [];
 }
@@ -19,7 +19,8 @@ let measurename = [
   'L-shape',
   'Length',
   "Intersections",
-  "Loop"
+  "Loop",
+  'Sparse'
 ];
 
 // VARIABLES FOR STORING DATA
@@ -44,7 +45,7 @@ let splotsize = width*0.06;
 let numplot = 10;
 let selectedmeasure = 0;
 let choose = false;   // for selections
-let type = [0,0,0,0,0,1,2,2,2,2];   // for type of measures in selection button
+let type = [0,0,0,0,0,1,2,2,2,2,0];   // for type of measures in selection button
 let xstartpos = width*0.05;   // starting position of plots
 let ystartpos = 200;
 let xblank1 = splotsize*0.3;
@@ -302,6 +303,8 @@ Promise.all([
             var q50 = sortlengtha[Math.floor(sortlengtha.length*0.5)];
             var q90 = sortlengtha[Math.floor(sortlengtha.length*0.9)];
             measures[4][p][index][2] = (q90-q50)/(q90-q10);
+            // SPARSE
+            measures[10][p][index][2] = q90;
 
             // CLUMPY
             xdata.forEach(function (x,xi) {
@@ -328,16 +331,28 @@ Promise.all([
             });
 
             // LOOP
-            var mincurve = Infinity;
-            xdata.forEach(function (x,xi) {
-              var locallength = 0;
-              for (var j = xi + 1; j < xdata.length; j++) {
-                locallength += edgelengtha[j-1];
-                var Edistance = Math.sqrt(Math.pow(xdata[j] - x,2)+Math.pow(ydata[j] - ydata[xi],2));
-                mincurve = (mincurve > Edistance/locallength) ? Edistance/locallength : mincurve;
-              }
-            });
-            measures[9][p][index][2] = 1 - mincurve;
+            if (measures[8][p][index][2] < 10) {
+              // var mincurve = Infinity;
+              // xdata.forEach(function (x,xi) {
+              //   var locallength = 0;
+              //   for (var j = xi + 1; j < xdata.length; j++) {
+              //     locallength += edgelengtha[j-1];
+              //     var Edistance = Math.sqrt(Math.pow(xdata[j] - x,2)+Math.pow(ydata[j] - ydata[xi],2));
+              //     mincurve = (mincurve > Edistance/locallength) ? Edistance/locallength : mincurve;
+              //   }
+              // });
+              var maxinterval = 0;
+              xdata.forEach(function (x,xi) {
+                for (var i = xi + 2; i < xdata.length; i++) {   // for all data after x
+                  // check intersections for INTERSECTIONS
+                  if (checkintersection(x,ydata[xi],xdata[xi+1],ydata[xi+1],xdata[i],ydata[i],xdata[i+1],ydata[i+1])){
+                    maxinterval = (maxinterval < i - xi) ? i - xi : maxinterval;
+                  }
+                }
+              });
+              measures[9][p][index][2] = maxinterval;
+            }
+
 
 
 
@@ -561,6 +576,7 @@ function draw() {
           stroke(0);
           line(xstartpos+plotsize+2*xblank1+1.5*splotsize+5,50+i*plotsize/11+plotsize/22,xstartpos+plotsize+2*xblank1+1.5*splotsize+5+plotsize/66,50+i*plotsize/11+2*plotsize/33);
           line(xstartpos+plotsize+2*xblank1+1.5*splotsize+5+plotsize/66,50+i*plotsize/11+2*plotsize/33,xstartpos+plotsize+2*xblank1+1.5*splotsize+5+plotsize/33,50+i*plotsize/11+plotsize/33);
+          strokeWeight(1);
         }
       }
     }
