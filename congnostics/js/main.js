@@ -12,15 +12,15 @@ for (var i=0; i<nummeasure; i++) {
 let measurename = [
   'Outlying',
   'Straight',
-  'Striated',
-  'Clumpy',
   'Skewed',
+  'Clumpy',
+  'Sparse',
+  'Striated',
   'Trend',
   'L-shape',
-  'Length',
   "Intersections",
   "Loop",
-  'Sparse'
+  'Length'
 ];
 
 // VARIABLES FOR STORING DATA
@@ -45,7 +45,7 @@ let splotsize = width*0.06;
 let numplot = 10;
 let selectedmeasure = 0;
 let choose = false;   // for selections
-let type = [0,0,0,0,0,1,2,2,2,2,0];   // for type of measures in selection button
+let type = [0,0,0,0,0,0,1,1,1,2,2];   // for type of measures in selection button
 let xstartpos = width*0.05;   // starting position of plots
 let ystartpos = 200;
 let xblank1 = splotsize*0.3;
@@ -252,7 +252,7 @@ Promise.all([
 
           // L-SHAPE
           if (xdata.length > 1) {
-            measures[6][p][index][2] = 0;
+            measures[7][p][index][2] = 0;
             var count = 0;
             xdata.forEach(function (x,xi) {
               if (xi) {
@@ -260,13 +260,13 @@ Promise.all([
               }
             });
             // L-SHAPE
-            measures[6][p][index][2] = count/xdata.length;  // or timedata.length
+            measures[7][p][index][2] = count/xdata.length;  // or timedata.length
           }
 
           // CALCULATE SOME MEASURES
           // do not consider outliers and L-shape plots
           // The threshold here is 0.6
-          if (xdata.length > 1 && measures[6][p][index][2] < 0.6) {
+          if (xdata.length > 1 && measures[7][p][index][2] < 0.6) {
             var dir = [0,0,0,0];    // count directions for Trend
             var countcrossing = 0;  // count #intersections
             var sumcos = 0;   // sum of cosine of angles
@@ -289,23 +289,23 @@ Promise.all([
               }
             });
             // LENGTH
-            measures[7][p][index][2] = sumlengtha/(xdata.length-1);
-            if (measures[7][p][index][2] > 1) measures[7][p][index][2] = 1;
+            measures[10][p][index][2] = sumlengtha/(xdata.length-1);
+            if (measures[10][p][index][2] > 1) measures[10][p][index][2] = 1;
             // MONOTONIC TREND
-            measures[5][p][index][2] = Math.max(...dir)/(xdata.length*(xdata.length-1)/2);
+            measures[6][p][index][2] = Math.max(...dir)/(xdata.length*(xdata.length-1)/2);
             // INTERSECTIONS
             measures[8][p][index][2] = 1-Math.exp(-countcrossing/(xdata.length-1));
             // STRIATED
-            measures[2][p][index][2] = sumcos/(xdata.length-2);
+            measures[5][p][index][2] = sumcos/(xdata.length-2);
             // STRAIGHT
             measures[1][p][index][2] = Math.sqrt(Math.pow(xdata[xdata.length-1]-xdata[0],2)+Math.pow(ydata[ydata.length-1]-ydata[0],2))/sumlengtha;
             // SKEWED
             var q10 = sortlengtha[Math.floor(sortlengtha.length*0.1)];
             var q50 = sortlengtha[Math.floor(sortlengtha.length*0.5)];
             var q90 = sortlengtha[Math.floor(sortlengtha.length*0.9)];
-            measures[4][p][index][2] = (q90-q50)/(q90-q10);
+            measures[2][p][index][2] = (q90-q50)/(q90-q10);
             // SPARSE
-            measures[10][p][index][2] = q90;
+            measures[4][p][index][2] = q90;
 
             // CLUMPY
             xdata.forEach(function (x,xi) {
@@ -497,6 +497,10 @@ function draw() {
   if (donecalculation) {
     textFont('Arial Unicode MS');
 
+    // draw background of buttons
+    fill(160);
+    noStroke();
+    rect(0,0,width,50+plotsize/4);
     // Write group notation
     fill(0);
     noStroke();
@@ -504,8 +508,8 @@ function draw() {
     text('Lowest values',xstartpos+plotsize,ystartpos-50);
     text('Middle values',xstartpos+2*plotsize+2*xblank1+2*splotsize+xblank2,ystartpos-50);
     text('Highest values',xstartpos+3*plotsize+4*xblank1+4*splotsize+2*xblank2,ystartpos-50);
-    textSize(plotsize/15);
-    text('select measure',xstartpos+plotsize+xblank1+splotsize,16+plotsize/11);
+    textSize(plotsize/12);
+    text('select measure',xstartpos+plotsize+xblank1+0.8*splotsize,16+plotsize/10);
     // Color explanation
     fill(179,226,205);
     rect(xstartpos+plotsize+2*xblank1+2*splotsize+xblank2,20,plotsize/12,plotsize/12);
@@ -515,18 +519,55 @@ function draw() {
     rect(xstartpos+plotsize+2*xblank1+2*splotsize+xblank2,40+plotsize/6,plotsize/12,plotsize/12);
     fill(0);
     text('Measures from Scagnostics of non time series data',xstartpos+plotsize+2*xblank1+2*splotsize+xblank2+plotsize/12+10,16+plotsize/11);
-    text('Measures from time series analysis',xstartpos+plotsize+2*xblank1+2*splotsize+xblank2+plotsize/12+10,26+plotsize/6);
-    text('Measures from features of connected scatterplot',xstartpos+plotsize+2*xblank1+2*splotsize+xblank2+plotsize/12+10,36+plotsize/4);
+    text('Measures from features of connected scatterplot',xstartpos+plotsize+2*xblank1+2*splotsize+xblank2+plotsize/12+10,26+plotsize/6);
+    text('Measures under developing',xstartpos+plotsize+2*xblank1+2*splotsize+xblank2+plotsize/12+10,36+plotsize/4);
     // Formula
-    text('Formula for this measure:',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,20);
+    text('Formula for this measure:',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,16+plotsize/11);
     switch (selectedmeasure) {
       case 0:
-        text(measurename[selectedmeasure]+' = '+'Q75+1.5(Q75-Q25)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,30);
-        text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,40);
+        text(measurename[selectedmeasure]+' = '+'Q75+1.5(Q75-Q25)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+        text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
         break;
       case 1:
-        
-
+        text(measurename[selectedmeasure]+' = '+'distance(p1,pN)/(total edge length)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+        text('p1: first point in the series, pN: last point in the series',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+        break;
+      case 2:
+        text(measurename[selectedmeasure]+' = '+'(Q90-Q50)/(Q90-Q10)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+        text('Q90, Q50 and Q10 are correspondingly 90th, 50th and 10th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+        break;
+      case 3:
+        text(measurename[selectedmeasure]+' = '+'max_j[1-max_k(e_k)/e_j]',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+        text('e_k is edge in Runt set from e_j, e_j is edge in the graph',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+        break;
+      case 4:
+        text(measurename[selectedmeasure]+' = '+'Q90',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+        text('Q90 is 90th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+        break;
+      case 5:
+        text(measurename[selectedmeasure]+' = '+'mean of cosine of all angles',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+        // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+        break;
+      case 6:
+        text(measurename[selectedmeasure]+' = '+'maximum number of directions of e_ij / (N(N-1)/2)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+        text('e_ij is edge from i to all point j after i',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+        break;
+      case 7:
+        text(measurename[selectedmeasure]+' = '+'count number of edges that are parallel to x-axis or y-axis',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+        // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+        break;
+      case 8:
+        text(measurename[selectedmeasure]+' = '+'1-exp(- #intersections / #edges)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+        // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+        break;
+      case 9:
+        text(measurename[selectedmeasure]+' = '+'under developing',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+        // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+        break;
+      case 10:
+        text(measurename[selectedmeasure]+' = '+'mean length of all edges',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+        // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+        break;
     }
 
     // Create list button
@@ -546,19 +587,20 @@ function draw() {
           break;
       }
       stroke(0);
-      rect(xstartpos+plotsize+2*xblank1+1.5*splotsize,20,100,plotsize/11);
+      rect(xstartpos+plotsize+2*xblank1+1.5*splotsize,20,130,plotsize/10);
       fill(255);
-      triangle(xstartpos+plotsize+2*xblank1+1.5*splotsize+98,21+plotsize/22,xstartpos+plotsize+2*xblank1+1.5*splotsize+98-plotsize/33,21+plotsize/22,xstartpos+plotsize+2*xblank1+1.5*splotsize+98-plotsize/66,19+plotsize/11);
-      triangle(xstartpos+plotsize+2*xblank1+1.5*splotsize+98,19+plotsize/22,xstartpos+plotsize+2*xblank1+1.5*splotsize+98-plotsize/33,19+plotsize/22,xstartpos+plotsize+2*xblank1+1.5*splotsize+98-plotsize/66,21);
+      noStroke();
+      triangle(xstartpos+plotsize+2*xblank1+1.5*splotsize+125,21+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+125-plotsize/30,21+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+125-plotsize/60,19+plotsize/10);
+      triangle(xstartpos+plotsize+2*xblank1+1.5*splotsize+125,19+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+125-plotsize/30,19+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+125-plotsize/60,21);
       fill(0);
       noStroke();
-      textSize(plotsize/15);
-      textAlign(CENTER);
-      text(measurename[selectedmeasure],xstartpos+plotsize+2*xblank1+1.5*splotsize+50,16+plotsize/11);
-      textAlign(LEFT);
+      textSize(plotsize/12);
+      // textAlign(CENTER);
+      text(measurename[selectedmeasure],xstartpos+plotsize+2*xblank1+1.5*splotsize+20,16+plotsize/10);
+      // textAlign(LEFT);
     } else {
       for (var i = 0; i < nummeasure; i++) {
-        if (mouseX > xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize && mouseX < xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize + 100 && mouseY > 20 + i * plotsize / 11 && mouseY < 20 + (i + 1) * plotsize / 11) {
+        if (mouseX > xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize && mouseX < xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize + 130 && mouseY > 20 + i * plotsize / 10 && mouseY < 20 + (i + 1) * plotsize / 10) {
           fill(255);
         } else
           switch (type[i]) {
@@ -576,18 +618,18 @@ function draw() {
               break;
           }
         stroke(0);
-        rect(xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize, 20 + i * plotsize / 11, 100, plotsize / 11);
+        rect(xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize, 20 + i * plotsize / 10, 130, plotsize / 10);
         fill(0);
         noStroke();
-        textSize(plotsize / 15);
-        textAlign(CENTER);
-        text(measurename[i], xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize + 50, 16 + (i + 1) * plotsize / 11);
-        textAlign(LEFT);
+        textSize(plotsize / 12);
+        // textAlign(CENTER);
+        text(measurename[i], xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize + 20, 16 + (i + 1) * plotsize / 10);
+        // textAlign(LEFT);
         if (i === selectedmeasure) {
           strokeWeight(2);
           stroke(0);
-          line(xstartpos+plotsize+2*xblank1+1.5*splotsize+5,20+i*plotsize/11+plotsize/22,xstartpos+plotsize+2*xblank1+1.5*splotsize+5+plotsize/66,20+i*plotsize/11+2*plotsize/33);
-          line(xstartpos+plotsize+2*xblank1+1.5*splotsize+5+plotsize/66,20+i*plotsize/11+2*plotsize/33,xstartpos+plotsize+2*xblank1+1.5*splotsize+5+plotsize/33,20+i*plotsize/11+plotsize/33);
+          line(xstartpos+plotsize+2*xblank1+1.5*splotsize+5,20+i*plotsize/10+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+5+plotsize/60,20+i*plotsize/10+2*plotsize/30);
+          line(xstartpos+plotsize+2*xblank1+1.5*splotsize+5+plotsize/60,20+i*plotsize/10+2*plotsize/30,xstartpos+plotsize+2*xblank1+1.5*splotsize+5+plotsize/30,20+i*plotsize/10+plotsize/30);
           strokeWeight(1);
         }
       }
@@ -637,7 +679,7 @@ function draw() {
         // write x-variable notation
         noStroke();
         fill(0);
-        textSize(plotsize/18);
+        textSize(plotsize/14);
         text(mapvar2.get(xvar),xstartpos+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+i*(plotsize+yblank)+1.08*plotsize);
         text("time",xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+0.4*splotsize,ystartpos+i*(plotsize+yblank)+1.08*plotsize);
         text("time",xstartpos+plotsize+1.4*splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+i*(plotsize+yblank)+1.08*plotsize);
@@ -646,7 +688,7 @@ function draw() {
         push();
         noStroke();
         fill(0);
-        textSize(plotsize/18);
+        textSize(plotsize/14);
         translate(xstartpos+j*(plotsize+2*splotsize+2*xblank1+xblank2)-0.02*plotsize,ystartpos+i*(plotsize+yblank)+plotsize);
         rotate(-PI/2);
         text(mapvar2.get(yvar),0,0);
@@ -699,17 +741,17 @@ function draw() {
 
 function mousePressed() {
   if(!choose) {
-    if (mouseX > xstartpos+plotsize+2*xblank1+1.5*splotsize && mouseX < xstartpos+plotsize+2*xblank1+1.5*splotsize+100 && mouseY > 20 && mouseY < 20+plotsize/11) {
+    if (mouseX > xstartpos+plotsize+2*xblank1+1.5*splotsize && mouseX < xstartpos+plotsize+2*xblank1+1.5*splotsize+130 && mouseY > 20 && mouseY < 20+plotsize/10) {
       choose = true;
     }
   } else {
     for (var i = 0; i < nummeasure; i++) {
-      if (mouseX > xstartpos+plotsize+2*xblank1+1.5*splotsize && mouseX < xstartpos+plotsize+2*xblank1+1.5*splotsize+100 && mouseY > 20+i*plotsize/11 && mouseY < 20+(i+1)*plotsize/11) {
+      if (mouseX > xstartpos+plotsize+2*xblank1+1.5*splotsize && mouseX < xstartpos+plotsize+2*xblank1+1.5*splotsize+130 && mouseY > 20+i*plotsize/10 && mouseY < 20+(i+1)*plotsize/10) {
         selectedmeasure = i;
         choose = false;
       }
     }
-    if (mouseX < xstartpos+plotsize+2*xblank1+1.5*splotsize || mouseX > xstartpos+plotsize+2*xblank1+1.5*splotsize+100 || mouseY < 20 || mouseY > 20 + plotsize*(nummeasure+1)/11) {
+    if (mouseX < xstartpos+plotsize+2*xblank1+1.5*splotsize || mouseX > xstartpos+plotsize+2*xblank1+1.5*splotsize+130 || mouseY < 20 || mouseY > 20 + plotsize*(nummeasure+1)/10) {
       choose = false;
     }
   }
