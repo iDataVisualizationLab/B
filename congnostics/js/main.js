@@ -5,7 +5,7 @@
 ////////////////////
 
 let measures = [];  // measures[index][sample][x-var,y-var,value], value = -1 means no data
-let nummeasure = 11;
+let nummeasure = 13;
 for (var i=0; i<nummeasure; i++) {
   measures[i] = [];
 }
@@ -20,7 +20,9 @@ let measurename = [
   'L-shape',
   "Intersections",
   "Loop",
-  'Length'
+  'Length',
+  'Cross-correlation',
+  'Similarity'
 ];
 
 // VARIABLES FOR STORING DATA
@@ -42,10 +44,10 @@ let width = 2000;
 let height = 6000;
 let plotsize = width*0.09;
 let splotsize = width*0.06;
-let numplot = 10;
+let numplot = 20;
 let selectedmeasure = 0;
 let choose = false;   // for selections
-let type = [0,0,0,0,0,0,1,1,1,2,2];   // for type of measures in selection button
+let type = [0,0,0,0,0,0,1,1,1,2,2,2,2];   // for type of measures in selection button
 let xstartpos = width*0.05;   // starting position of plots
 let ystartpos = 200;
 let xblank1 = splotsize*0.3;
@@ -195,7 +197,6 @@ Promise.all([
           var sortlength = edgelength.map(function (v) {return v});
           sortlength.sort(function (b,n) {return b-n});   // ascending
 
-
           // OUTLYING
           if (xdata.length > 1) {
             measures[0][p][index][2] = 0;
@@ -239,6 +240,8 @@ Promise.all([
           // CALCULATIONS RELATED LENGTH AFTER REMOVING OUTLIERS
           var edgelengtha = [];
           var sumlengtha = 0;
+          var meanx = 0;
+          var meany = 0;
           xdata.forEach(function (x,xi) {
             if (xi) {
               var xlength = x - xdata[xi-1];
@@ -246,7 +249,11 @@ Promise.all([
               edgelengtha[xi-1] = Math.sqrt(xlength*xlength+ylength*ylength);
               sumlengtha += edgelengtha[xi-1];
             }
+            meanx += x;
+            meany += ydata[xi];
           });
+          meanx /= xdata.length;
+          meany /= ydata.length;
           var sortlengtha = edgelengtha.map(function (v) {return v});
           sortlengtha.sort(function (b,n) {return b-n});   // ascending
 
@@ -332,27 +339,55 @@ Promise.all([
             });
 
             // LOOP
-            if (measures[8][p][index][2] < 10) {
-              // var mincurve = Infinity;
-              // xdata.forEach(function (x,xi) {
-              //   var locallength = 0;
-              //   for (var j = xi + 1; j < xdata.length; j++) {
-              //     locallength += edgelengtha[j-1];
-              //     var Edistance = Math.sqrt(Math.pow(xdata[j] - x,2)+Math.pow(ydata[j] - ydata[xi],2));
-              //     mincurve = (mincurve > Edistance/locallength) ? Edistance/locallength : mincurve;
-              //   }
-              // });
-              var maxinterval = 0;
+            if (measures[8][p][index][2] < 0.1 && measures[10][p][index][2] < 0.01) {
+              var windowsize = Math.floor(xdata.length*0.3);
+              measures[9][p][index][2] = 0;
+              var dist;
               xdata.forEach(function (x,xi) {
-                for (var i = xi + 2; i < xdata.length; i++) {   // for all data after x
-                  // check intersections for INTERSECTIONS
-                  if (checkintersection(x,ydata[xi],xdata[xi+1],ydata[xi+1],xdata[i],ydata[i],xdata[i+1],ydata[i+1])){
-                    maxinterval = (maxinterval < i - xi) ? i - xi : maxinterval;
+                if (xi + windowsize < xdata.length) {
+                  dist = Math.sqrt(Math.pow(xdata[xi+windowsize]-x,2)+Math.pow(ydata[xi+windowsize]-ydata[xi],2));
+                  var windowlength = 0;
+                  for (var i = xi; i < xi + windowsize; i++) {
+                    windowlength += Math.sqrt(Math.pow(xdata[xi+i]-x,2)+Math.pow(ydata[xi+i]-ydata[xi],2));
                   }
+                  measures[9][p][index][2] = (measures[9][p][index][2] < (1-dist/windowlength)) ? (1-dist/windowlength) : measures[9][p][index][2];
                 }
               });
-              measures[9][p][index][2] = maxinterval;
             }
+
+            // CROSS - CORRELATION
+            var lag = Math.floor(timedata.length*0.1);
+            var maxr = 0;
+            var covxy = 0;
+            var covx = 0;
+            var covy = 0;
+            for (var i = -lag; i < lag + 1; i++) {
+              if (i <= 0) {
+                for (var j = 0; j < xdata.length - lag; j++) {
+                  covxy += (xdata[j]-meanx)*(ydata[j-i]-meany);
+                  covx += Math.pow(xdata[j]-meanx,2);
+                  covy += Math.pow(ydata[j-i]-meany,2);
+                }
+                var r = Math.pow(covxy/Math.sqrt(covx*covy),2);
+                debugger;
+              } else {
+                for (var j = 0; j < xdata.length - lag; j++) {
+                  covxy += (xdata[j+i]-meanx)*(ydata[j]-meany);
+                  covx += Math.pow(xdata[j+i]-meanx,2);
+                  covy += Math.pow(ydata[j]-meany,2);
+                }
+                var r = Math.pow(covxy/Math.sqrt(covx*covy),2);
+              }
+              maxr = (maxr < r) ? r : maxr;
+            }
+            measures[11][p][index][2] = maxr;
+
+            // SIMILARITY
+            var sim = 0;
+            xdata.forEach(function (x,xi) {
+              sim += Math.abs(x-ydata[xi]);
+            });
+            measures[12][p][index][2] = 1 - sim/xdata.length;
 
 
 
