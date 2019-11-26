@@ -369,7 +369,6 @@ Promise.all([
                   covy += Math.pow(ydata[j-i]-meany,2);
                 }
                 var r = Math.pow(covxy/Math.sqrt(covx*covy),2);
-                debugger;
               } else {
                 for (var j = 0; j < xdata.length - lag; j++) {
                   covxy += (xdata[j+i]-meanx)*(ydata[j]-meany);
