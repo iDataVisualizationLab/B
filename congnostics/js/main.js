@@ -70,23 +70,25 @@ let valfilter = [];
 
 $( document ).ready(function() {
   console.log('ready');
-  $('.collapsible').collapsible();
-  $('.modal').modal();
-  $('.dropdown-trigger').dropdown();
-  $('.tabs').tabs();
-  $('.sidenav').sidenav();
-  discovery('#sideNavbtn');
-  openNav();
-  d3.select("#DarkTheme").on("click",switchTheme);
+  try {
+    $('.collapsible').collapsible();
+    $('.modal').modal();
+    $('.dropdown-trigger').dropdown();
+    $('.tabs').tabs();
+    $('.sidenav').sidenav();
+    discovery('#sideNavbtn');
+    openNav();
+    d3.select("#DarkTheme").on("click", switchTheme);
 
-  // generate measurement list
-  let mc = d3.select('#measureControl').selectAll('.measureControl')
-      .data(measurename)
-      .enter().append('div').attr('class','measureControl');
-  let mc_label = mc.append('label').attr('class','col s7');
-  mc_label.append('input').attr('type','checkbox').attr('class','filled-in enableCheck');
-  mc_label.append('span').attr('class','col measureLabel').text(d=>d);
-  mc.append('div').attr('id')
+    // generate measurement list
+    let mc = d3.select('#measureControl').selectAll('.measureControl')
+        .data(measurename)
+        .enter().append('div').attr('class', 'measureControl');
+    let mc_label = mc.append('label').attr('class', 'col s7');
+    mc_label.append('input').attr('type', 'checkbox').attr('class', 'filled-in enableCheck');
+    mc_label.append('span').attr('class', 'col measureLabel').text(d => d);
+    mc.append('div').attr('id')
+  }catch{}
 });
 function openNav() {
   d3.select("#mySidenav").classed("sideIn",true);
