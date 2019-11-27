@@ -53,6 +53,7 @@ let ystartpos = 200;
 let xblank1 = splotsize*0.3;
 let xblank2 = plotsize*0.8;
 let yblank = plotsize*0.3;
+let checkfilter = [];
 
 
 
@@ -122,7 +123,7 @@ Promise.all([
   // CONTROL CALCULATION
   normalization();
   calculatemeasures();
-  sortmeasures();
+  // sortmeasures();
   console.log(timedata);
 
 
@@ -430,32 +431,6 @@ Promise.all([
     });
   }
 
-  // SORT MEASURES AND WRITE DISPLAYPLOT
-  function sortmeasures() {
-    for (var i = 0; i < nummeasure; i++) {
-      var sortarr = [];
-      var index = 0;
-      measures[i].forEach(function (sample,si) {
-        sample.forEach(function (arr) {
-          sortarr[index] = [si,arr[0],arr[1],arr[2]];
-          index += 1;
-        });
-      });
-      sortarr = sortarr.filter(function (b) {return b[3] >= 0});
-      sortarr.sort(function (b,n) {return b[3] - n[3]});    // ascending
-      displayplot[i] = [];
-      for (var j = 0; j < numplot; j++) {  // get the lowest paths
-        displayplot[i][j] = sortarr[j];
-      }
-      for (var j = numplot; j < 2*numplot; j++) {  // get the middle paths
-        displayplot[i][j] = sortarr[Math.floor(sortarr.length*0.5)+j-numplot];
-      }
-      for (var j = 2*numplot; j < 3*numplot; j++) {  // get the highest paths
-        displayplot[i][j] = sortarr[sortarr.length+j-3*numplot];
-      }
-    }
-  }
-
   // CHECK INTERSECTIONS
   function checkintersection(x1_,y1_,x2_,y2_,x3_,y3_,x4_,y4_) {
     var x1 = x1_;
@@ -552,6 +527,10 @@ function draw() {
   background(180);
 
   if (donecalculation) {
+
+    // CHOOSE DISPLAY PLOTS
+    sortmeasures();
+
     textFont('Arial Unicode MS');
 
     // draw background of buttons
@@ -810,6 +789,32 @@ function mousePressed() {
     }
     if (mouseX < xstartpos+plotsize+2*xblank1+1.5*splotsize || mouseX > xstartpos+plotsize+2*xblank1+1.5*splotsize+130 || mouseY < 20 || mouseY > 20 + plotsize*(nummeasure+1)/10) {
       choose = false;
+    }
+  }
+}
+
+// SORT MEASURES AND WRITE DISPLAYPLOT
+function sortmeasures() {
+  for (var i = 0; i < nummeasure; i++) {
+    var sortarr = [];
+    var index = 0;
+    measures[i].forEach(function (sample,si) {
+      sample.forEach(function (arr) {
+        sortarr[index] = [si,arr[0],arr[1],arr[2]];
+        index += 1;
+      });
+    });
+    sortarr = sortarr.filter(function (b) {return b[3] >= 0});
+    sortarr.sort(function (b,n) {return b[3] - n[3]});    // ascending
+    displayplot[i] = [];
+    for (var j = 0; j < numplot; j++) {  // get the lowest paths
+      displayplot[i][j] = sortarr[j];
+    }
+    for (var j = numplot; j < 2*numplot; j++) {  // get the middle paths
+      displayplot[i][j] = sortarr[Math.floor(sortarr.length*0.5)+j-numplot];
+    }
+    for (var j = 2*numplot; j < 3*numplot; j++) {  // get the highest paths
+      displayplot[i][j] = sortarr[sortarr.length+j-3*numplot];
     }
   }
 }
