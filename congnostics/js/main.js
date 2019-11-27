@@ -57,11 +57,74 @@ let topline = plotsize/12;
 let checkfilter = [];
 let minslider = [];
 let maxslider = [];
+let valfilter = [];
 
 
 
 
 ////////////////////////////////
+////////////////////////////////
+// UI CODE
+///////////////////////////////
+///////////////////////////////
+
+$( document ).ready(function() {
+  console.log('ready');
+  $('.collapsible').collapsible();
+  $('.modal').modal();
+  $('.dropdown-trigger').dropdown();
+  $('.tabs').tabs();
+  $('.sidenav').sidenav();
+  discovery('#sideNavbtn');
+  openNav();
+  d3.select("#DarkTheme").on("click",switchTheme);
+
+  // generate measurement list
+  let mc = d3.select('#measureControl').selectAll('.measureControl')
+      .data(measurename)
+      .enter().append('div').attr('class','measureControl');
+  let mc_label = mc.append('label').attr('class','col s7');
+  mc_label.append('input').attr('type','checkbox').attr('class','filled-in enableCheck');
+  mc_label.append('span').attr('class','col measureLabel').text(d=>d);
+  mc.append('div').attr('id')
+});
+function openNav() {
+  d3.select("#mySidenav").classed("sideIn",true);
+  d3.select("#Maincontent").classed("sideIn",true);
+  // _.delay(resetSize, 500);
+}
+
+function closeNav() {
+  d3.select("#mySidenav").classed("sideIn",false);
+  d3.select("#Maincontent").classed("sideIn",false);
+  discovery('#sideNavbtn');
+  // _.delay(resetSize, 500);
+}
+function discovery(d){
+  d3.select(d).style('left','20px')
+      .classed("pulse",true)
+      .transition().delay(5000).duration(1000)
+      .style('left',null)
+  //     .on('end',function() {
+  //     // d3.select(d).classed("pulse",false);
+  // });
+
+}
+function switchTheme(){
+  if (this.getAttribute('value')==="light"){
+    this.setAttribute('value', "dark");
+    this.querySelector('span').textContent = "Light";
+    d3.select('body').classed('light',false);
+    d3.select('.logoLink').select('img').attr('src',"https://idatavisualizationlab.github.io/HPCC/HiperView/images/TTUlogoWhite.png");
+    return;
+  }
+  this.setAttribute('value', "light");
+  this.querySelector('span').textContent = "Dark";
+  d3.select('body').classed('light',true);
+  d3.select('.logoLink').select('img').attr('src',"https://idatavisualizationlab.github.io/HPCC/HPCViz/images/TTUlogo.png");
+  return;
+}
+// ///////////////////////////
 ////////////////////////////////
 // MAIN CODE FOR ANALYZING DATA
 ///////////////////////////////
@@ -479,6 +542,7 @@ Promise.all([
 
 
   donecalculation = true;
+  d3.select('.cover').classed('hidden', true);
 ///////////////////////
 // END OF CALCULATION
 ///////////////////////
@@ -505,12 +569,14 @@ Promise.all([
 // SET UP FUNCTION
 //////////////////
 function setup() {
-  createCanvas(width,height);
+  let canvas = createCanvas(width,height);
+  canvas.parent('mainCanvasHolder');
   frameRate(30);
   for (var i = 0; i < nummeasure; i++) {
     minslider[i] = createSlider(0,1,0,0);
     maxslider[i] = createSlider(0,1,1,0);
-    checkfilter[i] = [0,1];
+    checkfilter[i] = true;
+    valfilter[i] = [0,1];
   }
 }
 
@@ -535,6 +601,7 @@ function draw() {
 
   if (donecalculation) {
 
+    // SLIDERS
 
 
     // CHOOSE DISPLAY PLOTS
@@ -554,7 +621,7 @@ function draw() {
     text('Middle values',xstartpos+2*plotsize+2*xblank1+2*splotsize+xblank2,ystartpos-50);
     text('Highest values',xstartpos+3*plotsize+4*xblank1+4*splotsize+2*xblank2,ystartpos-50);
     textSize(plotsize/12);
-    text('select measure',xstartpos,16+plotsize/10);
+    text('select measure',xstartpos+plotsize+2*xblank1+0.5*splotsize,16+plotsize/10);
     // Color explanation
     fill(179,226,205);
     rect(xstartpos+plotsize+2*xblank1+2*splotsize+xblank2,20,plotsize/12,plotsize/12);
@@ -806,10 +873,28 @@ function mousePressed() {
 function sortmeasures() {
   for (var i = 0; i < nummeasure; i++) {
     var sortarr = [];
-    var index = 0;
+    var aindex = 0;
     measures[i].forEach(function (sample,si) {
+      var index = 0;
       sample.forEach(function (arr) {
-        sortarr[index] = [si,arr[0],arr[1],arr[2]];
+        var condition = [];
+        var numfilter = 0;
+        for (var j = 0; j < nummeasure; j++) {
+          if (checkfilter[j]) {
+            if (measures[j][si][index][2] >= valfilter[j][0] && measures[j][si][index][2] <= valfilter[j][1]) {
+              condition[numfilter] = true;
+              numfilter += 1;
+            }
+          }
+        }
+        var good = true;
+        condition.forEach(function (value) {
+          good = good && value;
+        });
+        if (good) {
+          sortarr[aindex] = [si,arr[0],arr[1],arr[2]];
+          aindex += 1;
+        }
         index += 1;
       });
     });

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+
+<head>
+
+    <title>Congnostics</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <script src="lib/jquery-3.3.1.js"></script>
+    <!-- Compiled and minified CSS -->
+
+    <link rel="stylesheet" href="css/materialize.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+          rel="stylesheet">
+    <link href="css/theme.css" rel="stylesheet" type="text/css" />
+    <link href="css/layout.css" rel="stylesheet" type="text/css" />
+    <link href="css/main.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+</head>
+
+<body text="black" id="mainBody">
+<div class="cover">
+    <div class="progressDiv hidden">
+        <h6 class="progressText spinnerC center" style="top: calc(50% - 15px);" >saving data...</h6>
+        <div class="progress spinnerC center" style="width: 70%;">
+            <div class="determinate" style="width: 0%"></div>
+        </div>
+    </div>
+    <div class="spinnerC center" id="loadingSpinner" >
+        <h5 class="spinnerC center status" style="top: 60px; min-width: 300px;" >loading data...</h5>
+    </div>
+</div>
+<nav class="pushpin-demo-nav" data-target="blue">
+
+    <div class="nav-wrapper" id="header">
+        <a href="#" data-target="mobile-demo" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+        <ul id="nav-mobile" class="left hide-on-med-and-down">
+            <li ><a href="http://www.depts.ttu.edu/hpcc/" class="logoLink"><img src="https://idatavisualizationlab.github.io/HPCC/HiperView/images/TTUlogoWhite.png" alt="TTU"></a></li>
+            <li class="summaryText1" style="font-family: 'ITC Charter W01',Georgia,Garamond,serif;">  </li>
+            <li class ="currentDate center-align"></li>
+            <!--</div>-->
+        </ul>
+        <ul class="right">
+            <li class="tab active"><a class="active" href="#">Congnostics</a></li>
+            <li><a href="#!" value="dark" id = "DarkTheme" class="btn waves-effect waves-effect waves-yellow">
+                <i class="material-icons left">brightness_6</i><span>Light</span></a></li>
+        </ul>
+    </div>
+</nav>
+<ul class="sidenav " id="mobile-demo">
+    <h5></h5>
+    <li><a href="http://www.depts.ttu.edu/hpcc/"><img src="https://idatavisualizationlab.github.io/HPCC/HPCViz/images/TTUlogo.png" alt="Texas Tech University" class="avatar"></a></li>
+</ul>
+<div id="mySidenav" class="sidenavs">
+    <div class="row s12">
+        <ul class="collapsible">
+            <li class="settingContain active no_padding">
+                <div class="collapsible-header" ><i class="material-icons">settings</i>  Setting</div>
+                <div class="collapsible-body">
+                    <label for="datacom" class="col s3"> Dataset: </label>
+                    <div  class="row s12">
+                        <select id="datacom" class="col s9">
+                            <option value="serviceWed26Sep" data-date="26 Sep 2018">26 Sep 2018</option>
+                            <option value="serviceWed04Oct"  data-date="04 Oct 2018">04 Oct 2018</option>
+                            <option value="service15Oct" data-date="15 Oct 2018">14 Oct 2018</option>
+                        </select>
+                    </div>
+                <div  class="row s12" id="measureControl">
+<!--                    <div>-->
+<!--                    <label class="col s7">-->
+<!--                        <input type="checkbox" class="filled-in enableCheck" checked="checked" />-->
+<!--                        <span class="col s6 measureLabel">Filled in</span>-->
+<!--                    </label>-->
+<!--                    <div class="col s5 measureSlider">-->
+
+<!--                    </div>-->
+<!--                    </div>-->
+                </div>
+            </div>
+            </li>
+        </ul>
+    </div>
+</div>
+<div id="instructions"></div>
+<div id="Maincontent" class="row s12">
+    <a href="javascript:void(0)" class="closebtn btn-floating btn waves-effect waves-light" onclick="closeNav()"><i class="material-icons">chevron_left</i></a>
+    <div class="overlaySide">
+        <a class="openbtn btn-floating btn waves-effect waves-light" id="sideNavbtn" onclick="openNav()">
+            <i class="material-icons">chevron_right</i></a>
+    </div>
+    <div style="clear:both;"></div>
+    <div style="position: relative;">
+        <div class="row s12" style="overflow-x: auto">
+            <div id="mainCanvasHolder" class="mainsvg" ></div>
+        </div>
+    </div>
+
+</div>
+
+<!-- load the d3.js library -->
+<script src = "lib/p5.min.js"></script>
+<script src="lib/d3/d3.min.js"></script>
+<!-- Add your site or application content here -->
+<script src="js/vendor/modernizr-3.7.1.min.js"></script>
+<!--<script src="js/vendor/jquery-3.4.1.min.js"></script>-->
+<script src="js/plugins.js"></script>
+<script src="js/main.js"></script>
+
+
+</body>

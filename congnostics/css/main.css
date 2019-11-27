@@ -264,3 +264,7 @@ textarea {
   }
 }
 
+.p5Canvas {
+  width: 100%!important;
+  height: auto!important;
+}
