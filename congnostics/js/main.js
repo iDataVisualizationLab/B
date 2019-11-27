@@ -277,6 +277,7 @@ Promise.all([
             var dir = [0,0,0,0];    // count directions for Trend
             var countcrossing = 0;  // count #intersections
             var sumcos = 0;   // sum of cosine of angles
+            var looparr = [];
             xdata.forEach(function (x,xi) {
               for (var i = xi + 1; i < xdata.length; i++) {   // for all data after x
                 // count directions for MONOTONIC TREND
@@ -288,7 +289,10 @@ Promise.all([
                 if (xx > 0 && yy < 0) dir[3] += 1;
                 // check intersections for INTERSECTIONS
                 if (i > xi + 1 && i < xdata.length-1 && xi < xdata.length-3) {
-                  if (checkintersection(x,ydata[xi],xdata[xi+1],ydata[xi+1],xdata[i],ydata[i],xdata[i+1],ydata[i+1])) countcrossing += 1;
+                  if (checkintersection(x,ydata[xi],xdata[xi+1],ydata[xi+1],xdata[i],ydata[i],xdata[i+1],ydata[i+1])) {
+                    looparr[countcrossing] = i-xi;
+                    countcrossing += 1;
+                  }
                 }
               }
               if (xi > 0 && xi < xdata.length - 1) {
@@ -339,20 +343,24 @@ Promise.all([
             });
 
             // LOOP
-            if (measures[8][p][index][2] < 0.1 && measures[10][p][index][2] < 0.01) {
-              var windowsize = Math.floor(xdata.length*0.3);
-              measures[9][p][index][2] = 0;
-              var dist;
-              xdata.forEach(function (x,xi) {
-                if (xi + windowsize < xdata.length) {
-                  dist = Math.sqrt(Math.pow(xdata[xi+windowsize]-x,2)+Math.pow(ydata[xi+windowsize]-ydata[xi],2));
-                  var windowlength = 0;
-                  for (var i = xi; i < xi + windowsize; i++) {
-                    windowlength += Math.sqrt(Math.pow(xdata[xi+i]-x,2)+Math.pow(ydata[xi+i]-ydata[xi],2));
-                  }
-                  measures[9][p][index][2] = (measures[9][p][index][2] < (1-dist/windowlength)) ? (1-dist/windowlength) : measures[9][p][index][2];
-                }
-              });
+            // if (measures[8][p][index][2] < 0.1 && measures[10][p][index][2] < 0.01) {
+            //   var windowsize = Math.floor(xdata.length*0.3);
+            //   measures[9][p][index][2] = 0;
+            //   var dist;
+            //   xdata.forEach(function (x,xi) {
+            //     if (xi + windowsize < xdata.length) {
+            //       dist = Math.sqrt(Math.pow(xdata[xi+windowsize]-x,2)+Math.pow(ydata[xi+windowsize]-ydata[xi],2));
+            //       var windowlength = 0;
+            //       for (var i = xi; i < xi + windowsize; i++) {
+            //         windowlength += Math.sqrt(Math.pow(xdata[xi+i]-x,2)+Math.pow(ydata[xi+i]-ydata[xi],2));
+            //       }
+            //       measures[9][p][index][2] = (measures[9][p][index][2] < (1-dist/windowlength)) ? (1-dist/windowlength) : measures[9][p][index][2];
+            //     }
+            //   });
+            // }
+            if (measures[8][p][index][2] < 0.1) {
+              looparr.sort(function (b,n) {return b-n});
+              measures[9][p][index][2] = looparr[Math.floor(looparr.length*0.9)]/xdata.length;
             }
 
             // CROSS - CORRELATION
