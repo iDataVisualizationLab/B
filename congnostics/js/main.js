@@ -44,7 +44,7 @@ let width = 2000;
 let height = 6000;
 let plotsize = width*0.09;
 let splotsize = width*0.06;
-let numplot = 20;
+let numplot = 10;
 let selectedmeasure = 0;
 let choose = false;   // for selections
 let type = [0,0,0,0,0,0,1,1,1,2,2,2,2];   // for type of measures in selection button
@@ -123,7 +123,7 @@ Promise.all([
   normalization();
   calculatemeasures();
   sortmeasures();
-  console.log(measures);
+  console.log(timedata);
 
 
   // NORMALIZE DATA
@@ -206,7 +206,7 @@ Promise.all([
             var q3 = sortlength[Math.floor(sortlength.length*0.75)];
             var upperlimit = q3 + 1.5*(q3 - q1);
             edgelength.forEach(function (e,ei) {
-              if (ei === 0 ) {
+              if (ei === 0) {
                 if (e > upperlimit) {
                   outlier[sindex] = ei;
                   measures[0][p][index][2] += e;
@@ -216,14 +216,29 @@ Promise.all([
               else if (ei === edgelength.length - 1) {
                 if (e > upperlimit) {
                   outlier[sindex] = ei + 1;
-                  measures[0][p][index][2] += e;
+                  if (outlier[sindex-1] !== outlier[sindex] - 1) {
+                    measures[0][p][index][2] += e;
+                  }
+                  sindex += 1;
+                }
+                if (e > upperlimit && edgelength[ei-1] > upperlimit) {
+                  outlier[sindex] = ei;
+                  if (outlier[sindex-1] !== outlier[sindex] - 1) {
+                    measures[0][p][index][2] += e + edgelength[ei-1];
+                  } else {
+                    measures[0][p][index][2] += e;
+                  }
                   sindex += 1;
                 }
               }
               else {
                 if (e > upperlimit && edgelength[ei-1] > upperlimit) {
                   outlier[sindex] = ei;
-                  measures[0][p][index][2] += e + edgelength[ei-1];
+                  if (outlier[sindex-1] !== outlier[sindex] - 1) {
+                    measures[0][p][index][2] += e + edgelength[ei-1];
+                  } else {
+                    measures[0][p][index][2] += e;
+                  }
                   sindex += 1;
                 }
               }
@@ -358,9 +373,9 @@ Promise.all([
             //     }
             //   });
             // }
-            if (measures[8][p][index][2] < 0.1) {
+            if (measures[8][p][index][2] < 0.05) {
               looparr.sort(function (b,n) {return b-n});
-              measures[9][p][index][2] = looparr[Math.floor(looparr.length*0.9)]/xdata.length;
+              measures[9][p][index][2] = looparr[Math.floor(looparr.length*0.25)]/xdata.length;
             }
 
             // CROSS - CORRELATION
