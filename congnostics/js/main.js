@@ -53,8 +53,10 @@ let ystartpos = 200;
 let xblank1 = splotsize*0.3;
 let xblank2 = plotsize*0.8;
 let yblank = plotsize*0.3;
+let topline = plotsize/12;
 let checkfilter = [];
-
+let minslider = [];
+let maxslider = [];
 
 
 
@@ -505,6 +507,11 @@ Promise.all([
 function setup() {
   createCanvas(width,height);
   frameRate(30);
+  for (var i = 0; i < nummeasure; i++) {
+    minslider[i] = createSlider(0,1,0,0);
+    maxslider[i] = createSlider(0,1,1,0);
+    checkfilter[i] = [0,1];
+  }
 }
 
 // function windowResized() {
@@ -528,6 +535,8 @@ function draw() {
 
   if (donecalculation) {
 
+
+
     // CHOOSE DISPLAY PLOTS
     sortmeasures();
 
@@ -545,7 +554,7 @@ function draw() {
     text('Middle values',xstartpos+2*plotsize+2*xblank1+2*splotsize+xblank2,ystartpos-50);
     text('Highest values',xstartpos+3*plotsize+4*xblank1+4*splotsize+2*xblank2,ystartpos-50);
     textSize(plotsize/12);
-    text('select measure',xstartpos+plotsize+xblank1+0.8*splotsize,16+plotsize/10);
+    text('select measure',xstartpos,16+plotsize/10);
     // Color explanation
     fill(179,226,205);
     rect(xstartpos+plotsize+2*xblank1+2*splotsize+xblank2,20,plotsize/12,plotsize/12);
