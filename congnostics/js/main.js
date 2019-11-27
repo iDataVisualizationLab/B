@@ -5,7 +5,7 @@
 ////////////////////
 
 let measures = [];  // measures[index][sample][x-var,y-var,value], value = -1 means no data
-let nummeasure = 13;
+let nummeasure = 14;
 for (var i=0; i<nummeasure; i++) {
   measures[i] = [];
 }
@@ -22,8 +22,25 @@ let measurename = [
   "Loop",
   'Length',
   'Cross-correlation',
-  'Similarity'
+  'Similarity',
+  'area'
 ];
+let measureObj = {
+  'Outlying':0,
+  'Straight':1,
+  'Skewed':2,
+  'Clumpy':3,
+  'Sparse':4,
+  'Striated':5,
+  'Trend':6,
+  'L-shape':7,
+  "Intersections":8,
+  "Loop":9,
+  'Length':10,
+  'Cross-correlation':11,
+  'Similarity':12,
+  'area':13
+};
 
 // VARIABLES FOR STORING DATA
 let data = []; // data[sample][variable][time step] for raw data
@@ -35,8 +52,17 @@ let mapvar1 = new Map();  // variable name -> index in data[variable]
 let mapvar2 = new Map(); // index -> variable name
 let timedata =[]; // store indices of time steps
 
+// VARIABLES FOR CALCULATIONS
+let numcell = 40;
+let cellsize = 1/numcell;
+let cellval = [];
+let minloop = 24;
+let maxloop = 60;
+let lag = 0;
+
 // VARIABLES FOR CONTROLLING
 let donecalculation = false;
+let needupdate = true;
 
 // VARIABLES FOR VISUALIZATION
 let displayplot = [];   // displayplot[measure index][0->numplot-1:lowest, numplot->2numplot-1: middle, 2numplot->3numplot-1: highest][sample, x-var, y-var,value]
@@ -45,19 +71,21 @@ let height = 6000;
 let plotsize = width*0.09;
 let splotsize = width*0.06;
 let numplot = 10;
+let newnumplot = 0;
 let selectedmeasure = 0;
 let choose = false;   // for selections
-let type = [0,0,0,0,0,0,1,1,1,2,2,2,2];   // for type of measures in selection button
+let type = [0,0,0,0,0,0,1,1,1,2,2,2,2,2];   // for type of measures in selection button
 let xstartpos = width*0.05;   // starting position of plots
 let ystartpos = 200;
 let xblank1 = splotsize*0.3;
 let xblank2 = plotsize*0.8;
 let yblank = plotsize*0.3;
-let topline = plotsize/12;
 let checkfilter = [];
-let minslider = [];
-let maxslider = [];
 let valfilter = [];
+for (var i = 0; i < nummeasure; i++) {
+  checkfilter[i] = false;
+  valfilter[i] = [0,1];
+}
 
 
 
@@ -85,7 +113,11 @@ $( document ).ready(function() {
         .data(measurename)
         .enter().append('div').attr('class', 'measureControl');
     let mc_label = mc.append('label').attr('class', 'col s7');
-    mc_label.append('input').attr('type', 'checkbox').attr('class', 'filled-in enableCheck');
+    mc_label.append('input').attr('type', 'checkbox').attr('class', 'filled-in enableCheck')
+        .on('change',function(d){
+          checkfilter[measureObj[d]] = this.checked;
+          needupdate = true;
+        });
     mc_label.append('span').attr('class', 'col measureLabel').text(d => d);
     mc.append('div').attr('class','sliderHolder col s5').each(function(){
       noUiSlider.create(this, {
@@ -96,7 +128,9 @@ $( document ).ready(function() {
           'max': 1
         }
       }).on('change',function(values){
-        console.log(values)
+        valfilter[measureObj[d3.select(this.target).datum()]][0] = +(values[0]);
+        valfilter[measureObj[d3.select(this.target).datum()]][1] = +(values[1]);
+        needupdate = true;
       });
     })
   }catch{}
@@ -202,7 +236,7 @@ Promise.all([
   normalization();
   calculatemeasures();
   // sortmeasures();
-  console.log(timedata);
+  // console.log(timedata);
 
 
   // NORMALIZE DATA
@@ -371,7 +405,8 @@ Promise.all([
             var dir = [0,0,0,0];    // count directions for Trend
             var countcrossing = 0;  // count #intersections
             var sumcos = 0;   // sum of cosine of angles
-            var looparr = [];
+            // var looparr = [];
+            var looplength = 0;
             xdata.forEach(function (x,xi) {
               for (var i = xi + 1; i < xdata.length; i++) {   // for all data after x
                 // count directions for MONOTONIC TREND
@@ -384,7 +419,10 @@ Promise.all([
                 // check intersections for INTERSECTIONS
                 if (i > xi + 1 && i < xdata.length-1 && xi < xdata.length-3) {
                   if (checkintersection(x,ydata[xi],xdata[xi+1],ydata[xi+1],xdata[i],ydata[i],xdata[i+1],ydata[i+1])) {
-                    looparr[countcrossing] = i-xi;
+                    // looparr[countcrossing] = i-xi;
+                    if ((i-xi) > minloop && (i-xi) < maxloop) {
+                      looplength = (looplength < (i-xi)) ? i-xi : looplength;
+                    }
                     countcrossing += 1;
                   }
                 }
@@ -452,43 +490,83 @@ Promise.all([
             //     }
             //   });
             // }
-            if (measures[8][p][index][2] < 0.05) {
-              looparr.sort(function (b,n) {return b-n});
-              measures[9][p][index][2] = looparr[Math.floor(looparr.length*0.25)]/xdata.length;
-            }
+            // if (measures[8][p][index][2] < 0.05) {
+            //   looparr.sort(function (b,n) {return b-n});
+            //   measures[9][p][index][2] = looparr[Math.floor(looparr.length*0.25)]/xdata.length;
+            // }
+            measures[9][p][index][2] = (looplength > 0) ? (maxloop-looplength)/(maxloop-minloop) : 0;
 
             // CROSS - CORRELATION
-            var lag = Math.floor(timedata.length*0.1);
             var maxr = 0;
             var covxy = 0;
             var covx = 0;
             var covy = 0;
+            var sim = 0;
+            var minsim = Infinity;
             for (var i = -lag; i < lag + 1; i++) {
               if (i <= 0) {
                 for (var j = 0; j < xdata.length - lag; j++) {
                   covxy += (xdata[j]-meanx)*(ydata[j-i]-meany);
                   covx += Math.pow(xdata[j]-meanx,2);
                   covy += Math.pow(ydata[j-i]-meany,2);
+                  sim += Math.abs(xdata[j]-ydata[j-i]);
                 }
                 var r = Math.pow(covxy/Math.sqrt(covx*covy),2);
+                minsim = (minsim > sim) ? sim : minsim;
               } else {
                 for (var j = 0; j < xdata.length - lag; j++) {
                   covxy += (xdata[j+i]-meanx)*(ydata[j]-meany);
                   covx += Math.pow(xdata[j+i]-meanx,2);
                   covy += Math.pow(ydata[j]-meany,2);
+                  sim += Math.abs(xdata[j+i]-ydata[j]);
                 }
                 var r = Math.pow(covxy/Math.sqrt(covx*covy),2);
+                minsim = (minsim > sim) ? sim : minsim;
               }
               maxr = (maxr < r) ? r : maxr;
             }
             measures[11][p][index][2] = maxr;
 
             // SIMILARITY
-            var sim = 0;
-            xdata.forEach(function (x,xi) {
-              sim += Math.abs(x-ydata[xi]);
-            });
-            measures[12][p][index][2] = 1 - sim/xdata.length;
+            measures[12][p][index][2] = 1 - minsim/(xdata.length-1);
+
+            // CALCULATE AREA
+            // set value of bins inside triangles is 1, outside triangles is 0
+            // count bin of 1, multiple it with cell area
+            for (var i = 0; i < numcell; i++) {
+              cellval[i] = [];
+              for (var j = 0; j < numcell; j++) {
+                cellval[i][j] = 0;
+              }
+            }
+            if (xdata.length > 3) {
+              for (var i = 0; i < xdata.length-2; i++) {
+                var xmax = Math.max(...[xdata[i],xdata[i+1],xdata[i+2]]);
+                var xmin = Math.min(...[xdata[i],xdata[i+1],xdata[i+2]]);
+                var ymax = Math.max(...[ydata[i],ydata[i+1],ydata[i+2]]);
+                var ymin = Math.min(...[ydata[i],ydata[i+1],ydata[i+2]]);
+                xmin = Math.floor(xmin/cellsize);
+                xmax = Math.ceil(xmax/cellsize);
+                ymin = Math.floor(ymin/cellsize);
+                ymax = Math.ceil(ymax/cellsize);
+                for (var j = xmin; j <= xmax; j++) {
+                  for (var k = ymin; k <= ymax; k++) {
+                    var xcell = j*cellsize + cellsize/2;
+                    var ycell = k*cellsize + cellsize/2;
+                    if (checkinsidetriangle(xcell,ycell,xdata[i],ydata[i],xdata[i+1],ydata[i+1],xdata[i+2],ydata[i+2])) {
+                      cellval[j][k] = 1;
+                    }
+                  }
+                }
+              }
+              measures[13][p][index][2] = 0;
+              cellval.forEach(function (row) {
+                row.forEach(function (column) {
+                  measures[13][p][index][2] += column;
+                });
+              });
+              measures[13][p][index][2] *= cellsize*cellsize;
+            }
 
 
 
@@ -552,6 +630,37 @@ Promise.all([
     return cosangle;
   }
 
+  // CHECK INSIDE TRIANGLE
+  // input: point need to check: O, 3 points of triangle: A, B, C
+  // method: cross-product of OAxAB, OBxBC, and OCxCA have the same signs -> inside
+  function checkinsidetriangle(x0_,y0_,x1_,y1_,x2_,y2_,x3_,y3_) {
+    var x0 = x0_;
+    var y0 = y0_;
+    var x1 = x1_;
+    var y1 = y1_;
+    var x2 = x2_;
+    var y2 = y2_;
+    var x3 = x3_;
+    var y3 = y3_;
+    var xOA = x1-x0;
+    var yOA = y1-y0;
+    var xOB = x2-x0;
+    var yOB = y2-y0;
+    var xOC = x3-x0;
+    var yOC = y3-y0;
+    var xAB = x2-x1;
+    var yAB = y2-y1;
+    var xBC = x3-x2;
+    var yBC = y3-y2;
+    var xCA = x1-x3;
+    var yCA = y1-y3;
+    var check1 = xOA*yAB-yOA*xAB;
+    var check2 = xOB*yBC-yOB*xBC;
+    var check3 = xOC*yCA-yOC*xCA;
+    var check = (check1 > 0 && check2 > 0 && check3 > 0) || (check1 < 0 && check2 < 0 && check3 < 0);
+    return check;
+  }
+
 
 
   donecalculation = true;
@@ -585,12 +694,6 @@ function setup() {
   let canvas = createCanvas(width,height);
   canvas.parent('mainCanvasHolder');
   frameRate(30);
-  for (var i = 0; i < nummeasure; i++) {
-    minslider[i] = createSlider(0,1,0,0);
-    maxslider[i] = createSlider(0,1,1,0);
-    checkfilter[i] = true;
-    valfilter[i] = [0,1];
-  }
 }
 
 // function windowResized() {
@@ -610,256 +713,259 @@ function setup() {
 // DRAW FUNCTION
 /////////////////
 function draw() {
-  background(180);
+  if (needupdate){
+    background(180);
 
-  if (donecalculation) {
+    if (donecalculation) {
 
-    // SLIDERS
+      // SLIDERS
 
 
-    // CHOOSE DISPLAY PLOTS
-    sortmeasures();
+      // CHOOSE DISPLAY PLOTS
+      sortmeasures();
 
-    textFont('Arial Unicode MS');
+      textFont('Arial Unicode MS');
 
-    // draw background of buttons
-    fill(160);
-    noStroke();
-    rect(0,0,width,50+plotsize/4);
-    // Write group notation
-    fill(0);
-    noStroke();
-    textSize(plotsize/8);
-    text('Lowest values',xstartpos+plotsize,ystartpos-50);
-    text('Middle values',xstartpos+2*plotsize+2*xblank1+2*splotsize+xblank2,ystartpos-50);
-    text('Highest values',xstartpos+3*plotsize+4*xblank1+4*splotsize+2*xblank2,ystartpos-50);
-    textSize(plotsize/12);
-    text('select measure',xstartpos+plotsize+2*xblank1+0.5*splotsize,16+plotsize/10);
-    // Color explanation
-    fill(179,226,205);
-    rect(xstartpos+plotsize+2*xblank1+2*splotsize+xblank2,20,plotsize/12,plotsize/12);
-    fill(253,205,172);
-    rect(xstartpos+plotsize+2*xblank1+2*splotsize+xblank2,30+plotsize/12,plotsize/12,plotsize/12);
-    fill(203,213,232);
-    rect(xstartpos+plotsize+2*xblank1+2*splotsize+xblank2,40+plotsize/6,plotsize/12,plotsize/12);
-    fill(0);
-    text('Measures from Scagnostics of non time series data',xstartpos+plotsize+2*xblank1+2*splotsize+xblank2+plotsize/12+10,16+plotsize/11);
-    text('Measures from features of connected scatterplot',xstartpos+plotsize+2*xblank1+2*splotsize+xblank2+plotsize/12+10,26+plotsize/6);
-    text('Measures under developing',xstartpos+plotsize+2*xblank1+2*splotsize+xblank2+plotsize/12+10,36+plotsize/4);
-    // Formula
-    text('Formula for this measure:',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,16+plotsize/11);
-    switch (selectedmeasure) {
-      case 0:
-        text(measurename[selectedmeasure]+' = '+'Q75+1.5(Q75-Q25)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-        text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-        break;
-      case 1:
-        text(measurename[selectedmeasure]+' = '+'distance(p1,pN)/(total edge length)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-        text('p1: first point in the series, pN: last point in the series',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-        break;
-      case 2:
-        text(measurename[selectedmeasure]+' = '+'(Q90-Q50)/(Q90-Q10)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-        text('Q90, Q50 and Q10 are correspondingly 90th, 50th and 10th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-        break;
-      case 3:
-        text(measurename[selectedmeasure]+' = '+'max_j[1-max_k(e_k)/e_j]',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-        text('e_k is edge in Runt set from e_j, e_j is edge in the graph',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-        break;
-      case 4:
-        text(measurename[selectedmeasure]+' = '+'Q90',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-        text('Q90 is 90th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-        break;
-      case 5:
-        text(measurename[selectedmeasure]+' = '+'mean of cosine of all angles',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-        // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-        break;
-      case 6:
-        text(measurename[selectedmeasure]+' = '+'maximum number of directions of e_ij / (N(N-1)/2)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-        text('e_ij is edge from i to all point j after i',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-        break;
-      case 7:
-        text(measurename[selectedmeasure]+' = '+'count number of edges that are parallel to x-axis or y-axis',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-        // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-        break;
-      case 8:
-        text(measurename[selectedmeasure]+' = '+'1-exp(- #intersections / #edges)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-        // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-        break;
-      case 9:
-        text(measurename[selectedmeasure]+' = '+'under developing',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-        // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-        break;
-      case 10:
-        text(measurename[selectedmeasure]+' = '+'mean length of all edges',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-        // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-        break;
-    }
-
-    // Create list button
-    if (!choose) {
-      switch (type[selectedmeasure]) {
-        case 0:
-          fill(179,226,205);
-          break;
-        case 1:
-          fill(253,205,172);
-          break;
-        case 2:
-          fill(203,213,232);
-          break;
-        case 3:
-          fill(244,202,228);
-          break;
-      }
-      stroke(0);
-      rect(xstartpos+plotsize+2*xblank1+1.5*splotsize,20,130,plotsize/10);
-      fill(255);
+      // draw background of buttons
+      fill(160);
       noStroke();
-      triangle(xstartpos+plotsize+2*xblank1+1.5*splotsize+125,21+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+125-plotsize/30,21+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+125-plotsize/60,19+plotsize/10);
-      triangle(xstartpos+plotsize+2*xblank1+1.5*splotsize+125,19+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+125-plotsize/30,19+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+125-plotsize/60,21);
+      rect(0,0,width,50+plotsize/4);
+      // Write group notation
       fill(0);
       noStroke();
+      textSize(plotsize/8);
+      text('Lowest values',xstartpos+plotsize,ystartpos-50);
+      text('Middle values',xstartpos+2*plotsize+2*xblank1+2*splotsize+xblank2,ystartpos-50);
+      text('Highest values',xstartpos+3*plotsize+4*xblank1+4*splotsize+2*xblank2,ystartpos-50);
       textSize(plotsize/12);
-      // textAlign(CENTER);
-      text(measurename[selectedmeasure],xstartpos+plotsize+2*xblank1+1.5*splotsize+20,16+plotsize/10);
-      // textAlign(LEFT);
-    } else {
-      for (var i = 0; i < nummeasure; i++) {
-        if (mouseX > xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize && mouseX < xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize + 130 && mouseY > 20 + i * plotsize / 10 && mouseY < 20 + (i + 1) * plotsize / 10) {
-          fill(255);
-        } else
-          switch (type[i]) {
-            case 0:
-              fill(179, 226, 205);
-              break;
-            case 1:
-              fill(253, 205, 172);
-              break;
-            case 2:
-              fill(203, 213, 232);
-              break;
-            case 3:
-              fill(244, 202, 228);
-              break;
-          }
+      text('select measure',xstartpos+plotsize+2*xblank1+0.5*splotsize,16+plotsize/10);
+      // Color explanation
+      fill(179,226,205);
+      rect(xstartpos+plotsize+2*xblank1+2*splotsize+xblank2,20,plotsize/12,plotsize/12);
+      fill(253,205,172);
+      rect(xstartpos+plotsize+2*xblank1+2*splotsize+xblank2,30+plotsize/12,plotsize/12,plotsize/12);
+      fill(203,213,232);
+      rect(xstartpos+plotsize+2*xblank1+2*splotsize+xblank2,40+plotsize/6,plotsize/12,plotsize/12);
+      fill(0);
+      text('Measures from Scagnostics of non time series data',xstartpos+plotsize+2*xblank1+2*splotsize+xblank2+plotsize/12+10,16+plotsize/11);
+      text('Measures from features of connected scatterplot',xstartpos+plotsize+2*xblank1+2*splotsize+xblank2+plotsize/12+10,26+plotsize/6);
+      text('Measures under developing',xstartpos+plotsize+2*xblank1+2*splotsize+xblank2+plotsize/12+10,36+plotsize/4);
+      // Formula
+      text('Formula for this measure:',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,16+plotsize/11);
+      switch (selectedmeasure) {
+        case 0:
+          text(measurename[selectedmeasure]+' = '+'Q75+1.5(Q75-Q25)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+          text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+          break;
+        case 1:
+          text(measurename[selectedmeasure]+' = '+'distance(p1,pN)/(total edge length)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+          text('p1: first point in the series, pN: last point in the series',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+          break;
+        case 2:
+          text(measurename[selectedmeasure]+' = '+'(Q90-Q50)/(Q90-Q10)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+          text('Q90, Q50 and Q10 are correspondingly 90th, 50th and 10th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+          break;
+        case 3:
+          text(measurename[selectedmeasure]+' = '+'max_j[1-max_k(e_k)/e_j]',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+          text('e_k is edge in Runt set from e_j, e_j is edge in the graph',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+          break;
+        case 4:
+          text(measurename[selectedmeasure]+' = '+'Q90',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+          text('Q90 is 90th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+          break;
+        case 5:
+          text(measurename[selectedmeasure]+' = '+'mean of cosine of all angles',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+          // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+          break;
+        case 6:
+          text(measurename[selectedmeasure]+' = '+'maximum number of directions of e_ij / (N(N-1)/2)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+          text('e_ij is edge from i to all point j after i',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+          break;
+        case 7:
+          text(measurename[selectedmeasure]+' = '+'count number of edges that are parallel to x-axis or y-axis',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+          // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+          break;
+        case 8:
+          text(measurename[selectedmeasure]+' = '+'1-exp(- #intersections / #edges)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+          // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+          break;
+        case 9:
+          text(measurename[selectedmeasure]+' = '+'under developing',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+          // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+          break;
+        case 10:
+          text(measurename[selectedmeasure]+' = '+'mean length of all edges',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+          // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+          break;
+      }
+
+      // Create list button
+      if (!choose) {
+        switch (type[selectedmeasure]) {
+          case 0:
+            fill(179,226,205);
+            break;
+          case 1:
+            fill(253,205,172);
+            break;
+          case 2:
+            fill(203,213,232);
+            break;
+          case 3:
+            fill(244,202,228);
+            break;
+        }
         stroke(0);
-        rect(xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize, 20 + i * plotsize / 10, 130, plotsize / 10);
+        rect(xstartpos+plotsize+2*xblank1+1.5*splotsize,20,130,plotsize/10);
+        fill(255);
+        noStroke();
+        triangle(xstartpos+plotsize+2*xblank1+1.5*splotsize+125,21+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+125-plotsize/30,21+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+125-plotsize/60,19+plotsize/10);
+        triangle(xstartpos+plotsize+2*xblank1+1.5*splotsize+125,19+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+125-plotsize/30,19+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+125-plotsize/60,21);
         fill(0);
         noStroke();
-        textSize(plotsize / 12);
+        textSize(plotsize/12);
         // textAlign(CENTER);
-        text(measurename[i], xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize + 20, 16 + (i + 1) * plotsize / 10);
+        text(measurename[selectedmeasure],xstartpos+plotsize+2*xblank1+1.5*splotsize+20,16+plotsize/10);
         // textAlign(LEFT);
-        if (i === selectedmeasure) {
-          strokeWeight(2);
+      } else {
+        for (var i = 0; i < nummeasure; i++) {
+          if (mouseX > xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize && mouseX < xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize + 130 && mouseY > 20 + i * plotsize / 10 && mouseY < 20 + (i + 1) * plotsize / 10) {
+            fill(255);
+          } else
+            switch (type[i]) {
+              case 0:
+                fill(179, 226, 205);
+                break;
+              case 1:
+                fill(253, 205, 172);
+                break;
+              case 2:
+                fill(203, 213, 232);
+                break;
+              case 3:
+                fill(244, 202, 228);
+                break;
+            }
           stroke(0);
-          line(xstartpos+plotsize+2*xblank1+1.5*splotsize+5,20+i*plotsize/10+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+5+plotsize/60,20+i*plotsize/10+2*plotsize/30);
-          line(xstartpos+plotsize+2*xblank1+1.5*splotsize+5+plotsize/60,20+i*plotsize/10+2*plotsize/30,xstartpos+plotsize+2*xblank1+1.5*splotsize+5+plotsize/30,20+i*plotsize/10+plotsize/30);
-          strokeWeight(1);
+          rect(xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize, 20 + i * plotsize / 10, 130, plotsize / 10);
+          fill(0);
+          noStroke();
+          textSize(plotsize / 12);
+          // textAlign(CENTER);
+          text(measurename[i], xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize + 20, 16 + (i + 1) * plotsize / 10);
+          // textAlign(LEFT);
+          if (i === selectedmeasure) {
+            strokeWeight(2);
+            stroke(0);
+            line(xstartpos+plotsize+2*xblank1+1.5*splotsize+5,20+i*plotsize/10+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+5+plotsize/60,20+i*plotsize/10+2*plotsize/30);
+            line(xstartpos+plotsize+2*xblank1+1.5*splotsize+5+plotsize/60,20+i*plotsize/10+2*plotsize/30,xstartpos+plotsize+2*xblank1+1.5*splotsize+5+plotsize/30,20+i*plotsize/10+plotsize/30);
+            strokeWeight(1);
+          }
         }
       }
-    }
 
 
-    // Draw plots
-    for (var i = 0; i < numplot; i++) {
-      for (var j = 0; j < 3; j++) {
+      // Draw plots
+      var correctnumplot = (newnumplot === 0) ? numplot : Math.floor(newnumplot/3);
+      for (var i = 0; i < numplot; i++) {
+        for (var j = 0; j < 3; j++) {
 
-        var sample = displayplot[selectedmeasure][i+j*numplot][0];
-        var xvar = displayplot[selectedmeasure][i+j*numplot][1];
-        var yvar = displayplot[selectedmeasure][i+j*numplot][2];
-        var value = displayplot[selectedmeasure][i+j*numplot][3];
+          var sample = displayplot[selectedmeasure][i+j*correctnumplot][0];
+          var xvar = displayplot[selectedmeasure][i+j*correctnumplot][1];
+          var yvar = displayplot[selectedmeasure][i+j*correctnumplot][2];
+          var value = displayplot[selectedmeasure][i+j*correctnumplot][3];
 
-        // draw rectangles for CS
-        fill(255);
-        stroke(0);
-        rect(xstartpos+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+i*(plotsize+yblank),plotsize,plotsize);
+          // draw rectangles for CS
+          fill(255);
+          stroke(0);
+          rect(xstartpos+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+i*(plotsize+yblank),plotsize,plotsize);
 
-        // draw rectangles for time series
-        fill(220);
-        noStroke();
-        rect(xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank)-splotsize,splotsize,splotsize); // x-data
-        stroke(0);
-        line(xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank)-splotsize,xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank));
-        line(xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank),xstartpos+plotsize+splotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank));
-        noStroke();
-        rect(xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank)-splotsize,splotsize,splotsize); // y-data
-        stroke(0);
-        line(xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank)-splotsize,xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank));
-        line(xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank),xstartpos+plotsize+2*splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank));
-
-
-        // write value of measure
-        noStroke();
-        fill(255);
-        textSize(plotsize/12);
-        text(measurename[selectedmeasure]+' = '+Math.round(value*100)/100,xstartpos+j*(plotsize+2*splotsize+2*xblank1+xblank2)+plotsize*0.6,ystartpos+i*(plotsize+yblank)-5);
-
-        // write sample notation
-        noStroke();
-        fill(0);
-        textSize(plotsize/12);
-        text(mapsample2.get(sample),xstartpos+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+i*(plotsize+yblank)-5);
-
-        // write x-variable notation
-        noStroke();
-        fill(0);
-        textSize(plotsize/14);
-        text(mapvar2.get(xvar),xstartpos+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+i*(plotsize+yblank)+1.08*plotsize);
-        text("time",xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+0.4*splotsize,ystartpos+i*(plotsize+yblank)+1.08*plotsize);
-        text("time",xstartpos+plotsize+1.4*splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+i*(plotsize+yblank)+1.08*plotsize);
-
-        //write y-variable notation
-        push();
-        noStroke();
-        fill(0);
-        textSize(plotsize/14);
-        translate(xstartpos+j*(plotsize+2*splotsize+2*xblank1+xblank2)-0.02*plotsize,ystartpos+i*(plotsize+yblank)+plotsize);
-        rotate(-PI/2);
-        text(mapvar2.get(yvar),0,0);
-        text(mapvar2.get(xvar),0,plotsize+xblank1);
-        text(mapvar2.get(yvar),0,plotsize+splotsize+2*xblank1);
-        pop();
+          // draw rectangles for time series
+          fill(220);
+          noStroke();
+          rect(xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank)-splotsize,splotsize,splotsize); // x-data
+          stroke(0);
+          line(xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank)-splotsize,xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank));
+          line(xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank),xstartpos+plotsize+splotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank));
+          noStroke();
+          rect(xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank)-splotsize,splotsize,splotsize); // y-data
+          stroke(0);
+          line(xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank)-splotsize,xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank));
+          line(xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank),xstartpos+plotsize+2*splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank));
 
 
-        // draw plots
-        timedata.forEach(function (time,step) {
-          if(step) {
-            // CS plots
-            if(data[sample][xvar][step]>=0 && data[sample][xvar][step-1]>=0 && data[sample][yvar][step]>=0 && data[sample][yvar][step-1]>=0) {
-              var x1 = xstartpos+j*(plotsize+2*splotsize+2*xblank1+xblank2)+plotsize*data[sample][xvar][step-1];
-              var x2 = xstartpos+j*(plotsize+2*splotsize+2*xblank1+xblank2)+plotsize*data[sample][xvar][step];
-              var y1 = ystartpos+i*(plotsize+yblank)+plotsize-plotsize*data[sample][yvar][step-1];
-              var y2 = ystartpos+i*(plotsize+yblank)+plotsize-plotsize*data[sample][yvar][step];
-              if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
-              else stroke((step-timedata.length/2)*255/(timedata.length/2),0,0);
-              line(x1,y1,x2,y2);
+          // write value of measure
+          noStroke();
+          fill(255);
+          textSize(plotsize/12);
+          text(measurename[selectedmeasure]+' = '+Math.round(value*100)/100,xstartpos+j*(plotsize+2*splotsize+2*xblank1+xblank2)+plotsize*0.6,ystartpos+i*(plotsize+yblank)-5);
+
+          // write sample notation
+          noStroke();
+          fill(0);
+          textSize(plotsize/12);
+          text(mapsample2.get(sample),xstartpos+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+i*(plotsize+yblank)-5);
+
+          // write x-variable notation
+          noStroke();
+          fill(0);
+          textSize(plotsize/14);
+          text(mapvar2.get(xvar),xstartpos+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+i*(plotsize+yblank)+1.08*plotsize);
+          text("time",xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+0.4*splotsize,ystartpos+i*(plotsize+yblank)+1.08*plotsize);
+          text("time",xstartpos+plotsize+1.4*splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+i*(plotsize+yblank)+1.08*plotsize);
+
+          //write y-variable notation
+          push();
+          noStroke();
+          fill(0);
+          textSize(plotsize/14);
+          translate(xstartpos+j*(plotsize+2*splotsize+2*xblank1+xblank2)-0.02*plotsize,ystartpos+i*(plotsize+yblank)+plotsize);
+          rotate(-PI/2);
+          text(mapvar2.get(yvar),0,0);
+          text(mapvar2.get(xvar),0,plotsize+xblank1);
+          text(mapvar2.get(yvar),0,plotsize+splotsize+2*xblank1);
+          pop();
+
+
+          // draw plots
+          timedata.forEach(function (time,step) {
+            if(step) {
+              // CS plots
+              if(data[sample][xvar][step]>=0 && data[sample][xvar][step-1]>=0 && data[sample][yvar][step]>=0 && data[sample][yvar][step-1]>=0) {
+                var x1 = xstartpos+j*(plotsize+2*splotsize+2*xblank1+xblank2)+plotsize*data[sample][xvar][step-1];
+                var x2 = xstartpos+j*(plotsize+2*splotsize+2*xblank1+xblank2)+plotsize*data[sample][xvar][step];
+                var y1 = ystartpos+i*(plotsize+yblank)+plotsize-plotsize*data[sample][yvar][step-1];
+                var y2 = ystartpos+i*(plotsize+yblank)+plotsize-plotsize*data[sample][yvar][step];
+                if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
+                else stroke((step-timedata.length/2)*255/(timedata.length/2),0,0);
+                line(x1,y1,x2,y2);
+              }
+              // X-var plots
+              if(data[sample][xvar][step]>=0 && data[sample][xvar][step-1]>=0) {
+                var x1 = xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+splotsize*(step-1)/timedata.length;
+                var x2 = xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+splotsize*step/timedata.length;
+                var y1 = ystartpos+plotsize+i*(plotsize+yblank)-splotsize*data[sample][xvar][step-1];
+                var y2 = ystartpos+plotsize+i*(plotsize+yblank)-splotsize*data[sample][xvar][step];
+                if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
+                else stroke((step-timedata.length/2)*255/(timedata.length/2),0,0);
+                line(x1,y1,x2,y2);
+              }
+              // Y-var plots
+              if(data[sample][yvar][step]>=0 && data[sample][yvar][step-1]>=0) {
+                var x1 = xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+splotsize*(step-1)/timedata.length;
+                var x2 = xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+splotsize*step/timedata.length;
+                var y1 = ystartpos+plotsize+i*(plotsize+yblank)-splotsize*data[sample][yvar][step-1];
+                var y2 = ystartpos+plotsize+i*(plotsize+yblank)-splotsize*data[sample][yvar][step];
+                if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
+                else stroke((step-timedata.length/2)*255/(timedata.length/2),0,0);
+                line(x1,y1,x2,y2);
+              }
             }
-            // X-var plots
-            if(data[sample][xvar][step]>=0 && data[sample][xvar][step-1]>=0) {
-              var x1 = xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+splotsize*(step-1)/timedata.length;
-              var x2 = xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+splotsize*step/timedata.length;
-              var y1 = ystartpos+plotsize+i*(plotsize+yblank)-splotsize*data[sample][xvar][step-1];
-              var y2 = ystartpos+plotsize+i*(plotsize+yblank)-splotsize*data[sample][xvar][step];
-              if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
-              else stroke((step-timedata.length/2)*255/(timedata.length/2),0,0);
-              line(x1,y1,x2,y2);
-            }
-            // Y-var plots
-            if(data[sample][yvar][step]>=0 && data[sample][yvar][step-1]>=0) {
-              var x1 = xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+splotsize*(step-1)/timedata.length;
-              var x2 = xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+splotsize*step/timedata.length;
-              var y1 = ystartpos+plotsize+i*(plotsize+yblank)-splotsize*data[sample][yvar][step-1];
-              var y2 = ystartpos+plotsize+i*(plotsize+yblank)-splotsize*data[sample][yvar][step];
-              if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
-              else stroke((step-timedata.length/2)*255/(timedata.length/2),0,0);
-              line(x1,y1,x2,y2);
-            }
-          }
-        });
-
-
+          });
+        }
       }
+
+      // needupdate = false;
     }
   }
 }
@@ -888,12 +994,12 @@ function sortmeasures() {
     var sortarr = [];
     var aindex = 0;
     measures[i].forEach(function (sample,si) {
-      var index = 0;
-      sample.forEach(function (arr) {
+      sample.forEach(function (arr,index) {
         var condition = [];
         var numfilter = 0;
         for (var j = 0; j < nummeasure; j++) {
           if (checkfilter[j]) {
+            condition[numfilter] = false;
             if (measures[j][si][index][2] >= valfilter[j][0] && measures[j][si][index][2] <= valfilter[j][1]) {
               condition[numfilter] = true;
               numfilter += 1;
@@ -908,20 +1014,28 @@ function sortmeasures() {
           sortarr[aindex] = [si,arr[0],arr[1],arr[2]];
           aindex += 1;
         }
-        index += 1;
       });
     });
     sortarr = sortarr.filter(function (b) {return b[3] >= 0});
     sortarr.sort(function (b,n) {return b[3] - n[3]});    // ascending
-    displayplot[i] = [];
-    for (var j = 0; j < numplot; j++) {  // get the lowest paths
-      displayplot[i][j] = sortarr[j];
-    }
-    for (var j = numplot; j < 2*numplot; j++) {  // get the middle paths
-      displayplot[i][j] = sortarr[Math.floor(sortarr.length*0.5)+j-numplot];
-    }
-    for (var j = 2*numplot; j < 3*numplot; j++) {  // get the highest paths
-      displayplot[i][j] = sortarr[sortarr.length+j-3*numplot];
+    if (sortarr.length >= 3*numplot) {
+      displayplot[i] = [];
+      for (var j = 0; j < numplot; j++) {  // get the lowest paths
+        displayplot[i][j] = sortarr[j];
+      }
+      for (var j = numplot; j < 2*numplot; j++) {  // get the middle paths
+        displayplot[i][j] = sortarr[Math.floor(sortarr.length*0.5)+j-numplot];
+      }
+      for (var j = 2*numplot; j < 3*numplot; j++) {  // get the highest paths
+        displayplot[i][j] = sortarr[sortarr.length+j-3*numplot];
+      }
+      newnumplot = 0;
+    } else {
+      newnumplot = sortarr.length;
+      displayplot[i] = [];
+      for (var j = 0; j < newnumplot; j++) {  // get the lowest paths
+        displayplot[i][j] = sortarr[j];
+      }
     }
   }
 }
