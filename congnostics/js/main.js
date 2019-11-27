@@ -87,7 +87,18 @@ $( document ).ready(function() {
     let mc_label = mc.append('label').attr('class', 'col s7');
     mc_label.append('input').attr('type', 'checkbox').attr('class', 'filled-in enableCheck');
     mc_label.append('span').attr('class', 'col measureLabel').text(d => d);
-    mc.append('div').attr('id')
+    mc.append('div').attr('class','sliderHolder col s5').each(function(){
+      noUiSlider.create(this, {
+        start: [0, 1],
+        connect: true,
+        range: {
+          'min': 0,
+          'max': 1
+        }
+      }).on('change',function(values){
+        console.log(values)
+      });
+    })
   }catch{}
 });
 function openNav() {
