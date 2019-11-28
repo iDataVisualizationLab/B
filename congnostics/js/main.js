@@ -108,11 +108,38 @@ $( document ).ready(function() {
     openNav();
     d3.select("#DarkTheme").on("click", switchTheme);
 
+    noUiSlider.create(orderSelection,{
+          start: 0,
+          connect: false,
+          step: 1,
+      orientation: 'vertical',
+          range: {
+            'min': 0,
+            'max': nummeasure
+          },
+        }).on('change',function (values) {
+          selectedmeasure = +values;
+          console.log(selectedmeasure);
+        });
     // generate measurement list
     let mc = d3.select('#measureControl').selectAll('.measureControl')
         .data(measurename)
         .enter().append('div').attr('class', 'measureControl row valign-wrapper');
-    mc.append('verticalSlider').attr('class','col s2');
+    // mc.append('verticalSlider').attr('class','col s2').each(function(){
+    //   noUiSlider.create(this,{
+    //     start: [0],
+    //     connect: true,
+    //     step: 1,
+    //     orientation: 'vertical',
+    //     range: {
+    //       'min': 0,
+    //       'max': nummeasure
+    //     },
+    //   }).on('change',function (values) {
+    //     selectedmeasure = +values;
+    //     console.log(selectedmeasure);
+    //   })
+    // });
     let mc_label = mc.append('label').attr('class', 'col s6');
     mc_label.append('input').attr('type', 'checkbox').attr('class', 'filled-in enableCheck')
         .on('change',function(d){
@@ -134,6 +161,7 @@ $( document ).ready(function() {
         needupdate = true;
       });
     })
+    d3.select('#orderSelection').style('height',measureControl.getBoundingClientRect().height);
   }catch{}
 });
 function openNav() {
