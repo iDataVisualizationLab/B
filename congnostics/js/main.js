@@ -112,6 +112,7 @@ $( document ).ready(function() {
     let mc = d3.select('#measureControl').selectAll('.measureControl')
         .data(measurename)
         .enter().append('div').attr('class', 'measureControl row valign-wrapper');
+    mc.append('verticalSlider').attr('class','col s2');
     let mc_label = mc.append('label').attr('class', 'col s6');
     mc_label.append('input').attr('type', 'checkbox').attr('class', 'filled-in enableCheck')
         .on('change',function(d){
@@ -119,14 +120,14 @@ $( document ).ready(function() {
           needupdate = true;
         });
     mc_label.append('span').attr('class', 'col measureLabel').text(d => d);
-    mc.append('div').attr('class','sliderHolder col s6').each(function(){
+    mc.append('div').attr('class','sliderHolder col s4').each(function(){
       noUiSlider.create(this, {
         start: [0, 1],
         connect: true,
         range: {
           'min': 0,
           'max': 1
-        }
+        },
       }).on('change',function(values){
         valfilter[measureObj[d3.select(this.target).datum()]][0] = +(values[0]);
         valfilter[measureObj[d3.select(this.target).datum()]][1] = +(values[1]);
