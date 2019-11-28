@@ -598,6 +598,7 @@ Promise.all([
                 });
               });
               measures[13][p][index][2] *= cellsize*cellsize;
+              measures[13][p][index][2] = 1 - measures[13][p][index][2];
             }
 
 
