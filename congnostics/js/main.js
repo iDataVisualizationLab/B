@@ -20,10 +20,10 @@ let measurename = [
   'L-shape',
   "Intersections",
   "Loop",
-  'Length',
-  'Cross-correlation',
   'Similarity',
-  'area'
+  'Cross-correlation',
+  'Length',
+  'Area'
 ];
 let measureObj = {
   'Outlying':0,
@@ -36,10 +36,10 @@ let measureObj = {
   'L-shape':7,
   "Intersections":8,
   "Loop":9,
-  'Length':10,
+  'Similarity':10,
   'Cross-correlation':11,
-  'Similarity':12,
-  'area':13
+  'Length':12,
+  'Area':13
 };
 
 // VARIABLES FOR STORING DATA
@@ -70,11 +70,11 @@ let width = 2000;
 let height = 6000;
 let plotsize = width*0.09;
 let splotsize = width*0.06;
-let numplot = 10;
+let numplot = 20;
 let newnumplot = 0;
 let selectedmeasure = 0;
 let choose = false;   // for selections
-let type = [0,0,0,0,0,0,1,1,1,2,2,2,2,2];   // for type of measures in selection button
+let type = [0,0,0,0,0,0,1,1,1,1,1,2,2,2];   // for type of measures in selection button
 let xstartpos = width*0.05;   // starting position of plots
 let ystartpos = 200;
 let xblank1 = splotsize*0.3;
@@ -111,15 +111,15 @@ $( document ).ready(function() {
     // generate measurement list
     let mc = d3.select('#measureControl').selectAll('.measureControl')
         .data(measurename)
-        .enter().append('div').attr('class', 'measureControl');
-    let mc_label = mc.append('label').attr('class', 'col s7');
+        .enter().append('div').attr('class', 'measureControl row valign-wrapper');
+    let mc_label = mc.append('label').attr('class', 'col s6');
     mc_label.append('input').attr('type', 'checkbox').attr('class', 'filled-in enableCheck')
         .on('change',function(d){
           checkfilter[measureObj[d]] = this.checked;
           needupdate = true;
         });
     mc_label.append('span').attr('class', 'col measureLabel').text(d => d);
-    mc.append('div').attr('class','sliderHolder col s5').each(function(){
+    mc.append('div').attr('class','sliderHolder col s6').each(function(){
       noUiSlider.create(this, {
         start: [0, 1],
         connect: true,
@@ -401,7 +401,7 @@ Promise.all([
           // CALCULATE SOME MEASURES
           // do not consider outliers and L-shape plots
           // The threshold here is 0.6
-          if (xdata.length > 1 && measures[7][p][index][2] < 0.6) {
+          if (xdata.length > 1) {
             var dir = [0,0,0,0];    // count directions for Trend
             var countcrossing = 0;  // count #intersections
             var sumcos = 0;   // sum of cosine of angles
@@ -432,8 +432,8 @@ Promise.all([
               }
             });
             // LENGTH
-            measures[10][p][index][2] = sumlengtha/(xdata.length-1);
-            if (measures[10][p][index][2] > 1) measures[10][p][index][2] = 1;
+            measures[12][p][index][2] = sumlengtha/(xdata.length-1);
+            if (measures[12][p][index][2] > 1) measures[12][p][index][2] = 1;
             // MONOTONIC TREND
             measures[6][p][index][2] = Math.max(...dir)/(xdata.length*(xdata.length-1)/2);
             // INTERSECTIONS
@@ -528,7 +528,7 @@ Promise.all([
             measures[11][p][index][2] = maxr;
 
             // SIMILARITY
-            measures[12][p][index][2] = 1 - minsim/(xdata.length-1);
+            measures[10][p][index][2] = 1 - minsim/(xdata.length-1);
 
             // CALCULATE AREA
             // set value of bins inside triangles is 1, outside triangles is 0
