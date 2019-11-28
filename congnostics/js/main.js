@@ -115,11 +115,11 @@ $( document ).ready(function() {
       orientation: 'vertical',
           range: {
             'min': 0,
-            'max': nummeasure
+            'max': nummeasure-1
           },
         }).on('change',function (values) {
           selectedmeasure = +values;
-          console.log(selectedmeasure);
+          needupdate = true;
         });
     // generate measurement list
     let mc = d3.select('#measureControl').selectAll('.measureControl')
@@ -140,13 +140,15 @@ $( document ).ready(function() {
     //     console.log(selectedmeasure);
     //   })
     // });
-    let mc_label = mc.append('label').attr('class', 'col s6');
+    let mc_label = mc.append('label').attr('class', 'col s7');
     mc_label.append('input').attr('type', 'checkbox').attr('class', 'filled-in enableCheck')
         .on('change',function(d){
           checkfilter[measureObj[d]] = this.checked;
           needupdate = true;
         });
-    mc_label.append('span').attr('class', 'col measureLabel').text(d => d);
+    mc_label.append('span').attr('class', 'col measureLabel')
+        .style('color',d=>'rgb('+getcolor(measureObj[d]).join(',')+')')
+        .text(d => d);
     mc.append('div').attr('class','sliderHolder col s4').each(function(){
       noUiSlider.create(this, {
         start: [0, 1],
@@ -160,8 +162,9 @@ $( document ).ready(function() {
         valfilter[measureObj[d3.select(this.target).datum()]][1] = +(values[1]);
         needupdate = true;
       });
-    })
-    d3.select('#orderSelection').style('height',measureControl.getBoundingClientRect().height);
+    });
+    let totalw = measureControl.getBoundingClientRect().height;
+    d3.select('#orderSelection').style('height',(totalw-totalw/nummeasure)+'px').style('margin-top','12.5px');
   }catch{}
 });
 function openNav() {
@@ -740,6 +743,23 @@ function setup() {
 
 //////////////////
 // DRAW FUNCTION
+function getcolor(measure) {
+  switch (type[measure]) {
+    case 0:
+      return [179, 226, 205];
+      break;
+    case 1:
+      return [253, 205, 172];
+      break;
+    case 2:
+      return [203, 213, 232];
+      break;
+    case 3:
+      return [244, 202, 228];
+      break;
+  }
+}
+
 /////////////////
 function draw() {
   if (needupdate){
@@ -830,20 +850,8 @@ function draw() {
 
       // Create list button
       if (!choose) {
-        switch (type[selectedmeasure]) {
-          case 0:
-            fill(179,226,205);
-            break;
-          case 1:
-            fill(253,205,172);
-            break;
-          case 2:
-            fill(203,213,232);
-            break;
-          case 3:
-            fill(244,202,228);
-            break;
-        }
+        let colorv= getcolor(selectedmeasure);
+        fill(colorv[0],colorv[1],colorv[2]);
         stroke(0);
         rect(xstartpos+plotsize+2*xblank1+1.5*splotsize,20,130,plotsize/10);
         fill(255);
@@ -994,7 +1002,7 @@ function draw() {
         }
       }
 
-      // needupdate = false;
+      needupdate = false;
     }
   }
 }
