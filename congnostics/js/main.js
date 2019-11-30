@@ -59,10 +59,15 @@ let cellval = [];
 let minloop = 24;
 let maxloop = 60;
 let lag = 0;
+let selectdata = 0;
+let filename0;
+let filename1;
+let filename2;
 
 // VARIABLES FOR CONTROLLING
 let donecalculation = false;
 let needupdate = true;
+let needcalculation = true;
 
 // VARIABLES FOR VISUALIZATION
 let displayplot = [];   // displayplot[measure index][0->numplot-1:lowest, numplot->2numplot-1: middle, 2numplot->3numplot-1: highest][sample, x-var, y-var,value]
@@ -203,510 +208,8 @@ function switchTheme(){
   d3.select('.logoLink').select('img').attr('src',"https://idatavisualizationlab.github.io/HPCC/HPCViz/images/TTUlogo.png");
   return;
 }
-// ///////////////////////////
-////////////////////////////////
-// MAIN CODE FOR ANALYZING DATA
-///////////////////////////////
-//////////////////////////////
-
-Promise.all([
-  d3.csv("data/employment.txt"),
-  d3.tsv("data/statecode.txt"),
-  d3.tsv("data/Industrycode.txt"),
-]).then(function(files) {
-  
-///////////////////////////////////////
-// READ DATA TO RESTORING VARIABLES
-//////////////////////////////////////
-
-  // MAP DATA sample
-  files[1].forEach(function(sample,p){
-    if (!mapsample0.get(sample.code)) mapsample0.set(sample.code,sample.name);  // code-string to name-string
-    if (!mapsample1.get(sample.name)) mapsample1.set(sample.name,p);  // name-string to index-number
-    if (!mapsample2.get(p)) mapsample2.set(p,sample.name);   // index-number to name-string
-    data[p] = [];
-  });
-
-  // MAP VARIABLES
-  files[2].forEach(function(variable,v){
-    if (!mapvar0.get(variable.code)) mapvar0.set(variable.code,variable.name);  // code-string to name-string
-    if (!mapvar1.get(variable.name)) mapvar1.set(variable.name,v);  // name-string to index-number
-    if (!mapvar2.get(v)) mapvar2.set(v,variable.name);
-    data.forEach(function(d){
-      d[v] = [];
-    });
-  });
-
-  // TIME NAME
-  timedata = files[0].columns.filter(function(step){return step !== "Series ID"});
-
-  // WRITE DATA TO DATA[]
-  data.forEach(function(sample){
-    sample.forEach(function (variable) {
-      timedata.forEach(function (step,s) {
-        variable[s] = -1;
-      });
-    });
-  });
-  files[0].forEach(function(line){
-    var sampleindex = mapsample1.get(mapsample0.get(line["Series ID"].substr(3,2)));
-    var varindex = mapvar1.get(mapvar0.get(line["Series ID"].substr(10,8)));
-    timedata.forEach(function(step,s){
-      data[sampleindex][varindex][s] = isNaN(parseFloat(line[step])) ? -1 : parseFloat(line[step]);
-    });
-  });
-
-/////////////////////////
-// END OF READING DATA
-///////////////////////
-
-///////////////////////
-// CALCULATION CODE
-/////////////////////
-
-  // CONTROL CALCULATION
-  normalization();
-  calculatemeasures();
-  // sortmeasures();
-  // console.log(timedata);
 
 
-  // NORMALIZE DATA
-  // find min and max of each series -> normalize
-  // local normalization
-  function normalization() {
-    data.forEach(function(sample,p) {
-      sample.forEach(function(variable,v) {
-        var svariable = variable.filter(function(d){return d >= 0});
-        var mymax = Math.max(...svariable);
-        var mymin = Math.min(...svariable);
-        var myrange = mymax - mymin;
-        variable.forEach(function(step,s){
-          data[p][v][s] = (step !== -1) ? (step - mymin)/myrange : -1;
-        });
-      });
-    });
-    // WRITE DATA TO DRAWDATA[]
-    // data.forEach(function (sample,p) {
-    //   drawdata[p] = [];
-    //   sample.forEach(function (variable,v) {
-    //     drawdata[p][v] = variable.filter(function(step){return step >=0});
-    //   });
-    // });
-  }
-
-  // CALCULATE MEASURES FOR TIME SERIES
-  function calculatemeasures () {
-
-    data.forEach(function (sample,p) {
-
-      // Declare measure structures
-      for (var i=0; i< nummeasure; i++) {
-        measures[i][p] = [];
-      }
-      var index = 0;
-      // Each plot
-      for (var yvar = 0; yvar < mapvar0.size; yvar++) {
-        for (var xvar = 0; xvar < yvar; xvar++) {
-
-          // Initialize measure values
-          for (var i = 0; i < nummeasure; i++) {
-            measures[i][p][index] = [xvar,yvar,-1];
-          }
-
-          // create calculation data
-          var xdata = sample[xvar].map(function (x) {return x});
-          var ydata = sample[yvar].map(function (y) {return y});
-          xdata.forEach(function(x,ix){
-            ydata[ix] = (x === -1) ? -1 : ydata[ix];
-          });
-          ydata.forEach(function(y,iy){
-            xdata[iy] = (y === -1) ? -1 : xdata[iy];
-          });
-          xdata = xdata.filter(function(x){return x !== -1});
-          ydata = ydata.filter(function(y){return y !== -1});
-          if (xdata.length !== ydata.length)
-            console.log("2 series have different length at: sample = " + p + ", x-var = " + xvar + ", y-var = " + yvar);
-
-          // CALCULATIONS RELATED LENGTH
-          var edgelength = [];
-          var sumlength = 0;
-          xdata.forEach(function (x,xi) {
-            if (xi) {
-              var xlength = x - xdata[xi-1];
-              var ylength = ydata[xi] - ydata[xi-1];
-              edgelength[xi-1] = Math.sqrt(xlength*xlength+ylength*ylength);
-              sumlength += edgelength[xi-1];
-            }
-          });
-          var sortlength = edgelength.map(function (v) {return v});
-          sortlength.sort(function (b,n) {return b-n});   // ascending
-
-          // OUTLYING
-          if (xdata.length > 1) {
-            measures[0][p][index][2] = 0;
-            var outlier = [];
-            var sindex = 0;
-            var q1 = sortlength[Math.floor(sortlength.length*0.25)];
-            var q3 = sortlength[Math.floor(sortlength.length*0.75)];
-            var upperlimit = q3 + 1.5*(q3 - q1);
-            edgelength.forEach(function (e,ei) {
-              if (ei === 0) {
-                if (e > upperlimit) {
-                  outlier[sindex] = ei;
-                  measures[0][p][index][2] += e;
-                  sindex += 1;
-                }
-              }
-              else if (ei === edgelength.length - 1) {
-                if (e > upperlimit) {
-                  outlier[sindex] = ei + 1;
-                  if (outlier[sindex-1] !== outlier[sindex] - 1) {
-                    measures[0][p][index][2] += e;
-                  }
-                  sindex += 1;
-                }
-                if (e > upperlimit && edgelength[ei-1] > upperlimit) {
-                  outlier[sindex] = ei;
-                  if (outlier[sindex-1] !== outlier[sindex] - 1) {
-                    measures[0][p][index][2] += e + edgelength[ei-1];
-                  } else {
-                    measures[0][p][index][2] += e;
-                  }
-                  sindex += 1;
-                }
-              }
-              else {
-                if (e > upperlimit && edgelength[ei-1] > upperlimit) {
-                  outlier[sindex] = ei;
-                  if (outlier[sindex-1] !== outlier[sindex] - 1) {
-                    measures[0][p][index][2] += e + edgelength[ei-1];
-                  } else {
-                    measures[0][p][index][2] += e;
-                  }
-                  sindex += 1;
-                }
-              }
-            });
-            measures[0][p][index][2] /= sumlength;
-            var adjust = 0;
-            outlier.forEach(function (v) {
-              xdata.splice(v-adjust,1);
-              ydata.splice(v-adjust,1);
-              adjust += 1;
-            });
-          }
-
-          // CALCULATIONS RELATED LENGTH AFTER REMOVING OUTLIERS
-          var edgelengtha = [];
-          var sumlengtha = 0;
-          var meanx = 0;
-          var meany = 0;
-          xdata.forEach(function (x,xi) {
-            if (xi) {
-              var xlength = x - xdata[xi-1];
-              var ylength = ydata[xi] - ydata[xi-1];
-              edgelengtha[xi-1] = Math.sqrt(xlength*xlength+ylength*ylength);
-              sumlengtha += edgelengtha[xi-1];
-            }
-            meanx += x;
-            meany += ydata[xi];
-          });
-          meanx /= xdata.length;
-          meany /= ydata.length;
-          var sortlengtha = edgelengtha.map(function (v) {return v});
-          sortlengtha.sort(function (b,n) {return b-n});   // ascending
-
-          // L-SHAPE
-          if (xdata.length > 1) {
-            measures[7][p][index][2] = 0;
-            var count = 0;
-            xdata.forEach(function (x,xi) {
-              if (xi) {
-                if (x === xdata[xi - 1] || ydata[xi] === ydata[xi - 1]) count += 1;
-              }
-            });
-            // L-SHAPE
-            measures[7][p][index][2] = count/xdata.length;  // or timedata.length
-          }
-
-          // CALCULATE SOME MEASURES
-          // do not consider outliers and L-shape plots
-          // The threshold here is 0.6
-          if (xdata.length > 1) {
-            var dir = [0,0,0,0];    // count directions for Trend
-            var countcrossing = 0;  // count #intersections
-            var sumcos = 0;   // sum of cosine of angles
-            // var looparr = [];
-            var looplength = 0;
-            xdata.forEach(function (x,xi) {
-              for (var i = xi + 1; i < xdata.length; i++) {   // for all data after x
-                // count directions for MONOTONIC TREND
-                var xx = xdata[i] - x;
-                var yy = ydata[i] - ydata[xi];
-                if (xx > 0 && yy > 0) dir[0] += 1;
-                if (xx < 0 && yy > 0) dir[1] += 1;
-                if (xx < 0 && yy < 0) dir[2] += 1;
-                if (xx > 0 && yy < 0) dir[3] += 1;
-                // check intersections for INTERSECTIONS
-                if (i > xi + 1 && i < xdata.length-1 && xi < xdata.length-3) {
-                  if (checkintersection(x,ydata[xi],xdata[xi+1],ydata[xi+1],xdata[i],ydata[i],xdata[i+1],ydata[i+1])) {
-                    // looparr[countcrossing] = i-xi;
-                    if ((i-xi) > minloop && (i-xi) < maxloop) {
-                      looplength = (looplength < (i-xi)) ? i-xi : looplength;
-                    }
-                    countcrossing += 1;
-                  }
-                }
-              }
-              if (xi > 0 && xi < xdata.length - 1) {
-                sumcos += Math.abs(calculatecos(xdata[xi-1],ydata[xi-1],x,ydata[xi],xdata[xi+1],ydata[xi+1]));
-              }
-            });
-            // LENGTH
-            measures[12][p][index][2] = sumlengtha/(xdata.length-1);
-            if (measures[12][p][index][2] > 1) measures[12][p][index][2] = 1;
-            // MONOTONIC TREND
-            measures[6][p][index][2] = Math.max(...dir)/(xdata.length*(xdata.length-1)/2);
-            // INTERSECTIONS
-            measures[8][p][index][2] = 1-Math.exp(-countcrossing/(xdata.length-1));
-            // STRIATED
-            measures[5][p][index][2] = sumcos/(xdata.length-2);
-            // STRAIGHT
-            measures[1][p][index][2] = Math.sqrt(Math.pow(xdata[xdata.length-1]-xdata[0],2)+Math.pow(ydata[ydata.length-1]-ydata[0],2))/sumlengtha;
-            // SKEWED
-            var q10 = sortlengtha[Math.floor(sortlengtha.length*0.1)];
-            var q50 = sortlengtha[Math.floor(sortlengtha.length*0.5)];
-            var q90 = sortlengtha[Math.floor(sortlengtha.length*0.9)];
-            measures[2][p][index][2] = (q90-q50)/(q90-q10);
-            // SPARSE
-            measures[4][p][index][2] = q90;
-
-            // CLUMPY
-            xdata.forEach(function (x,xi) {
-              var countleft = 0;
-              var countright = 0;
-              var maxleft = 0;
-              var maxright = 0;
-              for (var j = xi - 1; j >= 0; j--) {
-                if (edgelengtha[j] >= edgelengtha[xi]) break;
-                countleft += 1;
-                maxleft = (maxleft < edgelengtha[j]) ? edgelengtha[j] : maxleft;
-              }
-              for (j = xi+1; j < xdata.length; j++) {
-                if (edgelengtha[j] >= edgelengtha[xi]) break;
-                countright += 1;
-                maxright = (maxright < edgelengtha[j]) ? edgelengtha[j] : maxright;
-              }
-              if (countleft > 0 && countright > 0) {
-                var maxxi = (countright > countleft) ? maxright : maxleft;
-                maxxi /= edgelengtha[xi];
-                maxxi = 1 - maxxi;
-                measures[3][p][index][2] = (measures[3][p][index][2] < maxxi) ? maxxi : measures[3][p][index][2];
-              }
-            });
-
-            // LOOP
-            // if (measures[8][p][index][2] < 0.1 && measures[10][p][index][2] < 0.01) {
-            //   var windowsize = Math.floor(xdata.length*0.3);
-            //   measures[9][p][index][2] = 0;
-            //   var dist;
-            //   xdata.forEach(function (x,xi) {
-            //     if (xi + windowsize < xdata.length) {
-            //       dist = Math.sqrt(Math.pow(xdata[xi+windowsize]-x,2)+Math.pow(ydata[xi+windowsize]-ydata[xi],2));
-            //       var windowlength = 0;
-            //       for (var i = xi; i < xi + windowsize; i++) {
-            //         windowlength += Math.sqrt(Math.pow(xdata[xi+i]-x,2)+Math.pow(ydata[xi+i]-ydata[xi],2));
-            //       }
-            //       measures[9][p][index][2] = (measures[9][p][index][2] < (1-dist/windowlength)) ? (1-dist/windowlength) : measures[9][p][index][2];
-            //     }
-            //   });
-            // }
-            // if (measures[8][p][index][2] < 0.05) {
-            //   looparr.sort(function (b,n) {return b-n});
-            //   measures[9][p][index][2] = looparr[Math.floor(looparr.length*0.25)]/xdata.length;
-            // }
-            measures[9][p][index][2] = (looplength > 0) ? (maxloop-looplength)/(maxloop-minloop) : 0;
-
-            // CROSS - CORRELATION
-            var maxr = 0;
-            var covxy = 0;
-            var covx = 0;
-            var covy = 0;
-            var sim = 0;
-            var minsim = Infinity;
-            for (var i = -lag; i < lag + 1; i++) {
-              if (i <= 0) {
-                for (var j = 0; j < xdata.length - lag; j++) {
-                  covxy += (xdata[j]-meanx)*(ydata[j-i]-meany);
-                  covx += Math.pow(xdata[j]-meanx,2);
-                  covy += Math.pow(ydata[j-i]-meany,2);
-                  sim += Math.abs(xdata[j]-ydata[j-i]);
-                }
-                var r = Math.pow(covxy/Math.sqrt(covx*covy),2);
-                minsim = (minsim > sim) ? sim : minsim;
-              } else {
-                for (var j = 0; j < xdata.length - lag; j++) {
-                  covxy += (xdata[j+i]-meanx)*(ydata[j]-meany);
-                  covx += Math.pow(xdata[j+i]-meanx,2);
-                  covy += Math.pow(ydata[j]-meany,2);
-                  sim += Math.abs(xdata[j+i]-ydata[j]);
-                }
-                var r = Math.pow(covxy/Math.sqrt(covx*covy),2);
-                minsim = (minsim > sim) ? sim : minsim;
-              }
-              maxr = (maxr < r) ? r : maxr;
-            }
-            measures[11][p][index][2] = maxr;
-
-            // SIMILARITY
-            measures[10][p][index][2] = 1 - minsim/(xdata.length-1);
-
-            // CALCULATE AREA
-            // set value of bins inside triangles is 1, outside triangles is 0
-            // count bin of 1, multiple it with cell area
-            for (var i = 0; i < numcell; i++) {
-              cellval[i] = [];
-              for (var j = 0; j < numcell; j++) {
-                cellval[i][j] = 0;
-              }
-            }
-            if (xdata.length > 3) {
-              for (var i = 0; i < xdata.length-2; i++) {
-                var xmax = Math.max(...[xdata[i],xdata[i+1],xdata[i+2]]);
-                var xmin = Math.min(...[xdata[i],xdata[i+1],xdata[i+2]]);
-                var ymax = Math.max(...[ydata[i],ydata[i+1],ydata[i+2]]);
-                var ymin = Math.min(...[ydata[i],ydata[i+1],ydata[i+2]]);
-                xmin = Math.floor(xmin/cellsize);
-                xmax = Math.ceil(xmax/cellsize);
-                ymin = Math.floor(ymin/cellsize);
-                ymax = Math.ceil(ymax/cellsize);
-                for (var j = xmin; j <= xmax; j++) {
-                  for (var k = ymin; k <= ymax; k++) {
-                    var xcell = j*cellsize + cellsize/2;
-                    var ycell = k*cellsize + cellsize/2;
-                    if (checkinsidetriangle(xcell,ycell,xdata[i],ydata[i],xdata[i+1],ydata[i+1],xdata[i+2],ydata[i+2])) {
-                      cellval[j][k] = 1;
-                    }
-                  }
-                }
-              }
-              measures[13][p][index][2] = 0;
-              cellval.forEach(function (row) {
-                row.forEach(function (column) {
-                  measures[13][p][index][2] += column;
-                });
-              });
-              measures[13][p][index][2] *= cellsize*cellsize;
-              measures[13][p][index][2] = 1 - measures[13][p][index][2];
-            }
-
-
-
-
-          }
-
-
-
-          
-
-          
-
-          // increase index
-          index += 1;
-        }
-      }
-
-    });
-  }
-
-  // CHECK INTERSECTIONS
-  function checkintersection(x1_,y1_,x2_,y2_,x3_,y3_,x4_,y4_) {
-    var x1 = x1_;
-    var y1 = y1_;
-    var x2 = x2_;
-    var y2 = y2_;
-    var x3 = x3_;
-    var y3 = y3_;
-    var x4 = x4_;
-    var y4 = y4_;
-    var v1x = x2 - x1;
-    var v1y = y2 - y1;
-    var v2x = x4 - x3;
-    var v2y = y4 - y3;
-    var v23x = x3 - x2;
-    var v23y = y3 - y2;
-    var v24x = x4 - x2;
-    var v24y = y4 - y2;
-    var v41x = x1 - x4;
-    var v41y = y1 - y4;
-    var checkv1 = (v1x*v23y-v1y*v23x)*(v1x*v24y-v1y*v24x);
-    var checkv2 = (v2x*v41y-v2y*v41x)*(v2y*v24x-v2x*v24y);
-    var check = (checkv1 < 0) && (checkv2 < 0);
-    return check;
-  }
-
-  // CALCULATE COSINE OF ANGLES
-  // input: coordinates of 3 points: 1, 2 and 3
-  // construct vector 1->2 and 2->3
-  // calculate dot product of 2 vectors
-  // get the angle
-  function calculatecos(x1_,y1_,x2_,y2_,x3_,y3_) {
-    var v1x = x2_ - x1_;
-    var v1y = y2_ - y1_;
-    var v2x = x3_ - x2_;
-    var v2y = y3_ - y2_;
-    var dotproduct = v1x*v2x+v1y*v2y;
-    var v1 = Math.sqrt(v1x*v1x+v1y*v1y);
-    var v2 = Math.sqrt(v2x*v2x+v2y*v2y);
-    var cosangle = dotproduct/(v1*v2);
-    return cosangle;
-  }
-
-  // CHECK INSIDE TRIANGLE
-  // input: point need to check: O, 3 points of triangle: A, B, C
-  // method: cross-product of OAxAB, OBxBC, and OCxCA have the same signs -> inside
-  function checkinsidetriangle(x0_,y0_,x1_,y1_,x2_,y2_,x3_,y3_) {
-    var x0 = x0_;
-    var y0 = y0_;
-    var x1 = x1_;
-    var y1 = y1_;
-    var x2 = x2_;
-    var y2 = y2_;
-    var x3 = x3_;
-    var y3 = y3_;
-    var xOA = x1-x0;
-    var yOA = y1-y0;
-    var xOB = x2-x0;
-    var yOB = y2-y0;
-    var xOC = x3-x0;
-    var yOC = y3-y0;
-    var xAB = x2-x1;
-    var yAB = y2-y1;
-    var xBC = x3-x2;
-    var yBC = y3-y2;
-    var xCA = x1-x3;
-    var yCA = y1-y3;
-    var check1 = xOA*yAB-yOA*xAB;
-    var check2 = xOB*yBC-yOB*xBC;
-    var check3 = xOC*yCA-yOC*xCA;
-    var check = (check1 > 0 && check2 > 0 && check3 > 0) || (check1 < 0 && check2 < 0 && check3 < 0);
-    return check;
-  }
-
-
-
-  donecalculation = true;
-  d3.select('.cover').classed('hidden', true);
-///////////////////////
-// END OF CALCULATION
-///////////////////////
-});
-/////////////////////
-////////////////////
-// END OF MAIN CODE
-////////////////////
-////////////////////
 
 
 
@@ -1077,3 +580,526 @@ function sortmeasures() {
     }
   }
 }
+
+// ///////////////////////////
+////////////////////////////////
+// MAIN CODE FOR ANALYZING DATA
+///////////////////////////////
+//////////////////////////////
+function analyzedata() {
+  switch (selectdata) {
+    case 0:
+      filename0 = 'data/employment.txt';
+      filename1 = 'data/statecode.txt';
+      filename2 = 'data/Industrycode.txt'
+  }
+
+  Promise.all([
+    d3.csv(filename0),
+    d3.tsv(filename1),
+    d3.tsv(filename2),
+  ]).then(function (files) {
+
+///////////////////////////////////////
+// READ DATA TO RESTORING VARIABLES
+//////////////////////////////////////
+
+    // MAP DATA sample
+    files[1].forEach(function (sample, p) {
+      if (!mapsample0.get(sample.code)) mapsample0.set(sample.code, sample.name);  // code-string to name-string
+      if (!mapsample1.get(sample.name)) mapsample1.set(sample.name, p);  // name-string to index-number
+      if (!mapsample2.get(p)) mapsample2.set(p, sample.name);   // index-number to name-string
+      data[p] = [];
+    });
+
+    // MAP VARIABLES
+    files[2].forEach(function (variable, v) {
+      if (!mapvar0.get(variable.code)) mapvar0.set(variable.code, variable.name);  // code-string to name-string
+      if (!mapvar1.get(variable.name)) mapvar1.set(variable.name, v);  // name-string to index-number
+      if (!mapvar2.get(v)) mapvar2.set(v, variable.name);
+      data.forEach(function (d) {
+        d[v] = [];
+      });
+    });
+
+    // TIME NAME
+    timedata = files[0].columns.filter(function (step) {
+      return step !== "Series ID"
+    });
+
+    // WRITE DATA TO DATA[]
+    data.forEach(function (sample) {
+      sample.forEach(function (variable) {
+        timedata.forEach(function (step, s) {
+          variable[s] = -1;
+        });
+      });
+    });
+    files[0].forEach(function (line) {
+      var sampleindex = mapsample1.get(mapsample0.get(line["Series ID"].substr(3, 2)));
+      var varindex = mapvar1.get(mapvar0.get(line["Series ID"].substr(10, 8)));
+      timedata.forEach(function (step, s) {
+        data[sampleindex][varindex][s] = isNaN(parseFloat(line[step])) ? -1 : parseFloat(line[step]);
+      });
+    });
+
+/////////////////////////
+// END OF READING DATA
+///////////////////////
+
+///////////////////////
+// CALCULATION CODE
+/////////////////////
+
+    // CONTROL CALCULATION
+    normalization();
+    calculatemeasures();
+    // sortmeasures();
+    // console.log(timedata);
+
+
+    // NORMALIZE DATA
+    // find min and max of each series -> normalize
+    // local normalization
+    function normalization() {
+      data.forEach(function (sample, p) {
+        sample.forEach(function (variable, v) {
+          var svariable = variable.filter(function (d) {
+            return d >= 0
+          });
+          var mymax = Math.max(...svariable);
+          var mymin = Math.min(...svariable);
+          var myrange = mymax - mymin;
+          variable.forEach(function (step, s) {
+            data[p][v][s] = (step !== -1) ? (step - mymin) / myrange : -1;
+          });
+        });
+      });
+      // WRITE DATA TO DRAWDATA[]
+      // data.forEach(function (sample,p) {
+      //   drawdata[p] = [];
+      //   sample.forEach(function (variable,v) {
+      //     drawdata[p][v] = variable.filter(function(step){return step >=0});
+      //   });
+      // });
+    }
+
+    // CALCULATE MEASURES FOR TIME SERIES
+    function calculatemeasures() {
+
+      data.forEach(function (sample, p) {
+
+        // Declare measure structures
+        for (var i = 0; i < nummeasure; i++) {
+          measures[i][p] = [];
+        }
+        var index = 0;
+        // Each plot
+        for (var yvar = 0; yvar < mapvar0.size; yvar++) {
+          for (var xvar = 0; xvar < yvar; xvar++) {
+
+            // Initialize measure values
+            for (var i = 0; i < nummeasure; i++) {
+              measures[i][p][index] = [xvar, yvar, -1];
+            }
+
+            // create calculation data
+            var xdata = sample[xvar].map(function (x) {
+              return x
+            });
+            var ydata = sample[yvar].map(function (y) {
+              return y
+            });
+            xdata.forEach(function (x, ix) {
+              ydata[ix] = (x === -1) ? -1 : ydata[ix];
+            });
+            ydata.forEach(function (y, iy) {
+              xdata[iy] = (y === -1) ? -1 : xdata[iy];
+            });
+            xdata = xdata.filter(function (x) {
+              return x !== -1
+            });
+            ydata = ydata.filter(function (y) {
+              return y !== -1
+            });
+            if (xdata.length !== ydata.length)
+              console.log("2 series have different length at: sample = " + p + ", x-var = " + xvar + ", y-var = " + yvar);
+
+            // CALCULATIONS RELATED LENGTH
+            var edgelength = [];
+            var sumlength = 0;
+            xdata.forEach(function (x, xi) {
+              if (xi) {
+                var xlength = x - xdata[xi - 1];
+                var ylength = ydata[xi] - ydata[xi - 1];
+                edgelength[xi - 1] = Math.sqrt(xlength * xlength + ylength * ylength);
+                sumlength += edgelength[xi - 1];
+              }
+            });
+            var sortlength = edgelength.map(function (v) {
+              return v
+            });
+            sortlength.sort(function (b, n) {
+              return b - n
+            });   // ascending
+
+            // OUTLYING
+            if (xdata.length > 1) {
+              measures[0][p][index][2] = 0;
+              var outlier = [];
+              var sindex = 0;
+              var q1 = sortlength[Math.floor(sortlength.length * 0.25)];
+              var q3 = sortlength[Math.floor(sortlength.length * 0.75)];
+              var upperlimit = q3 + 1.5 * (q3 - q1);
+              edgelength.forEach(function (e, ei) {
+                if (ei === 0) {
+                  if (e > upperlimit) {
+                    outlier[sindex] = ei;
+                    measures[0][p][index][2] += e;
+                    sindex += 1;
+                  }
+                } else if (ei === edgelength.length - 1) {
+                  if (e > upperlimit) {
+                    outlier[sindex] = ei + 1;
+                    if (outlier[sindex - 1] !== outlier[sindex] - 1) {
+                      measures[0][p][index][2] += e;
+                    }
+                    sindex += 1;
+                  }
+                  if (e > upperlimit && edgelength[ei - 1] > upperlimit) {
+                    outlier[sindex] = ei;
+                    if (outlier[sindex - 1] !== outlier[sindex] - 1) {
+                      measures[0][p][index][2] += e + edgelength[ei - 1];
+                    } else {
+                      measures[0][p][index][2] += e;
+                    }
+                    sindex += 1;
+                  }
+                } else {
+                  if (e > upperlimit && edgelength[ei - 1] > upperlimit) {
+                    outlier[sindex] = ei;
+                    if (outlier[sindex - 1] !== outlier[sindex] - 1) {
+                      measures[0][p][index][2] += e + edgelength[ei - 1];
+                    } else {
+                      measures[0][p][index][2] += e;
+                    }
+                    sindex += 1;
+                  }
+                }
+              });
+              measures[0][p][index][2] /= sumlength;
+              var adjust = 0;
+              outlier.forEach(function (v) {
+                xdata.splice(v - adjust, 1);
+                ydata.splice(v - adjust, 1);
+                adjust += 1;
+              });
+            }
+
+            // CALCULATIONS RELATED LENGTH AFTER REMOVING OUTLIERS
+            var edgelengtha = [];
+            var sumlengtha = 0;
+            var meanx = 0;
+            var meany = 0;
+            xdata.forEach(function (x, xi) {
+              if (xi) {
+                var xlength = x - xdata[xi - 1];
+                var ylength = ydata[xi] - ydata[xi - 1];
+                edgelengtha[xi - 1] = Math.sqrt(xlength * xlength + ylength * ylength);
+                sumlengtha += edgelengtha[xi - 1];
+              }
+              meanx += x;
+              meany += ydata[xi];
+            });
+            meanx /= xdata.length;
+            meany /= ydata.length;
+            var sortlengtha = edgelengtha.map(function (v) {
+              return v
+            });
+            sortlengtha.sort(function (b, n) {
+              return b - n
+            });   // ascending
+
+            // L-SHAPE
+            if (xdata.length > 1) {
+              measures[7][p][index][2] = 0;
+              var count = 0;
+              xdata.forEach(function (x, xi) {
+                if (xi) {
+                  if (x === xdata[xi - 1] || ydata[xi] === ydata[xi - 1]) count += 1;
+                }
+              });
+              // L-SHAPE
+              measures[7][p][index][2] = count / xdata.length;  // or timedata.length
+            }
+
+            // CALCULATE SOME MEASURES
+            // do not consider outliers and L-shape plots
+            // The threshold here is 0.6
+            if (xdata.length > 1) {
+              var dir = [0, 0, 0, 0];    // count directions for Trend
+              var countcrossing = 0;  // count #intersections
+              var sumcos = 0;   // sum of cosine of angles
+              // var looparr = [];
+              var looplength = 0;
+              xdata.forEach(function (x, xi) {
+                for (var i = xi + 1; i < xdata.length; i++) {   // for all data after x
+                  // count directions for MONOTONIC TREND
+                  var xx = xdata[i] - x;
+                  var yy = ydata[i] - ydata[xi];
+                  if (xx > 0 && yy > 0) dir[0] += 1;
+                  if (xx < 0 && yy > 0) dir[1] += 1;
+                  if (xx < 0 && yy < 0) dir[2] += 1;
+                  if (xx > 0 && yy < 0) dir[3] += 1;
+                  // check intersections for INTERSECTIONS
+                  if (i > xi + 1 && i < xdata.length - 1 && xi < xdata.length - 3) {
+                    if (checkintersection(x, ydata[xi], xdata[xi + 1], ydata[xi + 1], xdata[i], ydata[i], xdata[i + 1], ydata[i + 1])) {
+                      // looparr[countcrossing] = i-xi;
+                      if ((i - xi) > minloop && (i - xi) < maxloop) {
+                        looplength = (looplength < (i - xi)) ? i - xi : looplength;
+                      }
+                      countcrossing += 1;
+                    }
+                  }
+                }
+                if (xi > 0 && xi < xdata.length - 1) {
+                  sumcos += Math.abs(calculatecos(xdata[xi - 1], ydata[xi - 1], x, ydata[xi], xdata[xi + 1], ydata[xi + 1]));
+                }
+              });
+              // LENGTH
+              measures[12][p][index][2] = sumlengtha / (xdata.length - 1);
+              if (measures[12][p][index][2] > 1) measures[12][p][index][2] = 1;
+              // MONOTONIC TREND
+              measures[6][p][index][2] = Math.max(...dir) / (xdata.length * (xdata.length - 1) / 2);
+              // INTERSECTIONS
+              measures[8][p][index][2] = 1 - Math.exp(-countcrossing / (xdata.length - 1));
+              // STRIATED
+              measures[5][p][index][2] = sumcos / (xdata.length - 2);
+              // STRAIGHT
+              measures[1][p][index][2] = Math.sqrt(Math.pow(xdata[xdata.length - 1] - xdata[0], 2) + Math.pow(ydata[ydata.length - 1] - ydata[0], 2)) / sumlengtha;
+              // SKEWED
+              var q10 = sortlengtha[Math.floor(sortlengtha.length * 0.1)];
+              var q50 = sortlengtha[Math.floor(sortlengtha.length * 0.5)];
+              var q90 = sortlengtha[Math.floor(sortlengtha.length * 0.9)];
+              measures[2][p][index][2] = (q90 - q50) / (q90 - q10);
+              // SPARSE
+              measures[4][p][index][2] = q90;
+
+              // CLUMPY
+              xdata.forEach(function (x, xi) {
+                var countleft = 0;
+                var countright = 0;
+                var maxleft = 0;
+                var maxright = 0;
+                for (var j = xi - 1; j >= 0; j--) {
+                  if (edgelengtha[j] >= edgelengtha[xi]) break;
+                  countleft += 1;
+                  maxleft = (maxleft < edgelengtha[j]) ? edgelengtha[j] : maxleft;
+                }
+                for (j = xi + 1; j < xdata.length; j++) {
+                  if (edgelengtha[j] >= edgelengtha[xi]) break;
+                  countright += 1;
+                  maxright = (maxright < edgelengtha[j]) ? edgelengtha[j] : maxright;
+                }
+                if (countleft > 0 && countright > 0) {
+                  var maxxi = (countright > countleft) ? maxright : maxleft;
+                  maxxi /= edgelengtha[xi];
+                  maxxi = 1 - maxxi;
+                  measures[3][p][index][2] = (measures[3][p][index][2] < maxxi) ? maxxi : measures[3][p][index][2];
+                }
+              });
+
+              // LOOP
+              // if (measures[8][p][index][2] < 0.1 && measures[10][p][index][2] < 0.01) {
+              //   var windowsize = Math.floor(xdata.length*0.3);
+              //   measures[9][p][index][2] = 0;
+              //   var dist;
+              //   xdata.forEach(function (x,xi) {
+              //     if (xi + windowsize < xdata.length) {
+              //       dist = Math.sqrt(Math.pow(xdata[xi+windowsize]-x,2)+Math.pow(ydata[xi+windowsize]-ydata[xi],2));
+              //       var windowlength = 0;
+              //       for (var i = xi; i < xi + windowsize; i++) {
+              //         windowlength += Math.sqrt(Math.pow(xdata[xi+i]-x,2)+Math.pow(ydata[xi+i]-ydata[xi],2));
+              //       }
+              //       measures[9][p][index][2] = (measures[9][p][index][2] < (1-dist/windowlength)) ? (1-dist/windowlength) : measures[9][p][index][2];
+              //     }
+              //   });
+              // }
+              // if (measures[8][p][index][2] < 0.05) {
+              //   looparr.sort(function (b,n) {return b-n});
+              //   measures[9][p][index][2] = looparr[Math.floor(looparr.length*0.25)]/xdata.length;
+              // }
+              measures[9][p][index][2] = (looplength > 0) ? (maxloop - looplength) / (maxloop - minloop) : 0;
+
+              // CROSS - CORRELATION
+              var maxr = 0;
+              var covxy = 0;
+              var covx = 0;
+              var covy = 0;
+              var sim = 0;
+              var minsim = Infinity;
+              for (var i = -lag; i < lag + 1; i++) {
+                if (i <= 0) {
+                  for (var j = 0; j < xdata.length - lag; j++) {
+                    covxy += (xdata[j] - meanx) * (ydata[j - i] - meany);
+                    covx += Math.pow(xdata[j] - meanx, 2);
+                    covy += Math.pow(ydata[j - i] - meany, 2);
+                    sim += Math.abs(xdata[j] - ydata[j - i]);
+                  }
+                  var r = Math.pow(covxy / Math.sqrt(covx * covy), 2);
+                  minsim = (minsim > sim) ? sim : minsim;
+                } else {
+                  for (var j = 0; j < xdata.length - lag; j++) {
+                    covxy += (xdata[j + i] - meanx) * (ydata[j] - meany);
+                    covx += Math.pow(xdata[j + i] - meanx, 2);
+                    covy += Math.pow(ydata[j] - meany, 2);
+                    sim += Math.abs(xdata[j + i] - ydata[j]);
+                  }
+                  var r = Math.pow(covxy / Math.sqrt(covx * covy), 2);
+                  minsim = (minsim > sim) ? sim : minsim;
+                }
+                maxr = (maxr < r) ? r : maxr;
+              }
+              measures[11][p][index][2] = maxr;
+
+              // SIMILARITY
+              measures[10][p][index][2] = 1 - minsim / (xdata.length - 1);
+
+              // CALCULATE AREA
+              // set value of bins inside triangles is 1, outside triangles is 0
+              // count bin of 1, multiple it with cell area
+              for (var i = 0; i < numcell; i++) {
+                cellval[i] = [];
+                for (var j = 0; j < numcell; j++) {
+                  cellval[i][j] = 0;
+                }
+              }
+              if (xdata.length > 3) {
+                for (var i = 0; i < xdata.length - 2; i++) {
+                  var xmax = Math.max(...[xdata[i], xdata[i + 1], xdata[i + 2]]);
+                  var xmin = Math.min(...[xdata[i], xdata[i + 1], xdata[i + 2]]);
+                  var ymax = Math.max(...[ydata[i], ydata[i + 1], ydata[i + 2]]);
+                  var ymin = Math.min(...[ydata[i], ydata[i + 1], ydata[i + 2]]);
+                  xmin = Math.floor(xmin / cellsize);
+                  xmax = Math.ceil(xmax / cellsize);
+                  ymin = Math.floor(ymin / cellsize);
+                  ymax = Math.ceil(ymax / cellsize);
+                  for (var j = xmin; j <= xmax; j++) {
+                    for (var k = ymin; k <= ymax; k++) {
+                      var xcell = j * cellsize + cellsize / 2;
+                      var ycell = k * cellsize + cellsize / 2;
+                      if (checkinsidetriangle(xcell, ycell, xdata[i], ydata[i], xdata[i + 1], ydata[i + 1], xdata[i + 2], ydata[i + 2])) {
+                        cellval[j][k] = 1;
+                      }
+                    }
+                  }
+                }
+                measures[13][p][index][2] = 0;
+                cellval.forEach(function (row) {
+                  row.forEach(function (column) {
+                    measures[13][p][index][2] += column;
+                  });
+                });
+                measures[13][p][index][2] *= cellsize * cellsize;
+                measures[13][p][index][2] = 1 - measures[13][p][index][2];
+              }
+
+
+            }
+
+
+            // increase index
+            index += 1;
+          }
+        }
+
+      });
+    }
+
+    // CHECK INTERSECTIONS
+    function checkintersection(x1_, y1_, x2_, y2_, x3_, y3_, x4_, y4_) {
+      var x1 = x1_;
+      var y1 = y1_;
+      var x2 = x2_;
+      var y2 = y2_;
+      var x3 = x3_;
+      var y3 = y3_;
+      var x4 = x4_;
+      var y4 = y4_;
+      var v1x = x2 - x1;
+      var v1y = y2 - y1;
+      var v2x = x4 - x3;
+      var v2y = y4 - y3;
+      var v23x = x3 - x2;
+      var v23y = y3 - y2;
+      var v24x = x4 - x2;
+      var v24y = y4 - y2;
+      var v41x = x1 - x4;
+      var v41y = y1 - y4;
+      var checkv1 = (v1x * v23y - v1y * v23x) * (v1x * v24y - v1y * v24x);
+      var checkv2 = (v2x * v41y - v2y * v41x) * (v2y * v24x - v2x * v24y);
+      var check = (checkv1 < 0) && (checkv2 < 0);
+      return check;
+    }
+
+    // CALCULATE COSINE OF ANGLES
+    // input: coordinates of 3 points: 1, 2 and 3
+    // construct vector 1->2 and 2->3
+    // calculate dot product of 2 vectors
+    // get the angle
+    function calculatecos(x1_, y1_, x2_, y2_, x3_, y3_) {
+      var v1x = x2_ - x1_;
+      var v1y = y2_ - y1_;
+      var v2x = x3_ - x2_;
+      var v2y = y3_ - y2_;
+      var dotproduct = v1x * v2x + v1y * v2y;
+      var v1 = Math.sqrt(v1x * v1x + v1y * v1y);
+      var v2 = Math.sqrt(v2x * v2x + v2y * v2y);
+      var cosangle = dotproduct / (v1 * v2);
+      return cosangle;
+    }
+
+    // CHECK INSIDE TRIANGLE
+    // input: point need to check: O, 3 points of triangle: A, B, C
+    // method: cross-product of OAxAB, OBxBC, and OCxCA have the same signs -> inside
+    function checkinsidetriangle(x0_, y0_, x1_, y1_, x2_, y2_, x3_, y3_) {
+      var x0 = x0_;
+      var y0 = y0_;
+      var x1 = x1_;
+      var y1 = y1_;
+      var x2 = x2_;
+      var y2 = y2_;
+      var x3 = x3_;
+      var y3 = y3_;
+      var xOA = x1 - x0;
+      var yOA = y1 - y0;
+      var xOB = x2 - x0;
+      var yOB = y2 - y0;
+      var xOC = x3 - x0;
+      var yOC = y3 - y0;
+      var xAB = x2 - x1;
+      var yAB = y2 - y1;
+      var xBC = x3 - x2;
+      var yBC = y3 - y2;
+      var xCA = x1 - x3;
+      var yCA = y1 - y3;
+      var check1 = xOA * yAB - yOA * xAB;
+      var check2 = xOB * yBC - yOB * xBC;
+      var check3 = xOC * yCA - yOC * xCA;
+      var check = (check1 > 0 && check2 > 0 && check3 > 0) || (check1 < 0 && check2 < 0 && check3 < 0);
+      return check;
+    }
+
+
+    donecalculation = true;
+    d3.select('.cover').classed('hidden', true);
+///////////////////////
+// END OF CALCULATION
+///////////////////////
+  });
+}
+/////////////////////
+////////////////////
+// END OF MAIN CODE
+////////////////////
+////////////////////
