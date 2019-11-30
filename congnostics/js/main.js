@@ -59,10 +59,13 @@ let cellval = [];
 let minloop = 24;
 let maxloop = 60;
 let lag = 0;
+let selecteddata = 0;
+let filename0, filename1, filename2;
 
 // VARIABLES FOR CONTROLLING
 let donecalculation = false;
 let needupdate = true;
+let needcalculation = true;
 
 // VARIABLES FOR VISUALIZATION
 let displayplot = [];   // displayplot[measure index][0->numplot-1:lowest, numplot->2numplot-1: middle, 2numplot->3numplot-1: highest][sample, x-var, y-var,value]
@@ -209,10 +212,17 @@ function switchTheme(){
 ///////////////////////////////
 //////////////////////////////
 
+switch (selecteddata) {
+    case 0:
+        filename0 = "data/employment.txt";
+        filename1 = "data/statecode.txt";
+        filename2 = "data/Industrycode.txt";
+}
+
 Promise.all([
-    d3.csv("data/employment.txt"),
-    d3.tsv("data/statecode.txt"),
-    d3.tsv("data/Industrycode.txt"),
+    d3.csv(filename0),
+    d3.tsv(filename1),
+    d3.tsv(filename2),
 ]).then(function(files) {
 
 ///////////////////////////////////////
