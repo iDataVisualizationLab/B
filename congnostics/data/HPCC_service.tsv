@@ -1,0 +1,11 @@
+code	name
+0	CPU1 Temp
+1	CPU2 Temp
+2	Inlet Temp
+3	Job load
+4	Memory usage
+5	Fan1 speed
+6	Fan2 speed
+7	Fan3 speed
+8	Fan4 speed
+9	Power consumption
