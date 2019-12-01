@@ -6,9 +6,6 @@
 
 let measures = [];  // measures[index][sample][x-var,y-var,value], value = -1 means no data
 let nummeasure = 14;
-for (var i=0; i<nummeasure; i++) {
-    measures[i] = [];
-}
 let measurename = [
     'Outlying',
     'Straight',
@@ -381,12 +378,7 @@ function analyzedata() {
         // CONTROL CALCULATION
         normalization();
         calculatemeasures();
-        console.log(mapsample0);
-        console.log(mapsample1);
-        console.log(mapsample2);
-        console.log(mapvar0);
-        console.log(mapvar1);
-        console.log(mapvar2);
+        console.log(measures);
 
         // NORMALIZE DATA
         // find min and max of each series -> normalize
@@ -416,7 +408,9 @@ function analyzedata() {
 
         // CALCULATE MEASURES FOR TIME SERIES
         function calculatemeasures() {
-
+            for (var i=0; i<nummeasure; i++) {
+                measures[i] = [];
+            }
             data.forEach(function (sample, p) {
 
                 // Declare measure structures
