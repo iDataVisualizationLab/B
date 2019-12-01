@@ -223,14 +223,33 @@ function switchTheme(){
 //////////////////////////////
 function analyzedata() {
 
+    let filename0;
+    let filename1;
+    let filename2;
+    switch (selecteddata) {
+        case 0:
+           filename0 =  "data/employment.txt";
+           filename1 = "data/statecode.txt";
+           filename2 = "data/Industrycode.txt";
+           break;
+        case 1:
+            filename0 = "data/HPCC_21Mar2019_7am_4pm.csv";
+            filename1 = "data/HPCC_host.tsv";
+            filename2 = "data/HPCC_service.tsv";
+            break;
+    }
+
     Promise.all([
-        d3.csv("data/employment.txt"),
-        d3.tsv("data/statecode.txt"),
-        d3.tsv("data/Industrycode.txt"),
-        d3.csv("data/HPCC_26Sep2018.csv"),
-        d3.csv("data/HPCC_21Mar2019.csv"),
-        d3.tsv("data/HPCC_host.tsv"),
-        d3.tsv("data/HPCC_service.tsv"),
+        // d3.csv("data/employment.txt"),
+        // d3.tsv("data/statecode.txt"),
+        // d3.tsv("data/Industrycode.txt"),
+        // d3.csv("data/HPCC_26Sep2018.csv"),
+        // d3.csv("data/HPCC_21Mar2019.csv"),
+        // d3.tsv("data/HPCC_host.tsv"),
+        // d3.tsv("data/HPCC_service.tsv"),
+        d3.csv(filename0),
+        d3.tsv(filename1),
+        d3.tsv(filename2),
     ]).then(function (files) {
 
         data = []; // data[sample][variable][time step] for raw data
@@ -245,31 +264,32 @@ function analyzedata() {
 ///////////////////////////////////////
 // READ DATA TO RESTORING VARIABLES
 //////////////////////////////////////
+
+        //MAP DATA sample
+        files[1].forEach(function (sample, p) {
+            if (!mapsample0.get(sample.code)) mapsample0.set(sample.code, sample.name);  // code-string to name-string
+            if (!mapsample1.get(sample.name)) mapsample1.set(sample.name, p);  // name-string to index-number
+            if (!mapsample2.get(p)) mapsample2.set(p, sample.name);   // index-number to name-string
+            data[p] = [];
+        });
+
+        // MAP VARIABLES
+        files[2].forEach(function (variable, v) {
+            if (!mapvar0.get(variable.code)) mapvar0.set(variable.code, variable.name);  // code-string to name-string
+            if (!mapvar1.get(variable.name)) mapvar1.set(variable.name, v);  // name-string to index-number
+            if (!mapvar2.get(v)) mapvar2.set(v, variable.name);
+            data.forEach(function (d) {
+                d[v] = [];
+            });
+        });
+
+        // TIME NAME
+        timedata = files[0].columns.filter(function (step) {
+            return step !== "Series ID"
+        });
+
         switch (selecteddata) {
             case 0:
-                // MAP DATA sample
-                files[1].forEach(function (sample, p) {
-                    if (!mapsample0.get(sample.code)) mapsample0.set(sample.code, sample.name);  // code-string to name-string
-                    if (!mapsample1.get(sample.name)) mapsample1.set(sample.name, p);  // name-string to index-number
-                    if (!mapsample2.get(p)) mapsample2.set(p, sample.name);   // index-number to name-string
-                    data[p] = [];
-                });
-
-                // MAP VARIABLES
-                files[2].forEach(function (variable, v) {
-                    if (!mapvar0.get(variable.code)) mapvar0.set(variable.code, variable.name);  // code-string to name-string
-                    if (!mapvar1.get(variable.name)) mapvar1.set(variable.name, v);  // name-string to index-number
-                    if (!mapvar2.get(v)) mapvar2.set(v, variable.name);
-                    data.forEach(function (d) {
-                        d[v] = [];
-                    });
-                });
-
-                // TIME NAME
-                timedata = files[0].columns.filter(function (step) {
-                    return step !== "Series ID"
-                });
-
                 // WRITE DATA TO DATA[]
                 data.forEach(function (sample) {
                     sample.forEach(function (variable) {
@@ -287,29 +307,6 @@ function analyzedata() {
                 });
                 break;
             case 1:
-                // MAP DATA sample
-                files[5].forEach(function (sample, p) {
-                    if (!mapsample0.get(sample.code)) mapsample0.set(sample.code, sample.name);  // code-string to name-string
-                    if (!mapsample1.get(sample.name)) mapsample1.set(sample.name, p);  // name-string to index-number
-                    if (!mapsample2.get(p)) mapsample2.set(p, sample.name);   // index-number to name-string
-                    data[p] = [];
-                });
-
-                // MAP VARIABLES
-                files[6].forEach(function (variable, v) {
-                    if (!mapvar0.get(variable.code)) mapvar0.set(variable.code, variable.name);  // code-string to name-string
-                    if (!mapvar1.get(variable.name)) mapvar1.set(variable.name, v);  // name-string to index-number
-                    if (!mapvar2.get(v)) mapvar2.set(v, variable.name);
-                    data.forEach(function (d) {
-                        d[v] = [];
-                    });
-                });
-
-                // TIME NAME
-                timedata = files[3].columns.filter(function (step) {
-                    return step !== "Series ID"
-                });
-
                 // WRITE DATA TO DATA[]
                 data.forEach(function (sample) {
                     sample.forEach(function (variable) {
@@ -318,7 +315,7 @@ function analyzedata() {
                         });
                     });
                 });
-                files[3].forEach(function (line) {
+                files[0].forEach(function (line) {
                     var sampleindex = parseInt(line["Series ID"].split("_")[0]);
                     var varindex = parseInt(line["Series ID"].split("_")[1]);
                     timedata.forEach(function (step, s) {
@@ -326,47 +323,25 @@ function analyzedata() {
                     });
                 });
                 break;
-            case 2:
-                // MAP DATA sample
-                files[5].forEach(function (sample, p) {
-                    if (!mapsample0.get(sample.code)) mapsample0.set(sample.code, sample.name);  // code-string to name-string
-                    if (!mapsample1.get(sample.name)) mapsample1.set(sample.name, p);  // name-string to index-number
-                    if (!mapsample2.get(p)) mapsample2.set(p, sample.name);   // index-number to name-string
-                    data[p] = [];
-                });
-
-                // MAP VARIABLES
-                files[6].forEach(function (variable, v) {
-                    if (!mapvar0.get(variable.code)) mapvar0.set(variable.code, variable.name);  // code-string to name-string
-                    if (!mapvar1.get(variable.name)) mapvar1.set(variable.name, v);  // name-string to index-number
-                    if (!mapvar2.get(v)) mapvar2.set(v, variable.name);
-                    data.forEach(function (d) {
-                        d[v] = [];
-                    });
-                });
-
-                // TIME NAME
-                timedata = files[4].columns.filter(function (step) {
-                    return step !== "Series ID"
-                });
-
-                // WRITE DATA TO DATA[]
-                data.forEach(function (sample) {
-                    sample.forEach(function (variable) {
-                        timedata.forEach(function (step, s) {
-                            variable[s] = -1;
-                        });
-                    });
-                });
-                files[4].forEach(function (line) {
-                    var sampleindex = parseInt(line["Series ID"].split("_")[0]);
-                    var varindex = parseInt(line["Series ID"].split("_")[1]);
-                    timedata.forEach(function (step, s) {
-                        data[sampleindex][varindex][s] = isNaN(parseFloat(line[step])) ? -1 : parseFloat(line[step]);
-                    });
-                });
-                break;
+            // case 2:
+            //     // WRITE DATA TO DATA[]
+            //     data.forEach(function (sample) {
+            //         sample.forEach(function (variable) {
+            //             timedata.forEach(function (step, s) {
+            //                 variable[s] = -1;
+            //             });
+            //         });
+            //     });
+            //     files[0].forEach(function (line) {
+            //         var sampleindex = parseInt(line["Series ID"].split("_")[0]);
+            //         var varindex = parseInt(line["Series ID"].split("_")[1]);
+            //         timedata.forEach(function (step, s) {
+            //             data[sampleindex][varindex][s] = isNaN(parseFloat(line[step])) ? -1 : parseFloat(line[step]);
+            //         });
+            //     });
+            //     break;
         }
+
 /////////////////////////
 // END OF READING DATA
 ///////////////////////
@@ -943,7 +918,6 @@ function draw() {
 
             // CHOOSE DISPLAY PLOTS
             sortmeasures();
-            console.log(displayplot);
             textFont('Arial Unicode MS');
 
             // draw background of buttons
