@@ -353,7 +353,7 @@ function analyzedata() {
         // CONTROL CALCULATION
         normalization();
         calculatemeasures();
-        console.log(data);
+        console.log(measures);
 
         // NORMALIZE DATA
         // find min and max of each series -> normalize
@@ -403,24 +403,12 @@ function analyzedata() {
                         }
 
                         // create calculation data
-                        var xdata = sample[xvar].map(function (x) {
-                            return x
-                        });
-                        var ydata = sample[yvar].map(function (y) {
-                            return y
-                        });
-                        xdata.forEach(function (x, ix) {
-                            ydata[ix] = (x === -1) ? -1 : ydata[ix];
-                        });
-                        ydata.forEach(function (y, iy) {
-                            xdata[iy] = (y === -1) ? -1 : xdata[iy];
-                        });
-                        xdata = xdata.filter(function (x) {
-                            return x !== -1
-                        });
-                        ydata = ydata.filter(function (y) {
-                            return y !== -1
-                        });
+                        var xdata = sample[xvar].map(function (x) {return x});
+                        var ydata = sample[yvar].map(function (y) {return y});
+                        xdata.forEach(function (x, ix) {ydata[ix] = (x === -1) ? -1 : ydata[ix];});
+                        ydata.forEach(function (y, iy) {xdata[iy] = (y === -1) ? -1 : xdata[iy];});
+                        xdata = xdata.filter(function (x) {return x >= 0});
+                        ydata = ydata.filter(function (y) {return y >= 0});
                         if (xdata.length !== ydata.length)
                             console.log("2 series have different length at: sample = " + p + ", x-var = " + xvar + ", y-var = " + yvar);
 
@@ -435,12 +423,9 @@ function analyzedata() {
                                 sumlength += edgelength[xi - 1];
                             }
                         });
-                        var sortlength = edgelength.map(function (v) {
-                            return v
-                        });
-                        sortlength.sort(function (b, n) {
-                            return b - n
-                        });   // ascending
+                        var sortlength = edgelength.filter(function (v) {return v >= 0});
+                        sortlength.sort(function (b, n) {return b - n});   // ascending
+                        console.log(edgelength);
 
                         // OUTLYING
                         if (xdata.length > 1) {
@@ -487,6 +472,7 @@ function analyzedata() {
                                 }
                             });
                             measures[0][p][index][2] /= sumlength;
+                            if (measures[0][p][index][2] > 1) measures[0][p][index][2] = 1;
                             var adjust = 0;
                             outlier.forEach(function (v) {
                                 xdata.splice(v - adjust, 1);
