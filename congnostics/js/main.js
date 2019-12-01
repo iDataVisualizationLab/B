@@ -353,7 +353,7 @@ function analyzedata() {
         // CONTROL CALCULATION
         normalization();
         calculatemeasures();
-        console.log(measures);
+        console.log(data);
 
         // NORMALIZE DATA
         // find min and max of each series -> normalize
@@ -700,6 +700,7 @@ function analyzedata() {
                                     });
                                 });
                                 measures[13][p][index][2] *= cellsize * cellsize;
+                                measures[13][p][index][2] = 1 -  measures[13][p][index][2];
                             }
 
 
