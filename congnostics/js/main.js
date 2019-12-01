@@ -428,6 +428,7 @@ function analyzedata() {
                         console.log(edgelength);
 
                         // OUTLYING
+                        measures[1][p][index][2] = Math.sqrt(Math.pow(xdata[xdata.length - 1] - xdata[0], 2) + Math.pow(ydata[ydata.length - 1] - ydata[0], 2)) / sumlength;
                         if (xdata.length > 1) {
                             measures[0][p][index][2] = 0;
                             var outlier = [];
@@ -561,7 +562,7 @@ function analyzedata() {
                             // STRIATED
                             measures[5][p][index][2] = sumcos / (xdata.length - 2);
                             // STRAIGHT
-                            measures[1][p][index][2] = Math.sqrt(Math.pow(xdata[xdata.length - 1] - xdata[0], 2) + Math.pow(ydata[ydata.length - 1] - ydata[0], 2)) / sumlengtha;
+                            // measures[1][p][index][2] = Math.sqrt(Math.pow(xdata[xdata.length - 1] - xdata[0], 2) + Math.pow(ydata[ydata.length - 1] - ydata[0], 2)) / sumlength;
                             // SKEWED
                             var q10 = sortlengtha[Math.floor(sortlengtha.length * 0.1)];
                             var q50 = sortlengtha[Math.floor(sortlengtha.length * 0.5)];
