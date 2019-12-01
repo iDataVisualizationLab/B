@@ -237,16 +237,14 @@ function analyzedata() {
             filename1 = "data/HPCC_host.tsv";
             filename2 = "data/HPCC_service.tsv";
             break;
+        case 2:
+            filename0 = "data/RUL_data.txt";
+            filename1 = "data/engine_code.txt";
+            filename2 = "data/sensor_code.txt";
+            break;
     }
 
     Promise.all([
-        // d3.csv("data/employment.txt"),
-        // d3.tsv("data/statecode.txt"),
-        // d3.tsv("data/Industrycode.txt"),
-        // d3.csv("data/HPCC_26Sep2018.csv"),
-        // d3.csv("data/HPCC_21Mar2019.csv"),
-        // d3.tsv("data/HPCC_host.tsv"),
-        // d3.tsv("data/HPCC_service.tsv"),
         d3.csv(filename0),
         d3.tsv(filename1),
         d3.tsv(filename2),
@@ -294,7 +292,7 @@ function analyzedata() {
                 data.forEach(function (sample) {
                     sample.forEach(function (variable) {
                         timedata.forEach(function (step, s) {
-                            variable[s] = -1;
+                            variable[s] = -Infinity;
                         });
                     });
                 });
@@ -302,7 +300,7 @@ function analyzedata() {
                     var sampleindex = mapsample1.get(mapsample0.get(line["Series ID"].substr(3, 2)));
                     var varindex = mapvar1.get(mapvar0.get(line["Series ID"].substr(10, 8)));
                     timedata.forEach(function (step, s) {
-                        data[sampleindex][varindex][s] = isNaN(parseFloat(line[step])) ? -1 : parseFloat(line[step]);
+                        data[sampleindex][varindex][s] = isNaN(parseFloat(line[step])) ? -Infinity : parseFloat(line[step]);
                     });
                 });
                 break;
@@ -311,7 +309,7 @@ function analyzedata() {
                 data.forEach(function (sample) {
                     sample.forEach(function (variable) {
                         timedata.forEach(function (step, s) {
-                            variable[s] = -1;
+                            variable[s] = -Infinity;
                         });
                     });
                 });
@@ -319,7 +317,7 @@ function analyzedata() {
                     var sampleindex = parseInt(line["Series ID"].split("_")[0]);
                     var varindex = parseInt(line["Series ID"].split("_")[1]);
                     timedata.forEach(function (step, s) {
-                        data[sampleindex][varindex][s] = isNaN(parseFloat(line[step])) ? -1 : parseFloat(line[step]);
+                        data[sampleindex][varindex][s] = isNaN(parseFloat(line[step])) ? -Infinity : parseFloat(line[step]);
                     });
                 });
                 break;
@@ -353,7 +351,7 @@ function analyzedata() {
         // CONTROL CALCULATION
         normalization();
         calculatemeasures();
-        console.log(measures);
+        console.log(files[2]);
 
         // NORMALIZE DATA
         // find min and max of each series -> normalize
@@ -361,14 +359,12 @@ function analyzedata() {
         function normalization() {
             data.forEach(function (sample, p) {
                 sample.forEach(function (variable, v) {
-                    var svariable = variable.filter(function (d) {
-                        return d >= 0
-                    });
+                    var svariable = variable.filter(function (d) {return d !== - Infinity});
                     var mymax = Math.max(...svariable);
                     var mymin = Math.min(...svariable);
                     var myrange = mymax - mymin;
                     variable.forEach(function (step, s) {
-                        data[p][v][s] = (step !== -1) ? (step - mymin) / myrange : -1;
+                        data[p][v][s] = (step !== -Infinity) ? (step - mymin) / myrange : -1;
                     });
                 });
             });
@@ -425,7 +421,6 @@ function analyzedata() {
                         });
                         var sortlength = edgelength.filter(function (v) {return v >= 0});
                         sortlength.sort(function (b, n) {return b - n});   // ascending
-                        console.log(edgelength);
 
                         // OUTLYING
                         measures[1][p][index][2] = Math.sqrt(Math.pow(xdata[xdata.length - 1] - xdata[0], 2) + Math.pow(ydata[ydata.length - 1] - ydata[0], 2)) / sumlength;
