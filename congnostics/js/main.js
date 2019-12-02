@@ -300,7 +300,11 @@ function analyzedata() {
                     var sampleindex = mapsample1.get(mapsample0.get(line["Series ID"].substr(3, 2)));
                     var varindex = mapvar1.get(mapvar0.get(line["Series ID"].substr(10, 8)));
                     timedata.forEach(function (step, s) {
-                        data[sampleindex][varindex][s] = isNaN(parseFloat(line[step])) ? -Infinity : parseFloat(line[step]);
+                        if (sampleindex !== 56 && sampleindex !== 72) {
+                            data[sampleindex][varindex][s] = isNaN(parseFloat(line[step])) ? -Infinity : parseFloat(line[step]);
+                        } else {
+                            data[sampleindex][varindex][s] = -Infinity;
+                        }
                     });
                 });
                 break;

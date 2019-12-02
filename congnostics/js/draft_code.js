@@ -27,8 +27,11 @@ d3.csv("data/SP500_39years.csv").then(function (data) {
         var j = 0;
         if(array[0][j][0] !== index || index === 0) {
             row += 1;
-            writedata[row] = [];
-            writedata[row][0] = String()
+            for (var i = 0; i < 6; i++) {
+                writedata[row+i] = [];
+                writedata[row+i][0] = String(index+'_'+i);
+                writedata[row+1][1] = array[i][j][1];
+            }
         }
         while (array[0][j][0] === index) {
             for (var i = 0; i < 6; i++) {
