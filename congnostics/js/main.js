@@ -321,23 +321,23 @@ function analyzedata() {
                     });
                 });
                 break;
-            // case 2:
-            //     // WRITE DATA TO DATA[]
-            //     data.forEach(function (sample) {
-            //         sample.forEach(function (variable) {
-            //             timedata.forEach(function (step, s) {
-            //                 variable[s] = -1;
-            //             });
-            //         });
-            //     });
-            //     files[0].forEach(function (line) {
-            //         var sampleindex = parseInt(line["Series ID"].split("_")[0]);
-            //         var varindex = parseInt(line["Series ID"].split("_")[1]);
-            //         timedata.forEach(function (step, s) {
-            //             data[sampleindex][varindex][s] = isNaN(parseFloat(line[step])) ? -1 : parseFloat(line[step]);
-            //         });
-            //     });
-            //     break;
+            case 2:
+                // WRITE DATA TO DATA[]
+                data.forEach(function (sample) {
+                    sample.forEach(function (variable) {
+                        timedata.forEach(function (step, s) {
+                            variable[s] = -Infinity;
+                        });
+                    });
+                });
+                files[0].forEach(function (line) {
+                    var sampleindex = parseInt(line["Series ID"].split("_")[0]);
+                    var varindex = parseInt(line["Series ID"].split("_")[1]);
+                    timedata.forEach(function (step, s) {
+                        data[sampleindex][varindex][s] = isNaN(parseFloat(line[step])) ? -Infinity : parseFloat(line[step]);
+                    });
+                });
+                break;
         }
 
 /////////////////////////
@@ -351,7 +351,7 @@ function analyzedata() {
         // CONTROL CALCULATION
         normalization();
         calculatemeasures();
-        console.log(files[2]);
+        console.log(data);
 
         // NORMALIZE DATA
         // find min and max of each series -> normalize
@@ -363,9 +363,15 @@ function analyzedata() {
                     var mymax = Math.max(...svariable);
                     var mymin = Math.min(...svariable);
                     var myrange = mymax - mymin;
-                    variable.forEach(function (step, s) {
-                        data[p][v][s] = (step !== -Infinity) ? (step - mymin) / myrange : -1;
-                    });
+                    if (myrange !== 0) {
+                        variable.forEach(function (step, s) {
+                            data[p][v][s] = (step !== -Infinity) ? (step - mymin) / myrange : -1;
+                        });
+                    } else {
+                        variable.forEach(function (step, s) {
+                            data[p][v][s] = -1;
+                        });
+                    }
                 });
             });
             // WRITE DATA TO DRAWDATA[]
