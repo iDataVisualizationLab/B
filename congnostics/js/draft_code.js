@@ -7,7 +7,7 @@ d3.csv("data/SP500_39years.csv").then(function (data) {
     }
     sample[samplecode] = "1980";
     var writedata = [];
-    var row = 0;
+    var row = -1;
     var col = 0;
     data.forEach(function (value,index) {
         if(value["Date"].substr(value["Date"].length-4,4) !== sample[samplecode-1]) {
@@ -25,9 +25,15 @@ d3.csv("data/SP500_39years.csv").then(function (data) {
     sample.forEach(function (value,index) {
         writesample[index] = [index,value];
         var j = 0;
+        if(array[0][j][0] !== index || index === 0) {
+            row += 1;
+            writedata[row] = [];
+            writedata[row][0] = String()
+        }
         while (array[0][j][0] === index) {
             for (var i = 0; i < 6; i++) {
-
+                writedata[row][col] = array[i][j][1];
+                if (i === 5) col += 1;
             }
         }
     });
