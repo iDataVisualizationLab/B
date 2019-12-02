@@ -242,6 +242,10 @@ function analyzedata() {
             filename1 = "data/engine_code.txt";
             filename2 = "data/sensor_code.txt";
             break;
+        case 3:
+            filename0 = "data/stock_data.txt";
+            filename1 = "data/year_code.txt";
+            filename2 = "data/var_code.txt";
     }
 
     Promise.all([
@@ -308,7 +312,7 @@ function analyzedata() {
                     });
                 });
                 break;
-            case 1:
+            default:
                 // WRITE DATA TO DATA[]
                 data.forEach(function (sample) {
                     sample.forEach(function (variable) {
@@ -324,24 +328,6 @@ function analyzedata() {
                         data[sampleindex][varindex][s] = isNaN(parseFloat(line[step])) ? -Infinity : parseFloat(line[step]);
                     });
                 });
-                break;
-            case 2:
-                // WRITE DATA TO DATA[]
-                data.forEach(function (sample) {
-                    sample.forEach(function (variable) {
-                        timedata.forEach(function (step, s) {
-                            variable[s] = -Infinity;
-                        });
-                    });
-                });
-                files[0].forEach(function (line) {
-                    var sampleindex = parseInt(line["Series ID"].split("_")[0]);
-                    var varindex = parseInt(line["Series ID"].split("_")[1]);
-                    timedata.forEach(function (step, s) {
-                        data[sampleindex][varindex][s] = isNaN(parseFloat(line[step])) ? -Infinity : parseFloat(line[step]);
-                    });
-                });
-                break;
         }
 
 /////////////////////////
@@ -554,7 +540,8 @@ function analyzedata() {
                                     }
                                 }
                                 if (xi > 0 && xi < xdata.length - 1) {
-                                    sumcos += Math.abs(calculatecos(xdata[xi - 1], ydata[xi - 1], x, ydata[xi], xdata[xi + 1], ydata[xi + 1]));
+                                    // sumcos += Math.abs(calculatecos(xdata[xi - 1], ydata[xi - 1], x, ydata[xi], xdata[xi + 1], ydata[xi + 1]));
+                                    sumcos += calculatecos(xdata[xi - 1], ydata[xi - 1], x, ydata[xi], xdata[xi + 1], ydata[xi + 1]);
                                 }
                             });
                             // LENGTH
@@ -565,7 +552,7 @@ function analyzedata() {
                             // INTERSECTIONS
                             measures[8][p][index][2] = 1 - Math.exp(-countcrossing / (xdata.length - 1));
                             // STRIATED
-                            measures[5][p][index][2] = sumcos / (xdata.length - 2);
+                            measures[5][p][index][2] = (sumcos / (xdata.length - 2))*0.5+0.5;
                             // STRAIGHT
                             // measures[1][p][index][2] = Math.sqrt(Math.pow(xdata[xdata.length - 1] - xdata[0], 2) + Math.pow(ydata[ydata.length - 1] - ydata[0], 2)) / sumlength;
                             // SKEWED
