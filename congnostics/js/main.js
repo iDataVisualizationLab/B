@@ -743,22 +743,25 @@ function analyzedata() {
             var y2 = y2_;
             var x3 = x3_;
             var y3 = y3_;
-            var xOA = x1 - x0;
-            var yOA = y1 - y0;
-            var xOB = x2 - x0;
-            var yOB = y2 - y0;
-            var xOC = x3 - x0;
-            var yOC = y3 - y0;
-            var xAB = x2 - x1;
-            var yAB = y2 - y1;
-            var xBC = x3 - x2;
-            var yBC = y3 - y2;
-            var xCA = x1 - x3;
-            var yCA = y1 - y3;
-            var check1 = xOA * yAB - yOA * xAB;
-            var check2 = xOB * yBC - yOB * xBC;
-            var check3 = xOC * yCA - yOC * xCA;
-            var check = (check1 > 0 && check2 > 0 && check3 > 0) || (check1 < 0 && check2 < 0 && check3 < 0);
+            var checkline = ((x2-x1)/(x3-x1) === (y2-y1)/(y3-y1));
+            if (!checkline) {
+                var xOA = x1 - x0;
+                var yOA = y1 - y0;
+                var xOB = x2 - x0;
+                var yOB = y2 - y0;
+                var xOC = x3 - x0;
+                var yOC = y3 - y0;
+                var xAB = x2 - x1;
+                var yAB = y2 - y1;
+                var xBC = x3 - x2;
+                var yBC = y3 - y2;
+                var xCA = x1 - x3;
+                var yCA = y1 - y3;
+                var check1 = xOA * yAB - yOA * xAB;
+                var check2 = xOB * yBC - yOB * xBC;
+                var check3 = xOC * yCA - yOC * xCA;
+                var check = (check1 > 0 && check2 > 0 && check3 > 0) || (check1 < 0 && check2 < 0 && check3 < 0);
+            } else var check = false;
             return check;
         }
 
