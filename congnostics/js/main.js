@@ -610,6 +610,7 @@ function analyzedata() {
                             var covy = 0;
                             var sim = 0;
                             var minsim = Infinity;
+                            var getLag = lag;
                             for (var i = -lag; i < lag + 1; i++) {
                                 if (i <= 0) {
                                     for (var j = 0; j < xdata.length - lag; j++) {
@@ -619,6 +620,7 @@ function analyzedata() {
                                         sim += Math.abs(xdata[j] - ydata[j - i]);
                                     }
                                     var r = Math.pow(covxy / Math.sqrt(covx * covy), 2);
+                                    getLag = (minsim > sim) ? i : getLag;
                                     minsim = (minsim > sim) ? sim : minsim;
                                 } else {
                                     for (var j = 0; j < xdata.length - lag; j++) {
@@ -628,6 +630,7 @@ function analyzedata() {
                                         sim += Math.abs(xdata[j + i] - ydata[j]);
                                     }
                                     var r = Math.pow(covxy / Math.sqrt(covx * covy), 2);
+                                    getLag = (minsim > sim) ? i : getLag;
                                     minsim = (minsim > sim) ? sim : minsim;
                                 }
                                 maxr = (maxr < r) ? r : maxr;
