@@ -542,7 +542,7 @@ function analyzedata() {
                             measures[12][p][index][2] = sumlengtha / (xdata.length - 1);
                             if (measures[12][p][index][2] > 1) measures[12][p][index][2] = 1;
                             // MONOTONIC TREND
-                            measures[6][p][index][2] = Math.max(...dir) / (xdata.length * (xdata.length - 1) / 2);
+                            measures[6][p][index][2] = (4/3)*Math.max(...dir) / (xdata.length * (xdata.length - 1) / 2)-1/3;
                             // INTERSECTIONS
                             measures[8][p][index][2] = 1 - Math.exp(-countcrossing / (xdata.length - 1));
                             // STRIATED
