@@ -635,7 +635,7 @@ function analyzedata() {
                             measures[11][p][index][2] = maxr;
 
                             // SIMILARITY
-                            measures[10][p][index][2] = 1 - minsim / (xdata.length - 1);
+                            measures[10][p][index][2] = 1 - minsim / (xdata.length);
 
                             // CALCULATE AREA
                             // set value of bins inside triangles is 1, outside triangles is 0
