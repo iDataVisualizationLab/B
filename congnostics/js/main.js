@@ -437,19 +437,13 @@ function analyzedata() {
                                 } else if (ei === edgelength.length - 1) {
                                     if (e > upperlimit) {
                                         outlier[sindex] = ei + 1;
-                                        if (outlier[sindex - 1] !== outlier[sindex] - 1) {
-                                            measures[0][p][index][2] += e;
-                                        }
+                                        measures[0][p][index][2] += e;
                                         sindex += 1;
-                                    }
-                                    if (e > upperlimit && edgelength[ei - 1] > upperlimit) {
-                                        outlier[sindex] = ei;
-                                        if (outlier[sindex - 1] !== outlier[sindex] - 1) {
-                                            measures[0][p][index][2] += e + edgelength[ei - 1];
-                                        } else {
-                                            measures[0][p][index][2] += e;
+                                        if (edgelength[ei - 1] > upperlimit) {
+                                            outlier[sindex] = ei;
+                                            measures[0][p][index][2] += edgelength[ei - 1];
+                                            sindex += 1;
                                         }
-                                        sindex += 1;
                                     }
                                 } else {
                                     if (e > upperlimit && edgelength[ei - 1] > upperlimit) {
