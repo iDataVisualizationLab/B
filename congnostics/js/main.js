@@ -53,9 +53,9 @@ let timedata =[];
 let numcell = 40;
 let cellsize = 1/numcell;
 let cellval = [];
-let minloop = 24;
-let maxloop = 60;
-let lag = 0;
+let minloop = 0;
+let maxloop = 48;
+let lag = 48;
 let selecteddata = 0;
 
 // VARIABLES FOR CONTROLLING
@@ -341,7 +341,7 @@ function analyzedata() {
         // CONTROL CALCULATION
         normalization();
         calculatemeasures();
-        console.log(files[0]);
+        console.log(data);
 
         // NORMALIZE DATA
         // find min and max of each series -> normalize
@@ -601,7 +601,7 @@ function analyzedata() {
                             //   looparr.sort(function (b,n) {return b-n});
                             //   measures[9][p][index][2] = looparr[Math.floor(looparr.length*0.25)]/xdata.length;
                             // }
-                            measures[9][p][index][2] = (looplength > 0) ? (maxloop - looplength) / (maxloop - minloop) : 0;
+                            measures[9][p][index][2] = (looplength > 0) ? (looplength-minloop) / (maxloop - minloop) : 0;
                             // measures[9][p][index][2] = (looplength > 0) ? looplength / xdata.length : 0;
 
                             // CROSS - CORRELATION
@@ -1117,30 +1117,30 @@ function draw() {
                         if(step) {
                             // CS plots
                             if(data[sample][xvar][step]>=0 && data[sample][xvar][step-1]>=0 && data[sample][yvar][step]>=0 && data[sample][yvar][step-1]>=0) {
-                                var x1 = xstartpos+j*(plotsize+2*splotsize+2*xblank1+xblank2)+plotsize*data[sample][xvar][step-1];
-                                var x2 = xstartpos+j*(plotsize+2*splotsize+2*xblank1+xblank2)+plotsize*data[sample][xvar][step];
-                                var y1 = ystartpos+i*(plotsize+yblank)+plotsize-plotsize*data[sample][yvar][step-1];
-                                var y2 = ystartpos+i*(plotsize+yblank)+plotsize-plotsize*data[sample][yvar][step];
+                                var x1 = 0.01*plotsize+xstartpos+j*(plotsize+2*splotsize+2*xblank1+xblank2)+0.98*plotsize*data[sample][xvar][step-1];
+                                var x2 = 0.01*plotsize+xstartpos+j*(plotsize+2*splotsize+2*xblank1+xblank2)+0.98*plotsize*data[sample][xvar][step];
+                                var y1 = 0.01*plotsize+ystartpos+i*(plotsize+yblank)+0.98*plotsize*(1-data[sample][yvar][step-1]);
+                                var y2 = 0.01*plotsize+ystartpos+i*(plotsize+yblank)+0.98*plotsize*(1-data[sample][yvar][step]);
                                 if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
                                 else stroke((step-timedata.length/2)*255/(timedata.length/2),0,0);
                                 line(x1,y1,x2,y2);
                             }
                             // X-var plots
                             if(data[sample][xvar][step]>=0 && data[sample][xvar][step-1]>=0) {
-                                var x1 = xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+splotsize*(step-1)/timedata.length;
-                                var x2 = xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+splotsize*step/timedata.length;
-                                var y1 = ystartpos+plotsize+i*(plotsize+yblank)-splotsize*data[sample][xvar][step-1];
-                                var y2 = ystartpos+plotsize+i*(plotsize+yblank)-splotsize*data[sample][xvar][step];
+                                var x1 = 0.01*splotsize+xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+0.98*splotsize*(step-1)/timedata.length;
+                                var x2 = 0.01*splotsize+xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+0.98*splotsize*step/timedata.length;
+                                var y1 = 0.01*splotsize+ystartpos+plotsize+i*(plotsize+yblank)-0.98*splotsize*data[sample][xvar][step-1]-0.02*splotsize;
+                                var y2 = 0.01*splotsize+ystartpos+plotsize+i*(plotsize+yblank)-0.98*splotsize*data[sample][xvar][step]-0.02*splotsize;
                                 if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
                                 else stroke((step-timedata.length/2)*255/(timedata.length/2),0,0);
                                 line(x1,y1,x2,y2);
                             }
                             // Y-var plots
                             if(data[sample][yvar][step]>=0 && data[sample][yvar][step-1]>=0) {
-                                var x1 = xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+splotsize*(step-1)/timedata.length;
-                                var x2 = xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+splotsize*step/timedata.length;
-                                var y1 = ystartpos+plotsize+i*(plotsize+yblank)-splotsize*data[sample][yvar][step-1];
-                                var y2 = ystartpos+plotsize+i*(plotsize+yblank)-splotsize*data[sample][yvar][step];
+                                var x1 = 0.01*splotsize+xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+0.98*splotsize*(step-1)/timedata.length;
+                                var x2 = 0.01*splotsize+xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+0.98*splotsize*step/timedata.length;
+                                var y1 = 0.01*splotsize+ystartpos+plotsize+i*(plotsize+yblank)-0.98*splotsize*data[sample][yvar][step-1]-0.02*splotsize;
+                                var y2 = 0.01*splotsize+ystartpos+plotsize+i*(plotsize+yblank)-0.98*splotsize*data[sample][yvar][step]-0.02*splotsize;
                                 if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
                                 else stroke((step-timedata.length/2)*255/(timedata.length/2),0,0);
                                 line(x1,y1,x2,y2);
