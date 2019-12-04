@@ -105,19 +105,19 @@ $( document ).ready(function() {
         openNav();
         d3.select("#DarkTheme").on("click", switchTheme);
 
-        noUiSlider.create(orderSelection,{
-            start: 0,
-            connect: false,
-            step: 1,
-            orientation: 'vertical',
-            range: {
-                'min': 0,
-                'max': nummeasure-1
-            },
-        }).on('change',function (values) {
-            selectedmeasure = +values;
-            needupdate = true;
-        });
+        // noUiSlider.create(orderSelection,{
+        //     start: 0,
+        //     connect: false,
+        //     step: 1,
+        //     orientation: 'vertical',
+        //     range: {
+        //         'min': 0,
+        //         'max': nummeasure-1
+        //     },
+        // }).on('change',function (values) {
+        //     selectedmeasure = +values;
+        //     needupdate = true;
+        // });
         // generate measurement list
         let mc = d3.select('#measureControl').selectAll('.measureControl')
             .data(measurename)
@@ -137,7 +137,15 @@ $( document ).ready(function() {
         //     console.log(selectedmeasure);
         //   })
         // });
-        let mc_label = mc.append('label').attr('class', 'col s7');
+        let mc_labelr = mc.append('label').attr('class', 'col s1');
+        mc_labelr.append('input').attr('type', 'radio').attr('name', 'orderMeasure').attr('class', 'with-gap')
+            .attr('checked',d=>selectedmeasure===measureObj[d]?'':null)
+            .on('change',function(d){
+                selectedmeasure = measureObj[d];
+                    needupdate = true;
+            });
+        mc_labelr.append('span');
+        let mc_label = mc.append('label').attr('class', 'col s6');
         mc_label.append('input').attr('type', 'checkbox').attr('class', 'filled-in enableCheck')
             .on('change',function(d){
                 checkfilter[measureObj[d]] = this.checked;
@@ -161,7 +169,7 @@ $( document ).ready(function() {
             });
         });
         let totalw = measureControl.getBoundingClientRect().height;
-        d3.select('#orderSelection').style('height',(totalw-totalw/nummeasure)+'px').style('margin-top','12.5px');
+        // d3.select('#orderSelection').style('height',(totalw-totalw/nummeasure)+'px').style('margin-top','12.5px');
 
         // data options
         d3.select('#datacom').on('change',function(){
