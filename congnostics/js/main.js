@@ -341,7 +341,7 @@ function analyzedata() {
         // CONTROL CALCULATION
         normalization();
         calculatemeasures();
-        console.log(data);
+        console.log(files[0]);
 
         // NORMALIZE DATA
         // find min and max of each series -> normalize
@@ -602,6 +602,7 @@ function analyzedata() {
                             //   measures[9][p][index][2] = looparr[Math.floor(looparr.length*0.25)]/xdata.length;
                             // }
                             measures[9][p][index][2] = (looplength > 0) ? (maxloop - looplength) / (maxloop - minloop) : 0;
+                            // measures[9][p][index][2] = (looplength > 0) ? looplength / xdata.length : 0;
 
                             // CROSS - CORRELATION
                             var maxr = 0;
@@ -1054,6 +1055,12 @@ function draw() {
                     stroke(0);
                     line(xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank)-splotsize,xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank));
                     line(xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank),xstartpos+plotsize+2*splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+plotsize+i*(plotsize+yblank));
+                    timedata.forEach(function (time,step) {
+                       if (step%12 === 0) {
+                           line(xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+step*splotsize/timedata.length,ystartpos+plotsize+i*(plotsize+yblank),xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+step*splotsize/timedata.length,ystartpos+plotsize+i*(plotsize+yblank)-2);
+                           line(xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+step*splotsize/timedata.length,ystartpos+plotsize+i*(plotsize+yblank),xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+step*splotsize/timedata.length,ystartpos+plotsize+i*(plotsize+yblank)-2);
+                       }
+                    });
 
 
                     // write value of measure

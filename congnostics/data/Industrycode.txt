@@ -20,8 +20,8 @@ code	name
 55530000	Real Estate, Rental, Leasing
 60000000	Professional and Business Services
 60540000	Professional, Scientific, Technical Services
-60550000	Management if Companies and Enterprises
-60560000	Ad-Sp-WM-R Services
+60550000	Management of Companies and Enterprises
+60560000	Administrative and Support and Waste Management and Remediation Services
 65000000	Education, Health Services
 65610000	Educational Services
 65620000	Health Care, Social Assistance
