@@ -60,7 +60,8 @@ let selecteddata = 0;
 
 // VARIABLES FOR CONTROLLING
 let needupdate = false;
-let needcalculation = true;
+// let needcalculation = true; TODO
+let needcalculation = false;
 
 // VARIABLES FOR VISUALIZATION
 let displayplot = [];   // displayplot[measure index][0->numplot-1:lowest, numplot->2numplot-1: middle, 2numplot->3numplot-1: highest][sample, x-var, y-var,value]
@@ -84,7 +85,8 @@ for (var i = 0; i < nummeasure; i++) {
     checkfilter[i] = false;
     valfilter[i] = [0,1];
 }
-
+// radar control
+var MetricController = radarController();
 
 
 
@@ -105,38 +107,12 @@ $( document ).ready(function() {
         openNav();
         d3.select("#DarkTheme").on("click", switchTheme);
 
-        // noUiSlider.create(orderSelection,{
-        //     start: 0,
-        //     connect: false,
-        //     step: 1,
-        //     orientation: 'vertical',
-        //     range: {
-        //         'min': 0,
-        //         'max': nummeasure-1
-        //     },
-        // }).on('change',function (values) {
-        //     selectedmeasure = +values;
-        //     needupdate = true;
-        // });
+
         // generate measurement list
         let mc = d3.select('#measureControl').selectAll('.measureControl')
             .data(measurename)
             .enter().append('div').attr('class', 'measureControl row valign-wrapper');
-        // mc.append('verticalSlider').attr('class','col s2').each(function(){
-        //   noUiSlider.create(this,{
-        //     start: [0],
-        //     connect: true,
-        //     step: 1,
-        //     orientation: 'vertical',
-        //     range: {
-        //       'min': 0,
-        //       'max': nummeasure
-        //     },
-        //   }).on('change',function (values) {
-        //     selectedmeasure = +values;
-        //     console.log(selectedmeasure);
-        //   })
-        // });
+
         let mc_labelr = mc.append('label').attr('class', 'col s1');
         mc_labelr.append('input').attr('type', 'radio').attr('name', 'orderMeasure').attr('class', 'with-gap')
             .attr('checked',d=>selectedmeasure===measureObj[d]?'':null)
@@ -168,8 +144,15 @@ $( document ).ready(function() {
                 needupdate = true;
             });
         });
-        let totalw = measureControl.getBoundingClientRect().height;
-        // d3.select('#orderSelection').style('height',(totalw-totalw/nummeasure)+'px').style('margin-top','12.5px');
+
+        // Radar control
+        MetricController.graphicopt({width:365,height:365})
+            .div(d3.select('#RadarController'))
+            .tablediv(d3.select('#RadarController_Table'))
+            .axisSchema(serviceFullList)
+            .onChangeValue(onSchemaUpdate)
+            .onChangeFilterFunc(onfilterdata)
+            .init();
 
         // data options
         d3.select('#datacom').on('change',function(){
@@ -901,6 +884,8 @@ function getcolor(measure) {
 function draw() {
     if(needcalculation) {
         analyzedata();
+        MetricController.axisSchema(serviceFullList, true).update();
+        MetricController.data(data.result.arr).drawSummary(data.result.hindex);
     }
     if (needupdate){
         background(180);
