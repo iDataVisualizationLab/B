@@ -69,7 +69,7 @@ let width = 2000;
 let height = 6000;
 let plotsize = width*0.09;
 let splotsize = width*0.06;
-let numplot = 20;
+let numplot = 25;
 let newnumplot = 0;
 let selectedmeasure = 0;
 let choose = false;   // for selections
@@ -611,7 +611,7 @@ function analyzedata() {
                                         covy += Math.pow(ydata[j - i] - meany, 2);
                                         sim += Math.abs(xdata[j] - ydata[j - i]);
                                     }
-                                    var r = Math.pow(covxy / Math.sqrt(covx * covy), 2);
+                                    var r = Math.abs(covxy / Math.sqrt(covx * covy));
                                     getLag = (minsim > sim) ? i : getLag;
                                     minsim = (minsim > sim) ? sim : minsim;
                                 } else {
@@ -621,7 +621,7 @@ function analyzedata() {
                                         covy += Math.pow(ydata[j] - meany, 2);
                                         sim += Math.abs(xdata[j + i] - ydata[j]);
                                     }
-                                    var r = Math.pow(covxy / Math.sqrt(covx * covy), 2);
+                                    var r = Math.abs(covxy / Math.sqrt(covx * covy));
                                     getLag = (minsim > sim) ? i : getLag;
                                     minsim = (minsim > sim) ? sim : minsim;
                                 }
