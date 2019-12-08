@@ -17,6 +17,7 @@
     <link href="css/layout.css" rel="stylesheet" type="text/css" />
     <link href="css/main.css" rel="stylesheet" type="text/css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
 </head>
 
 <body text="black" id="mainBody">
@@ -56,9 +57,9 @@
     <div class="row s12">
         <ul class="collapsible">
             <li class="settingContain active no_padding">
-                <div class="collapsible-header" ><i class="material-icons">settings</i>  Setting</div>
+                <div class="collapsible-header"  style="color: #000000"><i class="material-icons">settings</i>  Setting</div>
                 <div class="collapsible-body">
-                    <label for="datacom" class="col s3"> Dataset: </label>
+                    <label for="datacom" class="col s3" style="color: #000000"> Dataset: </label>
                     <div  class="row s12">
                         <select id="datacom" class="col s9">
                             <option value="0" data-date="04 Nov 2019"> US Employment Data</option>
@@ -72,15 +73,26 @@
                         <table class="display" width="100%"></table>
                     </div>
                     <div id="RadarController_Table_toolbar">
-                        <button type="submit" value = false class ="menuBtn saveProfile modal-trigger btn-small" id="saveProfile" onclick="downloadProfile(this)" href="#savedialog_profile"><i class="fas fa-download"></i> Save</button>
+<!--                        <button type="submit" value = false class ="menuBtn saveProfile modal-trigger btn-small" id="saveProfile" onclick="downloadProfile(this)" href="#savedialog_profile"><i class="fas fa-download"></i> Save</button>-->
                         <input id="profile_input_file" class="none" type="file" style="display: none;"/>
-                        <button type="submit" value = false class ="menuBtn loadProfile btn-small" id="loadProfile" onclick="uploadProfile(this)"><i class="fas fa-upload"></i> Load </button>
+<!--                        <button type="submit" value = false class ="menuBtn loadProfile btn-small" id="loadProfile" onclick="uploadProfile(this)"><i class="fas fa-upload"></i> Load </button>-->
                     </div>
                     <div  class="row s12">
+                        <div id="changeMode">
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
                         <!--<div class="col" >-->
                             <!--&lt;!&ndash;<div id ="orderSelection"></div>&ndash;&gt;-->
                         <!--</div>-->
                         <div  class="col s12" id="measureControl">
+                            <div class="row valign-wrapper">
+                                <p class="col s2" style="color: #000000" style="font-size: large">Display</p>
+                                <p class="col s6" style="color: #000000" style="font-size: large">Measure name</p>
+                                <p class="col s4" style="color: #000000" style="font-size: large">Filter</p>
+                            </div>
         <!--                    <div>-->
         <!--                    <label class="col s7">-->
         <!--                        <input type="checkbox" class="filled-in enableCheck" checked="checked" />-->
@@ -91,6 +103,7 @@
         <!--                    </div>-->
         <!--                    </div>-->
                         </div>
+
                     </div>
             </div>
             </li>
@@ -122,7 +135,7 @@
 <script src="js/radarControl/radarChart.js"></script>
 <script src="js/radarControl/roseChart.js"></script>
 <script src="js/radarControl/violinChart.js"></script>
-<script src="js/radarControl/radarController_v2.js"></script>
+<!--<script src="js/radarControl/radarController_v2.js"></script>-->
 <!-- Add your site or application content here -->
 <script src="js/vendor/modernizr-3.7.1.min.js"></script>
 <script src="lib/nouislider.js"></script>
