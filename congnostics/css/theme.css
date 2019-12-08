@@ -33,7 +33,7 @@
 #mySidenav .collapsible {
     border: none;
     margin-top: 0;
-    background-color: #c8c8c8;
+    /*background-color: #c8c8c8;*/
 }
 #mySidenav .collapsible .collapsible-header{
     background-color: transparent;

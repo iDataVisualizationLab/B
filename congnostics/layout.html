@@ -14,13 +14,14 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
           rel="stylesheet">
     <link href="css/theme.css" rel="stylesheet" type="text/css" />
+    <link href="css/N.css" rel="stylesheet" type="text/css" />
     <link href="css/layout.css" rel="stylesheet" type="text/css" />
     <link href="css/main.css" rel="stylesheet" type="text/css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
 </head>
 
-<body text="black" id="mainBody">
+<body text="black" id="mainBody" class="light">
 <div class="cover">
     <div class="progressDiv hidden">
         <h6 class="progressText spinnerC center" style="top: calc(50% - 15px);" >saving data...</h6>
@@ -44,8 +45,8 @@
         </ul>
         <ul class="right">
             <li class="tab active"><a class="active" href="#">Congnostics</a></li>
-            <li><a href="#!" value="dark" id = "DarkTheme" class="btn waves-effect waves-effect waves-yellow">
-                <i class="material-icons left">brightness_6</i><span>Light</span></a></li>
+            <li><a href="#!" value="light" id = "DarkTheme" class="btn waves-effect waves-effect waves-yellow">
+                <i class="material-icons left">brightness_6</i><span>Dark</span></a></li>
         </ul>
     </div>
 </nav>
@@ -78,12 +79,6 @@
 <!--                        <button type="submit" value = false class ="menuBtn loadProfile btn-small" id="loadProfile" onclick="uploadProfile(this)"><i class="fas fa-upload"></i> Load </button>-->
                     </div>
                     <div  class="row s12">
-                        <div id="changeMode">
-                            <label class="switch">
-                                <input type="checkbox" checked>
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
                         <!--<div class="col" >-->
                             <!--&lt;!&ndash;<div id ="orderSelection"></div>&ndash;&gt;-->
                         <!--</div>-->

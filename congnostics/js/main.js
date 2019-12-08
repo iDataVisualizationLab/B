@@ -110,7 +110,8 @@ $( document ).ready(function() {
         // generate measurement list
         let mc = d3.select('#measureControl').selectAll('.measureControl')
             .data(measurename)
-            .enter().append('div').attr('class', 'measureControl row valign-wrapper');
+            .enter().append('div').attr('class', 'measureControl row valign-wrapper')
+            .attr('disabled','disabled');
 
         let mc_labelr = mc.append('label').attr('class', 'col s2');
         mc_labelr.append('input').attr('type', 'radio').attr('name', 'orderMeasure').attr('class', 'with-gap')
@@ -128,6 +129,7 @@ $( document ).ready(function() {
         mc_label.append('input').attr('type', 'checkbox').attr('class', 'filled-in enableCheck')
             .on('change',function(d){
                 checkfilter[measureObj[d]] = this.checked;
+                d3.select(this.parentNode.parentNode).attr('disabled',this.checked?null:'disabled');
                 needupdate = true;
             });
         mc_label.append('span');
@@ -896,7 +898,7 @@ function draw() {
         // MetricController.data(data.result.arr).drawSummary(data.result.hindex);
     }
     if (needupdate){
-        background(180);
+        background(200);
 
             // CHOOSE DISPLAY PLOTS
             sortmeasures();
