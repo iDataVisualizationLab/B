@@ -5,38 +5,34 @@
 ////////////////////
 
 let measures = [];  // measures[index][sample][x-var,y-var,value], value = -1 means no data
-let nummeasure = 14;
+let nummeasure = 12;
 let measurename = [
     'Outlying',
-    'Straight',
+    'Skinny',
     'Skewed',
     'Clumpy',
     'Sparse',
     'Striated',
     'Trend',
-    'L-shape',
+    'Constant',
     "Intersections",
     "Loop",
-    'Similarity',
     'Cross-correlation',
     'Length',
-    'Area'
 ];
 let measureObj = {
     'Outlying':0,
-    'Straight':1,
+    'Skinny':1,
     'Skewed':2,
     'Clumpy':3,
     'Sparse':4,
     'Striated':5,
     'Trend':6,
-    'L-shape':7,
+    'Constant':7,
     "Intersections":8,
     "Loop":9,
-    'Similarity':10,
-    'Cross-correlation':11,
-    'Length':12,
-    'Area':13
+    'Cross-correlation':10,
+    'Length':11
 };
 
 // VARIABLES FOR STORING DATA
@@ -66,16 +62,16 @@ let needcalculation = true;
 // VARIABLES FOR VISUALIZATION
 let displayplot = [];   // displayplot[measure index][0->numplot-1:lowest, numplot->2numplot-1: middle, 2numplot->3numplot-1: highest][sample, x-var, y-var,value,index]
 let width = 2000;
-let height = 6000;
+let height = 1500;
 let plotsize = width*0.09;
 let splotsize = width*0.06;
-let numplot = 25;
+let numplot = 5;
 let newnumplot = 0;
 let selectedmeasure = 0;
-let choose = true;   // for selections
-let type = [0,0,0,0,0,0,1,1,1,1,1,2,2,2];   // for type of measures in selection button
+let choose = false;   // for selections
+let type = [0,0,0,0,0,0,1,1,1,1,1,2];   // for type of measures in selection button
 let xstartpos = width*0.05;   // starting position of plots
-let ystartpos = 100;
+let ystartpos = 200;
 let xblank1 = splotsize*0.3;
 let xblank2 = plotsize*0.8;
 let yblank = plotsize*0.3;
@@ -123,7 +119,7 @@ $( document ).ready(function() {
         mc_labelr.append('span');
         let mc_labeln = mc.append('label').attr('class', 'col s6');
         mc_labeln.append('span').attr('class', 'col measureLabel')
-            .style('color',d=>'rgb('+getcolor(measureObj[d]).join(',')+')').style('font-size','large')
+            .style('color',d=>'rgb('+getcolor(measureObj[d]).join(',')+')').style('font-size','medium').style('font-family','Arial')
             .text(d => d);
         let mc_label = mc.append('label').attr('class', 'col s1');
         mc_label.append('input').attr('type', 'checkbox').attr('class', 'filled-in enableCheck')
@@ -149,19 +145,26 @@ $( document ).ready(function() {
         });
 
         // Radar control
-        MetricController.graphicopt({width:365,height:365})
-            .div(d3.select('#RadarController'))
-            .tablediv(d3.select('#RadarController_Table'))
-            .axisSchema(serviceFullList)
-            .onChangeValue(onSchemaUpdate)
-            .onChangeFilterFunc(onfilterdata)
-            .init();
+        // MetricController.graphicopt({width:365,height:365})
+        //     .div(d3.select('#RadarController'))
+        //     .tablediv(d3.select('#RadarController_Table'))
+        //     .axisSchema(serviceFullList)
+        //     .onChangeValue(onSchemaUpdate)
+        //     .onChangeFilterFunc(onfilterdata)
+        //     .init();
 
         // data options
         d3.select('#datacom').on('change',function(){
            selecteddata = +this.value;
            needcalculation = true;
-        })
+           d3.select('.cover').classed('hidden', false);
+        });
+        // display mode
+        d3.select('#displaymode').on('change',function (){
+            choose = (+this.value !== 0);
+            needupdate = true;
+            console.log('mode = '+this.value);
+        });
     }catch{}
 });
 function openNav() {
@@ -335,7 +338,6 @@ function analyzedata() {
         // CONTROL CALCULATION
         normalization();
         calculatemeasures();
-        console.log(displayplot);
 
         // NORMALIZE DATA
         // find min and max of each series -> normalize
@@ -413,7 +415,7 @@ function analyzedata() {
                         sortlength.sort(function (b, n) {return b - n});   // ascending
 
                         // OUTLYING
-                        measures[1][p][index][2] = Math.sqrt(Math.pow(xdata[xdata.length - 1] - xdata[0], 2) + Math.pow(ydata[ydata.length - 1] - ydata[0], 2)) / sumlength;
+                        // measures[1][p][index][2] = Math.sqrt(Math.pow(xdata[xdata.length - 1] - xdata[0], 2) + Math.pow(ydata[ydata.length - 1] - ydata[0], 2)) / sumlength;
                         if (xdata.length > 1) {
                             measures[0][p][index][2] = 0;
                             var outlier = [];
@@ -533,8 +535,8 @@ function analyzedata() {
                                 }
                             });
                             // LENGTH
-                            measures[12][p][index][2] = sumlengtha / (xdata.length - 1);
-                            if (measures[12][p][index][2] > 1) measures[12][p][index][2] = 1;
+                            measures[11][p][index][2] = sumlengtha / (xdata.length - 1);
+                            if (measures[11][p][index][2] > 1) measures[11][p][index][2] = 1;
                             // MONOTONIC TREND
                             measures[6][p][index][2] = (4/3)*Math.max(...dir) / (xdata.length * (xdata.length - 1) / 2)-1/3;
                             // INTERSECTIONS
@@ -630,10 +632,10 @@ function analyzedata() {
                                 }
                                 maxr = (maxr < r) ? r : maxr;
                             }
-                            measures[11][p][index][2] = maxr;
+                            measures[10][p][index][2] = maxr;
 
                             // SIMILARITY
-                            measures[10][p][index][2] = 1 - minsim / (xdata.length-getLag);
+                            // measures[10][p][index][2] = 1 - minsim / (xdata.length-getLag);
 
                             // CALCULATE AREA
                             // set value of bins inside triangles is 1, outside triangles is 0
@@ -664,14 +666,14 @@ function analyzedata() {
                                         }
                                     }
                                 }
-                                measures[13][p][index][2] = 0;
+                                measures[1][p][index][2] = 0;
                                 cellval.forEach(function (row) {
                                     row.forEach(function (column) {
-                                        measures[13][p][index][2] += column;
+                                        measures[1][p][index][2] += column;
                                     });
                                 });
-                                measures[13][p][index][2] *= cellsize * cellsize;
-                                measures[13][p][index][2] = 1 -  measures[13][p][index][2];
+                                measures[1][p][index][2] *= cellsize * cellsize;
+                                measures[1][p][index][2] = 1 -  measures[1][p][index][2];
                             }
 
 
@@ -873,18 +875,15 @@ function setup() {
 /////////////////
 function getcolor(measure) {
     switch (type[measure]) {
-        // case 0:
-        //     return [179, 226, 205];
-        //     break;
-        // case 1:
-        //     return [253, 205, 172];
-        //     break;
-        // case 2:
-        //     return [203, 213, 232];
-        //     break;
-        // case 3:
-        //     return [244, 202, 228];
-        //     break;
+        case 0:
+            return [18, 169, 101];
+            break;
+        case 1:
+            return [232, 101, 11];
+            break;
+        case 2:
+            return [89, 135, 222];
+            break;
         default:
             return [0,0,0];
             break;
@@ -922,16 +921,17 @@ function draw() {
                 // textSize(plotsize/12);
                 // text('select measure',xstartpos+plotsize+2*xblank1+0.5*splotsize,16+plotsize/10);
                 // Color explanation
-                // fill(179,226,205);
-                // rect(xstartpos+plotsize+2*xblank1+2*splotsize+xblank2,20,plotsize/12,plotsize/12);
-                // fill(253,205,172);
-                // rect(xstartpos+plotsize+2*xblank1+2*splotsize+xblank2,30+plotsize/12,plotsize/12,plotsize/12);
-                // fill(203,213,232);
-                // rect(xstartpos+plotsize+2*xblank1+2*splotsize+xblank2,40+plotsize/6,plotsize/12,plotsize/12);
-                // fill(0);
-                // text('Measures from Scagnostics of non time series data',xstartpos+plotsize+2*xblank1+2*splotsize+xblank2+plotsize/12+10,16+plotsize/11);
-                // text('Measures from features of connected scatterplot',xstartpos+plotsize+2*xblank1+2*splotsize+xblank2+plotsize/12+10,26+plotsize/6);
-                // text('Measures under developing',xstartpos+plotsize+2*xblank1+2*splotsize+xblank2+plotsize/12+10,36+plotsize/4);
+                fill(18, 169, 101);
+                rect(xstartpos+plotsize,20,plotsize/12,plotsize/12);
+                fill(232, 101, 11);
+                rect(xstartpos+plotsize,30+plotsize/12,plotsize/12,plotsize/12);
+                fill(89, 135, 222);
+                rect(xstartpos+plotsize,40+plotsize/6,plotsize/12,plotsize/12);
+                fill(0);
+                textSize(plotsize/12);
+                text('Measures from Scagnostics of non time series data',xstartpos+plotsize+plotsize/6,16+plotsize/11);
+                text('Measures from features of connected scatterplot',xstartpos+plotsize+plotsize/6,26+plotsize/6);
+                text('Measures under developing',xstartpos+plotsize+plotsize/6,36+plotsize/4);
                 // Formula
                 // text('Formula for this measure:',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,16+plotsize/11);
                 // switch (selectedmeasure) {
@@ -1071,19 +1071,73 @@ function draw() {
                                 }
                             });
                         } else {    // write values of measures
-                            for (var k = 0; k < nummeasure; k++) {
-                                if (k<nummeasure/2) {
-                                    noStroke();
-                                    fill(0);
-                                    textSize(10);
-                                    text(measurename[k]+' = '+Math.round(measures[k][sample][mindex][2]*100)/100,xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2),ystartpos+i*(plotsize+yblank)+(k+1)*plotsize/7);
-                                } else {
-                                    noStroke();
-                                    fill(0);
-                                    textSize(10);
-                                    text(measurename[k]+' = '+Math.round(measures[k][sample][mindex][2]*100)/100,xstartpos+plotsize+xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+0.6*splotsize,ystartpos+i*(plotsize+yblank)+(k+1-nummeasure/2)*plotsize/7);
-                                }
+                            var xcenter = xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2);
+                            var ycenter = ystartpos+i*(plotsize+yblank)+plotsize/2;
+                            fill(255);
+                            stroke(150);
+                            for (var k = 5; k > 0; k--) {
+                                ellipse(xcenter,ycenter,splotsize*0.2*k,splotsize*0.2*k);
                             }
+                            for (var k = 0; k < nummeasure-1; k++) {
+                                var xp1 = xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+splotsize*Math.sin(Math.PI*2*k/nummeasure)/2;
+                                var yp1 = ystartpos+i*(plotsize+yblank)+plotsize/2-splotsize*Math.cos(Math.PI*2*k/nummeasure)/2;
+                                stroke(150);
+                                line(xcenter,ycenter,xp1,yp1);
+                                var xp2 = xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+Math.round(measures[k][sample][mindex][2]*100)*splotsize*Math.sin(Math.PI*2*k/nummeasure)/200;
+                                var yp2 = ystartpos+i*(plotsize+yblank)+plotsize/2-Math.round(measures[k][sample][mindex][2]*100)*splotsize*Math.cos(Math.PI*2*k/nummeasure)/200;
+                                var xp3 = xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+Math.round(measures[k+1][sample][mindex][2]*100)*splotsize*Math.sin(Math.PI*2*(k+1)/nummeasure)/200;
+                                var yp3 = ystartpos+i*(plotsize+yblank)+plotsize/2-Math.round(measures[k+1][sample][mindex][2]*100)*splotsize*Math.cos(Math.PI*2*(k+1)/nummeasure)/200;
+                                switch (type[k]) {
+                                    case 0:
+                                        fill(18, 169, 101);
+                                        stroke(18, 169, 101);
+                                        break;
+                                    case 1:
+                                        fill(232, 101, 11);
+                                        stroke(232, 101, 11);
+                                        break;
+                                    case 2:
+                                        fill(89, 135, 222);
+                                        stroke(89, 135, 222);
+                                        break;
+                                }
+                                triangle(xcenter,ycenter,xp2,yp2,xp3,yp3);
+                                textSize(8);
+                                noStroke();
+                                if (k>nummeasure/2) {
+                                    textAlign(RIGHT);
+                                }
+                                text(measurename[k]+': '+Math.round(measures[k][sample][mindex][2]*100)/100,xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+(splotsize+20)*Math.sin(Math.PI*2*k/nummeasure)/2,ystartpos+i*(plotsize+yblank)+plotsize/2-(splotsize+20)*Math.cos(Math.PI*2*k/nummeasure)/2);
+                                textAlign(LEFT);
+                            }
+                            var xp1 = xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+splotsize*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2;
+                            var yp1 = ystartpos+i*(plotsize+yblank)+plotsize/2-splotsize*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2;
+                            var xp2 = xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+Math.round(measures[nummeasure-1][sample][mindex][2]*100)*splotsize*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/200;
+                            var yp2 = ystartpos+i*(plotsize+yblank)+plotsize/2-Math.round(measures[nummeasure-1][sample][mindex][2]*100)*splotsize*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/200;
+                            var xp3 = xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+Math.round(measures[0][sample][mindex][2]*100)*splotsize*Math.sin(0)/200;
+                            var yp3 = ystartpos+i*(plotsize+yblank)+plotsize/2-Math.round(measures[0][sample][mindex][2]*100)*splotsize*Math.cos(0)/200;
+                            stroke(0);
+                            line(xcenter,ycenter,xp1,yp1);
+                            switch (type[nummeasure-1]) {
+                                case 0:
+                                    fill(18, 169, 101);
+                                    stroke(18, 169, 101);
+                                    break;
+                                case 1:
+                                    fill(232, 101, 11);
+                                    stroke(232, 101, 11);
+                                    break;
+                                case 2:
+                                    fill(89, 135, 222);
+                                    stroke(89, 135, 222);
+                                    break;
+                            }
+                            triangle(xcenter,ycenter,xp2,yp2,xp3,yp3);
+                            textSize(8);
+                            noStroke();
+                            textAlign(RIGHT);
+                            text(measurename[k]+': '+Math.round(measures[k][sample][mindex][2]*100)/100,xstartpos+plotsize+splotsize+2*xblank1+j*(plotsize+2*splotsize+2*xblank1+xblank2)+(splotsize+20)*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2,ystartpos+i*(plotsize+yblank)+plotsize/2-(splotsize+20)*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2);
+                            textAlign(LEFT);
                         }
 
                         // write value of measure
@@ -1184,13 +1238,13 @@ function draw() {
     }
 }
 
-function mousePressed() {
-    for (var i = 0; i < numplot; i++) {
-        for (var j = 0; j < 3; j++) {
-            if (mouseX > xstartpos + j * (plotsize + 2 * splotsize + 2 * xblank1 + xblank2) && mouseX < xstartpos + j * (plotsize + 2 * splotsize + 2 * xblank1 + xblank2) + plotsize && mouseY > ystartpos + i * (plotsize + yblank) && mouseY < ystartpos + i * (plotsize + yblank) + plotsize) {
-                choose = !choose;
-                needupdate = true;
-            }
-        }
-    }
-}
+// function mousePressed() {
+//     for (var i = 0; i < numplot; i++) {
+//         for (var j = 0; j < 3; j++) {
+//             if (mouseX > xstartpos + j * (plotsize + 2 * splotsize + 2 * xblank1 + xblank2) && mouseX < xstartpos + j * (plotsize + 2 * splotsize + 2 * xblank1 + xblank2) + plotsize && mouseY > ystartpos + i * (plotsize + yblank) && mouseY < ystartpos + i * (plotsize + yblank) + plotsize) {
+//                 choose = !choose;
+//                 needupdate = true;
+//             }
+//         }
+//     }
+// }

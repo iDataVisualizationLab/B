@@ -30,7 +30,7 @@
         </div>
     </div>
     <div class="spinnerC center" id="loadingSpinner" >
-        <h5 class="spinnerC center status" style="top: 60px; min-width: 300px;" >loading data...</h5>
+        <h5 class="spinnerC center status" style="top: 60px; min-width: 300px;" >computing data...</h5>
     </div>
 </div>
 <nav class="pushpin-demo-nav" data-target="blue">
@@ -69,6 +69,13 @@
                             <option value="3" data-date="1980">SP500 Stock data</option>
                         </select>
                     </div>
+                    <label for="displaymode" class="col s3" style="color: #000000"> Display mode: </label>
+                    <div  class="row s12">
+                    <select id="displaymode" class="col s9">
+                        <option value="0"> Original univariate time series </option>
+                        <option value="1"> Radar chart of measures </option>
+                    </select>
+                    </div>
                     <div id="RadarController"></div>
                     <div id="RadarController_Table">
                         <table class="display" width="100%"></table>
@@ -84,9 +91,9 @@
                         <!--</div>-->
                         <div  class="col s12" id="measureControl">
                             <div class="row valign-wrapper">
-                                <p class="col s2" style="color: #000000" style="font-size: large">Display</p>
-                                <p class="col s6" style="color: #000000" style="font-size: large">Measure name</p>
-                                <p class="col s4" style="color: #000000" style="font-size: large">Filter</p>
+                                <p class="col s2" style="color: #000000" style="font-size: 15px">Choose measure</p>
+                                <p class="col s6" style="color: #000000" style="font-size: 15px">Measure name</p>
+                                <p class="col s4" style="color: #000000" style="font-size: 15px">Filter</p>
                             </div>
         <!--                    <div>-->
         <!--                    <label class="col s7">-->
