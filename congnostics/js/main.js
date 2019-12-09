@@ -71,7 +71,7 @@ let selectedmeasure = 0;
 let choose = false;   // for selections
 let type = [0,0,0,0,0,0,1,1,1,1,1,2];   // for type of measures in selection button
 let xstartpos = width*0.05;   // starting position of plots
-let ystartpos = 200;
+let ystartpos = 100;
 let xblank1 = splotsize*0.3;
 let xblank2 = plotsize*0.8;
 let yblank = plotsize*0.3;
@@ -921,17 +921,17 @@ function draw() {
                 // textSize(plotsize/12);
                 // text('select measure',xstartpos+plotsize+2*xblank1+0.5*splotsize,16+plotsize/10);
                 // Color explanation
-                fill(18, 169, 101);
-                rect(xstartpos+plotsize,20,plotsize/12,plotsize/12);
-                fill(232, 101, 11);
-                rect(xstartpos+plotsize,30+plotsize/12,plotsize/12,plotsize/12);
-                fill(89, 135, 222);
-                rect(xstartpos+plotsize,40+plotsize/6,plotsize/12,plotsize/12);
-                fill(0);
-                textSize(plotsize/12);
-                text('Measures from Scagnostics of non time series data',xstartpos+plotsize+plotsize/6,16+plotsize/11);
-                text('Measures from features of connected scatterplot',xstartpos+plotsize+plotsize/6,26+plotsize/6);
-                text('Measures under developing',xstartpos+plotsize+plotsize/6,36+plotsize/4);
+                // fill(18, 169, 101);
+                // rect(xstartpos+plotsize,20,plotsize/12,plotsize/12);
+                // fill(232, 101, 11);
+                // rect(xstartpos+plotsize,30+plotsize/12,plotsize/12,plotsize/12);
+                // fill(89, 135, 222);
+                // rect(xstartpos+plotsize,40+plotsize/6,plotsize/12,plotsize/12);
+                // fill(0);
+                // textSize(plotsize/12);
+                // text('Measures from Scagnostics of non time series data',xstartpos+plotsize+plotsize/6,16+plotsize/11);
+                // text('Measures from features of connected scatterplot',xstartpos+plotsize+plotsize/6,26+plotsize/6);
+                // text('Measures under developing',xstartpos+plotsize+plotsize/6,36+plotsize/4);
                 // Formula
                 // text('Formula for this measure:',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,16+plotsize/11);
                 // switch (selectedmeasure) {
