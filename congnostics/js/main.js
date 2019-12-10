@@ -243,6 +243,10 @@ function analyzedata() {
             filename0 = "data/stock_data.txt";
             filename1 = "data/year_code.txt";
             filename2 = "data/var_code.txt";
+        case 4:
+            filename0 = "data/data.txt";
+            filename1 = "data/example_sample_code.txt";
+            filename2 = "data/example_variable_code.txt";
     }
 
     Promise.all([
@@ -336,8 +340,9 @@ function analyzedata() {
 /////////////////////
 
         // CONTROL CALCULATION
-        normalization();
+        if (selectedmeasure !== 4) normalization();
         calculatemeasures();
+        console.log(data);
 
         // NORMALIZE DATA
         // find min and max of each series -> normalize

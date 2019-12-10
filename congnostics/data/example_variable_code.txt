@@ -1,0 +1,15 @@
+code	name
+0	Variable 0
+1	Variable 1
+2	Variable 2
+3	Variable 3
+4	Variable 4
+5	Variable 5
+6	Variable 6
+7	Variable 7
+8	Variable 8
+9	Variable 9
+10	Variable 10
+11	Variable 11
+12	Variable 12
+13	Variable 13
