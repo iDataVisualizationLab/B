@@ -243,10 +243,12 @@ function analyzedata() {
             filename0 = "data/stock_data.txt";
             filename1 = "data/year_code.txt";
             filename2 = "data/var_code.txt";
+            break;
         case 4:
             filename0 = "data/data.txt";
             filename1 = "data/example_sample_code.txt";
             filename2 = "data/example_variable_code.txt";
+            break;
     }
 
     Promise.all([
