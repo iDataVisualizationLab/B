@@ -115,6 +115,123 @@
                     </div>
             </div>
             </li>
+            <li>
+                <div class="collapsible-header capitalize" id="vizController"><i class="icon-radarShape material-icons icon"></i><span>Radar Controller</span>  <i class="material-icons expand">chevron_right</i></div>
+                <div class="collapsible-body">
+                    <div  class="row valign-wrapper">
+                        <label for="viztype_holder" class="col s4">Circular layout</label>
+                        <div id="viztype_holder" class="radio-toolbar col s8">
+                            <label class="toolTip" data-title="Star chart">
+                                <input name="viztype" type="radio" value="star"/>
+                                <i class="icon-starShape material-icons"></i>
+                            </label>
+
+                            <label class="toolTip" data-title="Radar chart" >
+                                <input name="viztype" type="radio" checked value="radar"/>
+                                <i class="icon-radarShape material-icons"></i>
+                            </label>
+
+                            <label class="toolTip" data-title="Nightingale Rose Chart" >
+                                <input name="viztype" type="radio" value="rose" />
+                                <i class="icon-roseShape material-icons"></i>
+                            </label>
+
+                            <label class="toolTip" data-title="Flower chart" >
+                                <input name="viztype" type="radio" value="flower"/>
+                                <i class="icon-flowerShape material-icons"></i>
+                            </label>
+
+                        </div >
+                    </div>
+                    <div id="RadarController"></div>
+                    <div id="RadarController_Table">
+                        <table class="display" width="100%"></table>
+                    </div>
+                    <div id="RadarController_Table_toolbar">
+                        <button type="submit" value = false class ="menuBtn saveProfile modal-trigger btn-small" id="saveProfile" onclick="downloadProfile(this)" href="#savedialog_profile"><i class="fas fa-download"></i> Save</button>
+                        <input id="profile_input_file" class="none" type="file" style="display: none;"/>
+                        <button type="submit" value = false class ="menuBtn loadProfile btn-small" id="loadProfile" onclick="uploadProfile(this)"><i class="fas fa-upload"></i> Load </button>
+                    </div>
+                </div>
+            </li>
+            <li class="active">
+                <div class="collapsible-header"><i class="material-icons">group_work</i> <span> Major host groups </span><span class="col right-align valign-wrapper subText" style="font-size: 12px;">(by the 9 metrics)</span><i class="material-icons expand">chevron_right</i></div>
+                <div class="collapsible-body">
+                    <div style="position: relative;">
+                        <div id="clusterLoading" class="loading hidden">
+                            <div class="progressDiv hidden">
+                                <h6 class="progressText spinnerC center" style="top: calc(50% - 15px);" >saving data...</h6>
+                                <div class="progress spinnerC center" style="width: 70%;">
+                                    <div class="determinate" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div  class="row valign-wrapper">
+                                <label for="clusterMethod" class="col s4 radarcontroller_layout"> Grouping Method</label>
+                                <select id="clusterMethod" class="col s8 radarcontroller_layout">
+                                    <option value="leaderbin" selected="selected">Leader Bin</option>
+                                    <option value="kmean">K-means</option>
+                                </select>
+                            </div>
+                            <div  class="row valign-wrapper">
+                                <label for="normMethod" class="col s4 radarcontroller_layout"> Distance Function</label>
+                                <select id="normMethod" class="col s8 radarcontroller_layout">
+                                    <option value="l1">L1 norm - Manhattan Distance</option>
+                                    <option value="l2" selected="selected">L2 norm - Euclidean Distance</option>
+                                </select>
+                            </div>
+                            <form action="#" class='clusterProfile row valign-wrapper' id = "leaderbinprofile" onsubmit="recalculateCluster( {clusterMethod: 'leaderbin',normMethod:$('#normMethod').val(),bin:{startBinGridSize: +$('#startBinGridSize').val(),range: [+$('#lowrange').val(),+$('#highrange').val()]}});return false;">
+                                <label for="startBinGridSize" class="col s4 radarcontroller_layout hide">Initial diameter</label>
+                                <div  class="col s5 hide">
+                                    <input type="number" id="startBinGridSize" class="radarcontroller_layout browser-default">
+                                </div>
+                                <label for="lowrange" class="col s4 radarcontroller_layout">#Groups from </label>
+                                <div  class="col s5 no-pad-left valign-wrapper" >
+                                    <input type="number" id="lowrange" class="col s3 radarcontroller_layout browser-default no_leftmagrin">
+                                    <span class="col s2 no_leftmagrin">to</span>
+                                    <input type="number" id="highrange" class="col s3 radarcontroller_layout browser-default no_leftmagrin" >
+                                </div>
+                                <div  class="col s3 no_padding valign-wrapper center-align" >
+                                    <button type="submit" class="btn-small animatIcon"><i class="material-icons">send</i><div>Submit</div></button>
+                                </div>
+                            </form>
+                            <form action="#" class='clusterProfile hide row valign-wrapper' id = "kmeanprofile" onsubmit="recalculateCluster( {clusterMethod: 'kmean',normMethod:$('#normMethod').val(),bin:{k: +$('#knum').val(),iterations: +$('#kiteration').val()}});return false;">
+                                <label for="knum" class="col s4 radarcontroller_layout">#Groups</label>
+                                <div  class="col s5 no-pad-left valign-wrapper">
+                                    <input type="number" id="knum" class="col s3 radarcontroller_layout browser-default no_leftmagrin">
+                                    <span class="col s6 no_leftmagrin"> #Iterations</span>
+                                    <input type="number" id="kiteration" class="col s3 radarcontroller_layout browser-default no_leftmagrin" >
+                                </div>
+                                <div  class="col s3 no_padding valign-wrapper center-align" >
+                                    <button type="submit" class="btn-small animatIcon"><i class="material-icons">send</i><div>Submit</div></button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="row s12 valign-wrapper" style="margin-bottom: 0; padding-top: 10px; background-color: white">
+                            <label class="col s8 offset-s4 left-align">
+                                <input id="majorGroupDisplay_control" type="checkbox" class="filled-in">
+                                <span >Display min-max</span>
+                            </label>
+                        </div>
+                        <div class="row s12 flex_contain flex_warp white" id="clusterDisplay">
+                            <button class="information waves-effect waves-light hide" style="right: 17px;position: absolute;"><i class="material-icons">priority_high</i></button>
+                            <div id='clusterinformation' class="informationDetail card">
+                                <table>
+                                    <tbody>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <label>Group labels:</label>
+                        <button type="submit" onclick="saveClusterDescription()"  class ="menuBtn modal-trigger btn-small" href="#savedialog_description">
+                            <i class="fas fa-download pauseicon" ></i> Save</button>
+                        <button  type="submit" class ="menuBtn btn-small" id="saveDescriptionbtn">
+                            <i class="fas fa-upload pauseicon" ></i> Load</button>
+                        <input id="description_input_file" class="none" type="file" style="display: none;"/>
+                    </div>
+                </div>
+            </li>
         </ul>
     </div>
 </div>
