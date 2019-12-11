@@ -2121,7 +2121,7 @@ function onFinishInterval(data) {
             variables: VARIABLES,
             data: part
         }, onSimilarityResult, i);
-    })
+    });
 
     function onSimilarityResult(evt) {
         similarityResultCounter += 1;
