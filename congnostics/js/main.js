@@ -340,7 +340,7 @@ function analyzedata() {
 /////////////////////
 
         // CONTROL CALCULATION
-        if (selectedmeasure !== 4) normalization();
+        if(selecteddata!==4) normalization();
         calculatemeasures();
         console.log(data);
 
