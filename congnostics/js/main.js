@@ -52,7 +52,7 @@ let cellval = [];
 let minloop = 0;
 let maxloop = 48;
 let lag = 48;
-let selecteddata = 0;
+let selecteddata = 4;
 
 // VARIABLES FOR CONTROLLING
 let needupdate = false;
@@ -83,8 +83,11 @@ for (var i = 0; i < nummeasure; i++) {
 }
 // radar control
 // var MetricController = radarController();
-
-
+let Radarplot_opt = {
+    clusterMethod: 'leaderbin',
+}
+// worker
+let clustercalWorker
 
 ////////////////////////////////
 ////////////////////////////////
@@ -102,7 +105,12 @@ $( document ).ready(function() {
         discovery('#sideNavbtn');
         openNav();
         d3.select("#DarkTheme").on("click", switchTheme);
-
+        d3.select('#clusterMethod').on('change',function(){
+            Radarplot_opt.clusterMethod = this.value;
+            // Radarplot.binopt(Radarplot_opt);
+            d3.selectAll('.clusterProfile').classed('hide',true);
+            d3.select(`#${this.value}profile`).classed('hide',false);
+        });
         // generate measurement list
         let mc = d3.select('#measureControl').selectAll('.measureControl')
             .data(measurename)
@@ -838,6 +846,47 @@ function sortmeasures() {
             }
         }
     }
+}
+
+// Calculate Cluster
+function recalculateCluster (option,calback) {
+    // preloader(true,10,'Process grouping...','#clusterLoading');
+    let group_opt = option;
+    distance = group_opt.normMethod==='l1'?distanceL1:distanceL2;
+    if (clustercalWorker)
+        clustercalWorker.terminate();
+    clustercalWorker = new Worker ('src/script/worker/clustercal.js');
+    clustercalWorker.postMessage({
+        binopt:group_opt,
+        sampleS:sampleS, // collection of data
+        hosts:hosts, // instance list
+        serviceFullList: serviceFullList, // parameter layout
+        serviceLists:serviceLists, // TODO remove this
+        serviceList_selected:serviceList_selected, // parameter layout
+        serviceListattr:serviceListattr // parameter name in instance object
+    });
+    clustercalWorker.addEventListener('message',({data})=>{
+        if (data.action==='done') {
+            data.result.forEach(c=>c.arr = c.arr.slice(0,lastIndex));
+            cluster_info = data.result;
+            clusterDescription = {};
+            recomendName (cluster_info);
+            recomendColor (cluster_info);
+            if (!calback) {
+                cluster_map(cluster_info);
+                jobMap.clusterData(cluster_info).colorCluster(colorCluster).data(undefined,undefined,undefined,true).draw().drawComp();
+                handle_clusterinfo();
+            }
+            // preloader(false, undefined, undefined, '#clusterLoading');
+            clustercalWorker.terminate();
+            if (calback)
+                calback();
+        }
+        // if (data.action==='returnData'){
+        //     onloaddetermire({process:data.result.process,message:`# iterations: ${data.result.iteration}`},'#clusterLoading');
+        // }
+    }, false);
+
 }
 /////////////////////
 ////////////////////
