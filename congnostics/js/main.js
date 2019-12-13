@@ -134,7 +134,15 @@ $( document ).ready(function() {
         //     .onChangeValue(onSchemaUpdate)
         //     .onChangeFilterFunc(onfilterdata)
         //     .init();
+// set event for viz type
+    $('input[type=radio][name=viztype]').change(function() {
+        updateViztype(this.value);
+    });
 
+    d3.select('#majorGroupDisplay_control').on('change',function() {
+        radarChartclusteropt.boxplot = $(this).prop('checked');
+        cluster_map(cluster_info)
+    });
         // data options
         d3.select('#datacom').on('change',function(){
            selecteddata = +this.value;
