@@ -1318,10 +1318,10 @@ function draw() {
                     // draw rectangles for CS
                     fill(255);
                     stroke(0);
-                    rect(2*xBlank+oPlotSize+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize),csPlotSize,csPlotSize);
+                    rect(1.65*xBlank+oPlotSize+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize),csPlotSize,csPlotSize);
 
                     // draw rectangles for time series
-                    fill(220);
+                    fill(255);
                     noStroke();
                     rect(xBlank+j*groupSize,yBlank+50+0.5*oPlotSize+i*(csPlotSize+ygBlank)+oPlotSize*0.025,oPlotSize,oPlotSize*0.5); // x-data
                     stroke(0);
@@ -1329,7 +1329,7 @@ function draw() {
                     line(xBlank+j*groupSize,yBlank+50+oPlotSize+i*(csPlotSize+ygBlank)+oPlotSize*0.025,xBlank+j*groupSize+oPlotSize,yBlank+50+oPlotSize+i*(csPlotSize+ygBlank)+oPlotSize*0.025);
                     noFill();
                     bezier(xBlank+j*groupSize+oPlotSize,yBlank+50+0.75*oPlotSize+i*(csPlotSize+ygBlank),xBlank+j*groupSize+oPlotSize*1.25,yBlank+50+0.75*oPlotSize+i*(csPlotSize+ygBlank),xBlank+j*groupSize+oPlotSize,yBlank+50+0.5*oPlotSize+i*(csPlotSize+ygBlank),xBlank+j*groupSize+oPlotSize*1.2,yBlank+50+0.5*oPlotSize+i*(csPlotSize+ygBlank));
-                    fill(220);
+                    fill(255);
                     noStroke();
                     rect(xBlank+j*groupSize,yBlank+50+i*(csPlotSize+ygBlank)-oPlotSize*0.025,oPlotSize,oPlotSize*0.5); // y-data
                     stroke(0);
@@ -1338,17 +1338,17 @@ function draw() {
                     noFill();
                     bezier(xBlank+j*groupSize+oPlotSize,yBlank+50+i*(csPlotSize+ygBlank)+oPlotSize*0.25,xBlank+j*groupSize+oPlotSize*1.25,yBlank+50+i*(csPlotSize+ygBlank)+oPlotSize*0.25,xBlank+j*groupSize+oPlotSize,yBlank+50+0.5*oPlotSize+i*(csPlotSize+ygBlank),xBlank+j*groupSize+oPlotSize*1.2,yBlank+50+0.5*oPlotSize+i*(csPlotSize+ygBlank));
 
-                    var xCenter = 3*xBlank+2.5*csPlotSize+j*groupSize;
+                    var xCenter = 2.8*xBlank+2.5*csPlotSize+j*groupSize;
                     var yCenter = yBlank+50+csPlotSize/2+i*(csPlotSize+ygBlank);
-                    fill(255);
-                    stroke(150);
+                    noFill();
+                    stroke(180);
                     for (var k = 5; k > 0; k--) {
                         ellipse(xCenter,yCenter,rPlotSize*0.2*k,rPlotSize*0.2*k);
                     }
                     for (var k = 0; k < nummeasure-1; k++) {
                         var xp1 = xCenter+rPlotSize*Math.sin(Math.PI*2*k/nummeasure)/2;
                         var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*k/nummeasure)/2;
-                        stroke(150);
+                        stroke(180);
                         line(xCenter,yCenter,xp1,yp1);
                         var xp2 = xCenter+Math.round(measures[k][sample][mindex][2]*100)*rPlotSize*Math.sin(Math.PI*2*k/nummeasure)/200;
                         var yp2 = yCenter-Math.round(measures[k][sample][mindex][2]*100)*rPlotSize*Math.cos(Math.PI*2*k/nummeasure)/200;
@@ -1383,7 +1383,7 @@ function draw() {
                     var yp2 = yCenter-Math.round(measures[nummeasure-1][sample][mindex][2]*100)*rPlotSize*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/200;
                     var xp3 = xCenter+Math.round(measures[0][sample][mindex][2]*100)*rPlotSize*Math.sin(0)/200;
                     var yp3 = yCenter-Math.round(measures[0][sample][mindex][2]*100)*rPlotSize*Math.cos(0)/200;
-                    stroke(0);
+                    stroke(180);
                     line(xCenter,yCenter,xp1,yp1);
                     switch (type[nummeasure-1]) {
                         case 0:
@@ -1410,22 +1410,22 @@ function draw() {
                     noStroke();
                     fill(255);
                     textSize(csPlotSize/12);
-                    text(measurename[selectedmeasure]+' = '+Math.round(value*100)/100,2*xBlank+oPlotSize+j*groupSize+csPlotSize*0.6,yBlank+50+i*(ygBlank+csPlotSize)-5);
+                    text(measurename[selectedmeasure]+' = '+Math.round(value*100)/100,1.65*xBlank+oPlotSize+j*groupSize+csPlotSize*0.6,yBlank+50+i*(ygBlank+csPlotSize)-5);
 
                     // write sample notation
                     noStroke();
                     fill(0);
                     textSize(csPlotSize/12);
-                    text(mapsample2.get(sample),2*xBlank+oPlotSize+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize)-5);
+                    text(mapsample2.get(sample),1.65*xBlank+oPlotSize+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize)-5);
 
                     // write x-variable notation
                     noStroke();
                     fill(0);
                     textSize(csPlotSize/14);
                     if (mapvar2.get(xvar).split("").length <= 27) {
-                        text(mapvar2.get(xvar),2*xBlank+oPlotSize+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*1.1);
+                        text(mapvar2.get(xvar),1.65*xBlank+oPlotSize+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*1.1);
                     } else {
-                        text(mapvar2.get(xvar).substr(0,27)+'...',2*xBlank+oPlotSize+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*1.1);
+                        text(mapvar2.get(xvar).substr(0,27)+'...',1.65*xBlank+oPlotSize+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*1.1);
                     }
                     text("time",xBlank+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*1.1);
 
@@ -1437,9 +1437,9 @@ function draw() {
                     translate(xBlank-5+j*groupSize,yBlank+50+i*(csPlotSize+ygBlank)+oPlotSize);
                     rotate(-PI/2);
                     if(mapvar2.get(yvar).split("").length <= 27) {
-                        text(mapvar2.get(yvar),0,1.05*oPlotSize+xBlank-5);
+                        text(mapvar2.get(yvar),0,1.05*oPlotSize+0.65*xBlank-5);
                     } else {
-                        text(mapvar2.get(yvar).substr(0,27)+'...',0,1.05*oPlotSize+xBlank-5);
+                        text(mapvar2.get(yvar).substr(0,27)+'...',0,1.05*oPlotSize+0.65*xBlank-5);
                     }
                     if(mapvar2.get(xvar).split("").length <= 14) {
                         text(mapvar2.get(xvar),0,0);
@@ -1459,8 +1459,8 @@ function draw() {
                         if(step) {
                             // CS plots
                             if(data[sample][xvar][step]>=0 && data[sample][xvar][step-1]>=0 && data[sample][yvar][step]>=0 && data[sample][yvar][step-1]>=0) {
-                                var x1 = 0.05*csPlotSize+2*xBlank+oPlotSize+j*groupSize+0.9*csPlotSize*data[sample][xvar][step-1];
-                                var x2 = 0.05*csPlotSize+2*xBlank+oPlotSize+j*groupSize+0.9*csPlotSize*data[sample][xvar][step];
+                                var x1 = 0.05*csPlotSize+1.65*xBlank+oPlotSize+j*groupSize+0.9*csPlotSize*data[sample][xvar][step-1];
+                                var x2 = 0.05*csPlotSize+1.65*xBlank+oPlotSize+j*groupSize+0.9*csPlotSize*data[sample][xvar][step];
                                 var y1 = 0.05*csPlotSize+yBlank+50+i*(ygBlank+csPlotSize)+0.9*csPlotSize*(1-data[sample][yvar][step-1]);
                                 var y2 = 0.05*csPlotSize+yBlank+50+i*(ygBlank+csPlotSize)+0.9*csPlotSize*(1-data[sample][yvar][step]);
                                 if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
