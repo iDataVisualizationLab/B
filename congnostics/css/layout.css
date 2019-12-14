@@ -3,7 +3,7 @@
     --secondary-color: rgba(255, 255, 255, 0.79);
     --containBlack: #ffffff;
     --slider: 0;
-    --sideNavwidth: 400px;
+    --sideNavwidth: 15%!important;
     --colorMain2: #630016;
     --colorMain2_light: #d8d8d8;
     --buttonColor: #8a001a;
@@ -1102,6 +1102,14 @@ path {
 
 #mySidenav .row {
     margin-bottom: 0px;
+}
+
+#clusterMethod {
+    margin-bottom: 5px;
+}
+
+#normMethod {
+    margin-bottom: 5px;
 }
 
 .angle {

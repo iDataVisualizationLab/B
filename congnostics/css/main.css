@@ -15,6 +15,7 @@ html {
   color: #222;
   font-size: 1em;
   line-height: 1.4;
+  background-color: #c8c8c8!important;
 }
 
 /*
@@ -265,6 +266,6 @@ textarea {
 }
 
 .p5Canvas {
-  width: 80%!important;
+  width: 85%!important;
   height: auto!important;
 }

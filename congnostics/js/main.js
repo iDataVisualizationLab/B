@@ -1371,7 +1371,7 @@ function draw() {
                         triangle(xCenter,yCenter,xp2,yp2,xp3,yp3);
                         textSize(8);
                         noStroke();
-                        if (k>nummeasure/2) {
+                        if (k>nummeasure/2-1) {
                             textAlign(RIGHT);
                         }
                         text(measurename[k]+': '+Math.round(measures[k][sample][mindex][2]*100)/100,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*k/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*k/nummeasure)/2);
@@ -1441,15 +1441,15 @@ function draw() {
                     } else {
                         text(mapvar2.get(yvar).substr(0,27)+'...',0,1.05*oPlotSize+xBlank-5);
                     }
-                    if(mapvar2.get(xvar).split("").length <= 17) {
+                    if(mapvar2.get(xvar).split("").length <= 14) {
                         text(mapvar2.get(xvar),0,0);
                     } else {
-                        text(mapvar2.get(xvar).substr(0,17)+'...',0,0);
+                        text(mapvar2.get(xvar).substr(0,11)+'...',0,0);
                     }
-                    if(mapvar2.get(yvar).split("").length <= 17) {
+                    if(mapvar2.get(yvar).split("").length <= 14) {
                         text(mapvar2.get(yvar),0.5*oPlotSize,0);
                     } else {
-                        text(mapvar2.get(yvar).substr(0,17)+'...',0.5*oPlotSize,0);
+                        text(mapvar2.get(yvar).substr(0,11)+'...',0.5*oPlotSize,0);
                     }
                     pop();
 

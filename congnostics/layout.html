@@ -188,9 +188,9 @@
                                 </div>
                                 <label for="lowrange" class="col s4 radarcontroller_layout">#Groups from </label>
                                 <div  class="col s5 no-pad-left valign-wrapper" >
-                                    <input type="number" id="lowrange" class="col s3 radarcontroller_layout browser-default no_leftmagrin">
+                                    <input type="number" id="lowrange" class="col s3 radarcontroller_layout browser-default no_leftmagrin" value="6">
                                     <span class="col s2 no_leftmagrin">to</span>
-                                    <input type="number" id="highrange" class="col s3 radarcontroller_layout browser-default no_leftmagrin" >
+                                    <input type="number" id="highrange" class="col s3 radarcontroller_layout browser-default no_leftmagrin" value="8">
                                 </div>
                                 <div  class="col s3 no_padding valign-wrapper center-align" >
                                     <button type="submit" class="btn-small animatIcon"><i class="material-icons">send</i><div>Submit</div></button>
@@ -199,9 +199,9 @@
                             <form action="#" class='clusterProfile hide row valign-wrapper' id = "kmeanprofile" onsubmit="recalculateCluster( {clusterMethod: 'kmean',normMethod:$('#normMethod').val(),bin:{k: +$('#knum').val(),iterations: +$('#kiteration').val()}});return false;">
                                 <label for="knum" class="col s4 radarcontroller_layout">#Groups</label>
                                 <div  class="col s5 no-pad-left valign-wrapper">
-                                    <input type="number" id="knum" class="col s3 radarcontroller_layout browser-default no_leftmagrin">
+                                    <input type="number" id="knum" class="col s3 radarcontroller_layout browser-default no_leftmagrin" value="6">
                                     <span class="col s6 no_leftmagrin"> #Iterations</span>
-                                    <input type="number" id="kiteration" class="col s3 radarcontroller_layout browser-default no_leftmagrin" >
+                                    <input type="number" id="kiteration" class="col s3 radarcontroller_layout browser-default no_leftmagrin" value="50">
                                 </div>
                                 <div  class="col s3 no_padding valign-wrapper center-align" >
                                     <button type="submit" class="btn-small animatIcon"><i class="material-icons">send</i><div>Submit</div></button>
