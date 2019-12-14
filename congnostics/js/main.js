@@ -335,7 +335,7 @@ function analyzedata() {
         if(selecteddata!==4) normalization();
         calculatemeasures();
         initClusterObj();
-        console.log(measures);
+        // console.log(measures);
 
         // NORMALIZE DATA
         // find min and max of each series -> normalize
@@ -887,7 +887,7 @@ function recalculateCluster (option,calback) {
             onloaddetermire({process:data.result.process,message:`# iterations: ${data.result.iteration}`},'#clusterLoading');
         }
     }, false);
-
+console.log("hello");
 }
 function cluster_map (dataRaw) {
     let data = dataRaw.map((c,i)=>{
@@ -1344,20 +1344,20 @@ function draw() {
 
                     var xCenter = 2.8*xBlank+2.5*csPlotSize+j*groupSize;
                     var yCenter = yBlank+50+csPlotSize/2+i*(csPlotSize+ygBlank);
-                    noFill();
-                    stroke(180);
+                    fill(255);
+                    stroke(180,180,180,100);
                     for (var k = 5; k > 0; k--) {
                         ellipse(xCenter,yCenter,rPlotSize*0.2*k,rPlotSize*0.2*k);
                     }
                     for (var k = 0; k < nummeasure-1; k++) {
                         var xp1 = xCenter+rPlotSize*Math.sin(Math.PI*2*k/nummeasure)/2;
                         var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*k/nummeasure)/2;
-                        stroke(180);
+                        stroke(180,180,180,100);
                         line(xCenter,yCenter,xp1,yp1);
-                        var xp2 = xCenter+Math.round(measures[k][sample][mindex][2]*100)*rPlotSize*Math.sin(Math.PI*2*k/nummeasure)/200;
-                        var yp2 = yCenter-Math.round(measures[k][sample][mindex][2]*100)*rPlotSize*Math.cos(Math.PI*2*k/nummeasure)/200;
-                        var xp3 = xCenter+Math.round(measures[k+1][sample][mindex][2]*100)*rPlotSize*Math.sin(Math.PI*2*(k+1)/nummeasure)/200;
-                        var yp3 = yCenter-Math.round(measures[k+1][sample][mindex][2]*100)*rPlotSize*Math.cos(Math.PI*2*(k+1)/nummeasure)/200;
+                        // var xp2 = xCenter+Math.round(measures[k][sample][mindex][2]*100)*rPlotSize*Math.sin(Math.PI*2*k/nummeasure)/200;
+                        // var yp2 = yCenter-Math.round(measures[k][sample][mindex][2]*100)*rPlotSize*Math.cos(Math.PI*2*k/nummeasure)/200;
+                        // var xp3 = xCenter+Math.round(measures[k+1][sample][mindex][2]*100)*rPlotSize*Math.sin(Math.PI*2*(k+1)/nummeasure)/200;
+                        // var yp3 = yCenter-Math.round(measures[k+1][sample][mindex][2]*100)*rPlotSize*Math.cos(Math.PI*2*(k+1)/nummeasure)/200;
                         switch (type[k]) {
                             case 0:
                                 fill(18, 169, 101);
@@ -1372,7 +1372,7 @@ function draw() {
                                 stroke(89, 135, 222);
                                 break;
                         }
-                        triangle(xCenter,yCenter,xp2,yp2,xp3,yp3);
+                        arc(xCenter,yCenter,rPlotSize*measures[k][sample][mindex][2],rPlotSize*measures[k][sample][mindex][2],Math.PI*2*k/nummeasure-Math.PI/nummeasure-Math.PI/2,Math.PI*2*k/nummeasure+Math.PI/nummeasure-Math.PI/2);
                         textSize(8);
                         noStroke();
                         if (k>nummeasure/2-1) {
@@ -1383,11 +1383,11 @@ function draw() {
                     }
                     var xp1 = xCenter+rPlotSize*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2;
                     var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2;
-                    var xp2 = xCenter+Math.round(measures[nummeasure-1][sample][mindex][2]*100)*rPlotSize*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/200;
-                    var yp2 = yCenter-Math.round(measures[nummeasure-1][sample][mindex][2]*100)*rPlotSize*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/200;
-                    var xp3 = xCenter+Math.round(measures[0][sample][mindex][2]*100)*rPlotSize*Math.sin(0)/200;
-                    var yp3 = yCenter-Math.round(measures[0][sample][mindex][2]*100)*rPlotSize*Math.cos(0)/200;
-                    stroke(180);
+                    // var xp2 = xCenter+Math.round(measures[nummeasure-1][sample][mindex][2]*100)*rPlotSize*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/200;
+                    // var yp2 = yCenter-Math.round(measures[nummeasure-1][sample][mindex][2]*100)*rPlotSize*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/200;
+                    // var xp3 = xCenter+Math.round(measures[0][sample][mindex][2]*100)*rPlotSize*Math.sin(0)/200;
+                    // var yp3 = yCenter-Math.round(measures[0][sample][mindex][2]*100)*rPlotSize*Math.cos(0)/200;
+                    stroke(180,180,180,100);
                     line(xCenter,yCenter,xp1,yp1);
                     switch (type[nummeasure-1]) {
                         case 0:
@@ -1403,7 +1403,7 @@ function draw() {
                             stroke(89, 135, 222);
                             break;
                     }
-                    triangle(xCenter,yCenter,xp2,yp2,xp3,yp3);
+                    arc(xCenter,yCenter,rPlotSize*measures[nummeasure-1][sample][mindex][2],rPlotSize*measures[nummeasure-1][sample][mindex][2],Math.PI*2*(nummeasure-1)/nummeasure-Math.PI/nummeasure-Math.PI/2,Math.PI*2*(nummeasure-1)/nummeasure+Math.PI/nummeasure-Math.PI/2);
                     textSize(8);
                     noStroke();
                     textAlign(RIGHT);
