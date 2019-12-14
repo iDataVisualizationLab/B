@@ -34,7 +34,7 @@ let needcalculation = true;
 let displayplot = [];   // displayplot[measure index][0->numplot-1:lowest, numplot->2numplot-1: middle, 2numplot->3numplot-1: highest][sample, x-var, y-var,value,index]
 let width = 2000;
 let height = 4000;
-let numColumn = 64;
+let numColumn = 15;
 let columnSize = width/numColumn;
 let numplot = 5;
 let newnumplot = 0;
@@ -96,7 +96,7 @@ $( document ).ready(function() {
         mc_labelr.append('span');
         let mc_labeln = mc.append('label').attr('class', 'col s6');
         mc_labeln.append('span').attr('class', 'col measureLabel')
-            .style('color',d=>'rgb('+getcolor(measureObj[d]).join(',')+')').style('font-size','medium').style('font-family','Arial')
+            .style('color',d=>'rgb('+getcolor(measureObj[d]).join(',')+')').style('font-family','Arial')
             .text(d => d);
         let mc_label = mc.append('label').attr('class', 'col s1');
         mc_label.append('input').attr('type', 'checkbox').attr('class', 'filled-in enableCheck')
@@ -140,9 +140,9 @@ $( document ).ready(function() {
         });
         // data options
         d3.select('#datacom').on('change',function(){
-           selecteddata = +this.value;
-           needcalculation = true;
-           d3.select('.cover').classed('hidden', false);
+            selecteddata = +this.value;
+            needcalculation = true;
+            d3.select('.cover').classed('hidden', false);
         });
         // display mode
         // d3.select('#displaymode').on('change',function (){
@@ -210,10 +210,10 @@ function analyzedata() {
     let filename2;
     switch (selecteddata) {
         case 0:
-           filename0 =  "data/employment.txt";
-           filename1 = "data/statecode.txt";
-           filename2 = "data/Industrycode.txt";
-           break;
+            filename0 =  "data/employment.txt";
+            filename1 = "data/statecode.txt";
+            filename2 = "data/Industrycode.txt";
+            break;
         case 1:
             filename0 = "data/HPCC_21Mar2019_7am_4pm.csv";
             filename1 = "data/HPCC_host.tsv";
@@ -850,7 +850,7 @@ function sortmeasures() {
 
 // Calculate Cluster
 function recalculateCluster (option,calback) {
-    // preloader(true,10,'Process grouping...','#clusterLoading');
+    preloader(true,10,'Process grouping...','#clusterLoading');
     let group_opt = option;
     distance = group_opt.normMethod==='l1'?distanceL1:distanceL2;
     if (clustercalWorker)
@@ -874,14 +874,14 @@ function recalculateCluster (option,calback) {
             if (!calback) {
                 cluster_map(cluster_info);
             }
-            // preloader(false, undefined, undefined, '#clusterLoading');
+            preloader(false, undefined, undefined, '#clusterLoading');
             clustercalWorker.terminate();
             if (calback)
                 calback();
         }
-        // if (data.action==='returnData'){
-        //     onloaddetermire({process:data.result.process,message:`# iterations: ${data.result.iteration}`},'#clusterLoading');
-        // }
+        if (data.action==='returnData'){
+            onloaddetermire({process:data.result.process,message:`# iterations: ${data.result.iteration}`},'#clusterLoading');
+        }
     }, false);
 
 }
@@ -915,13 +915,13 @@ function cluster_map (dataRaw) {
         let r_old = dir.selectAll('.radarCluster').data(data,d=>d.id);
         r_old.exit().remove();
         let r_new = r_old.enter().append('div').attr('class','radarCluster')
-            // .on('mouseover',function(d){
-            //     if (!jobMap.runopt().mouse.disable)
-            //         jobMap.highlight(d.id);
-            // }).on('mouseleave',function(d){
-            //     if (!jobMap.runopt().mouse.disable)
-            //         jobMap.unhighlight(d.id);
-            // })
+        // .on('mouseover',function(d){
+        //     if (!jobMap.runopt().mouse.disable)
+        //         jobMap.highlight(d.id);
+        // }).on('mouseleave',function(d){
+        //     if (!jobMap.runopt().mouse.disable)
+        //         jobMap.unhighlight(d.id);
+        // })
             .append('div')
             .attr('class','label')
             .styles({'position':'absolute',
@@ -1111,14 +1111,14 @@ function updateViztype (viztype_in){
 // SET UP FUNCTION
 //////////////////
 // Variables
-let csPlotSize = 6*columnSize;
-let oPlotSize = 3*columnSize;
-let rPlotSize = 3*columnSize;
-let xBlank = 2*columnSize;
-let xgBlank = 6*columnSize;
+let csPlotSize = columnSize;
+let oPlotSize = columnSize;
+let rPlotSize = columnSize;
+let xBlank = 0.5*columnSize;
+let xgBlank = columnSize;
 let yBlank = 50;
 let ygBlank = csPlotSize*0.3;
-let groupSize = oPlotSize+2*xBlank+csPlotSize+rPlotSize;
+let groupSize = oPlotSize+2*xBlank+csPlotSize+rPlotSize+xgBlank;
 
 function setup() {
     let canvas = createCanvas(width,height);
@@ -1168,229 +1168,193 @@ function draw() {
     if (needupdate){
         background(200);
 
-            // CHOOSE DISPLAY PLOTS
-            sortmeasures();
-            textFont('Arial Unicode MS');
+        // CHOOSE DISPLAY PLOTS
+        sortmeasures();
+        textFont('Arial Unicode MS');
 
-            if (displayplot[selectedmeasure].length === 0) {
-                textSize(30);
-                text('There is no plot to display',xBlank,yBlank);
-            } else {
-                // draw background of buttons
-                // fill(160);
-                // noStroke();
-                // rect(0,0,width,50+plotsize/4);
-                // Write group notation
-                fill(0);
-                noStroke();
-                textSize(csPlotSize/8);
-                text('Lowest values',2*xBlank+oPlotSize,yBlank);
-                text('Middle values',4*xBlank+xgBlank+2*oPlotSize+csPlotSize,yBlank);
-                text('Highest values',6*xBlank+2*xgBlank+3*oPlotSize+2*csPlotSize,yBlank);
-                // textSize(plotsize/12);
-                // text('select measure',xstartpos+plotsize+2*xblank1+0.5*splotsize,16+plotsize/10);
-                // Color explanation
-                // fill(18, 169, 101);
-                // rect(xstartpos+plotsize,20,plotsize/12,plotsize/12);
-                // fill(232, 101, 11);
-                // rect(xstartpos+plotsize,30+plotsize/12,plotsize/12,plotsize/12);
-                // fill(89, 135, 222);
-                // rect(xstartpos+plotsize,40+plotsize/6,plotsize/12,plotsize/12);
-                // fill(0);
-                // textSize(plotsize/12);
-                // text('Measures from Scagnostics of non time series data',xstartpos+plotsize+plotsize/6,16+plotsize/11);
-                // text('Measures from features of connected scatterplot',xstartpos+plotsize+plotsize/6,26+plotsize/6);
-                // text('Measures under developing',xstartpos+plotsize+plotsize/6,36+plotsize/4);
-                // Formula
-                // text('Formula for this measure:',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,16+plotsize/11);
-                // switch (selectedmeasure) {
-                //     case 0:
-                //         text(measurename[selectedmeasure]+' = '+'Q75+1.5(Q75-Q25)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-                //         text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-                //         break;
-                //     case 1:
-                //         text(measurename[selectedmeasure]+' = '+'distance(p1,pN)/(total edge length)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-                //         text('p1: first point in the series, pN: last point in the series',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-                //         break;
-                //     case 2:
-                //         text(measurename[selectedmeasure]+' = '+'(Q90-Q50)/(Q90-Q10)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-                //         text('Q90, Q50 and Q10 are correspondingly 90th, 50th and 10th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-                //         break;
-                //     case 3:
-                //         text(measurename[selectedmeasure]+' = '+'max_j[1-max_k(e_k)/e_j]',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-                //         text('e_k is edge in Runt set from e_j, e_j is edge in the graph',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-                //         break;
-                //     case 4:
-                //         text(measurename[selectedmeasure]+' = '+'Q90',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-                //         text('Q90 is 90th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-                //         break;
-                //     case 5:
-                //         text(measurename[selectedmeasure]+' = '+'mean of cosine of all angles',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-                //         // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-                //         break;
-                //     case 6:
-                //         text(measurename[selectedmeasure]+' = '+'maximum number of directions of e_ij / (N(N-1)/2)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-                //         text('e_ij is edge from i to all point j after i',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-                //         break;
-                //     case 7:
-                //         text(measurename[selectedmeasure]+' = '+'count number of edges that are parallel to x-axis or y-axis',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-                //         // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-                //         break;
-                //     case 8:
-                //         text(measurename[selectedmeasure]+' = '+'1-exp(- #intersections / #edges)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-                //         // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-                //         break;
-                //     case 9:
-                //         text(measurename[selectedmeasure]+' = '+'under developing',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-                //         // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-                //         break;
-                //     case 10:
-                //         text(measurename[selectedmeasure]+' = '+'mean length of all edges',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-                //         // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-                //         break;
-                // }
+        if (displayplot[selectedmeasure].length === 0) {
+            textSize(30);
+            text('There is no plot to display',xBlank,yBlank);
+        } else {
+            // draw background of buttons
+            // fill(160);
+            // noStroke();
+            // rect(0,0,width,50+plotsize/4);
+            // Write group notation
+            fill(0);
+            noStroke();
+            textSize(csPlotSize/8);
+            text('Lowest values',2*xBlank+oPlotSize,yBlank);
+            text('Middle values',4*xBlank+xgBlank+2*oPlotSize+csPlotSize,yBlank);
+            text('Highest values',6*xBlank+2*xgBlank+3*oPlotSize+2*csPlotSize,yBlank);
+            // textSize(plotsize/12);
+            // text('select measure',xstartpos+plotsize+2*xblank1+0.5*splotsize,16+plotsize/10);
+            // Color explanation
+            // fill(18, 169, 101);
+            // rect(xstartpos+plotsize,20,plotsize/12,plotsize/12);
+            // fill(232, 101, 11);
+            // rect(xstartpos+plotsize,30+plotsize/12,plotsize/12,plotsize/12);
+            // fill(89, 135, 222);
+            // rect(xstartpos+plotsize,40+plotsize/6,plotsize/12,plotsize/12);
+            // fill(0);
+            // textSize(plotsize/12);
+            // text('Measures from Scagnostics of non time series data',xstartpos+plotsize+plotsize/6,16+plotsize/11);
+            // text('Measures from features of connected scatterplot',xstartpos+plotsize+plotsize/6,26+plotsize/6);
+            // text('Measures under developing',xstartpos+plotsize+plotsize/6,36+plotsize/4);
+            // Formula
+            // text('Formula for this measure:',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,16+plotsize/11);
+            // switch (selectedmeasure) {
+            //     case 0:
+            //         text(measurename[selectedmeasure]+' = '+'Q75+1.5(Q75-Q25)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+            //         text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+            //         break;
+            //     case 1:
+            //         text(measurename[selectedmeasure]+' = '+'distance(p1,pN)/(total edge length)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+            //         text('p1: first point in the series, pN: last point in the series',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+            //         break;
+            //     case 2:
+            //         text(measurename[selectedmeasure]+' = '+'(Q90-Q50)/(Q90-Q10)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+            //         text('Q90, Q50 and Q10 are correspondingly 90th, 50th and 10th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+            //         break;
+            //     case 3:
+            //         text(measurename[selectedmeasure]+' = '+'max_j[1-max_k(e_k)/e_j]',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+            //         text('e_k is edge in Runt set from e_j, e_j is edge in the graph',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+            //         break;
+            //     case 4:
+            //         text(measurename[selectedmeasure]+' = '+'Q90',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+            //         text('Q90 is 90th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+            //         break;
+            //     case 5:
+            //         text(measurename[selectedmeasure]+' = '+'mean of cosine of all angles',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+            //         // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+            //         break;
+            //     case 6:
+            //         text(measurename[selectedmeasure]+' = '+'maximum number of directions of e_ij / (N(N-1)/2)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+            //         text('e_ij is edge from i to all point j after i',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+            //         break;
+            //     case 7:
+            //         text(measurename[selectedmeasure]+' = '+'count number of edges that are parallel to x-axis or y-axis',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+            //         // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+            //         break;
+            //     case 8:
+            //         text(measurename[selectedmeasure]+' = '+'1-exp(- #intersections / #edges)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+            //         // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+            //         break;
+            //     case 9:
+            //         text(measurename[selectedmeasure]+' = '+'under developing',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+            //         // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+            //         break;
+            //     case 10:
+            //         text(measurename[selectedmeasure]+' = '+'mean length of all edges',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
+            //         // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
+            //         break;
+            // }
 
-                // Create list button
-                // if (!choose) {
-                //     let colorv= getcolor(selectedmeasure);
-                //     fill(colorv[0],colorv[1],colorv[2]);
-                //     stroke(0);
-                //     rect(xstartpos+plotsize+2*xblank1+1.5*splotsize,20,130,plotsize/10);
-                //     fill(255);
-                //     noStroke();
-                //     triangle(xstartpos+plotsize+2*xblank1+1.5*splotsize+125,21+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+125-plotsize/30,21+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+125-plotsize/60,19+plotsize/10);
-                //     triangle(xstartpos+plotsize+2*xblank1+1.5*splotsize+125,19+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+125-plotsize/30,19+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+125-plotsize/60,21);
-                //     fill(0);
-                //     noStroke();
-                //     textSize(plotsize/12);
-                //     // textAlign(CENTER);
-                //     text(measurename[selectedmeasure],xstartpos+plotsize+2*xblank1+1.5*splotsize+20,16+plotsize/10);
-                //     // textAlign(LEFT);
-                // } else {
-                //     for (var i = 0; i < nummeasure; i++) {
-                //         if (mouseX > xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize && mouseX < xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize + 130 && mouseY > 20 + i * plotsize / 10 && mouseY < 20 + (i + 1) * plotsize / 10) {
-                //             fill(255);
-                //         } else
-                //             switch (type[i]) {
-                //                 case 0:
-                //                     fill(179, 226, 205);
-                //                     break;
-                //                 case 1:
-                //                     fill(253, 205, 172);
-                //                     break;
-                //                 case 2:
-                //                     fill(203, 213, 232);
-                //                     break;
-                //                 case 3:
-                //                     fill(244, 202, 228);
-                //                     break;
-                //             }
-                //         stroke(0);
-                //         rect(xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize, 20 + i * plotsize / 10, 130, plotsize / 10);
-                //         fill(0);
-                //         noStroke();
-                //         textSize(plotsize / 12);
-                //         // textAlign(CENTER);
-                //         text(measurename[i], xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize + 20, 16 + (i + 1) * plotsize / 10);
-                //         // textAlign(LEFT);
-                //         if (i === selectedmeasure) {
-                //             strokeWeight(2);
-                //             stroke(0);
-                //             line(xstartpos+plotsize+2*xblank1+1.5*splotsize+5,20+i*plotsize/10+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+5+plotsize/60,20+i*plotsize/10+2*plotsize/30);
-                //             line(xstartpos+plotsize+2*xblank1+1.5*splotsize+5+plotsize/60,20+i*plotsize/10+2*plotsize/30,xstartpos+plotsize+2*xblank1+1.5*splotsize+5+plotsize/30,20+i*plotsize/10+plotsize/30);
-                //             strokeWeight(1);
-                //         }
-                //     }
-                // }
+            // Create list button
+            // if (!choose) {
+            //     let colorv= getcolor(selectedmeasure);
+            //     fill(colorv[0],colorv[1],colorv[2]);
+            //     stroke(0);
+            //     rect(xstartpos+plotsize+2*xblank1+1.5*splotsize,20,130,plotsize/10);
+            //     fill(255);
+            //     noStroke();
+            //     triangle(xstartpos+plotsize+2*xblank1+1.5*splotsize+125,21+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+125-plotsize/30,21+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+125-plotsize/60,19+plotsize/10);
+            //     triangle(xstartpos+plotsize+2*xblank1+1.5*splotsize+125,19+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+125-plotsize/30,19+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+125-plotsize/60,21);
+            //     fill(0);
+            //     noStroke();
+            //     textSize(plotsize/12);
+            //     // textAlign(CENTER);
+            //     text(measurename[selectedmeasure],xstartpos+plotsize+2*xblank1+1.5*splotsize+20,16+plotsize/10);
+            //     // textAlign(LEFT);
+            // } else {
+            //     for (var i = 0; i < nummeasure; i++) {
+            //         if (mouseX > xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize && mouseX < xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize + 130 && mouseY > 20 + i * plotsize / 10 && mouseY < 20 + (i + 1) * plotsize / 10) {
+            //             fill(255);
+            //         } else
+            //             switch (type[i]) {
+            //                 case 0:
+            //                     fill(179, 226, 205);
+            //                     break;
+            //                 case 1:
+            //                     fill(253, 205, 172);
+            //                     break;
+            //                 case 2:
+            //                     fill(203, 213, 232);
+            //                     break;
+            //                 case 3:
+            //                     fill(244, 202, 228);
+            //                     break;
+            //             }
+            //         stroke(0);
+            //         rect(xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize, 20 + i * plotsize / 10, 130, plotsize / 10);
+            //         fill(0);
+            //         noStroke();
+            //         textSize(plotsize / 12);
+            //         // textAlign(CENTER);
+            //         text(measurename[i], xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize + 20, 16 + (i + 1) * plotsize / 10);
+            //         // textAlign(LEFT);
+            //         if (i === selectedmeasure) {
+            //             strokeWeight(2);
+            //             stroke(0);
+            //             line(xstartpos+plotsize+2*xblank1+1.5*splotsize+5,20+i*plotsize/10+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+5+plotsize/60,20+i*plotsize/10+2*plotsize/30);
+            //             line(xstartpos+plotsize+2*xblank1+1.5*splotsize+5+plotsize/60,20+i*plotsize/10+2*plotsize/30,xstartpos+plotsize+2*xblank1+1.5*splotsize+5+plotsize/30,20+i*plotsize/10+plotsize/30);
+            //             strokeWeight(1);
+            //         }
+            //     }
+            // }
 
 
-                // Draw plots
-                var correctnumplot = (newnumplot === 0) ? numplot : Math.floor(newnumplot/3);
-                for (var i = 0; i < numplot; i++) {
-                    for (var j = 0; j < 3; j++) {
+            // Draw plots
+            var correctnumplot = (newnumplot === 0) ? numplot : Math.floor(newnumplot/3);
+            for (var i = 0; i < numplot; i++) {
+                for (var j = 0; j < 3; j++) {
 
-                        var sample = displayplot[selectedmeasure][i+j*correctnumplot][0];
-                        var xvar = displayplot[selectedmeasure][i+j*correctnumplot][1];
-                        var yvar = displayplot[selectedmeasure][i+j*correctnumplot][2];
-                        var value = displayplot[selectedmeasure][i+j*correctnumplot][3];
-                        var mindex = displayplot[selectedmeasure][i+j*correctnumplot][4];
+                    var sample = displayplot[selectedmeasure][i+j*correctnumplot][0];
+                    var xvar = displayplot[selectedmeasure][i+j*correctnumplot][1];
+                    var yvar = displayplot[selectedmeasure][i+j*correctnumplot][2];
+                    var value = displayplot[selectedmeasure][i+j*correctnumplot][3];
+                    var mindex = displayplot[selectedmeasure][i+j*correctnumplot][4];
 
-                        // draw rectangles for CS
-                        fill(255);
-                        stroke(0);
-                        rect(2*xBlank+oPlotSize+j*(groupSize+xgBlank),yBlank+50+i*(ygBlank+csPlotSize),csPlotSize,csPlotSize);
+                    // draw rectangles for CS
+                    fill(255);
+                    stroke(0);
+                    rect(2*xBlank+oPlotSize+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize),csPlotSize,csPlotSize);
 
-                        // draw rectangles for time series
-                        fill(220);
-                        noStroke();
-                        rect(xBlank+j*(groupSize+xgBlank),yBlank+50+0.05*columnSize+oPlotSize+i*(csPlotSize+ygBlank),oPlotSize,oPlotSize); // x-data
-                        stroke(0);
-                        line(xBlank+j*(groupSize+xgBlank),yBlank+50+0.05*columnSize+oPlotSize+i*(csPlotSize+ygBlank),xBlank+j*(groupSize+xgBlank),yBlank+50+0.05*columnSize+2*oPlotSize+i*(csPlotSize+ygBlank));
-                        line(xBlank+j*(groupSize+xgBlank),yBlank+50+0.05*columnSize+2*oPlotSize+i*(csPlotSize+ygBlank),xBlank+j*(groupSize+xgBlank)+oPlotSize,yBlank+50+0.05*columnSize+2*oPlotSize+i*(csPlotSize+ygBlank));
-                        line(xBlank+j*(groupSize+xgBlank)+oPlotSize+2,yBlank+50+0.05*columnSize+1.5*oPlotSize+i*(csPlotSize+ygBlank),xBlank+j*(groupSize+xgBlank)+oPlotSize+xBlank*0.5,yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*0.5);
-                        noStroke();
-                        rect(xBlank+j*(groupSize+xgBlank),yBlank+50-0.05*columnSize+i*(csPlotSize+ygBlank),oPlotSize,oPlotSize); // y-data
-                        stroke(0);
-                        line(xBlank+j*(groupSize+xgBlank),yBlank+50-0.05*columnSize+i*(csPlotSize+ygBlank),xBlank+j*(groupSize+xgBlank)+oPlotSize,yBlank+50-0.05*columnSize+i*(csPlotSize+ygBlank));
-                        line(xBlank+j*(groupSize+xgBlank),yBlank+50-0.05*columnSize+i*(csPlotSize+ygBlank),xBlank+j*(groupSize+xgBlank),yBlank+50-0.05*columnSize+oPlotSize+i*(csPlotSize+ygBlank));
-                        line(xBlank+j*(groupSize+xgBlank)+oPlotSize+2,yBlank+50-0.05*columnSize+i*(csPlotSize+ygBlank)+0.5*oPlotSize,xBlank+j*(groupSize+xgBlank)+oPlotSize+xBlank*0.5,yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*0.5);
-                        line(xBlank+j*(groupSize+xgBlank)+oPlotSize+xBlank*0.5,yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*0.5,xBlank+j*(groupSize+xgBlank)+oPlotSize+xBlank-2,yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*0.5);
-                        fill(0);
-                        triangle(xBlank+j*(groupSize+xgBlank)+oPlotSize+xBlank-2,yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*0.5,xBlank+j*(groupSize+xgBlank)+oPlotSize+xBlank-7,yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*0.5-5,xBlank+j*(groupSize+xgBlank)+oPlotSize+xBlank-7,yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*0.5+5);
-                        timedata.forEach(function (time,step) {
-                            if (step%12 === 0) {
-                                line(xBlank+j*(groupSize+xgBlank)+step*oPlotSize/timedata.length,yBlank+50+0.05*columnSize+2*oPlotSize+i*(csPlotSize+ygBlank),xBlank+j*(groupSize+xgBlank)+step*oPlotSize/timedata.length,yBlank+50+0.05*columnSize+2*oPlotSize+i*(csPlotSize+ygBlank)-2);
-                                line(xBlank+j*(groupSize+xgBlank)+step*oPlotSize/timedata.length,yBlank+50-0.05*columnSize+i*(csPlotSize+ygBlank)+oPlotSize,xBlank+j*(groupSize+xgBlank)+step*oPlotSize/timedata.length,yBlank+50-0.05*columnSize+i*(csPlotSize+ygBlank)+oPlotSize-2);
-                            }
-                        });
-                        var xCenter = 3*xBlank+oPlotSize+csPlotSize+rPlotSize/2+j*(groupSize+xgBlank);
-                        var yCenter = yBlank+50+csPlotSize/2+i*(csPlotSize+ygBlank);
-                        fill(255);
+                    // draw rectangles for time series
+                    fill(220);
+                    noStroke();
+                    rect(xBlank+j*groupSize,yBlank+50+0.5*oPlotSize+i*(csPlotSize+ygBlank)+oPlotSize*0.025,oPlotSize,oPlotSize*0.5); // x-data
+                    stroke(0);
+                    line(xBlank+j*groupSize,yBlank+50+0.5*oPlotSize+i*(csPlotSize+ygBlank)+oPlotSize*0.025,xBlank+j*groupSize,yBlank+50+oPlotSize+i*(csPlotSize+ygBlank)+oPlotSize*0.025);
+                    line(xBlank+j*groupSize,yBlank+50+oPlotSize+i*(csPlotSize+ygBlank)+oPlotSize*0.025,xBlank+j*groupSize+oPlotSize,yBlank+50+oPlotSize+i*(csPlotSize+ygBlank)+oPlotSize*0.025);
+                    noFill();
+                    bezier(xBlank+j*groupSize+oPlotSize,yBlank+50+0.75*oPlotSize+i*(csPlotSize+ygBlank),xBlank+j*groupSize+oPlotSize*1.25,yBlank+50+0.75*oPlotSize+i*(csPlotSize+ygBlank),xBlank+j*groupSize+oPlotSize,yBlank+50+0.5*oPlotSize+i*(csPlotSize+ygBlank),xBlank+j*groupSize+oPlotSize*1.2,yBlank+50+0.5*oPlotSize+i*(csPlotSize+ygBlank));
+                    fill(220);
+                    noStroke();
+                    rect(xBlank+j*groupSize,yBlank+50+i*(csPlotSize+ygBlank)-oPlotSize*0.025,oPlotSize,oPlotSize*0.5); // y-data
+                    stroke(0);
+                    line(xBlank+j*groupSize,yBlank+50+i*(csPlotSize+ygBlank)-oPlotSize*0.025,xBlank+j*groupSize,yBlank+50+i*(csPlotSize+ygBlank)+oPlotSize*0.5-oPlotSize*0.025);
+                    line(xBlank+j*groupSize,yBlank+50+i*(csPlotSize+ygBlank)+oPlotSize*0.5-oPlotSize*0.025,xBlank+j*groupSize+oPlotSize,yBlank+50+i*(csPlotSize+ygBlank)+oPlotSize*0.5-oPlotSize*0.025);
+                    noFill();
+                    bezier(xBlank+j*groupSize+oPlotSize,yBlank+50+i*(csPlotSize+ygBlank)+oPlotSize*0.25,xBlank+j*groupSize+oPlotSize*1.25,yBlank+50+i*(csPlotSize+ygBlank)+oPlotSize*0.25,xBlank+j*groupSize+oPlotSize,yBlank+50+0.5*oPlotSize+i*(csPlotSize+ygBlank),xBlank+j*groupSize+oPlotSize*1.2,yBlank+50+0.5*oPlotSize+i*(csPlotSize+ygBlank));
+
+                    var xCenter = 3*xBlank+2.5*csPlotSize+j*groupSize;
+                    var yCenter = yBlank+50+csPlotSize/2+i*(csPlotSize+ygBlank);
+                    fill(255);
+                    stroke(150);
+                    for (var k = 5; k > 0; k--) {
+                        ellipse(xCenter,yCenter,rPlotSize*0.2*k,rPlotSize*0.2*k);
+                    }
+                    for (var k = 0; k < nummeasure-1; k++) {
+                        var xp1 = xCenter+rPlotSize*Math.sin(Math.PI*2*k/nummeasure)/2;
+                        var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*k/nummeasure)/2;
                         stroke(150);
-                        for (var k = 5; k > 0; k--) {
-                            ellipse(xCenter,yCenter,rPlotSize*0.2*k,rPlotSize*0.2*k);
-                        }
-                        for (var k = 0; k < nummeasure-1; k++) {
-                            var xp1 = xCenter+rPlotSize*Math.sin(Math.PI*2*k/nummeasure)/2;
-                            var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*k/nummeasure)/2;
-                            stroke(150);
-                            line(xCenter,yCenter,xp1,yp1);
-                            var xp2 = xCenter+Math.round(measures[k][sample][mindex][2]*100)*rPlotSize*Math.sin(Math.PI*2*k/nummeasure)/200;
-                            var yp2 = yCenter-Math.round(measures[k][sample][mindex][2]*100)*rPlotSize*Math.cos(Math.PI*2*k/nummeasure)/200;
-                            var xp3 = xCenter+Math.round(measures[k+1][sample][mindex][2]*100)*rPlotSize*Math.sin(Math.PI*2*(k+1)/nummeasure)/200;
-                            var yp3 = yCenter-Math.round(measures[k+1][sample][mindex][2]*100)*rPlotSize*Math.cos(Math.PI*2*(k+1)/nummeasure)/200;
-                            switch (type[k]) {
-                                case 0:
-                                    fill(18, 169, 101);
-                                    stroke(18, 169, 101);
-                                    break;
-                                case 1:
-                                    fill(232, 101, 11);
-                                    stroke(232, 101, 11);
-                                    break;
-                                case 2:
-                                    fill(89, 135, 222);
-                                    stroke(89, 135, 222);
-                                    break;
-                            }
-                            triangle(xCenter,yCenter,xp2,yp2,xp3,yp3);
-                            textSize(8);
-                            noStroke();
-                            if (k>nummeasure/2) {
-                                textAlign(RIGHT);
-                            }
-                            text(measurename[k]+': '+Math.round(measures[k][sample][mindex][2]*100)/100,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*k/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*k/nummeasure)/2);
-                            textAlign(LEFT);
-                        }
-                        var xp1 = xCenter+rPlotSize*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2;
-                        var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2;
-                        var xp2 = xCenter+Math.round(measures[nummeasure-1][sample][mindex][2]*100)*rPlotSize*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/200;
-                        var yp2 = yCenter-Math.round(measures[nummeasure-1][sample][mindex][2]*100)*rPlotSize*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/200;
-                        var xp3 = xCenter+Math.round(measures[0][sample][mindex][2]*100)*rPlotSize*Math.sin(0)/200;
-                        var yp3 = yCenter-Math.round(measures[0][sample][mindex][2]*100)*rPlotSize*Math.cos(0)/200;
-                        stroke(0);
                         line(xCenter,yCenter,xp1,yp1);
-                        switch (type[nummeasure-1]) {
+                        var xp2 = xCenter+Math.round(measures[k][sample][mindex][2]*100)*rPlotSize*Math.sin(Math.PI*2*k/nummeasure)/200;
+                        var yp2 = yCenter-Math.round(measures[k][sample][mindex][2]*100)*rPlotSize*Math.cos(Math.PI*2*k/nummeasure)/200;
+                        var xp3 = xCenter+Math.round(measures[k+1][sample][mindex][2]*100)*rPlotSize*Math.sin(Math.PI*2*(k+1)/nummeasure)/200;
+                        var yp3 = yCenter-Math.round(measures[k+1][sample][mindex][2]*100)*rPlotSize*Math.cos(Math.PI*2*(k+1)/nummeasure)/200;
+                        switch (type[k]) {
                             case 0:
                                 fill(18, 169, 101);
                                 stroke(18, 169, 101);
@@ -1407,99 +1371,129 @@ function draw() {
                         triangle(xCenter,yCenter,xp2,yp2,xp3,yp3);
                         textSize(8);
                         noStroke();
-                        textAlign(RIGHT);
-                        text(measurename[k]+': '+Math.round(measures[k][sample][mindex][2]*100)/100,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2);
+                        if (k>nummeasure/2) {
+                            textAlign(RIGHT);
+                        }
+                        text(measurename[k]+': '+Math.round(measures[k][sample][mindex][2]*100)/100,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*k/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*k/nummeasure)/2);
                         textAlign(LEFT);
-
-                        // write value of measure
-                        noStroke();
-                        fill(255);
-                        textSize(csPlotSize/12);
-                        text(measurename[selectedmeasure]+' = '+Math.round(value*100)/100,2*xBlank+oPlotSize+j*(groupSize+xgBlank)+csPlotSize*0.6,yBlank+50+i*(ygBlank+csPlotSize)-5);
-
-                        // write sample notation
-                        noStroke();
-                        fill(0);
-                        textSize(csPlotSize/12);
-                        text(mapsample2.get(sample),2*xBlank+oPlotSize+j*(groupSize+xgBlank),yBlank+50+i*(ygBlank+csPlotSize)-5);
-
-                        // write x-variable notation
-                        noStroke();
-                        fill(0);
-                        textSize(csPlotSize/14);
-                        if (mapvar2.get(xvar).split("").length <= 27) {
-                            text(mapvar2.get(xvar),2*xBlank+oPlotSize+j*(groupSize+xgBlank),yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*1.1);
-                        } else {
-                            text(mapvar2.get(xvar).substr(0,27)+'...',2*xBlank+oPlotSize+j*(groupSize+xgBlank),yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*1.1);
-                        }
-                        text("time",xBlank+j*(groupSize+xgBlank),yBlank+50+0.05*columnSize+2*oPlotSize+i*(csPlotSize+ygBlank)+csPlotSize*0.1);
-                        text("time",xBlank+j*(groupSize+xgBlank),yBlank+50-0.05*columnSize+i*(csPlotSize+ygBlank)-5);
-
-                        //write y-variable notation
-                        push();
-                        noStroke();
-                        fill(0);
-                        textSize(csPlotSize/14);
-                        translate(xBlank-5+j*(groupSize+xgBlank),yBlank+50-0.05*columnSize+i*(csPlotSize+ygBlank)+2*oPlotSize);
-                        rotate(-PI/2);
-                        if(mapvar2.get(yvar).split("").length <= 27) {
-                            text(mapvar2.get(yvar),0,1.05*oPlotSize+xBlank-5);
-                        } else {
-                            text(mapvar2.get(yvar).substr(0,27)+'...',0,1.05*oPlotSize+xBlank-5);
-                        }
-                        if(mapvar2.get(xvar).split("").length <= 17) {
-                            text(mapvar2.get(xvar),1.05*oPlotSize,0);
-                        } else {
-                            text(mapvar2.get(xvar).substr(0,17)+'...',1.05*oPlotSize,0);
-                        }
-                        if(mapvar2.get(yvar).split("").length <= 17) {
-                            text(mapvar2.get(yvar),0,0);
-                        } else {
-                            text(mapvar2.get(yvar).substr(0,17)+'...',0,0);
-                        }
-                        pop();
-
-
-                        // draw plots
-                        timedata.forEach(function (time,step) {
-                            if(step) {
-                                // CS plots
-                                if(data[sample][xvar][step]>=0 && data[sample][xvar][step-1]>=0 && data[sample][yvar][step]>=0 && data[sample][yvar][step-1]>=0) {
-                                    var x1 = 0.05*csPlotSize+2*xBlank+oPlotSize+j*(groupSize+xgBlank)+0.9*csPlotSize*data[sample][xvar][step-1];
-                                    var x2 = 0.05*csPlotSize+2*xBlank+oPlotSize+j*(groupSize+xgBlank)+0.9*csPlotSize*data[sample][xvar][step];
-                                    var y1 = 0.05*csPlotSize+yBlank+50+i*(ygBlank+csPlotSize)+0.9*csPlotSize*(1-data[sample][yvar][step-1]);
-                                    var y2 = 0.05*csPlotSize+yBlank+50+i*(ygBlank+csPlotSize)+0.9*csPlotSize*(1-data[sample][yvar][step]);
-                                    if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
-                                    else stroke((step-timedata.length/2)*255/(timedata.length/2),0,0);
-                                    line(x1,y1,x2,y2);
-                                }
-                                // X-var plots
-                                if(data[sample][xvar][step]>=0 && data[sample][xvar][step-1]>=0) {
-                                    var x1 = 0.05*oPlotSize+xBlank+j*(groupSize+xgBlank)+0.9*oPlotSize*(step-1)/timedata.length;
-                                    var x2 = 0.05*oPlotSize+xBlank+j*(groupSize+xgBlank)+0.9*oPlotSize*step/timedata.length;
-                                    var y1 = -0.05*oPlotSize+yBlank+50+0.05*columnSize+2*oPlotSize+i*(csPlotSize+ygBlank)-0.9*oPlotSize*data[sample][xvar][step-1];
-                                    var y2 = -0.05*oPlotSize+yBlank+50+0.05*columnSize+2*oPlotSize+i*(csPlotSize+ygBlank)-0.9*oPlotSize*data[sample][xvar][step];
-                                    if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
-                                    else stroke((step-timedata.length/2)*255/(timedata.length/2),0,0);
-                                    line(x1,y1,x2,y2);
-                                }
-                                // Y-var plots
-                                if(data[sample][yvar][step]>=0 && data[sample][yvar][step-1]>=0) {
-                                    var x1 = 0.05*oPlotSize+xBlank+j*(groupSize+xgBlank)+0.9*oPlotSize*(step-1)/timedata.length;
-                                    var x2 = 0.05*oPlotSize+xBlank+j*(groupSize+xgBlank)+0.9*oPlotSize*step/timedata.length;
-                                    var y1 = -0.05*oPlotSize+yBlank+50-0.05*columnSize+i*(csPlotSize+ygBlank)+oPlotSize-0.9*oPlotSize*data[sample][yvar][step-1];
-                                    var y2 = -0.05*oPlotSize+yBlank+50-0.05*columnSize+i*(csPlotSize+ygBlank)+oPlotSize-0.9*oPlotSize*data[sample][yvar][step];
-                                    if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
-                                    else stroke((step-timedata.length/2)*255/(timedata.length/2),0,0);
-                                    line(x1,y1,x2,y2);
-                                }
-                            }
-                        });
                     }
-                }
+                    var xp1 = xCenter+rPlotSize*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2;
+                    var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2;
+                    var xp2 = xCenter+Math.round(measures[nummeasure-1][sample][mindex][2]*100)*rPlotSize*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/200;
+                    var yp2 = yCenter-Math.round(measures[nummeasure-1][sample][mindex][2]*100)*rPlotSize*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/200;
+                    var xp3 = xCenter+Math.round(measures[0][sample][mindex][2]*100)*rPlotSize*Math.sin(0)/200;
+                    var yp3 = yCenter-Math.round(measures[0][sample][mindex][2]*100)*rPlotSize*Math.cos(0)/200;
+                    stroke(0);
+                    line(xCenter,yCenter,xp1,yp1);
+                    switch (type[nummeasure-1]) {
+                        case 0:
+                            fill(18, 169, 101);
+                            stroke(18, 169, 101);
+                            break;
+                        case 1:
+                            fill(232, 101, 11);
+                            stroke(232, 101, 11);
+                            break;
+                        case 2:
+                            fill(89, 135, 222);
+                            stroke(89, 135, 222);
+                            break;
+                    }
+                    triangle(xCenter,yCenter,xp2,yp2,xp3,yp3);
+                    textSize(8);
+                    noStroke();
+                    textAlign(RIGHT);
+                    text(measurename[k]+': '+Math.round(measures[k][sample][mindex][2]*100)/100,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2);
+                    textAlign(LEFT);
 
-                needupdate = false;
+                    // write value of measure
+                    noStroke();
+                    fill(255);
+                    textSize(csPlotSize/12);
+                    text(measurename[selectedmeasure]+' = '+Math.round(value*100)/100,2*xBlank+oPlotSize+j*groupSize+csPlotSize*0.6,yBlank+50+i*(ygBlank+csPlotSize)-5);
+
+                    // write sample notation
+                    noStroke();
+                    fill(0);
+                    textSize(csPlotSize/12);
+                    text(mapsample2.get(sample),2*xBlank+oPlotSize+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize)-5);
+
+                    // write x-variable notation
+                    noStroke();
+                    fill(0);
+                    textSize(csPlotSize/14);
+                    if (mapvar2.get(xvar).split("").length <= 27) {
+                        text(mapvar2.get(xvar),2*xBlank+oPlotSize+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*1.1);
+                    } else {
+                        text(mapvar2.get(xvar).substr(0,27)+'...',2*xBlank+oPlotSize+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*1.1);
+                    }
+                    text("time",xBlank+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*1.1);
+
+                    //write y-variable notation
+                    push();
+                    noStroke();
+                    fill(0);
+                    textSize(csPlotSize/14);
+                    translate(xBlank-5+j*groupSize,yBlank+50+i*(csPlotSize+ygBlank)+oPlotSize);
+                    rotate(-PI/2);
+                    if(mapvar2.get(yvar).split("").length <= 27) {
+                        text(mapvar2.get(yvar),0,1.05*oPlotSize+xBlank-5);
+                    } else {
+                        text(mapvar2.get(yvar).substr(0,27)+'...',0,1.05*oPlotSize+xBlank-5);
+                    }
+                    if(mapvar2.get(xvar).split("").length <= 17) {
+                        text(mapvar2.get(xvar),0,0);
+                    } else {
+                        text(mapvar2.get(xvar).substr(0,17)+'...',0,0);
+                    }
+                    if(mapvar2.get(yvar).split("").length <= 17) {
+                        text(mapvar2.get(yvar),0.5*oPlotSize,0);
+                    } else {
+                        text(mapvar2.get(yvar).substr(0,17)+'...',0.5*oPlotSize,0);
+                    }
+                    pop();
+
+
+                    // draw plots
+                    timedata.forEach(function (time,step) {
+                        if(step) {
+                            // CS plots
+                            if(data[sample][xvar][step]>=0 && data[sample][xvar][step-1]>=0 && data[sample][yvar][step]>=0 && data[sample][yvar][step-1]>=0) {
+                                var x1 = 0.05*csPlotSize+2*xBlank+oPlotSize+j*groupSize+0.9*csPlotSize*data[sample][xvar][step-1];
+                                var x2 = 0.05*csPlotSize+2*xBlank+oPlotSize+j*groupSize+0.9*csPlotSize*data[sample][xvar][step];
+                                var y1 = 0.05*csPlotSize+yBlank+50+i*(ygBlank+csPlotSize)+0.9*csPlotSize*(1-data[sample][yvar][step-1]);
+                                var y2 = 0.05*csPlotSize+yBlank+50+i*(ygBlank+csPlotSize)+0.9*csPlotSize*(1-data[sample][yvar][step]);
+                                if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
+                                else stroke((step-timedata.length/2)*255/(timedata.length/2),0,0);
+                                line(x1,y1,x2,y2);
+                            }
+                            // X-var plots
+                            if(data[sample][xvar][step]>=0 && data[sample][xvar][step-1]>=0) {
+                                var x1 = 0.05*oPlotSize+xBlank+j*groupSize+0.9*oPlotSize*(step-1)/timedata.length;
+                                var x2 = 0.05*oPlotSize+xBlank+j*groupSize+0.9*oPlotSize*step/timedata.length;
+                                var y1 = 0.025*oPlotSize+yBlank+50+0.5*oPlotSize+i*(csPlotSize+ygBlank)+0.45*oPlotSize*(1-data[sample][xvar][step-1])+oPlotSize*0.025;
+                                var y2 = 0.025*oPlotSize+yBlank+50+0.5*oPlotSize+i*(csPlotSize+ygBlank)+0.45*oPlotSize*(1-data[sample][xvar][step])+oPlotSize*0.025;
+                                if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
+                                else stroke((step-timedata.length/2)*255/(timedata.length/2),0,0);
+                                line(x1,y1,x2,y2);
+                            }
+                            // Y-var plots
+                            if(data[sample][yvar][step]>=0 && data[sample][yvar][step-1]>=0) {
+                                var x1 = 0.05*oPlotSize+xBlank+j*groupSize+0.9*oPlotSize*(step-1)/timedata.length;
+                                var x2 = 0.05*oPlotSize+xBlank+j*groupSize+0.9*oPlotSize*step/timedata.length;
+                                var y1 = 0.025*oPlotSize+yBlank+50+i*(csPlotSize+ygBlank)+0.45*oPlotSize*(1-data[sample][yvar][step-1])-oPlotSize*0.025;
+                                var y2 = 0.025*oPlotSize+yBlank+50+i*(csPlotSize+ygBlank)+0.45*oPlotSize*(1-data[sample][yvar][step])-oPlotSize*0.025;
+                                if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
+                                else stroke((step-timedata.length/2)*255/(timedata.length/2),0,0);
+                                line(x1,y1,x2,y2);
+                            }
+                        }
+                    });
+                }
             }
+
+            needupdate = false;
+        }
     }
 }
 

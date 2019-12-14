@@ -48,6 +48,11 @@
 #measureControl {
     /*background-color: #4dd0e1;*/
 }
+
+.measureControl.row.valign-wrapper {
+    margin: 0px 0px 0px;
+}
+
 .light .collapsible-header {
     border-bottom: 1px solid #7b7878;
 }
