@@ -63,7 +63,11 @@ let clustercalWorker;
 
 $( document ).ready(function() {
     try {
-        $('.collapsible').collapsible();
+        $('.collapsible.expandable').collapsible({
+            accordion: false,
+            inDuration:1000,
+            outDuration:1000,
+        });
         $('.modal').modal();
         $('.dropdown-trigger').dropdown();
         $('.tabs').tabs();
