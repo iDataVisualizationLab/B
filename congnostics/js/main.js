@@ -4,36 +4,7 @@
 /////////////////////
 ////////////////////
 
-let measures = [];  // measures[index][sample][x-var,y-var,value], value = -1 means no data
-let nummeasure = 12;
-let measurename = [
-    'Outlying',
-    'Skinny',
-    'Skewed',
-    'Clumpy',
-    'Sparse',
-    'Striated',
-    'Trend',
-    'Constant',
-    "Intersections",
-    "Loop",
-    'Cross-correlation',
-    'Length',
-];
-let measureObj = {
-    'Outlying':0,
-    'Skinny':1,
-    'Skewed':2,
-    'Clumpy':3,
-    'Sparse':4,
-    'Striated':5,
-    'Trend':6,
-    'Constant':7,
-    "Intersections":8,
-    "Loop":9,
-    'Cross-correlation':10,
-    'Length':11
-};
+
 
 // VARIABLES FOR STORING DATA
 let data = []; // data[sample][variable][time step] for raw data
@@ -78,8 +49,11 @@ for (var i = 0; i < nummeasure; i++) {
 }
 // radar control
 // var MetricController = radarController();
-
-
+let Radarplot_opt = {
+    clusterMethod: 'leaderbin',
+};
+// worker
+let clustercalWorker;
 
 ////////////////////////////////
 ////////////////////////////////
@@ -97,7 +71,15 @@ $( document ).ready(function() {
         discovery('#sideNavbtn');
         openNav();
         d3.select("#DarkTheme").on("click", switchTheme);
-
+        $('input[type=radio][name=viztype]').change(function() {
+            updateViztype(this.value);
+        });
+        d3.select('#clusterMethod').on('change',function(){
+            Radarplot_opt.clusterMethod = this.value;
+            // Radarplot.binopt(Radarplot_opt);
+            d3.selectAll('.clusterProfile').classed('hide',true);
+            d3.select(`#${this.value}profile`).classed('hide',false);
+        });
         // generate measurement list
         let mc = d3.select('#measureControl').selectAll('.measureControl')
             .data(measurename)
@@ -347,9 +329,9 @@ function analyzedata() {
         // CONTROL CALCULATION
 
         if(selecteddata!==4) normalization();
-
         calculatemeasures();
-        console.log(data);
+        initClusterObj();
+        console.log(measures);
 
         // NORMALIZE DATA
         // find min and max of each series -> normalize
@@ -405,12 +387,13 @@ function analyzedata() {
                         // create calculation data
                         var xdata = sample[xvar].map(function (x) {return x});
                         var ydata = sample[yvar].map(function (y) {return y});
-                        xdata.forEach(function (x, ix) {ydata[ix] = (x === -1) ? -1 : ydata[ix];});
-                        ydata.forEach(function (y, iy) {xdata[iy] = (y === -1) ? -1 : xdata[iy];});
+                        xdata.forEach(function (x, ix) {ydata[ix] = (x === -1 || x === -Infinity) ? -1 : ydata[ix];});
+                        ydata.forEach(function (y, iy) {xdata[iy] = (y === -1 || y === -Infinity) ? -1 : xdata[iy];});
                         xdata = xdata.filter(function (x) {return x >= 0});
                         ydata = ydata.filter(function (y) {return y >= 0});
-                        if (xdata.length !== ydata.length)
+                        if (xdata.length !== ydata.length) {
                             console.log("2 series have different length at: sample = " + p + ", x-var = " + xvar + ", y-var = " + yvar);
+                        }
 
                         // CALCULATIONS RELATED LENGTH
                         var edgelength = [];
@@ -526,10 +509,10 @@ function analyzedata() {
                                     // count directions for MONOTONIC TREND
                                     var xx = xdata[i] - x;
                                     var yy = ydata[i] - ydata[xi];
-                                    if (xx > 0 && yy > 0) dir[0] += 1;
-                                    if (xx < 0 && yy > 0) dir[1] += 1;
-                                    if (xx < 0 && yy < 0) dir[2] += 1;
-                                    if (xx > 0 && yy < 0) dir[3] += 1;
+                                    if (xx > 0 && yy > 0) {dir[0] += 1;}
+                                    if (xx < 0 && yy > 0) {dir[1] += 1;}
+                                    if (xx < 0 && yy < 0) {dir[2] += 1;}
+                                    if (xx > 0 && yy < 0) {dir[3] += 1;}
                                     // check intersections for INTERSECTIONS
                                     if (i > xi + 1 && i < xdata.length - 1 && xi < xdata.length - 3) {
                                         if (checkintersection(x, ydata[xi], xdata[xi + 1], ydata[xi + 1], xdata[i], ydata[i], xdata[i + 1], ydata[i + 1])) {
@@ -550,7 +533,8 @@ function analyzedata() {
                             measures[11][p][index][2] = sumlengtha / (xdata.length - 1);
                             if (measures[11][p][index][2] > 1) measures[11][p][index][2] = 1;
                             // MONOTONIC TREND
-                            measures[6][p][index][2] = (4/3)*Math.max(...dir) / (xdata.length * (xdata.length - 1) / 2)-1/3;
+                            measures[6][p][index][2] = (4/3)*Math.max(...dir) / (xdata.length*(xdata.length-1)/2)-1/3;
+                            if (measures[6][p][index][2] < 0) measures[6][p][index][2] = 0;
                             // INTERSECTIONS
                             measures[8][p][index][2] = 1 - Math.exp(-countcrossing / (xdata.length - 1));
                             // STRIATED
@@ -561,11 +545,12 @@ function analyzedata() {
                             var q10 = sortlengtha[Math.floor(sortlengtha.length * 0.1)];
                             var q50 = sortlengtha[Math.floor(sortlengtha.length * 0.5)];
                             var q90 = sortlengtha[Math.floor(sortlengtha.length * 0.9)];
-                            measures[2][p][index][2] = (q90 - q50) / (q90 - q10);
+                            measures[2][p][index][2] = (q90 !== q10) ? (q90 - q50) / (q90 - q10) : 0;
                             // SPARSE
                             measures[4][p][index][2] = q90;
 
                             // CLUMPY
+                            measures[3][p][index][2] = 0;
                             xdata.forEach(function (x, xi) {
                                 var countleft = 0;
                                 var countright = 0;
@@ -781,8 +766,28 @@ function analyzedata() {
             return check;
         }
 
+        function initClusterObj(){
+            hosts = [];
+            sampleS = {};
+            measures[0].forEach((s,si)=>{
+                s.forEach((xy,index)=>{
+                    let hname = `${si}-${index}`;
+                    hosts.push({
+                        name: hname,
+                        sample: si,
+                        mindex: index
+                    });
+                    sampleS[hname] = {};
+                    measures.forEach((m,i)=>{
+                        sampleS[hname][measurename[i]] =[[m[si][index][2]]]
+                    })
+                })
+            });
+            sampleS.timespan = [new Date()];
+        }
         needupdate = true;
         d3.select('.cover').classed('hidden', true);
+
 ///////////////////////
 // END OF CALCULATION
 ///////////////////////
@@ -839,6 +844,248 @@ function sortmeasures() {
             for (var j = 0; j < newnumplot; j++) {  // get the lowest paths
                 displayplot[i][j] = sortarr[j];
             }
+        }
+    }
+}
+
+// Calculate Cluster
+function recalculateCluster (option,calback) {
+    // preloader(true,10,'Process grouping...','#clusterLoading');
+    let group_opt = option;
+    distance = group_opt.normMethod==='l1'?distanceL1:distanceL2;
+    if (clustercalWorker)
+        clustercalWorker.terminate();
+    clustercalWorker = new Worker ('./lib/clustercal.js');
+    clustercalWorker.postMessage({
+        binopt:group_opt,
+        sampleS:sampleS, // collection of data
+        hosts:hosts, // instance list
+        serviceFullList: serviceFullList, // parameter layout
+        serviceLists:serviceLists, // TODO remove this
+        serviceList_selected:serviceList_selected, // parameter layout
+        serviceListattr:serviceListattr // parameter name in instance object
+    });
+    clustercalWorker.addEventListener('message',({data})=>{
+        if (data.action==='done') {
+            cluster_info = data.result;
+            clusterDescription = {};
+            recomendName (cluster_info);
+            recomendColor (cluster_info);
+            if (!calback) {
+                cluster_map(cluster_info);
+            }
+            // preloader(false, undefined, undefined, '#clusterLoading');
+            clustercalWorker.terminate();
+            if (calback)
+                calback();
+        }
+        // if (data.action==='returnData'){
+        //     onloaddetermire({process:data.result.process,message:`# iterations: ${data.result.iteration}`},'#clusterLoading');
+        // }
+    }, false);
+
+}
+function cluster_map (dataRaw) {
+    let data = dataRaw.map((c,i)=>{
+        let temp = c.__metrics.slice();
+        temp.name = c.labels;
+        temp.text = c.text;
+        temp.total = c.total;
+        temp.mse = c.mse;
+        let temp_b = [temp];
+        temp_b.id = c.name;
+        temp_b.order = i;
+        return temp_b;
+    });
+    let orderSimilarity = similarityCal(data)
+    data.sort((a,b)=>( orderSimilarity.indexOf(a.order)-orderSimilarity.indexOf(b.order))).forEach((d,i)=>{
+        d.order = i;
+        dataRaw.find(c=>c.name===d.id).orderG = i;
+    });
+    //--shoudn't here
+    dataRaw.forEach(c=>{
+        let matchitem = data.find(d=>d.id===c.name);
+        // c.text = c.text.replace(`Group ${c.index+1}`,`Group ${matchitem.order+1}`);
+        matchitem[0].text =  c.text;
+    });
+    data.forEach(d=>d[0].name = dataRaw.find(c=>d.id===c.name).text);
+    //--end
+    let dir = d3.select('#clusterDisplay');
+    setTimeout(()=>{
+        let r_old = dir.selectAll('.radarCluster').data(data,d=>d.id);
+        r_old.exit().remove();
+        let r_new = r_old.enter().append('div').attr('class','radarCluster')
+            // .on('mouseover',function(d){
+            //     if (!jobMap.runopt().mouse.disable)
+            //         jobMap.highlight(d.id);
+            // }).on('mouseleave',function(d){
+            //     if (!jobMap.runopt().mouse.disable)
+            //         jobMap.unhighlight(d.id);
+            // })
+            .append('div')
+            .attr('class','label')
+            .styles({'position':'absolute',
+                'color':'black',
+                'width': radarChartclusteropt.w+'px',
+                height: '1rem',
+                padding: '10px'
+                // overflow: 'hidden',
+            });
+        // r_new.append('span').attr('class','clusterlabel truncate center-align col s12');
+        r_new.append('i').attr('class','editbtn material-icons tiny col s1').style('cursor', 'Pointer').text('edit').on('click',function(){
+            let active = d3.select(this).classed('clicked');
+            active = !active;
+            d3.select(this).classed('clicked',active)
+            const parent = d3.select(this.parentNode);
+            parent.select('span.clusterlabel').classed('hide',active);
+            parent.select('input.clusterlabel').classed('hide',!active);
+        });
+        r_new.append('span').attrs({'class':'clusterlabel truncate left-align col s11','type':'text'});
+        r_new.append('input').attrs({'class':'clusterlabel browser-default hide truncate center-align col s11','type':'text'}).on('change',function(d){
+            clusterDescription[d.id].text = $(this).val();
+            d3.select(this).classed('hide',true);
+            const parent = d3.select(this.parentNode);
+            parent.select('.editbtn').classed('clicked',false);
+            parent.select('span.clusterlabel').text(clusterDescription[d.id].text).classed('hide',false);
+            updateclusterDescription(d.id,clusterDescription[d.id].text);
+        });
+        r_new.append('span').attr('class','clusternum center-align col s12');
+        r_new.append('span').attr('class','clusterMSE center-align col s12');
+        dir.selectAll('.radarCluster')
+            .attr('class',(d,i)=>'flex_col valign-wrapper radarCluster radarh'+d.id)
+            .each(function(d,i){
+                radarChartclusteropt.color = function(){return colorCluster(d.id)};
+                RadarChart_func(".radarh"+d.id, d, radarChartclusteropt,"").select('.axisWrapper .gridCircle').classed('hide',true);
+            });
+        d3.selectAll('.radarCluster').classed('first',(d,i)=>!i);
+        d3.selectAll('.radarCluster').select('span.clusterlabel').attr('data-order',d=>d.order+1).text(d=>d[0].text);
+        d3.selectAll('.radarCluster').select('input.clusterlabel').attr('value',d=>d[0].text);
+        d3.selectAll('.radarCluster').select('span.clusternum').text(d=>(d[0].total||0).toLocaleString());
+        d3.selectAll('.radarCluster').select('span.clusterMSE').classed('hide',!radarChartclusteropt.boxplot).text(d=>d3.format(".2")(d[0].mse||0));
+    }, 0);
+}
+function recomendName (clusterarr){
+    clusterarr.forEach((c,i)=>{
+        c.index = i;
+        c.axis = [];
+        c.labels = ''+i;
+        c.name = `group_${i+1}`;
+        let zero_el = c.__metrics.filter(f=>!f.value);
+        let name='';
+        if (zero_el.length && zero_el.length<c.__metrics.normalize.length){
+            c.axis = zero_el.map(z=>{return{id:z.axis,description:'undefined'}});
+            name += `${zero_el.length} metric(s) undefined `;
+        }else if(zero_el.length===c.__metrics.normalize.length){
+            c.text = `undefined`;
+            if(!clusterDescription[c.name])
+                clusterDescription[c.name] = {};
+            clusterDescription[c.name].id = c.name;
+            clusterDescription[c.name].text = c.text;
+            return;
+        }
+        name += c.__metrics.filter(f=>f.value>0.75).map(f=>{
+            c.axis.push({id:f.axis,description:'high'});
+            return 'High '+f.axis;
+        }).join(', ');
+        name = name.trim();
+        if (name==='')
+            c.text = ``;
+        else
+            c.text = `${name}`;
+        if(!clusterDescription[c.name])
+            clusterDescription[c.name] = {};
+        clusterDescription[c.name].id = c.name;
+        clusterDescription[c.name].text = c.text;
+    });
+}
+
+function recomendColor (clusterarr) {
+    const colorCa = colorScaleList['customschemeCategory'].slice();
+    let colorcs = d3.scaleOrdinal().range(colorCa);
+    let colorarray = [];
+    let orderarray = [];
+    // clusterarr.filter(c=>!c.text.match('undefined'))
+    clusterarr.filter(c=>c.text!=='undefined')
+        .forEach(c=>{
+            colorarray.push(colorcs(c.name));
+            orderarray.push(c.name);
+        });
+    clusterarr.filter(c=>c.text==='undefined').forEach(c=>{
+        colorarray.push('black');
+        orderarray.push(c.name);
+    });
+    // clusterarr.filter(c=>c.text!=='undefined' && c.text.match('undefined')).forEach(c=>{
+    //     colorarray.push('#7f7f7f');
+    //     orderarray.push(c.name);
+    // });
+    colorCluster.range(colorarray).domain(orderarray)
+}
+
+function similarityCal(data){
+    const n = data.length;
+    let simMatrix = [];
+    let mapIndex = [];
+    for (let i = 0;i<n; i++){
+        let temp_arr = [];
+        temp_arr.total = 0;
+        for (let j=i+1; j<n; j++){
+            let tempval = similarity(data[i][0],data[j][0]);
+            temp_arr.total += tempval;
+            temp_arr.push(tempval)
+        }
+        for (let j=0;j<i;j++)
+            temp_arr.total += simMatrix[j][i-1-j];
+        temp_arr.name = data[i][0].name;
+        temp_arr.index = i;
+        mapIndex.push(i);
+        simMatrix.push(temp_arr)
+    }
+    mapIndex.sort((a,b)=> simMatrix[a].total-simMatrix[b].total);
+    // let undefinedposition = data.findIndex(d=>d[0].text.match(': undefined'))
+    // mapIndex.sort((a,b)=>
+    //     b===undefinedposition?1:(a===undefinedposition?-1:0)
+    // )
+    let current_index = mapIndex.pop();
+    let orderIndex = [simMatrix[current_index].index];
+
+    do{
+        let maxL = Infinity;
+        let maxI = 0;
+        mapIndex.forEach((d)=>{
+            let temp;
+            if (d>simMatrix[current_index].index ){
+                temp = simMatrix[current_index][d-current_index-1];
+            }else{
+                temp = simMatrix[d][current_index-d-1]
+            }
+            if (maxL>temp){
+                maxL = temp;
+                maxI = d;
+            }
+        });
+        orderIndex.push(simMatrix[maxI].index);
+        current_index = maxI;
+        mapIndex = mapIndex.filter(d=>d!=maxI);} while(mapIndex.length);
+    return orderIndex;
+    function similarity (a,b){
+        return Math.sqrt(d3.sum(a,(d,i)=>(d.value-b[i].value)*(d.value-b[i].value)));
+    }
+}
+
+function updateViztype (viztype_in){
+    let viztype = viztype_in;
+    $('#vizController span').text(`${viztype} Controller`);
+    $('#mouseAction input[value="showseries"]+span').text(`Show ${viztype} series`)
+    $('#vizController .icon').removeClass (function (index, className) {
+        return (className.match (/(^|\s)icon-\S+/g) || []).join(' ');
+    }).addClass(`icon-${viztype}Shape`);
+    RadarChart_func = eval(`${viztype}Chart_func`);
+    d3.selectAll('.radarPlot .radarWrapper').remove();
+    if (!firstTime) {
+        // updateSummaryChartAll();
+        // MetricController.charType(viztype).drawSummary();
+        if (cluster_info) {
+            cluster_map(cluster_info);
         }
     }
 }

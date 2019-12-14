@@ -350,9 +350,12 @@ function RadarChart(id, data, options, name) {
         // .interpolate("linear-closed")
             .curve(d3.curveCatmullRom.alpha(this.smooth))
             .radius(function (d) {
+                console.log(d);
+                console.log(rScale(d[keyLine] === undefined ? d : d[keyLine]));
                 return rScale(d[keyLine] === undefined ? d : d[keyLine]);
             })
             .angle(function (d, i) {
+                console.log(getAngle(d, i));
                 return getAngle(d, i);
             });
 
@@ -378,6 +381,7 @@ function RadarChart(id, data, options, name) {
                 return rScale(d.q3);
             });
         if(cfg.roundStrokes) {
+            this.smooth = this.smooth||0;
             radarLine.curve(d3.curveCardinalClosed.tension(this.smooth));
             radialAreaGenerator.curve(d3.curveCardinalClosed.tension(this.smooth));
             radialAreaQuantile.curve(d3.curveCardinalClosed.tension(this.smooth));
@@ -453,7 +457,8 @@ function RadarChart(id, data, options, name) {
         blobWrapperg.select('.radarLine').transition().call(drawMeanLine);
 
         blobWrapperpath.style("fill", "none").transition()
-            .attr("d", d => radarLine(d))
+            .attr("d", d =>
+                radarLine(d))
             .style("stroke-width", () => cfg.strokeWidth + "px")
             .style("stroke", (d, i) => cfg.color(i,d));
         blobWrapperg.select('clipPath')
@@ -601,7 +606,10 @@ function RadarChart(id, data, options, name) {
         //Create the outlines
         blobWrapper.append("path")
             .attr("class", "radarStroke")
-            .attr("d", d => radarLine(d))
+            .attr("d",
+                    d =>
+                radarLine(d)
+            )
             .style("stroke-width", () => cfg.strokeWidth + "px")
             .style("stroke-opacity", d => cfg.bin ? densityscale(d.bin.val.length) : 0.5)
             .style("stroke", (d, i) => cfg.color(i,d))
