@@ -48,12 +48,13 @@ for (var i = 0; i < nummeasure; i++) {
     valfilter[i] = [0,1];
 }
 // radar control
-// var MetricController = radarController();
+var MetricController = radarController();
 let Radarplot_opt = {
     clusterMethod: 'leaderbin',
 };
 // worker
 let clustercalWorker;
+let getDataWorker;
 
 ////////////////////////////////
 ////////////////////////////////
@@ -126,13 +127,12 @@ $( document ).ready(function() {
         });
 
         // Radar control
-        // MetricController.graphicopt({width:365,height:365})
-        //     .div(d3.select('#RadarController'))
-        //     .tablediv(d3.select('#RadarController_Table'))
-        //     .axisSchema(serviceFullList)
-        //     .onChangeValue(onSchemaUpdate)
-        //     .onChangeFilterFunc(onfilterdata)
-        //     .init();
+        MetricController.graphicopt({width:365,height:365})
+            .div(d3.select('#RadarController'))
+            .tablediv(d3.select('#RadarController_Table'))
+            .axisSchema(serviceFullList)
+            .onChangeValue(onSchemaUpdate)
+            .init();
         // set event for viz type
         $('input[type=radio][name=viztype]').change(function() {
             updateViztype(this.value);
@@ -156,6 +156,29 @@ $( document ).ready(function() {
         // });
     }catch{}
 });
+function onSchemaUpdate(schema){
+    serviceFullList.forEach(ser=>{
+        ser.angle = schema.axis[ser.text].angle();
+        ser.enable = schema.axis[ser.text].data.enable;
+    });
+    // radarChartOptions.schema = serviceFullList;
+    // TSneplot.schema(serviceFullList,firstTime);
+    // Radarplot.schema(serviceFullList,firstTime);
+    if (cluster_info){
+        // jobMap.schema(serviceFullList);
+        radarChartclusteropt.schema = serviceFullList;}
+    if (!firstTime) {
+        // updateSummaryChartAll();
+        MetricController.drawSummary();
+        if (cluster_info) {
+            cluster_map(cluster_info);
+            // jobMap.draw();
+        }
+    }
+    // }
+    // if (db!=='csv')
+    //     SaveStore();
+}
 function openNav() {
     d3.select("#mySidenav").classed("sideIn",true);
     d3.select("#Maincontent").classed("sideIn",true);
@@ -887,8 +910,8 @@ function recalculateCluster (option,calback) {
             onloaddetermire({process:data.result.process,message:`# iterations: ${data.result.iteration}`},'#clusterLoading');
         }
     }, false);
-console.log("hello");
 }
+
 function cluster_map (dataRaw) {
     let data = dataRaw.map((c,i)=>{
         let temp = c.__metrics.slice();
@@ -1087,12 +1110,109 @@ function updateViztype (viztype_in){
     d3.selectAll('.radarPlot .radarWrapper').remove();
     if (!firstTime) {
         // updateSummaryChartAll();
-        // MetricController.charType(viztype).drawSummary();
+        MetricController.charType(viztype).drawSummary();
         if (cluster_info) {
             cluster_map(cluster_info);
         }
     }
 }
+
+// let serviceFull_selected =[];
+// function getsummaryservice(){
+//     let dataf = measures;
+//     let ob = {};
+//     measures.forEach((m,mi)=>{
+//         m.forEach((s,si)=>{
+//             s.forEach((d,i)=>{
+//                 d=d.filter(e=>e>=0).sort((a,b)=>a-b);
+//                 let r;
+//                 if (d.length){
+//                     var x = d3.scaleLinear()
+//                         .domain(d3.extent(d));
+//                     var histogram = d3.histogram()
+//                         .domain(x.domain())
+//                         .thresholds(x.ticks(histodram.resolution))    // Important: how many bins approx are going to be made? It is the 'resolution' of the violin plot
+//                         .value(d => d);
+//                     let hisdata = histogram(d);
+//
+//                     let sumstat = hisdata.map((d,i)=>[d.x0+(d.x1-d.x0)/2,(d||[]).length]);
+//                     r = {
+//                         axis: serviceFull_selected[i].text,
+//                         q1: ss.quantileSorted(d,0.25) ,
+//                         q3: ss.quantileSorted(d,0.75),
+//                         median: ss.medianSorted(d) ,
+//                         // outlier: ,
+//                         arr: sumstat};
+//                     if (d.length>4)
+//                     {
+//                         const iqr = r.q3-r.q1;
+//                         r.outlier = _.unique(d.filter(e=>e>(r.q3+outlierMultiply*iqr)||e<(r.q1-outlierMultiply*iqr)));
+//                     }else{
+//                         r.outlier =  _.unique(d);
+//                     }
+//                 }else{
+//                     r = {
+//                         axis: serviceFull_selected[i].text,
+//                         q1: undefined ,
+//                         q3: undefined,
+//                         median: undefined ,
+//                         outlier: [],
+//                         arr: []};
+//                 }
+//                 ob[r.axis] = r;
+//             });
+//         });
+//
+//     });
+// }
+
+// function initDataWorker(){
+//     getDataWorker.postMessage({action:"init",value:{
+//             hosts:hosts,
+//             db:db,
+//             cluster_info:cluster_info,
+//             serviceFullList:serviceFullList,
+//             serviceLists:serviceLists,
+//             serviceList_selected :serviceList_selected,
+//             serviceListattr:serviceListattr
+//         }});
+//     getDataWorker.addEventListener('message',({data})=>{
+//         if (data.status==='done') {
+//             isbusy = false;
+//         }
+//         if (imageRequest){
+//             playchange();
+//             d3.select('.cover').classed('hidden', false);
+//             d3.select('.progressDiv').classed('hidden', false);
+//             imageRequest = false;
+//             onSavingbatchfiles(data.result.arr,onSavingFile); // saveImages.js
+//         }
+//         if (data.action==='returnData'){
+//             if (data.result.hindex!==undefined && data.result.index < lastIndex) {
+//                 if (graphicControl.sumType === "RadarSummary" ) {
+//                     Radarplot.data(data.result.arr).drawSummarypoint(data.result.index, data.result.hindex);
+//                 }
+//             }
+//
+//         }else if (data.action==='returnDataHistory'){
+//             if (data.result.hindex!==undefined&& data.result.index < lastIndex+1) {
+//                 if (graphicControl.charType === "T-sne Chart")
+//                     TSneplot.data(data.result.arr).draw(data.result.nameh, data.result.index);
+//                 jobMap.dataComp(data.result.arr);
+//                 if(isanimation)
+//                     jobMap.drawComp();
+//                 if (graphicControl.sumType === "RadarSummary") {
+//                     Radarplot.data(data.result.arr).drawSummarypoint(data.result.index, data.result.hindex);
+//                 }
+//                 MetricController.data(data.result.arr).drawSummary(data.result.hindex);
+//             }
+//         }
+//         if (data.action==='DataServices') {
+//             MetricController.datasummary(data.result.arr);
+//         }
+//         console.log(data.result.arr);
+//     }, false);
+// }
 /////////////////////
 ////////////////////
 // END OF MAIN CODE
@@ -1166,7 +1286,7 @@ function getcolor(measure) {
 function draw() {
     if(needcalculation) {
         analyzedata();
-        // MetricController.axisSchema(serviceFullList, true).update();
+        MetricController.axisSchema(serviceFullList, true).update();
         // MetricController.data(data.result.arr).drawSummary(data.result.hindex);
     }
     if (needupdate){

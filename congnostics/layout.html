@@ -78,15 +78,7 @@
 <!--                        <option value="1"> Radar chart of measures </option>-->
 <!--                    </select>-->
 <!--                    </div>-->
-                    <div id="RadarController"></div>
-                    <div id="RadarController_Table">
-                        <table class="display" width="100%"></table>
-                    </div>
-                    <div id="RadarController_Table_toolbar">
-<!--                        <button type="submit" value = false class ="menuBtn saveProfile modal-trigger btn-small" id="saveProfile" onclick="downloadProfile(this)" href="#savedialog_profile"><i class="fas fa-download"></i> Save</button>-->
-                        <input id="profile_input_file" class="none" type="file" style="display: none;"/>
-<!--                        <button type="submit" value = false class ="menuBtn loadProfile btn-small" id="loadProfile" onclick="uploadProfile(this)"><i class="fas fa-upload"></i> Load </button>-->
-                    </div>
+
                     <div  class="row s12">
                         <!--<div class="col" >-->
                             <!--&lt;!&ndash;<div id ="orderSelection"></div>&ndash;&gt;-->
@@ -143,6 +135,15 @@
                             </label>
 
                         </div >
+                    </div>
+                    <div id="RadarController"></div>
+                    <div id="RadarController_Table">
+                        <table class="display" width="100%"></table>
+                    </div>
+                    <div id="RadarController_Table_toolbar">
+                        <button type="submit" value = false class ="menuBtn saveProfile modal-trigger btn-small" id="saveProfile" onclick="downloadProfile(this)" href="#savedialog_profile"><i class="fas fa-download"></i> Save</button>
+                        <input id="profile_input_file" class="none" type="file" style="display: none;"/>
+                        <button type="submit" value = false class ="menuBtn loadProfile btn-small" id="loadProfile" onclick="uploadProfile(this)"><i class="fas fa-upload"></i> Load </button>
                     </div>
                     <div id="RadarController"></div>
                     <div id="RadarController_Table">
@@ -255,6 +256,7 @@
 <!-- load the d3.js library -->
 <script src = "lib/p5.min.js"></script>
 <script src="lib/d3/d3.min.js"></script>
+<script src="lib/d3.v4.js"></script>
 <!-- load the radar control library -->
 <script src="lib/lodash.min.js"></script>
 <script src="lib/underscore-min.js"></script>
@@ -267,25 +269,25 @@
 <script src='https://cdnjs.cloudflare.com/ajax/libs/spin.js/2.0.1/spin.min.js'></script> <!-- Spinner when loading -->
 <script src="js/radarControl/radarChart.js"></script>
 <script src="js/radarControl/roseChart.js"></script>
+<script src="js/radarControl/violinChart.js"></script>
 <script src="lib/simple-statistics.min.js"></script>
 <script src="lib/Sortable.min.js"></script>
 <script src="lib/jquery.dataTables.min.js"></script>
 <script src="lib/util.js"></script>
 <script src="js/init.js"></script>
-<!--<script src="js/radarControl/radarController_v2.js"></script>-->
+<script src="js/radarControl/radarController_v2.js"></script>
 <!-- Add your site or application content here -->
 <script src="js/vendor/modernizr-3.7.1.min.js"></script>
 <script src="lib/nouislider.js"></script>
 <script src="lib/kmean.js"></script>
 <script src="lib/binnerN.min.js"></script>
-<script src="lib/violinChart.js"></script>
 <script src="lib/histChart.js"></script>
-<script src="lib/radarController_v2.js"></script>
 <script src="lib/layoutscripts/setting.js"></script>
 <script src="lib/setting.js"></script>
 <!--<script src="js/vendor/jquery-3.4.1.min.js"></script>-->
 <script src="js/plugins.js"></script>
 <script src="js/main.js"></script>
+<!--<script src="js/getDataWorker.js"></script>-->
 
 
 </body>
