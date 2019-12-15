@@ -1,4 +1,4 @@
-importScripts("./lib/d3.v4.js","./lib/underscore-min.js","./lib/setting.js","./lib/simple-statistics.min.js");
+// importScripts("./lib/d3.v4.js","./lib/underscore-min.js","./lib/setting.js","./lib/simple-statistics.min.js");
 let undefinedValue,
     outlierMultiply = 5,
     globalTrend=false,

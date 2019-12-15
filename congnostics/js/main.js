@@ -1116,7 +1116,9 @@ function updateViztype (viztype_in){
         }
     }
 }
-
+// let histodram = {
+//     resolution:20,
+// };
 // let serviceFull_selected =[];
 // function getsummaryservice(){
 //     let dataf = measures;
@@ -1137,7 +1139,7 @@ function updateViztype (viztype_in){
 //
 //                     let sumstat = hisdata.map((d,i)=>[d.x0+(d.x1-d.x0)/2,(d||[]).length]);
 //                     r = {
-//                         axis: serviceFull_selected[i].text,
+//                         // axis: serviceFull_selected[i].text,
 //                         q1: ss.quantileSorted(d,0.25) ,
 //                         q3: ss.quantileSorted(d,0.75),
 //                         median: ss.medianSorted(d) ,
@@ -1165,7 +1167,7 @@ function updateViztype (viztype_in){
 //
 //     });
 // }
-
+//
 // function initDataWorker(){
 //     getDataWorker.postMessage({action:"init",value:{
 //             hosts:hosts,
