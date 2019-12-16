@@ -1,11 +1,12 @@
-importScripts("../../../../HiperView/js/d3.v4.js");
-importScripts("../tsne.js");
-importScripts("../../../../HiperView/js/PCA.js");
-importScripts("../../../../HiperView/js/underscore-min.js");
-importScripts("https://unpkg.com/simple-statistics@2.2.0/dist/simple-statistics.min.js");
-importScripts("../../../../HiperView/js/jLouvain.js");
-importScripts("../../../../HiperView/js/scagnosticsnd.min.js");
-importScripts("../../../../HiperView/js/jDBSCAN.js");
+importScripts("../lib/d3.v4.js");
+importScripts("tsne.js");
+importScripts("../lib/PCA.js");
+importScripts("../lib/underscore-min.js");
+// importScripts("https://unpkg.com/simple-statistics@2.2.0/dist/simple-statistics.min.js");
+importScripts("../lib/simple-statistics.min.js");
+importScripts("../lib/jLouvain.js");
+importScripts("../lib/scagnosticsnd.min.js");
+importScripts("../lib/jDBSCAN.js");
 let tsne,sol,
     stepnumber = 5,
     countstack =0,

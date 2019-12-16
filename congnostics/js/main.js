@@ -148,6 +148,17 @@ $( document ).ready(function() {
             needcalculation = true;
             d3.select('.cover').classed('hidden', false);
         });
+        // visualizing option
+        d3.select('#visualizing').on('change',function(){
+            if(this.value === '0') {
+                d3.select('#mainCanvasHolder').classed('hide',false);
+                d3.select('#tSNE').classed('hide',true);
+            }
+            if(this.value === '1') {
+                d3.select('#mainCanvasHolder').classed('hide',true);
+                d3.select('#tSNE').classed('hide',false);
+            }
+        });
         // display mode
         // d3.select('#displaymode').on('change',function (){
         //     choose = (+this.value !== 0);
