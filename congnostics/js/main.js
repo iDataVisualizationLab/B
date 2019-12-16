@@ -23,7 +23,7 @@ let cellval = [];
 let minloop = 0;
 let maxloop = 48;
 let lag = 48;
-let selecteddata = 4;
+let selecteddata = 3;
 
 // VARIABLES FOR CONTROLLING
 let needupdate = false;
@@ -33,7 +33,7 @@ let needcalculation = true;
 // VARIABLES FOR VISUALIZATION
 let displayplot = [];   // displayplot[measure index][0->numplot-1:lowest, numplot->2numplot-1: middle, 2numplot->3numplot-1: highest][sample, x-var, y-var,value,index]
 let width = 2000;
-let height = 4000;
+let height = 2000;
 let numColumn = 15;
 let columnSize = width/numColumn;
 let numplot = 5;
@@ -54,7 +54,8 @@ let Radarplot_opt = {
 };
 // tSNE variable
 let tsnedTS = d3.tsneTimeSpace();
-var TsneTSopt = {width:1000,height:1000} // thay width va height bang so qui dinh kich thuoc canvas
+var TsneTSopt = {width:width,height:height};
+let visualizingOption = 'LMH';
 // worker
 let clustercalWorker;
 let getDataWorker;
@@ -150,18 +151,30 @@ $( document ).ready(function() {
             selecteddata = +this.value;
             needcalculation = true;
             d3.select('.cover').classed('hidden', false);
-        });
-        // visualizing option
-        d3.select('#visualizing').on('change',function(){
-            if(this.value === '0') {
+            if(visualizingOption === 'LMH') {
                 d3.select('#mainCanvasHolder').classed('hide',false);
                 d3.select('#tSNE').classed('hide',true);
             }
-            if(this.value === '1') {
+            if(visualizingOption === 'tSNE') {
+                d3.select('#mainCanvasHolder').classed('hide', true);
+                d3.select('#tSNE').classed('hide', false);
+                handle_data_tsne(dataRadar2);
+            }
+        });
+        // visualizing option
+        d3.select('#mainCanvasHolder').classed('hide',false);
+        d3.select('#visualizing').on('change',function(){
+            visualizingOption = this.value;
+            if(visualizingOption === 'LMH') {
+                d3.select('#mainCanvasHolder').classed('hide',false);
+                d3.select('#tSNE').classed('hide',true);
+            }
+            if(visualizingOption === 'tSNE') {
                 d3.select('#mainCanvasHolder').classed('hide',true);
                 d3.select('#tSNE').classed('hide',false);
                 handle_data_tsne(dataRadar2);
             }
+            d3.select('.cover').classed('hidden', true);
         });
         // display mode
         // d3.select('#displaymode').on('change',function (){
@@ -973,7 +986,7 @@ function cluster_map (dataRaw) {
         temp_b.order = i;
         return temp_b;
     });
-    let orderSimilarity = similarityCal(data)
+    let orderSimilarity = similarityCal(data);
     data.sort((a,b)=>( orderSimilarity.indexOf(a.order)-orderSimilarity.indexOf(b.order))).forEach((d,i)=>{
         d.order = i;
         dataRaw.find(c=>c.name===d.id).orderG = i;
@@ -1175,7 +1188,7 @@ function getsummaryservice(dataf_){
             dataf[mi][i] = d;
         });
     });
-    let outlierMultiply = 1.5;
+    let outlierMultiply = 3;
     let ob = {};
     dataf.forEach((d,i)=>{
         d=d.filter(e=>e!==undefined).sort((a,b)=>a-b);

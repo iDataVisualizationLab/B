@@ -91,7 +91,7 @@ d3.tsneTimeSpace = function () {
                 default:
                     break;
             }
-        })
+        });
 
         return master;
         function render (solution){
@@ -105,7 +105,7 @@ d3.tsneTimeSpace = function () {
                     path[target.name] = [];
                 path[target.name].push({name:target.name,key:target.timestep,value:d});
                 let fillColor = d3.color(colorarr[target.cluster].value);
-                fillColor.opacity = 0.8
+                fillColor.opacity = 0.8;
                 background_ctx.fillStyle = fillColor+'';
                 background_ctx.fillRect(xscale(d[0])-2, yscale(d[1])-2, 4, 4);
                 // draw connection
@@ -113,7 +113,7 @@ d3.tsneTimeSpace = function () {
                     drawline(background_ctx,target, d);
                 }
                 hightlight_render_single(target, d);
-            })
+            });
             let linepath = svg.selectAll('path').data(d3.values(path).map(d=>d.sort((a,b)=>a.t-b.t)));
             linepath
                 .enter().append('path')
