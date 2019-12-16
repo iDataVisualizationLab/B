@@ -250,6 +250,7 @@ let radarController = function () {
                             if (type=='display') {
                                 return '<svg class="s_chart" width="160" height="25"></svg>';
                             }
+                            console.log(d.summary);
                             return d.summary.outlier.length;
                         }
                     },
@@ -333,7 +334,7 @@ let radarController = function () {
             radarcomp.axisList.forEach(d=>{d.summary = dSum[d.data.text];d.summary.range = d.scale.domain()});
             eventTable();
         }catch(e){
-
+console.log(e);
         }
     }
     let dataTable;
@@ -373,9 +374,9 @@ let radarController = function () {
 
 
             if (first) {
-                // const rg = svg.append("defs").append("radialGradient")
-                //     .attr("id", "rGradient2");
-                // createGradient(rg,1,graphicopt.arrColor);
+                const rg = svg.append("defs").append("radialGradient")
+                    .attr("id", "rGradient2");
+                createGradient(rg,1,graphicopt.arrColor);
                 var filter = g.append('defs').append('filter').attr('id', 'glowc'),
                     feGaussianBlur = filter.append('feGaussianBlur').attr('stdDeviation', '2.5').attr('result', 'coloredBlur'),
                     feMerge = filter.append('feMerge'),

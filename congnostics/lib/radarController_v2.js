@@ -577,7 +577,7 @@ let radarController = function () {
     radarController.drawSummary = function(hindex_input){
         try {
             let hindex = hindex_input || old_hindex;
-            old_hindex = hindex
+            old_hindex = hindex;
             let data = [handledataRate(hindex)];
             if (data[0].length === 0)
                 data[0] = arr;
