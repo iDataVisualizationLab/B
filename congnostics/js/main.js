@@ -52,6 +52,9 @@ var MetricController = radarController();
 let Radarplot_opt = {
     clusterMethod: 'leaderbin',
 };
+// tSNE variable
+let tsnedTS = d3.tsneTimeSpace();
+var TsneTSopt = {width:1000,height:1000} // thay width va height bang so qui dinh kich thuoc canvas
 // worker
 let clustercalWorker;
 let getDataWorker;
@@ -157,6 +160,7 @@ $( document ).ready(function() {
             if(this.value === '1') {
                 d3.select('#mainCanvasHolder').classed('hide',true);
                 d3.select('#tSNE').classed('hide',false);
+                handle_data_tsne(dataRadar2);
             }
         });
         // display mode
@@ -369,11 +373,13 @@ function analyzedata() {
         if(selecteddata!==4) normalization();
         calculatemeasures();
         initClusterObj();
-        prepareRadarTable();
-        MetricController.data(dataRadar2).drawSummary(dataRadar2.length-1);
-        MetricController.datasummary(dataRadar);
-        console.log(dataRadar1);
-        console.log(dataRadar2);
+        recalculateCluster( {clusterMethod: 'leaderbin',bin:{range: [6,8]}},function(){
+            prepareRadarTable();
+            MetricController.data(dataRadar2).drawSummary(dataRadar2.length-1);
+            MetricController.datasummary(dataRadar);
+        });
+        // console.log(dataRadar1);
+        // console.log(dataRadar2);
 
         // NORMALIZE DATA
         // find min and max of each series -> normalize
@@ -899,10 +905,13 @@ function prepareRadarTable() {
     for (var i = 0; i < nummeasure; i++) {
         dataRadar1[i] =[];
         var count = 0;
-        measures[i].forEach(function (s) {
-           s.forEach(function (d) {
+        measures[i].forEach(function (s,si) {
+           s.forEach(function (d,index) {
              dataRadar1[i][count] = (d[2] >= 0) ? d[2] : 0;
              dataRadar2[count] = [];
+             dataRadar2[count].name = mapsample2.get(si);
+             dataRadar2[count].timestep = index;
+             dataRadar2[count].cluster = cluster_info.findIndex(c=>c.arr[0].find(d=>d===`${si}-${index}`));
              count += 1;
            });
         });

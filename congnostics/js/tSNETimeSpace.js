@@ -47,7 +47,7 @@ d3.tsneTimeSpace = function () {
         yscale.range([0,background_canvas.height]);
         if (tsne)
             tsne.terminate();
-        tsne = new Worker('src/script/worker/tSNETimeSpaceworker.js');
+        tsne = new Worker('js/tSNETimeSpaceworker.js');
         // tsne.postMessage({action:"initcanvas", canvas: offscreen, canvasopt: {width: graphicopt.widthG(), height: graphicopt.heightG()}}, [offscreen]);
         tsne.postMessage({action:"initcanvas", canvasopt: {width: graphicopt.widthG(), height: graphicopt.heightG()}});
         console.log(`----inint tsne with: `,graphicopt.opt)
@@ -296,27 +296,28 @@ d3.tsneTimeSpace = function () {
     return master;
 }
 
-function handle_data_tsne(tsnedata) {
-    let dataIn = [];
+function handle_data_tsne(tsnedata) { //output will be array with name, cluster, timestep
+    console.log(tsnedata);
+    let dataIn = tsnedata;
 
-    d3.values(tsnedata).forEach(axis_arr => {
-        let lastcluster;
-        let lastdataarr;
-        let count = 0;
-        sampleS.timespan.forEach((t, i) => {
-            let index = axis_arr[i].cluster;
-            // timeline precalculate
-            if (!(lastcluster !== undefined && index === lastcluster) || runopt.suddenGroup&& calculateMSE_num(lastdataarr,axis_arr[i])>cluster_info[axis_arr[i].cluster].mse*runopt.suddenGroup) {
-                lastcluster = index;
-                lastdataarr = axis_arr[i];
-                axis_arr[i].timestep = count; // TODO temperal timestep
-                count++;
-                dataIn.push(axis_arr[i])
-            }
-            return index;
-            // return cluster_info.findIndex(c=>distance(c.__metrics.normalize,axis_arr)<=c.radius);
-        })
-    });
+    // d3.values(tsnedata).forEach(axis_arr => {
+    //     let lastcluster;
+    //     let lastdataarr;
+    //     let count = 0;
+    //     sampleS.timespan.forEach((t, i) => {
+    //         let index = axis_arr[i].cluster;
+    //         // timeline precalculate
+    //         if (!(lastcluster !== undefined && index === lastcluster) || runopt.suddenGroup&& calculateMSE_num(lastdataarr,axis_arr[i])>cluster_info[axis_arr[i].cluster].mse*runopt.suddenGroup) {
+    //             lastcluster = index;
+    //             lastdataarr = axis_arr[i];
+    //             axis_arr[i].timestep = count; // TODO temperal timestep
+    //             count++;
+    //             dataIn.push(axis_arr[i])
+    //         }
+    //         return index;
+    //         // return cluster_info.findIndex(c=>distance(c.__metrics.normalize,axis_arr)<=c.radius);
+    //     })
+    // });
 
     TsneTSopt.opt = {
             epsilon: 20, // epsilon is learning rate (10 = default)

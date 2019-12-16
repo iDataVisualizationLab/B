@@ -1,4 +1,4 @@
-importScripts("../lib/d3.v4.js");
+importScripts("../lib/d3/d3.min.js");
 importScripts("tsne.js");
 importScripts("../lib/PCA.js");
 importScripts("../lib/underscore-min.js");
