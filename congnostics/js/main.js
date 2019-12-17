@@ -52,6 +52,7 @@ var MetricController = radarController();
 let Radarplot_opt = {
     clusterMethod: 'leaderbin',
 };
+let leaderList = [];
 // tSNE variable
 let tsnedTS = d3.tsneTimeSpace();
 var TsneTSopt = {width:width,height:height};
@@ -390,6 +391,8 @@ function analyzedata() {
             prepareRadarTable();
             MetricController.data(dataRadar2).drawSummary(dataRadar2.length-1);
             MetricController.datasummary(dataRadar);
+            // console.log(dataRadar1);
+            // console.log(dataRadar2);
         });
         // console.log(dataRadar1);
         // console.log(dataRadar2);
@@ -911,7 +914,7 @@ function sortmeasures() {
 }
 
 // Prepare data for RadarController_table
-let dataRadar1 = [];
+let dataRadar1 = [];    //
 let dataRadar2 = [];
 let dataRadar;
 function prepareRadarTable() {
@@ -925,6 +928,7 @@ function prepareRadarTable() {
              dataRadar2[count].name = mapsample2.get(si);
              dataRadar2[count].timestep = index;
              dataRadar2[count].cluster = cluster_info.findIndex(c=>c.arr[0].find(d=>d===`${si}-${index}`));
+             dataRadar2[count].plot = `${si}-${index}`;
              count += 1;
            });
         });
@@ -935,7 +939,16 @@ function prepareRadarTable() {
        });
     });
     dataRadar = getsummaryservice(dataRadar1);
-    console.log(dataRadar);
+    cluster_info.forEach(function (c) {
+        c.arr[0].find(m=>{
+            const target = dataRadar2.find(d=>d.plot===m);
+            if (_.isEqual(target.slice(),c.__metrics.normalize)) {
+                leaderList.push(target.plot);
+                return true;
+            }
+            return false;
+        });
+    });
 }
 // Calculate Cluster
 function recalculateCluster (option,calback) {
@@ -972,7 +985,10 @@ function recalculateCluster (option,calback) {
             onloaddetermire({process:data.result.process,message:`# iterations: ${data.result.iteration}`},'#clusterLoading');
         }
     }, false);
+    // tsnedTS.render(tsnedTS.solution());
 }
+
+
 
 function cluster_map (dataRaw) {
     let data = dataRaw.map((c,i)=>{

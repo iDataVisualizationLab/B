@@ -250,7 +250,7 @@ let radarController = function () {
                             if (type=='display') {
                                 return '<svg class="s_chart" width="160" height="25"></svg>';
                             }
-                            console.log(d.summary);
+                            // console.log(d.summary);
                             return d.summary.outlier.length;
                         }
                     },

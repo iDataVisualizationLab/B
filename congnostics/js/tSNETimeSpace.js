@@ -1,6 +1,7 @@
+let xscale, yscale;
 d3.tsneTimeSpace = function () {
     let graphicopt = {
-            margin: {top: 0, right: 0, bottom: 0, left: 0},
+            margin: {top: 40, right: 40, bottom: 40, left: 40},
             width: 1500,
             height: 1000,
             scalezoom: 1,
@@ -26,7 +27,7 @@ d3.tsneTimeSpace = function () {
         isBusy = false;
     let tsne,colorscale;
     let master={},solution,datain,maptimestep,filter_by_name=[],table_info;
-    let xscale=d3.scaleLinear(),yscale=d3.scaleLinear();
+    xscale=d3.scaleLinear(); yscale=d3.scaleLinear();
     // grahic 
     let background_canvas,background_ctx,front_canvas,front_ctx,svg;
     //----------------------color----------------------
@@ -43,8 +44,8 @@ d3.tsneTimeSpace = function () {
         front_ctx = front_canvas.getContext('2d');
         svg = d3.select('#tsneScreen_svg').attrs({width: graphicopt.widthG(),height:graphicopt.heightG()});
         table_info = d3.select('#tsneInformation table').styles({'width':'150px'});
-        xscale.range([0,background_canvas.width]);
-        yscale.range([0,background_canvas.height]);
+        xscale.range([graphicopt.margin.left,background_canvas.width-graphicopt.margin.right]);
+        yscale.range([graphicopt.margin.top,background_canvas.height-graphicopt.margin.bottom]);
         if (tsne)
             tsne.terminate();
         tsne = new Worker('js/tSNETimeSpaceworker.js');
@@ -79,8 +80,8 @@ d3.tsneTimeSpace = function () {
             switch (data.action) {
                 case "render":
                     isBusy = true;
-                    xscale.domain(data.xscale.domain)
-                    yscale.domain(data.yscale.domain)
+                    xscale.domain(data.xscale.domain);
+                    yscale.domain(data.yscale.domain);
                     solution = data.sol;
                     updateTableInformation(data);
                     render(solution);
@@ -94,7 +95,7 @@ d3.tsneTimeSpace = function () {
         });
 
         return master;
-        function render (solution){
+        function render(solution){
             background_ctx.clearRect(0, 0, graphicopt.widthG(), graphicopt.heightG());
             if(filter_by_name&&filter_by_name.length)
                 front_ctx.clearRect(0, 0, graphicopt.widthG(), graphicopt.heightG());
@@ -114,6 +115,10 @@ d3.tsneTimeSpace = function () {
                 }
                 hightlight_render_single(target, d);
             });
+            solution.forEach(function(d, i) {
+                const target = arr[i];
+                leaderList.find(l=>{if(l === target.plot) {drawLeaderPlot(background_ctx,l,d); return true;} return false;});
+            });
             let linepath = svg.selectAll('path').data(d3.values(path).map(d=>d.sort((a,b)=>a.t-b.t)));
             linepath
                 .enter().append('path')
@@ -122,11 +127,11 @@ d3.tsneTimeSpace = function () {
                 .attr('d',d3.line().x(function(d) { return xscale(d.value[0]); })
                     .y(function(d) { return yscale(d.value[1]); }))
                 .on('mouseover',d=>{
-                    console.log(d[0].name);
+                    // console.log(d[0].name);
                     d3.selectAll('.h'+d[0].name).dispatch('mouseover');
                 }).on('mouseleave',d=>{
-                    d3.selectAll('.h'+d[0].name).dispatch('mouseleave');
-                })
+                d3.selectAll('.h'+d[0].name).dispatch('mouseleave');
+            })
             // datapoint= bg.selectAll(".linkLinegg").interrupt().data(d => d.timeline.clusterarr.map((e,i) => {
             //     temp = _.cloneDeep(newdata.find(n => n.name === e.cluster));
             //     temp.name = e.cluster;
@@ -135,7 +140,7 @@ d3.tsneTimeSpace = function () {
             //         temp.hide = true;
             //     return temp;
             // }),d=>d.name+d.timestep);
-        }
+        };
     };
 
     function drawline(ctx,target, d) {
@@ -266,7 +271,7 @@ d3.tsneTimeSpace = function () {
                 }
             }
             if (graphicopt.radaropt)
-                graphicopt.radaropt.schema = schema
+                graphicopt.radaropt.schema = schema;
             return master;
         }else {
             return graphicopt;
@@ -297,7 +302,7 @@ d3.tsneTimeSpace = function () {
 }
 
 function handle_data_tsne(tsnedata) { //output will be array with name, cluster, timestep
-    console.log(tsnedata);
+    // console.log(tsnedata);
     let dataIn = tsnedata;
 
     // d3.values(tsnedata).forEach(axis_arr => {
@@ -323,9 +328,43 @@ function handle_data_tsne(tsnedata) { //output will be array with name, cluster,
             epsilon: 20, // epsilon is learning rate (10 = default)
             perplexity: Math.round(dataIn.length / cluster_info.length), // roughly how many neighbors each point influences (30 = default)
             dim: 2, // dimensionality of the embedding (2 = default)
-    }
+    };
     tsnedTS.graphicopt(TsneTSopt).color(colorCluster).init(dataIn, cluster_info.map(c => c.__metrics.normalize));
 }
 function calculateMSE_num(a,b){
     return ss.sum(a.map((d,i)=>(d-b[i])*(d-b[i])));
+}
+
+//draw leader plots
+function drawLeaderPlot(ctx_,plot_,plotPosition_) {
+    var ctx = ctx_;
+    var plot = plot_;
+    var plotPosition = plotPosition_;
+    var plotIndex = plot.split("-"); // [sample,#plot]
+    var plotSize = 100;
+    var color = [];
+    ctx.fillStyle = "rgb(255,255,255)";
+    ctx.translate(-plotSize/2,-plotSize/2);
+    ctx.fill();
+    ctx.fillRect(xscale(plotPosition[0]), yscale(plotPosition[1]), plotSize, plotSize);
+    timedata.forEach(function (time, step) {
+        if (step) {
+            if(data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step]>=0 && data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step-1]>=0 && data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][1]][step]>=0 && data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][1]][step-1]>=0) {
+                var x1 = xscale(plotPosition[0])+0.05*plotSize+0.9*plotSize*data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step-1];
+                var x2 = xscale(plotPosition[0])+0.05*plotSize+0.9*plotSize*data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step];
+                var y1 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][1]][step-1]);
+                var y2 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][1]][step]);
+                color[0] = (step < timedata.length/2) ? 0 : (step-timedata.length/2)*255/(timedata.length/2);
+                color[1] = 0;
+                color[2] = (step < timedata.length/2) ? 255-255*step/(timedata.length/2) : 0;
+                ctx.beginPath();
+                ctx.moveTo(x1,y1);
+                ctx.lineTo(x2, y2);
+                ctx.strokeStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
+                ctx.stroke();
+            }
+        }
+    });
+    ctx.translate(plotSize/2,plotSize/2);
+
 }

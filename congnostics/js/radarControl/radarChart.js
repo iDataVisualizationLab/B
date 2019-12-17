@@ -350,12 +350,12 @@ function RadarChart(id, data, options, name) {
         // .interpolate("linear-closed")
             .curve(d3.curveCatmullRom.alpha(this.smooth))
             .radius(function (d) {
-                console.log(d);
-                console.log(rScale(d[keyLine] === undefined ? d : d[keyLine]));
+                // console.log(d);
+                // console.log(rScale(d[keyLine] === undefined ? d : d[keyLine]));
                 return rScale(d[keyLine] === undefined ? d : d[keyLine]);
             })
             .angle(function (d, i) {
-                console.log(getAngle(d, i));
+                // console.log(getAngle(d, i));
                 return getAngle(d, i);
             });
 
