@@ -52,7 +52,7 @@ var MetricController = radarController();
 let Radarplot_opt = {
     clusterMethod: 'leaderbin',
 };
-let leaderList = [];
+let leaderList;
 // tSNE variable
 let tsnedTS = d3.tsneTimeSpace();
 var TsneTSopt = {width:width,height:height};
@@ -939,6 +939,7 @@ function prepareRadarTable() {
        });
     });
     dataRadar = getsummaryservice(dataRadar1);
+    leaderList = [];
     cluster_info.forEach(function (c) {
         c.arr[0].find(m=>{
             const target = dataRadar2.find(d=>d.plot===m);
