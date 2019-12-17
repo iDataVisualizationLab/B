@@ -140,7 +140,7 @@ d3.tsneTimeSpace = function () {
             //         temp.hide = true;
             //     return temp;
             // }),d=>d.name+d.timestep);
-        };
+        }
     };
 
     function drawline(ctx,target, d) {
