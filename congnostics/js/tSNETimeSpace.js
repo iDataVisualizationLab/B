@@ -30,22 +30,34 @@ d3.tsneTimeSpace = function () {
     xscale=d3.scaleLinear(); yscale=d3.scaleLinear();
     // grahic 
     let background_canvas,background_ctx,front_canvas,front_ctx,svg;
+    background_canvas = document.getElementById("tsneScreen");
+    background_canvas.width  = graphicopt.widthG();
+    background_canvas.height = graphicopt.heightG();
+    background_ctx = background_canvas.getContext('2d');
+    front_canvas = document.getElementById("tsneScreen_fornt");
+    front_canvas.width  =  graphicopt.widthG();
+    front_canvas.height = graphicopt.heightG();
+    front_ctx = front_canvas.getContext('2d');
+    svg = d3.select('#tsneScreen_svg').attrs({width: graphicopt.widthG(),height:graphicopt.heightG()});
+    table_info = d3.select('#tsneInformation table').styles({'width':'150px'});
+    xscale.range([graphicopt.margin.left,background_canvas.width-graphicopt.margin.right]);
+    yscale.range([graphicopt.margin.top,background_canvas.height-graphicopt.margin.bottom]);
     //----------------------color----------------------
     let colorCluster  = d3.scaleOrdinal().range(d3.schemeCategory10);
     master.init = function(arr,cluster) {
         datain = arr;
-        background_canvas = document.getElementById("tsneScreen");
-        background_canvas.width  = graphicopt.widthG();
-        background_canvas.height = graphicopt.heightG();
-        background_ctx = background_canvas.getContext('2d');
-        front_canvas = document.getElementById("tsneScreen_fornt");
-        front_canvas.width  =  graphicopt.widthG();
-        front_canvas.height = graphicopt.heightG();
-        front_ctx = front_canvas.getContext('2d');
-        svg = d3.select('#tsneScreen_svg').attrs({width: graphicopt.widthG(),height:graphicopt.heightG()});
-        table_info = d3.select('#tsneInformation table').styles({'width':'150px'});
-        xscale.range([graphicopt.margin.left,background_canvas.width-graphicopt.margin.right]);
-        yscale.range([graphicopt.margin.top,background_canvas.height-graphicopt.margin.bottom]);
+        // background_canvas = document.getElementById("tsneScreen");
+        // background_canvas.width  = graphicopt.widthG();
+        // background_canvas.height = graphicopt.heightG();
+        // background_ctx = background_canvas.getContext('2d');
+        // front_canvas = document.getElementById("tsneScreen_fornt");
+        // front_canvas.width  =  graphicopt.widthG();
+        // front_canvas.height = graphicopt.heightG();
+        // front_ctx = front_canvas.getContext('2d');
+        // svg = d3.select('#tsneScreen_svg').attrs({width: graphicopt.widthG(),height:graphicopt.heightG()});
+        // table_info = d3.select('#tsneInformation table').styles({'width':'150px'});
+        // xscale.range([graphicopt.margin.left,background_canvas.width-graphicopt.margin.right]);
+        // yscale.range([graphicopt.margin.top,background_canvas.height-graphicopt.margin.bottom]);
         if (tsne)
             tsne.terminate();
         tsne = new Worker('js/tSNETimeSpaceworker.js');
@@ -158,9 +170,9 @@ d3.tsneTimeSpace = function () {
             background_ctx.fillStyle = fillColor+'';
             background_ctx.fillRect(xscale(d[0])-2, yscale(d[1])-2, 4, 4);
             // draw connection
-            if (maptimestep[target.name][target.timestep]!==undefined) {
-                drawline(background_ctx,target, d);
-            }
+            // if (maptimestep[target.name][target.timestep]!==undefined) {
+            //     drawline(background_ctx,target, d);
+            // }
             hightlight_render_single(target, d);
         });
         solution.forEach(function(d, i) {
@@ -328,6 +340,10 @@ d3.tsneTimeSpace = function () {
 
     master.solution = function (_) {
         return solution;
+    };
+
+    master.render = function (_) {
+        return render(_);
     };
     
     master.data = function (_) {

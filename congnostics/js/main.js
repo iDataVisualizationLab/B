@@ -985,7 +985,7 @@ function recalculateCluster (option,calback) {
             onloaddetermire({process:data.result.process,message:`# iterations: ${data.result.iteration}`},'#clusterLoading');
         }
     }, false);
-    // tsnedTS.init(tsnedTS.solution());
+    // tsnedTS.render(tsnedTS.solution());
 }
 
 
