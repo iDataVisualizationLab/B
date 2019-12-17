@@ -95,53 +95,100 @@ d3.tsneTimeSpace = function () {
         });
 
         return master;
-        function render(solution){
-            background_ctx.clearRect(0, 0, graphicopt.widthG(), graphicopt.heightG());
-            if(filter_by_name&&filter_by_name.length)
-                front_ctx.clearRect(0, 0, graphicopt.widthG(), graphicopt.heightG());
-            let path = {};
-            solution.forEach(function(d, i) {
-                const target = arr[i];
-                if (!path[target.name])
-                    path[target.name] = [];
-                path[target.name].push({name:target.name,key:target.timestep,value:d});
-                let fillColor = d3.color(colorarr[target.cluster].value);
-                fillColor.opacity = 0.8;
-                background_ctx.fillStyle = fillColor+'';
-                background_ctx.fillRect(xscale(d[0])-2, yscale(d[1])-2, 4, 4);
-                // draw connection
-                if (maptimestep[target.name][target.timestep]!==undefined) {
-                    drawline(background_ctx,target, d);
-                }
-                hightlight_render_single(target, d);
-            });
-            solution.forEach(function(d, i) {
-                const target = arr[i];
-                leaderList.find(l=>{if(l === target.plot) {drawLeaderPlot(background_ctx,l,d); return true;} return false;});
-            });
-            let linepath = svg.selectAll('path').data(d3.values(path).map(d=>d.sort((a,b)=>a.t-b.t)));
-            linepath
-                .enter().append('path')
-                .merge(linepath)
-                .styles({'stroke-width':4,'stroke':'black','opacity':0  })
-                .attr('d',d3.line().x(function(d) { return xscale(d.value[0]); })
-                    .y(function(d) { return yscale(d.value[1]); }))
-                .on('mouseover',d=>{
-                    // console.log(d[0].name);
-                    d3.selectAll('.h'+d[0].name).dispatch('mouseover');
-                }).on('mouseleave',d=>{
-                d3.selectAll('.h'+d[0].name).dispatch('mouseleave');
-            })
-            // datapoint= bg.selectAll(".linkLinegg").interrupt().data(d => d.timeline.clusterarr.map((e,i) => {
-            //     temp = _.cloneDeep(newdata.find(n => n.name === e.cluster));
-            //     temp.name = e.cluster;
-            //     temp.timestep = e.timestep;
-            //     if(!i)
-            //         temp.hide = true;
-            //     return temp;
-            // }),d=>d.name+d.timestep);
-        }
+        // function render(solution){
+        //     background_ctx.clearRect(0, 0, graphicopt.widthG(), graphicopt.heightG());
+        //     if(filter_by_name&&filter_by_name.length)
+        //         front_ctx.clearRect(0, 0, graphicopt.widthG(), graphicopt.heightG());
+        //     let path = {};
+        //     solution.forEach(function(d, i) {
+        //         const target = arr[i];
+        //         if (!path[target.name])
+        //             path[target.name] = [];
+        //         path[target.name].push({name:target.name,key:target.timestep,value:d});
+        //         let fillColor = d3.color(colorarr[target.cluster].value);
+        //         fillColor.opacity = 0.8;
+        //         background_ctx.fillStyle = fillColor+'';
+        //         background_ctx.fillRect(xscale(d[0])-2, yscale(d[1])-2, 4, 4);
+        //         // draw connection
+        //         if (maptimestep[target.name][target.timestep]!==undefined) {
+        //             drawline(background_ctx,target, d);
+        //         }
+        //         hightlight_render_single(target, d);
+        //     });
+        //     solution.forEach(function(d, i) {
+        //         const target = arr[i];
+        //         leaderList.find(l=>{if(l === target.plot) {drawLeaderPlot(background_ctx,l,d); return true;} return false;});
+        //     });
+        //     let linepath = svg.selectAll('path').data(d3.values(path).map(d=>d.sort((a,b)=>a.t-b.t)));
+        //     linepath
+        //         .enter().append('path')
+        //         .merge(linepath)
+        //         .styles({'stroke-width':4,'stroke':'black','opacity':0  })
+        //         .attr('d',d3.line().x(function(d) { return xscale(d.value[0]); })
+        //             .y(function(d) { return yscale(d.value[1]); }))
+        //         .on('mouseover',d=>{
+        //             // console.log(d[0].name);
+        //             d3.selectAll('.h'+d[0].name).dispatch('mouseover');
+        //         }).on('mouseleave',d=>{
+        //         d3.selectAll('.h'+d[0].name).dispatch('mouseleave');
+        //     })
+        //     // datapoint= bg.selectAll(".linkLinegg").interrupt().data(d => d.timeline.clusterarr.map((e,i) => {
+        //     //     temp = _.cloneDeep(newdata.find(n => n.name === e.cluster));
+        //     //     temp.name = e.cluster;
+        //     //     temp.timestep = e.timestep;
+        //     //     if(!i)
+        //     //         temp.hide = true;
+        //     //     return temp;
+        //     // }),d=>d.name+d.timestep);
+        // }
     };
+
+    function render(solution){
+        background_ctx.clearRect(0, 0, graphicopt.widthG(), graphicopt.heightG());
+        if(filter_by_name&&filter_by_name.length)
+            front_ctx.clearRect(0, 0, graphicopt.widthG(), graphicopt.heightG());
+        let path = {};
+        solution.forEach(function(d, i) {
+            const target = datain[i];
+            if (!path[target.name])
+                path[target.name] = [];
+            path[target.name].push({name:target.name,key:target.timestep,value:d});
+            let fillColor = d3.color(colorarr[target.cluster].value);
+            fillColor.opacity = 0.8;
+            background_ctx.fillStyle = fillColor+'';
+            background_ctx.fillRect(xscale(d[0])-2, yscale(d[1])-2, 4, 4);
+            // draw connection
+            if (maptimestep[target.name][target.timestep]!==undefined) {
+                drawline(background_ctx,target, d);
+            }
+            hightlight_render_single(target, d);
+        });
+        solution.forEach(function(d, i) {
+            const target = datain[i];
+            leaderList.find(l=>{if(l === target.plot) {drawLeaderPlot(background_ctx,l,d); return true;} return false;});
+        });
+        let linepath = svg.selectAll('path').data(d3.values(path).map(d=>d.sort((a,b)=>a.t-b.t)));
+        linepath
+            .enter().append('path')
+            .merge(linepath)
+            .styles({'stroke-width':4,'stroke':'black','opacity':0  })
+            .attr('d',d3.line().x(function(d) { return xscale(d.value[0]); })
+                .y(function(d) { return yscale(d.value[1]); }))
+            .on('mouseover',d=>{
+                // console.log(d[0].name);
+                d3.selectAll('.h'+d[0].name).dispatch('mouseover');
+            }).on('mouseleave',d=>{
+            d3.selectAll('.h'+d[0].name).dispatch('mouseleave');
+        })
+        // datapoint= bg.selectAll(".linkLinegg").interrupt().data(d => d.timeline.clusterarr.map((e,i) => {
+        //     temp = _.cloneDeep(newdata.find(n => n.name === e.cluster));
+        //     temp.name = e.cluster;
+        //     temp.timestep = e.timestep;
+        //     if(!i)
+        //         temp.hide = true;
+        //     return temp;
+        // }),d=>d.name+d.timestep);
+    }
 
     function drawline(ctx,target, d) {
         let nexttime = solution[maptimestep[target.name][target.timestep]];
