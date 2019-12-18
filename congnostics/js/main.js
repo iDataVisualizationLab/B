@@ -60,6 +60,9 @@ let visualizingOption = 'LMH';
 // worker
 let clustercalWorker;
 let getDataWorker;
+let dataRadar1 = [];
+let dataRadar2 = [];
+let dataRadar;
 
 ////////////////////////////////
 ////////////////////////////////
@@ -145,7 +148,7 @@ $( document ).ready(function() {
 
         d3.select('#majorGroupDisplay_control').on('change',function() {
             radarChartclusteropt.boxplot = $(this).prop('checked');
-            cluster_map(cluster_info)
+            cluster_map(cluster_info);
         });
         // data options
         d3.select('#datacom').on('change',function(){
@@ -388,9 +391,7 @@ function analyzedata() {
         calculatemeasures();
         initClusterObj();
         recalculateCluster( {clusterMethod: 'leaderbin',bin:{range: [6,8]}},function(){
-            prepareRadarTable();
-            MetricController.data(dataRadar2).drawSummary(dataRadar2.length-1);
-            MetricController.datasummary(dataRadar);
+            reCalculateTsne();
             // console.log(dataRadar1);
             // console.log(dataRadar2);
         });
@@ -914,9 +915,6 @@ function sortmeasures() {
 }
 
 // Prepare data for RadarController_table
-let dataRadar1 = [];    //
-let dataRadar2 = [];
-let dataRadar;
 function prepareRadarTable() {
     for (var i = 0; i < nummeasure; i++) {
         dataRadar1[i] =[];
@@ -986,10 +984,15 @@ function recalculateCluster (option,calback) {
             onloaddetermire({process:data.result.process,message:`# iterations: ${data.result.iteration}`},'#clusterLoading');
         }
     }, false);
-    // tsnedTS.render(tsnedTS.solution());
 }
 
-
+function reCalculateTsne() {
+    prepareRadarTable();
+    MetricController.data(dataRadar2).drawSummary(dataRadar2.length-1);
+    MetricController.datasummary(dataRadar);
+    cluster_map(cluster_info);
+    handle_data_tsne(dataRadar2);
+}
 
 function cluster_map (dataRaw) {
     let data = dataRaw.map((c,i)=>{
