@@ -1,8 +1,8 @@
 let window = self
-importScripts("../../../../HiperView/js/d3.v4.js");
-importScripts("../../../../HiperView/js/umap-js.js");
-importScripts("../../../../HiperView/js/underscore-min.js");
-importScripts("https://unpkg.com/simple-statistics@2.2.0/dist/simple-statistics.min.js");
+importScripts("../lib/d3/d3.min.js");
+importScripts("../lib/umap-js.js");
+importScripts("../lib/underscore-min.js");
+importScripts("../lib/simple-statistics.min.js");
 
 let canvasopt,totalTime_marker,dataIn,count,timeCalculation;
 addEventListener('message',function ({data}){

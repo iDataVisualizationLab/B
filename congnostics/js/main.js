@@ -23,7 +23,7 @@ let cellval = [];
 let minloop = 0;
 let maxloop = 48;
 let lag = 48;
-let selecteddata = 3;
+let selecteddata = 0;
 
 // VARIABLES FOR CONTROLLING
 let needupdate = false;
@@ -53,8 +53,10 @@ let Radarplot_opt = {
     clusterMethod: 'leaderbin',
 };
 let leaderList;
-// tSNE variable
-let tsnedTS = d3.tsneTimeSpace();
+// Dimension reduction variable
+let tsneTS = d3.tsneTimeSpace();
+let pcaTS = d3.pcaTimeSpace();
+let umapTS = d3.umapTimeSpace();
 var TsneTSopt = {width:width,height:height};
 let visualizingOption = 'LMH';
 // worker
@@ -173,10 +175,11 @@ $( document ).ready(function() {
                 d3.select('#mainCanvasHolder').classed('hide',false);
                 d3.select('#tSNE').classed('hide',true);
             }
-            if(visualizingOption === 'tSNE') {
+            if(visualizingOption === 'PCA' || visualizingOption === 'tSNE' || visualizingOption === 'UMAP') {
                 d3.select('#mainCanvasHolder').classed('hide',true);
                 d3.select('#tSNE').classed('hide',false);
-                handle_data_tsne(dataRadar2);
+                onchangeVizType(visualizingOption);
+                onchangeVizdata(visualizingOption);
             }
             d3.select('.cover').classed('hidden', true);
         });
@@ -1299,6 +1302,39 @@ function initDataWorker(){
     }, false);
 }
 
+function onchangeVizType(vizMode){
+    tsneTS.stop();
+    pcaTS.stop();
+    umapTS.stop();
+    switch (vizMode) {
+        case 'tSNE':
+            tsneTS.generateTable();
+            return true;
+        case 'PCA':
+            pcaTS.generateTable();
+            return true;
+        case 'UMAP':
+            umapTS.generateTable();
+            return true;
+        default:
+            return false;
+    }
+}
+function onchangeVizdata(vizMode){
+    switch (vizMode) {
+        case 'tSNE':
+            handle_data_tsne(dataRadar2);
+            return true
+        case 'PCA':
+            handle_data_pca(dataRadar2);
+            return true;
+        case 'UMAP':
+            handle_data_umap(dataRadar2);
+            return true;
+        default:
+            return false;
+    }
+}
 /////////////////////
 ////////////////////
 // END OF MAIN CODE

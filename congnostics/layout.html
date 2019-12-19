@@ -67,7 +67,7 @@
                             <option value="0"> US Employment Data</option>
                             <option value="1">High-performance computing systems, Mar 21th 2019</option>
                             <option value="2">RUL data</option>
-                            <option selected value="3">SP500 Stock data</option>
+                            <option value="3">SP500 Stock data</option>
                             <option value="4">Examples</option>
                         </select>
                     </div>
@@ -77,8 +77,10 @@
                             <optgroup label="snapshot">
                                 <option selected value="LMH">Low, Middle, and High</option>
                             </optgroup>
-                            <optgroup label="tSNE">
+                            <optgroup label="Dimension reduction">
+                                <option value="PCA">PCA</option>
                                 <option value="tSNE">t-SNE</option>
+                                <option value="UMAP">UMAP</option>
                             </optgroup>
                         </select>
                     </div>
@@ -299,6 +301,8 @@
 <!--<script src="js/vendor/jquery-3.4.1.min.js"></script>-->
 <script src="js/tsne.js"></script>
 <script src="js/tSNETimeSpace.js"></script>
+<script src="js/pcaTimeSpace.js"></script>
+<script src="js/umapTimeSpace.js"></script>
 <script src="js/plugins.js"></script>
 <script src="js/main.js"></script>
 

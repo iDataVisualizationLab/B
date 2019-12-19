@@ -54,30 +54,30 @@ d3.umapTimeSpace = function () {
     // grahic
     let background_canvas,background_ctx,front_canvas,front_ctx,svg;
     //----------------------color----------------------
-    let createRadar = _.partialRight(createRadar_func,graphicopt.radaropt,colorscale);
+    // let createRadar = _.partialRight(createRadar_func,graphicopt.radaropt,colorscale);
 
-    function renderSvgRadar() {
-        let datapoint = svg.selectAll(".linkLinegg").interrupt().data(d => datain.map(e => e.__metrics), d => d.name + d.timestep);
-        datapoint.exit().remove();
-        let datapoint_n = datapoint.enter().append('g')
-            .attr('class', 'linkLinegg timeline');
-        datapoint_n.each(function (d, i) {
-            createRadar(d3.select(this).select('.linkLineg'), d3.select(this), d, {colorfill: true}).classed('hide', d.hide);// hide 1st radar
-        });
-
-        datapoint_n.merge(datapoint).attr('transform', function (d) {
-            return `translate(${xscale(d.position[0])},${yscale(d.position[1])})`
-        })
-            .on('mouseover', d => {
-                master.hightlight([d.name_or])
-                svg.selectAll('.linkLinegg').filter(e => d.name_or !== e.name_or).classed('hide', true)
-                // d3.selectAll('.h'+d[0].name).dispatch('mouseover');
-            }).on('mouseleave', d => {
-            master.unhightlight(d.name_or)
-            svg.selectAll('.linkLinegg.hide').classed('hide', false)
-            // d3.selectAll('.h'+d[0].name).dispatch('mouseleave');
-        })
-    }
+    // function renderSvgRadar() {
+    //     let datapoint = svg.selectAll(".linkLinegg").interrupt().data(d => datain.map(e => e.__metrics), d => d.name + d.timestep);
+    //     datapoint.exit().remove();
+    //     let datapoint_n = datapoint.enter().append('g')
+    //         .attr('class', 'linkLinegg timeline');
+    //     datapoint_n.each(function (d, i) {
+    //         createRadar(d3.select(this).select('.linkLineg'), d3.select(this), d, {colorfill: true}).classed('hide', d.hide);// hide 1st radar
+    //     });
+    //
+    //     datapoint_n.merge(datapoint).attr('transform', function (d) {
+    //         return `translate(${xscale(d.position[0])},${yscale(d.position[1])})`
+    //     })
+    //         .on('mouseover', d => {
+    //             master.hightlight([d.name_or])
+    //             svg.selectAll('.linkLinegg').filter(e => d.name_or !== e.name_or).classed('hide', true)
+    //             // d3.selectAll('.h'+d[0].name).dispatch('mouseover');
+    //         }).on('mouseleave', d => {
+    //         master.unhightlight(d.name_or)
+    //         svg.selectAll('.linkLinegg.hide').classed('hide', false)
+    //         // d3.selectAll('.h'+d[0].name).dispatch('mouseleave');
+    //     })
+    // }
 
     function start() {
         svg.selectAll('*').remove();
@@ -390,8 +390,8 @@ function handle_data_umap(tsnedata) {
         let lastdataarr;
         let count = 0;
         sampleS.timespan.forEach((t, i) => {
-            let index = axis_arr[i].cluster;
-            axis_arr[i].clusterName = cluster_info[index].name
+            let index = axis_arr.cluster;
+            axis_arr.clusterName = cluster_info[index].name;
             // timeline precalculate
             if (!(lastcluster !== undefined && index === lastcluster) || runopt.suddenGroup&& calculateMSE_num(lastdataarr,axis_arr[i])>cluster_info[axis_arr[i].cluster].mse*runopt.suddenGroup) {
                 lastcluster = index;
