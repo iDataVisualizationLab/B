@@ -50,40 +50,40 @@ d3.umapTimeSpace = function () {
         isBusy = false;
     let tsne,colorscale;
     let master={},solution,datain=[],filter_by_name=[],table_info,path,cluster=[];
-    let xscale=d3.scaleLinear(),yscale=d3.scaleLinear();
+    xscale=d3.scaleLinear();yscale=d3.scaleLinear();
     // grahic
     let background_canvas,background_ctx,front_canvas,front_ctx,svg;
     //----------------------color----------------------
     // let createRadar = _.partialRight(createRadar_func,graphicopt.radaropt,colorscale);
 
-    // function renderSvgRadar() {
-    //     let datapoint = svg.selectAll(".linkLinegg").interrupt().data(d => datain.map(e => e.__metrics), d => d.name + d.timestep);
-    //     datapoint.exit().remove();
-    //     let datapoint_n = datapoint.enter().append('g')
-    //         .attr('class', 'linkLinegg timeline');
-    //     datapoint_n.each(function (d, i) {
-    //         createRadar(d3.select(this).select('.linkLineg'), d3.select(this), d, {colorfill: true}).classed('hide', d.hide);// hide 1st radar
-    //     });
-    //
-    //     datapoint_n.merge(datapoint).attr('transform', function (d) {
-    //         return `translate(${xscale(d.position[0])},${yscale(d.position[1])})`
-    //     })
-    //         .on('mouseover', d => {
-    //             master.hightlight([d.name_or])
-    //             svg.selectAll('.linkLinegg').filter(e => d.name_or !== e.name_or).classed('hide', true)
-    //             // d3.selectAll('.h'+d[0].name).dispatch('mouseover');
-    //         }).on('mouseleave', d => {
-    //         master.unhightlight(d.name_or)
-    //         svg.selectAll('.linkLinegg.hide').classed('hide', false)
-    //         // d3.selectAll('.h'+d[0].name).dispatch('mouseleave');
-    //     })
-    // }
+    function renderSvgRadar() {
+        let datapoint = svg.selectAll(".linkLinegg").interrupt().data(d => datain.map(e => e.__metrics), d => d.name + d.timestep);
+        datapoint.exit().remove();
+        let datapoint_n = datapoint.enter().append('g')
+            .attr('class', 'linkLinegg timeline');
+        datapoint_n.each(function (d, i) {
+            createRadar(d3.select(this).select('.linkLineg'), d3.select(this), d, {colorfill: true}).classed('hide', d.hide);// hide 1st radar
+        });
+
+        datapoint_n.merge(datapoint).attr('transform', function (d) {
+            return `translate(${xscale(d.position[0])},${yscale(d.position[1])})`
+        })
+            .on('mouseover', d => {
+                master.hightlight([d.name_or])
+                svg.selectAll('.linkLinegg').filter(e => d.name_or !== e.name_or).classed('hide', true)
+                // d3.selectAll('.h'+d[0].name).dispatch('mouseover');
+            }).on('mouseleave', d => {
+            master.unhightlight(d.name_or)
+            svg.selectAll('.linkLinegg.hide').classed('hide', false)
+            // d3.selectAll('.h'+d[0].name).dispatch('mouseleave');
+        })
+    }
 
     function start() {
         svg.selectAll('*').remove();
         if (tsne)
             tsne.terminate();
-        tsne = new Worker('src/script/worker/umapworker.js');
+        tsne = new Worker('js/umapworker.js');
         // tsne.postMessage({action:"initcanvas", canvas: offscreen, canvasopt: {width: graphicopt.widthG(), height: graphicopt.heightG()}}, [offscreen]);
         tsne.postMessage({action: "initcanvas", canvasopt: {width: graphicopt.widthG(), height: graphicopt.heightG()}});
         console.log(`----inint tsne with: `, graphicopt.opt)
@@ -95,6 +95,7 @@ d3.umapTimeSpace = function () {
         tsne.addEventListener('message', ({data}) => {
             switch (data.action) {
                 case "render":
+                    d3.select('.cover').classed('hidden', true);
                     isBusy = true;
                     xscale.domain(data.xscale.domain);
                     yscale.domain(data.yscale.domain);
@@ -137,7 +138,7 @@ d3.umapTimeSpace = function () {
 
     function render (isradar){
         if(solution) {
-            createRadar = _.partialRight(createRadar_func, graphicopt.radaropt, colorscale)
+            // createRadar = _.partialRight(createRadar_func, graphicopt.radaropt, colorscale)
             background_ctx.clearRect(0, 0, graphicopt.width, graphicopt.height);
             if (filter_by_name && filter_by_name.length)
                 front_ctx.clearRect(0, 0, graphicopt.width, graphicopt.height);
@@ -153,22 +154,26 @@ d3.umapTimeSpace = function () {
                 background_ctx.fillStyle = fillColor + '';
                 background_ctx.fillRect(xscale(d[0]) - 2, yscale(d[1]) - 2, 4, 4);
             });
-            if (graphicopt.linkConnect) {
-                d3.values(path).filter(d => d.length > 1 ? d.sort((a, b) => a.t - b.t) : false).forEach(path => {
-                    // make the combination of 0->4 [0,0,1,2] , [0,1,2,3], [1,2,3,4],[2,3,4,4]
-                    for (let i = 0; i < path.length - 1; i++) {
-                        let a = (path[i - 1] || path[i]).value;
-                        let b = path[i].value;
-                        let c = path[i + 1].value;
-                        let d = (path[i + 2] || path[i + 1]).value;
-                        drawline(background_ctx, [a, b, c, d], path[i].cluster);
-                    }
-                })
-            }
-
-            if (isradar) {
-                renderSvgRadar();
-            }
+            solution.forEach(function(d, i) {
+                const target = datain[i];
+                leaderList.find((l,li)=>{if(l === target.plot) {drawLeaderPlot(background_ctx,l,li,d); return true;} return false;});
+            });
+            // if (graphicopt.linkConnect) {
+            //     d3.values(path).filter(d => d.length > 1 ? d.sort((a, b) => a.t - b.t) : false).forEach(path => {
+            //         // make the combination of 0->4 [0,0,1,2] , [0,1,2,3], [1,2,3,4],[2,3,4,4]
+            //         for (let i = 0; i < path.length - 1; i++) {
+            //             let a = (path[i - 1] || path[i]).value;
+            //             let b = path[i].value;
+            //             let c = path[i + 1].value;
+            //             let d = (path[i + 2] || path[i + 1]).value;
+            //             drawline(background_ctx, [a, b, c, d], path[i].cluster);
+            //         }
+            //     })
+            // }
+            //
+            // if (isradar) {
+            //     renderSvgRadar();
+            // }
         }
     }
 
@@ -357,7 +362,7 @@ d3.umapTimeSpace = function () {
             }
             if (graphicopt.radaropt)
                 graphicopt.radaropt.schema = serviceFullList;
-            createRadar = _.partialRight(createRadar_func,graphicopt.radaropt,colorscale)
+            // createRadar = _.partialRight(createRadar_func,graphicopt.radaropt,colorscale)
             return master;
         }else {
             return graphicopt;
@@ -383,38 +388,78 @@ d3.umapTimeSpace = function () {
     return master;
 }
 function handle_data_umap(tsnedata) {
-    let dataIn = [];
+    let dataIn = tsnedata;
 
-    d3.values(tsnedata).forEach(axis_arr => {
-        let lastcluster;
-        let lastdataarr;
-        let count = 0;
-        sampleS.timespan.forEach((t, i) => {
-            let index = axis_arr.cluster;
-            axis_arr.clusterName = cluster_info[index].name;
-            // timeline precalculate
-            if (!(lastcluster !== undefined && index === lastcluster) || runopt.suddenGroup&& calculateMSE_num(lastdataarr,axis_arr[i])>cluster_info[axis_arr[i].cluster].mse*runopt.suddenGroup) {
-                lastcluster = index;
-                lastdataarr = axis_arr[i];
-                axis_arr[i].timestep = count; // TODO temperal timestep
-                count++;
-                dataIn.push(axis_arr[i])
-            }
-            // return index;
-            // return cluster_info.findIndex(c=>distance(c.__metrics.normalize,axis_arr)<=c.radius);
-
-            // dataIn.push(axis_arr[i]) // testing with full data
-        })
-    });
+    // d3.values(tsnedata).forEach(axis_arr => {
+    //     let lastcluster;
+    //     let lastdataarr;
+    //     let count = 0;
+    //     sampleS.timespan.forEach((t, i) => {
+    //         let index = axis_arr.cluster;
+    //         axis_arr.clusterName = cluster_info[index].name;
+    //         // timeline precalculate
+    //         if (!(lastcluster !== undefined && index === lastcluster) || runopt.suddenGroup&& calculateMSE_num(lastdataarr,axis_arr[i])>cluster_info[axis_arr[i].cluster].mse*runopt.suddenGroup) {
+    //             lastcluster = index;
+    //             lastdataarr = axis_arr[i];
+    //             axis_arr[i].timestep = count; // TODO temperal timestep
+    //             count++;
+    //             dataIn.push(axis_arr[i])
+    //         }
+    //         // return index;
+    //         // return cluster_info.findIndex(c=>distance(c.__metrics.normalize,axis_arr)<=c.radius);
+    //
+    //         // dataIn.push(axis_arr[i]) // testing with full data
+    //     })
+    // });
 
     umapopt.opt = {
         // nEpochs: 20, // The number of epochs to optimize embeddings via SGD (computed automatically = default)
         nNeighbors: 15, // The number of nearest neighbors to construct the fuzzy manifold (15 = default)
         nComponents: 2, // The number of components (dimensions) to project the data to (2 = default)
         minDist: 0.1, // The effective minimum distance between embedded points, used with spread to control the clumped/dispersed nature of the embedding (0.1 = default)
-    }
+    };
     umapTS.graphicopt(umapopt).color(colorCluster).init(dataIn, cluster_info.map(c => c.__metrics.normalize));
 }
 function calculateMSE_num(a,b){
     return ss.sum(a.map((d,i)=>(d-b[i])*(d-b[i])));
+}
+
+//draw leader plots
+function drawLeaderPlot(ctx_,plot_,group_,plotPosition_) {
+    var ctx = ctx_;
+    var plot = plot_;
+    var group = group_;
+    var plotPosition = plotPosition_;
+    var plotIndex = plot.split("-"); // [sample,#plot]
+    var plotSize = 100;
+    var color = [];
+    ctx.fillStyle = "rgb(255,255,255)";
+    ctx.strokeStyle = colorCluster(cluster_info[group].name);
+    ctx.lineWidth = 5;
+    ctx.translate(-plotSize/2,-plotSize/2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.strokeRect(xscale(plotPosition[0]), yscale(plotPosition[1]), plotSize, plotSize);
+    ctx.fillRect(xscale(plotPosition[0]), yscale(plotPosition[1]), plotSize, plotSize);
+    ctx.lineWidth = 1;
+    timedata.forEach(function (time, step) {
+        if (step) {
+            if(data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step]>=0 && data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step-1]>=0 && data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][1]][step]>=0 && data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][1]][step-1]>=0) {
+                var x1 = xscale(plotPosition[0])+0.05*plotSize+0.9*plotSize*data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step-1];
+                var x2 = xscale(plotPosition[0])+0.05*plotSize+0.9*plotSize*data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step];
+                var y1 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][1]][step-1]);
+                var y2 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][1]][step]);
+                color[0] = (step < timedata.length/2) ? 0 : (step-timedata.length/2)*255/(timedata.length/2);
+                color[1] = 0;
+                color[2] = (step < timedata.length/2) ? 255-255*step/(timedata.length/2) : 0;
+                ctx.beginPath();
+                ctx.moveTo(x1,y1);
+                ctx.lineTo(x2, y2);
+                ctx.strokeStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
+                ctx.stroke();
+            }
+        }
+    });
+    ctx.translate(plotSize/2,plotSize/2);
+
 }

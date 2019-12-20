@@ -1,3 +1,4 @@
+let xscale, yscale;
 d3.tsneTimeSpace = function () {
     let graphicopt = {
             margin: {top: 40, right: 40, bottom: 40, left: 40},
@@ -65,7 +66,7 @@ d3.tsneTimeSpace = function () {
         isBusy = false;
     let tsne, colorscale;
     let master = {}, solution, datain = [], filter_by_name = [], table_info, path, cluster = [];
-    let xscale = d3.scaleLinear(), yscale = d3.scaleLinear();
+    xscale = d3.scaleLinear(); yscale = d3.scaleLinear();
     // grahic
     let background_canvas, background_ctx, front_canvas, front_ctx, svg;
     //----------------------color----------------------
@@ -112,6 +113,7 @@ d3.tsneTimeSpace = function () {
         tsne.addEventListener('message', ({data}) => {
             switch (data.action) {
                 case "render":
+                    d3.select('.cover').classed('hidden', true);
                     isBusy = true;
                     xscale.domain(data.xscale.domain);
                     yscale.domain(data.yscale.domain);
@@ -132,7 +134,7 @@ d3.tsneTimeSpace = function () {
 
     master.init = function (arr, clusterin) {
         datain = arr;
-        cluster = clusterin
+        cluster = clusterin;
         handle_data(datain);
         updateTableInput();
         xscale.range([graphicopt.margin.left, graphicopt.width - graphicopt.margin.right]);
@@ -153,40 +155,44 @@ d3.tsneTimeSpace = function () {
         return master;
     };
 
-    // function render(isradar) {
-    //     createRadar = _.partialRight(createRadar_func, graphicopt.radaropt, colorscale);
-    //     background_ctx.clearRect(0, 0, graphicopt.width, graphicopt.height);
-    //     if (filter_by_name && filter_by_name.length)
-    //         front_ctx.clearRect(0, 0, graphicopt.width, graphicopt.height);
-    //     path = {};
-    //     solution.forEach(function (d, i) {
-    //         const target = datain[i];
-    //         target.__metrics.position = d;
-    //         if (!path[target.name])
-    //             path[target.name] = [];
-    //         path[target.name].push({name: target.name, key: target.timestep, value: d, cluster: target.cluster});
-    //         let fillColor = d3.color(colorarr[target.cluster].value);
-    //         fillColor.opacity = 0.8
-    //         background_ctx.fillStyle = fillColor + '';
-    //         background_ctx.fillRect(xscale(d[0]) - 2, yscale(d[1]) - 2, 4, 4);
-    //     });
-    //     if (graphicopt.linkConnect) {
-    //         d3.values(path).filter(d => d.length > 1 ? d.sort((a, b) => a.t - b.t) : false).forEach(path => {
-    //             // make the combination of 0->4 [0,0,1,2] , [0,1,2,3], [1,2,3,4],[2,3,4,4]
-    //             for (let i = 0; i < path.length - 1; i++) {
-    //                 let a = (path[i - 1] || path[i]).value;
-    //                 let b = path[i].value;
-    //                 let c = path[i + 1].value;
-    //                 let d = (path[i + 2] || path[i + 1]).value;
-    //                 drawline(background_ctx, [a, b, c, d], path[i].cluster);
-    //             }
-    //         })
-    //     }
-    //
-    //     if (isradar) {
-    //         renderSvgRadar();
-    //     }
-    // }
+    function render(isradar) {
+        // createRadar = _.partialRight(createRadar_func, graphicopt.radaropt, colorscale);
+        background_ctx.clearRect(0, 0, graphicopt.width, graphicopt.height);
+        if (filter_by_name && filter_by_name.length)
+            front_ctx.clearRect(0, 0, graphicopt.width, graphicopt.height);
+        path = {};
+        solution.forEach(function (d, i) {
+            const target = datain[i];
+            target.__metrics.position = d;
+            if (!path[target.name])
+                path[target.name] = [];
+            path[target.name].push({name: target.name, key: target.timestep, value: d, cluster: target.cluster});
+            let fillColor = d3.color(colorarr[target.cluster].value);
+            fillColor.opacity = 0.8;
+            background_ctx.fillStyle = fillColor + '';
+            background_ctx.fillRect(xscale(d[0]) - 2, yscale(d[1]) - 2, 4, 4);
+        });
+        solution.forEach(function(d, i) {
+            const target = datain[i];
+            leaderList.find((l,li)=>{if(l === target.plot) {drawLeaderPlot(background_ctx,l,li,d); return true;} return false;});
+        });
+        // if (graphicopt.linkConnect) {
+        //     d3.values(path).filter(d => d.length > 1 ? d.sort((a, b) => a.t - b.t) : false).forEach(path => {
+        //         // make the combination of 0->4 [0,0,1,2] , [0,1,2,3], [1,2,3,4],[2,3,4,4]
+        //         for (let i = 0; i < path.length - 1; i++) {
+        //             let a = (path[i - 1] || path[i]).value;
+        //             let b = path[i].value;
+        //             let c = path[i + 1].value;
+        //             let d = (path[i + 2] || path[i + 1]).value;
+        //             drawline(background_ctx, [a, b, c, d], path[i].cluster);
+        //         }
+        //     })
+        // }
+
+        // if (isradar) {
+        //     renderSvgRadar();
+        // }
+    }
 
     function handle_data(data) {
         data.forEach(d => {
@@ -338,7 +344,7 @@ d3.tsneTimeSpace = function () {
                     }
                 }
             });
-    }
+    };
 
     function updateTableInput() {
         table_info.select(`.datain`).text(e => datain.length);
@@ -390,7 +396,7 @@ d3.tsneTimeSpace = function () {
             }
             if (graphicopt.radaropt)
                 graphicopt.radaropt.schema = serviceFullList;
-            createRadar = _.partialRight(createRadar_func, graphicopt.radaropt, colorscale)
+            // createRadar = _.partialRight(createRadar_func, graphicopt.radaropt, colorscale);
             return master;
         } else {
             return graphicopt;
@@ -417,36 +423,55 @@ d3.tsneTimeSpace = function () {
 }
 
 function handle_data_tsne(tsnedata) {
-    let dataIn = [];
-
-    d3.values(tsnedata).forEach(axis_arr => {
-        let lastcluster;
-        let lastdataarr;
-        let count = 0;
-        sampleS.timespan.forEach((t, i) => {
-            let index = axis_arr.cluster;
-            axis_arr.clusterName = cluster_info[index].name;
-            // timeline precalculate
-            if (!(lastcluster !== undefined && index === lastcluster) || runopt.suddenGroup && calculateMSE_num(lastdataarr, axis_arr[i]) > cluster_info[axis_arr[i].cluster].mse * runopt.suddenGroup) {
-                lastcluster = index;
-                lastdataarr = axis_arr[i];
-                axis_arr[i].timestep = count; // TODO temperal timestep
-                count++;
-                dataIn.push(axis_arr[i])
-            }
-            return index;
-            // return cluster_info.findIndex(c=>distance(c.__metrics.normalize,axis_arr)<=c.radius);
-        })
-    });
-
+    let dataIn = tsnedata;
     TsneTSopt.opt = {
         epsilon: 20, // epsilon is learning rate (10 = default)
         perplexity: Math.round(dataIn.length / cluster_info.length), // roughly how many neighbors each point influences (30 = default)
         dim: 2, // dimensionality of the embedding (2 = default)
-    }
+    };
     tsneTS.graphicopt(TsneTSopt).color(colorCluster).init(dataIn, cluster_info.map(c => c.__metrics.normalize));
 }
 
 function calculateMSE_num(a, b) {
     return ss.sum(a.map((d, i) => (d - b[i]) * (d - b[i])));
+}
+
+//draw leader plots
+function drawLeaderPlot(ctx_,plot_,group_,plotPosition_) {
+    var ctx = ctx_;
+    var plot = plot_;
+    var group = group_;
+    var plotPosition = plotPosition_;
+    var plotIndex = plot.split("-"); // [sample,#plot]
+    var plotSize = 100;
+    var color = [];
+    ctx.fillStyle = "rgb(255,255,255)";
+    ctx.strokeStyle = colorCluster(cluster_info[group].name);
+    ctx.lineWidth = 5;
+    ctx.translate(-plotSize/2,-plotSize/2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.strokeRect(xscale(plotPosition[0]), yscale(plotPosition[1]), plotSize, plotSize);
+    ctx.fillRect(xscale(plotPosition[0]), yscale(plotPosition[1]), plotSize, plotSize);
+    ctx.lineWidth = 1;
+    timedata.forEach(function (time, step) {
+        if (step) {
+            if(data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step]>=0 && data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step-1]>=0 && data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][1]][step]>=0 && data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][1]][step-1]>=0) {
+                var x1 = xscale(plotPosition[0])+0.05*plotSize+0.9*plotSize*data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step-1];
+                var x2 = xscale(plotPosition[0])+0.05*plotSize+0.9*plotSize*data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step];
+                var y1 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][1]][step-1]);
+                var y2 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][1]][step]);
+                color[0] = (step < timedata.length/2) ? 0 : (step-timedata.length/2)*255/(timedata.length/2);
+                color[1] = 0;
+                color[2] = (step < timedata.length/2) ? 255-255*step/(timedata.length/2) : 0;
+                ctx.beginPath();
+                ctx.moveTo(x1,y1);
+                ctx.lineTo(x2, y2);
+                ctx.strokeStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
+                ctx.stroke();
+            }
+        }
+    });
+    ctx.translate(plotSize/2,plotSize/2);
+
 }

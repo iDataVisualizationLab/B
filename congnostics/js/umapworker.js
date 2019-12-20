@@ -20,7 +20,7 @@ addEventListener('message',function ({data}){
             const umap = new UMAP(data.opt);
             console.log('---init data UMAP-----')
             const nEpochs = umap.initializeFit(dataIn);
-            console.log(nEpochs)
+            console.log(nEpochs);
             for (let i = 0; i < (1000|| nEpochs); i++) {
                 // for (let i = 0; i < (data.opt.nEpochs|| nEpochs); i++) {
                 count++;

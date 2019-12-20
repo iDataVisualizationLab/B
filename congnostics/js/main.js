@@ -15,6 +15,7 @@ let mapvar0 = new Map();  // code -> variable name
 let mapvar1 = new Map();  // variable name -> index in data[variable]
 let mapvar2 = new Map(); // index -> variable name
 let timedata =[];
+let newmeasures = {};
 
 // VARIABLES FOR CALCULATIONS
 let numcell = 40;
@@ -57,8 +58,10 @@ let leaderList;
 let tsneTS = d3.tsneTimeSpace();
 let pcaTS = d3.pcaTimeSpace();
 let umapTS = d3.umapTimeSpace();
-var TsneTSopt = {width:width,height:height};
 let visualizingOption = 'LMH';
+var TsneTSopt = {width:width,height:height};
+var PCAopt = {width:width,height:height};
+var umapopt = {width:width,height:height};
 // worker
 let clustercalWorker;
 let getDataWorker;
@@ -161,10 +164,11 @@ $( document ).ready(function() {
                 d3.select('#mainCanvasHolder').classed('hide',false);
                 d3.select('#tSNE').classed('hide',true);
             }
-            if(visualizingOption === 'tSNE') {
+            if(visualizingOption === 'tSNE'||visualizingOption === 'PCA'||visualizingOption === 'UMAP') {
                 d3.select('#mainCanvasHolder').classed('hide', true);
                 d3.select('#tSNE').classed('hide', false);
-                handle_data_tsne(dataRadar2);
+                onchangeVizType(visualizingOption);
+                onchangeVizdata(visualizingOption);
             }
         });
         // visualizing option
@@ -181,7 +185,6 @@ $( document ).ready(function() {
                 onchangeVizType(visualizingOption);
                 onchangeVizdata(visualizingOption);
             }
-            d3.select('.cover').classed('hidden', true);
         });
         // display mode
         // d3.select('#displaymode').on('change',function (){
@@ -397,6 +400,12 @@ function analyzedata() {
             reCalculateTsne();
             // console.log(dataRadar1);
             // console.log(dataRadar2);
+        });
+        measures.forEach(function (m,mi) {
+            newmeasures[measurename[mi]] = {};
+            m.forEach(function (s,si) {
+                newmeasures[measurename[mi]][`${si}`] = s.map(d => {return d[2] >= 0});
+            });
         });
         // console.log(dataRadar1);
         // console.log(dataRadar2);
@@ -841,17 +850,29 @@ function analyzedata() {
             measures[0].forEach((s,si)=>{
                 s.forEach((xy,index)=>{
                     let hname = `${si}-${index}`;
-                    hosts.push({
-                        name: hname,
-                        sample: si,
-                        mindex: index
+                    // hosts.push({
+                    //     name: hname,
+                    //     sample: si,
+                    //     mindex: index
+                    // });
+                    let temp= {};
+                    let invalid = false;
+                    measures.find((m,i)=>{
+                        temp[measurename[i]] =[[m[si][index][2]]];
+                        invalid = temp[measurename[i]]<0;
+                        return invalid;
                     });
-                    sampleS[hname] = {};
-                    measures.forEach((m,i)=>{
-                        sampleS[hname][measurename[i]] =[[m[si][index][2]]]
-                    })
+                    if (!invalid) {
+                        hosts.push({
+                            name: hname,
+                            sample: si,
+                            mindex: index
+                        });
+                        sampleS[hname] = temp;
+                    }
                 })
             });
+
             sampleS.timespan = [new Date()];
         }
         needupdate = true;
@@ -924,13 +945,15 @@ function prepareRadarTable() {
         var count = 0;
         measures[i].forEach(function (s,si) {
            s.forEach(function (d,index) {
-             dataRadar1[i][count] = (d[2] >= 0) ? d[2] : 0;
-             dataRadar2[count] = [];
-             dataRadar2[count].name = mapsample2.get(si);
-             dataRadar2[count].timestep = index;
-             dataRadar2[count].cluster = cluster_info.findIndex(c=>c.arr[0].find(d=>d===`${si}-${index}`));
-             dataRadar2[count].plot = `${si}-${index}`;
-             count += 1;
+             if (d[2] >= 0) {
+                 dataRadar1[i][count] = d[2];
+                 dataRadar2[count] = [];
+                 dataRadar2[count].name = mapsample2.get(si);
+                 dataRadar2[count].timestep = index;
+                 dataRadar2[count].cluster = cluster_info.findIndex(c=>c.arr[0].find(d=>d===`${si}-${index}`));
+                 dataRadar2[count].plot = `${si}-${index}`;
+                 count += 1;
+             }
            });
         });
     }
@@ -994,7 +1017,8 @@ function reCalculateTsne() {
     MetricController.data(dataRadar2).drawSummary(dataRadar2.length-1);
     MetricController.datasummary(dataRadar);
     cluster_map(cluster_info);
-    handle_data_tsne(dataRadar2);
+    onchangeVizType(visualizingOption);
+    onchangeVizdata(visualizingOption);
 }
 
 function cluster_map (dataRaw) {
@@ -1334,6 +1358,7 @@ function onchangeVizdata(vizMode){
         default:
             return false;
     }
+
 }
 /////////////////////
 ////////////////////
@@ -1410,6 +1435,7 @@ function draw() {
         analyzedata();
     }
     if (needupdate){
+
         background(200);
 
         // CHOOSE DISPLAY PLOTS

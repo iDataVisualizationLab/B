@@ -517,10 +517,10 @@ function getDataByName(hostResults, name,startIndex, lastIndex, isPredict,undefi
             try{
                 r[serviceListattr[indx]][stepIndex]
             }catch(err){
-                console.log(serviceListattr)
-                console.log(indx)
-                console.log(serviceListattr[indx])
-                console.log(r[serviceListattr[indx]])
+                console.log(serviceListattr);
+                console.log(indx);
+                console.log(serviceListattr[indx]);
+                console.log(r[serviceListattr[indx]]);
             }
             if (r[serviceListattr[indx]][stepIndex]) {
                 a = r[serviceListattr[indx]][stepIndex].slice(0,requiredLength);
