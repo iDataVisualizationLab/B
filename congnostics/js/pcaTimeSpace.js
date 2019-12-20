@@ -1,6 +1,6 @@
 d3.pcaTimeSpace = function () {
     let graphicopt = {
-            margin: {top: 40, right: 40, bottom: 40, left: 40},
+            margin: {top: 60, right: 60, bottom: 60, left: 60},
             width: 1500,
             height: 1000,
             scalezoom: 1,
