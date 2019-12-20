@@ -100,7 +100,7 @@ d3.tsneTimeSpace = function () {
         svg.selectAll('*').remove();
         if (tsne)
             tsne.terminate();
-        tsne = new Worker('src/script/worker/tSNETimeSpaceworker.js');
+        tsne = new Worker('js/tSNETimeSpaceworker.js');
         // tsne.postMessage({action:"initcanvas", canvas: offscreen, canvasopt: {width: graphicopt.widthG(), height: graphicopt.heightG()}}, [offscreen]);
         tsne.postMessage({action: "initcanvas", canvasopt: {width: graphicopt.widthG(), height: graphicopt.heightG()}});
         console.log(`----inint tsne with: `, graphicopt.opt);
@@ -208,7 +208,7 @@ d3.tsneTimeSpace = function () {
     master.stop = function () {
         if (tsne) {
             tsne.terminate();
-            renderSvgRadar()
+            // renderSvgRadar()
         }
     };
 

@@ -179,7 +179,19 @@ $( document ).ready(function() {
                 d3.select('#mainCanvasHolder').classed('hide',false);
                 d3.select('#tSNE').classed('hide',true);
             }
-            if(visualizingOption === 'PCA' || visualizingOption === 'tSNE' || visualizingOption === 'UMAP') {
+            if(visualizingOption === 'PCA') {
+                d3.select('#mainCanvasHolder').classed('hide',true);
+                d3.select('#tSNE').classed('hide',false);
+                onchangeVizType(visualizingOption);
+                onchangeVizdata(visualizingOption);
+            }
+            if(visualizingOption === 'UMAP') {
+                d3.select('#mainCanvasHolder').classed('hide',true);
+                d3.select('#tSNE').classed('hide',false);
+                onchangeVizType(visualizingOption);
+                onchangeVizdata(visualizingOption);
+            }
+            if(visualizingOption === 'tSNE') {
                 d3.select('#mainCanvasHolder').classed('hide',true);
                 d3.select('#tSNE').classed('hide',false);
                 onchangeVizType(visualizingOption);
@@ -965,18 +977,32 @@ function prepareRadarTable() {
     dataRadar = getsummaryservice(dataRadar1);
     leaderList = [];
     cluster_info.forEach(function (c) {
+        let mindis = + Infinity;
+        let minObj;
         c.arr[0].find(m=>{
             const target = dataRadar2.find(d=>d.plot===m);
-            if (_.isEqual(target.slice(),c.__metrics.normalize)) {
-                leaderList.push(target.plot);
-                return true;
+            if (Radarplot_opt.clusterMethod==="leaderbin") {
+                if (_.isEqual(target.slice(), c.__metrics.normalize)) {
+                    leaderList.push(target.plot);
+                    return true;
+                }
+            }else{
+                let currentdis = distance(target.slice(),c.__metrics.normalize);
+                if(mindis> currentdis){
+                    mindis = currentdis;
+                    minObj = target.plot;
+                }
             }
             return false;
         });
+        if (Radarplot_opt.clusterMethod!=="leaderbin"){
+            leaderList.push(minObj);
+        }
     });
 }
 // Calculate Cluster
 function recalculateCluster (option,calback) {
+    Radarplot_opt.clusterMethod = option.clusterMethod;
     preloader(true,10,'Process grouping...','#clusterLoading');
     let group_opt = option;
     distance = group_opt.normMethod==='l1'?distanceL1:distanceL2;

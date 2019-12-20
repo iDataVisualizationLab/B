@@ -2,11 +2,10 @@ importScripts("../lib/d3/d3.min.js");
 importScripts("tsne.js");
 importScripts("../lib/PCA.js");
 importScripts("../lib/underscore-min.js");
-// importScripts("https://unpkg.com/simple-statistics@2.2.0/dist/simple-statistics.min.js");
 importScripts("../lib/simple-statistics.min.js");
-importScripts("../lib/jLouvain.js");
-importScripts("../lib/scagnosticsnd.min.js");
-importScripts("../lib/jDBSCAN.js");
+// importScripts("../../../../HiperView/js/jLouvain.js");
+// importScripts("../../../../HiperView/js/scagnosticsnd.min.js");
+// importScripts("../../../../HiperView/js/jDBSCAN.js");
 let tsne,sol,
     stepnumber = 5,
     countstack =0,
@@ -19,13 +18,11 @@ let tsne,sol,
     store_step_temp,
     hostname,
     stopCondition =1e-4,
-    community = jLouvain(),
-    dbscan = jDBSCAN(),
     groups,
     groupmethod = "outlier",
     currentMaxIndex =-1,
     requestIndex = 0
-    currentLastIndex = -1;
+currentLastIndex = -1;
 let geTopComand = _.once(stepstable);
 let average;
 let maxstack = 10;
@@ -35,7 +32,7 @@ let canvasopt ;
 let dataIn;
 let solution;
 let initpos;
-let epsilon;
+let epsilon,totalTime_marker;
 let timeCalculation=0;
 function stepstable (cost , solution,status){
     render (solution);
@@ -43,99 +40,101 @@ function stepstable (cost , solution,status){
     postMessage({action:'step', result: {cost: cost, solution: solution}, maxloop: countstack, status: status||"running"});
 }
 addEventListener('message',function ({data}){
-        switch (data.action) {
-            case "initcanvas":
-                // canvas = data.canvas;
-                canvasopt = data.canvasopt;
-                // gl = canvas.getContext("2d");
-                break;
-            case "inittsne":
-                tsne = new tsnejs.tSNE(data.value);
-                // currentMaxIndex = -1;
-                // currentLastIndex = -1;
-                stop = false;
-                break;
-            case "maxstack":
-                maxstack = (data.value);
-                break;
-            case "initDataRaw":
-                dataIn = data.value;
+    switch (data.action) {
+        case "initcanvas":
+            // canvas = data.canvas;
+            canvasopt = data.canvasopt;
+            // gl = canvas.getContext("2d");
+            break;
+        case "inittsne":
+            tsne = new tsnejs.tSNE(data.value);
+            stopCondition = +('1e'+data.value.stopCondition )||stopCondition;
+            // currentMaxIndex = -1;
+            // currentLastIndex = -1;
+            stop = false;
+            break;
+        case "maxstack":
+            maxstack = (data.value);
+            break;
+        case "initDataRaw":
+            totalTime_marker = performance.now();
+            dataIn = data.value;
 
-                // // pca - compute cluster position
-                // let t0 = performance.now();
-                // let pca = new PCA();
-                // // console.log(brand_names);
-                // let matrix = pca.scale(data.clusterarr, true, true);
-                //
-                // let pc = pca.pca(matrix, 2);
-                //
-                // let A = pc[0];  // this is the U matrix from SVD
-                // let B = pc[1];  // this is the dV matrix from SVD
-                // let chosenPC = pc[2];   // this is the most value of PCA
-                // const presetSolution = dataIn.map(d=>{
-                //     const i = d.cluster;
-                //     let pc1 = A[i][chosenPC[0]];
-                //     let pc2 = A[i][chosenPC[1]];
-                //     return [pc1,pc2];
-                // });
-                // console.log('finish init solution with PCA: ', performance.now()-t0)
+            // // pca - compute cluster position
+            // let t0 = performance.now();
+            // let pca = new PCA();
+            // // console.log(brand_names);
+            // let matrix = pca.scale(data.clusterarr, true, true);
+            //
+            // let pc = pca.pca(matrix, 2);
+            //
+            // let A = pc[0];  // this is the U matrix from SVD
+            // let B = pc[1];  // this is the dV matrix from SVD
+            // let chosenPC = pc[2];   // this is the most value of PCA
+            // const presetSolution = dataIn.map(d=>{
+            //     const i = d.cluster;
+            //     let pc1 = A[i][chosenPC[0]];
+            //     let pc2 = A[i][chosenPC[1]];
+            //     return [pc1,pc2];
+            // });
+            // console.log('finish init solution with PCA: ', performance.now()-t0)
 
-                // tsne - init datta
-                t0 = performance.now();
-                console.log('initDataRaw');
-                countstack = 0;
-                // tsne.initDataRaw_withsolution(dataIn,presetSolution);
-                tsne.initDataRaw(dataIn);
+            // tsne - init datta
+            t0 = performance.now();
+            console.log('initDataRaw');
+            countstack = 0;
+            // tsne.initDataRaw_withsolution(dataIn,presetSolution);
+            tsne.initDataRaw(dataIn);
 
-                console.log('finish init Data in ', performance.now()-t0);
+            console.log('finish init Data in ', performance.now()-t0);
 
-                // first step
-                stop = false;
-                t0 = performance.now();
-                cost = tsne.step();
-                // console.log('cost: '+cost+' time: ',performance.now()-t0);
-                timeCalculation = performance.now()-t0;
-                render (tsne.getSolution());
+            // first step
+            stop = false;
+            t0 = performance.now();
+            cost = tsne.step();
+            // console.log('cost: '+cost+' time: ',performance.now()-t0);
+            timeCalculation = performance.now()-t0;
+            render (tsne.getSolution());
 
-                stepstable(cost,tsne.getSolution());
+            stepstable(cost,tsne.getSolution());
 
-                postMessage({action:data.action, status:"done", maxloop: countstack});
-                count = 2;
-                if (!stop){
-                    // for (let i = 0; (i < stepnumber)&&(!stop); i++) {
-                    while (!stop) {
-                        t0 = performance.now();
-                        const cost_old = tsne.step();
-                        epsilon = (cost - cost_old);
-                        stop = (epsilon <stopCondition)&&epsilon >0&&count>100;
-                        cost = cost_old;
-                        countstack++;
-                        sol =tsne.getSolution();
-                        timeCalculation = performance.now()-t0;
-                        // console.log(`iteration: ${count} cost: ${cost} epsilon: `+ epsilon+' time: ',performance.now()-t0)
-                        render (sol);
-                        count++;
-                        // console.log(sol)
-                    }
-
-                    if (countstack>stack) {
-                        countstack =0;
-                    }
-                    // postMessage({action: 'clusterCircle', result: getdbscan()});
-                    // stepstable(cost, tsne.getSolution(),"done");
-                    // postMessage({action:'stable', status:"done"});
-                    // postMessage({action: 'step', result: {cost: cost, solution: sol}, status:"done"});
+            postMessage({action:data.action, status:"done", maxloop: countstack});
+            count = 2;
+            if (!stop){
+                // for (let i = 0; (i < stepnumber)&&(!stop); i++) {
+                while (!stop) {
+                    t0 = performance.now();
+                    const cost_old = tsne.step();
+                    epsilon = (cost - cost_old);
+                    stop = (epsilon <stopCondition)&&epsilon >0&&count>100;
+                    cost = cost_old;
+                    countstack++;
+                    sol =tsne.getSolution();
+                    timeCalculation = performance.now()-t0;
+                    // console.log(`iteration: ${count} cost: ${cost} epsilon: `+ epsilon+' time: ',performance.now()-t0)
+                    render (sol);
+                    count++;
+                    // console.log(sol)
                 }
-                // render (tsne.getSolution());
-                postMessage({action:'stable', status:"done"});
-                break;
 
-            case "colorscale":
-                colorarr = data.value;
-                break;
+                if (countstack>stack) {
+                    countstack =0;
+                }
+                // postMessage({action: 'clusterCircle', result: getdbscan()});
+                // stepstable(cost, tsne.getSolution(),"done");
+                // postMessage({action:'stable', status:"done"});
+                // postMessage({action: 'step', result: {cost: cost, solution: sol}, status:"done"});
+            }
+            // render (tsne.getSolution());
+            postMessage({action:'stable', status:"done"});
+            break;
 
-                break;
-        }
+        case "colorscale":
+            colorarr = data.value;
+            break;
+
+            break;
+    }
 });
 // animation ();
 
@@ -154,7 +153,7 @@ function render(sol){
         let delta = ((xrange[1] - xrange[0]) * ratio - (yrange[1] - yrange[0])) / 2;
         yscale.domain([yrange[0] - delta, yrange[1] + delta])
     }
-    postMessage({action:'render',iteration: count,cost: cost,epsilon: epsilon,time: timeCalculation,xscale:{domain:xscale.domain()}, yscale:{domain:yscale.domain()}, sol:sol});
+    postMessage({action:'render',value:{iteration: count,cost: cost,deltacost: epsilon,time: timeCalculation, totalTime:performance.now()-totalTime_marker},xscale:{domain:xscale.domain()}, yscale:{domain:yscale.domain()}, sol:sol});
     solution = sol;
 }
 
@@ -188,10 +187,10 @@ function updateStore(sol,clus,cost){
         // const currentLastIndex = store_step[i].length-2;
         if (currentLastIndex >-1 ) {
             // if (store_step[i].dis[currentLastIndex+1]=== undefined)
-                store_step[i].dis[currentLastIndex+1] = (store_step[i].dis[currentLastIndex]||0)+ distance(store_step[i][currentLastIndex], ss);
+            store_step[i].dis[currentLastIndex+1] = (store_step[i].dis[currentLastIndex]||0)+ distance(store_step[i][currentLastIndex], ss);
         }
         // if (store_step[i].cluster[currentLastIndex+1]=== undefined)
-            store_step[i].cluster[currentLastIndex+1] = {timeStep:currentLastIndex+1,val:clus[store_step[i].name]};
+        store_step[i].cluster[currentLastIndex+1] = {timeStep:currentLastIndex+1,val:clus[store_step[i].name]};
     });
 }
 

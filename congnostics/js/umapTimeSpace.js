@@ -61,9 +61,9 @@ d3.umapTimeSpace = function () {
         datapoint.exit().remove();
         let datapoint_n = datapoint.enter().append('g')
             .attr('class', 'linkLinegg timeline');
-        datapoint_n.each(function (d, i) {
-            createRadar(d3.select(this).select('.linkLineg'), d3.select(this), d, {colorfill: true}).classed('hide', d.hide);// hide 1st radar
-        });
+        // datapoint_n.each(function (d, i) {
+            // createRadar(d3.select(this).select('.linkLineg'), d3.select(this), d, {colorfill: true}).classed('hide', d.hide);// hide 1st radar
+        // });
 
         datapoint_n.merge(datapoint).attr('transform', function (d) {
             return `translate(${xscale(d.position[0])},${yscale(d.position[1])})`
@@ -191,7 +191,7 @@ d3.umapTimeSpace = function () {
     master.stop = function(){
         if (tsne) {
             tsne.terminate();
-            renderSvgRadar()
+            // renderSvgRadar()
         }
     };
 

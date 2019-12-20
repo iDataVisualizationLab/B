@@ -225,7 +225,7 @@ d3.pcaTimeSpace = function () {
                     let d = (path[i+2]||path[i+1]).value;
                     drawline(front_ctx,[a,b,c,d],path[i].cluster);
                 }
-            })
+            });
 
             d3.select(background_canvas).style('opacity', 0.1);
             d3.select(front_canvas).style('opacity', 1);
