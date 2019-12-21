@@ -1,0 +1,12 @@
+code	name
+0	close eye
+1	eye brown
+2	eye left
+3	eye right
+4	normal
+5	open eye
+6	smile
+7	thinking backward
+8	thinking foward
+9	thinking left
+10	thinking right

@@ -139,7 +139,7 @@ d3.viiolinChart = function () {
         circle_o.exit().remove();
         let circlem = circle_o.enter().append('circle').attr('class','outlier')
             .styles({opacity:0.5,
-            fill: 'rgb(138, 0, 26)'})
+            fill: 'rgb(0,0,0)'})
             .merge(circle_o)
             .attrs(circleoption)
             .attr('cx',d=> d.y?d.x:h(d.x)).attr('cy',d=>d.y?d.y:0);
@@ -181,7 +181,7 @@ d3.viiolinChart = function () {
         if (rangeY){
             xNum.domain(rangeY);
         }else{
-            var maxNum = 0
+            var maxNum = 0;
             for (i in sumstat) {
                 allBins = sumstat[i].arr;
                 kdeValues = allBins.map(function (a) {

@@ -24,7 +24,7 @@ let cellval = [];
 let minloop = 0;
 let maxloop = 48;
 let lag = 48;
-let selecteddata = 0;
+let selecteddata = 5;
 
 // VARIABLES FOR CONTROLLING
 let needupdate = false;
@@ -311,6 +311,11 @@ function analyzedata() {
             filename1 = "data/example_sample_code.txt";
             filename2 = "data/example_variable_code.txt";
             break;
+        case 5:
+            filename0 = "data/eeg_data.txt";
+            filename1 = "data/eeg_code.txt";
+            filename2 = "data/eeg_v_code.txt";
+            break;
     }
 
     Promise.all([
@@ -593,6 +598,7 @@ function analyzedata() {
                             var sumcos = 0;   // sum of cosine of angles
                             // var looparr = [];
                             var looplength = 0;
+                            var countcosine = 0;
                             xdata.forEach(function (x, xi) {
                                 for (var i = xi + 1; i < xdata.length; i++) {   // for all data after x
                                     // count directions for MONOTONIC TREND
@@ -616,6 +622,7 @@ function analyzedata() {
                                 if (xi > 0 && xi < xdata.length - 1) {
                                     // sumcos += Math.abs(calculatecos(xdata[xi - 1], ydata[xi - 1], x, ydata[xi], xdata[xi + 1], ydata[xi + 1]));
                                     sumcos += calculatecos(xdata[xi - 1], ydata[xi - 1], x, ydata[xi], xdata[xi + 1], ydata[xi + 1]);
+                                    if(calculatecos(xdata[xi - 1], ydata[xi - 1], x, ydata[xi], xdata[xi + 1], ydata[xi + 1]) > 0.75) countcosine += 1;
                                 }
                             });
                             // LENGTH
@@ -627,7 +634,8 @@ function analyzedata() {
                             // INTERSECTIONS
                             measures[8][p][index][2] = 1 - Math.exp(-countcrossing / (xdata.length - 1));
                             // STRIATED
-                            measures[5][p][index][2] = (sumcos / (xdata.length - 2))*0.5+0.5;
+                            measures[5][p][index][2] = (sumcos / (xdata.length - 2))*0.5+0.5;   //Average cosine
+                            // measures[5][p][index][2] = countcosine/(xdata.length-1);     // Sacgnostic
                             // STRAIGHT
                             // measures[1][p][index][2] = Math.sqrt(Math.pow(xdata[xdata.length - 1] - xdata[0], 2) + Math.pow(ydata[ydata.length - 1] - ydata[0], 2)) / sumlength;
                             // SKEWED
