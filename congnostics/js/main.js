@@ -51,7 +51,7 @@ for (var i = 0; i < nummeasure; i++) {
 // radar control
 var MetricController = radarController();
 let Radarplot_opt = {
-    clusterMethod: 'leaderbin',
+    clusterMethod: 'kmean',
 };
 let leaderList;
 // Dimension reduction variable
@@ -413,7 +413,7 @@ function analyzedata() {
         if(selecteddata!==4) normalization();
         calculatemeasures();
         initClusterObj();
-        recalculateCluster( {clusterMethod: 'leaderbin',bin:{range: [6,8]}},function(){
+        recalculateCluster( {clusterMethod: 'kmean',bin:{k:6,iterations:50}},function(){
             reCalculateTsne();
             // console.log(dataRadar1);
             // console.log(dataRadar2);
