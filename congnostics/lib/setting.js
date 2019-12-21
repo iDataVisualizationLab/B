@@ -1,5 +1,5 @@
 let measures = [];  // measures[index][sample][x-var,y-var,value], value = -1 means no data
-let nummeasure = 12;
+let nummeasure = 11;
 let measurename = [
     'Outlying',
     'Skinny',
@@ -8,7 +8,6 @@ let measurename = [
     'Sparse',
     'Striated',
     'Trend',
-    'Constant',
     "Intersections",
     "Loop",
     'Cross-correlation',
@@ -22,11 +21,10 @@ let measureObj = {
     'Sparse':4,
     'Striated':5,
     'Trend':6,
-    'Constant':7,
-    "Intersections":8,
-    "Loop":9,
-    'Cross-correlation':10,
-    'Length':11
+    "Intersections":7,
+    "Loop":8,
+    'Cross-correlation':9,
+    'Length':10
 };
 
 

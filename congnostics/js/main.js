@@ -577,17 +577,17 @@ function analyzedata() {
                         });   // ascending
 
                         // L-SHAPE
-                        if (xdata.length > 1) {
-                            measures[7][p][index][2] = 0;
-                            var count = 0;
-                            xdata.forEach(function (x, xi) {
-                                if (xi) {
-                                    if (x === xdata[xi - 1] || ydata[xi] === ydata[xi - 1]) count += 1;
-                                }
-                            });
-                            // L-SHAPE
-                            measures[7][p][index][2] = count / xdata.length;  // or timedata.length
-                        }
+                        // if (xdata.length > 1) {
+                        //     measures[7][p][index][2] = 0;
+                        //     var count = 0;
+                        //     xdata.forEach(function (x, xi) {
+                        //         if (xi) {
+                        //             if (x === xdata[xi - 1] || ydata[xi] === ydata[xi - 1]) count += 1;
+                        //         }
+                        //     });
+                        //     // L-SHAPE
+                        //     measures[7][p][index][2] = count / xdata.length;  // or timedata.length
+                        // }
 
                         // CALCULATE SOME MEASURES
                         // do not consider outliers and L-shape plots
@@ -626,13 +626,13 @@ function analyzedata() {
                                 }
                             });
                             // LENGTH
-                            measures[11][p][index][2] = sumlengtha / (xdata.length - 1);
-                            if (measures[11][p][index][2] > 1) measures[11][p][index][2] = 1;
+                            measures[10][p][index][2] = sumlengtha / (xdata.length - 1);
+                            if (measures[10][p][index][2] > 1) measures[10][p][index][2] = 1;
                             // MONOTONIC TREND
                             measures[6][p][index][2] = (4/3)*Math.max(...dir) / (xdata.length*(xdata.length-1)/2)-1/3;
                             if (measures[6][p][index][2] < 0) measures[6][p][index][2] = 0;
                             // INTERSECTIONS
-                            measures[8][p][index][2] = 1 - Math.exp(-countcrossing / (xdata.length - 1));
+                            measures[7][p][index][2] = 1 - Math.exp(-countcrossing / (xdata.length - 1));
                             // STRIATED
                             measures[5][p][index][2] = (sumcos / (xdata.length - 2))*0.5+0.5;   //Average cosine
                             // measures[5][p][index][2] = countcosine/(xdata.length-1);     // Sacgnostic
@@ -692,7 +692,7 @@ function analyzedata() {
                             //   looparr.sort(function (b,n) {return b-n});
                             //   measures[9][p][index][2] = looparr[Math.floor(looparr.length*0.25)]/xdata.length;
                             // }
-                            measures[9][p][index][2] = (looplength > 0) ? (looplength-minloop) / (maxloop - minloop) : 0;
+                            measures[8][p][index][2] = (looplength > 0) ? (looplength-minloop) / (maxloop - minloop) : 0;
                             // measures[9][p][index][2] = (looplength > 0) ? looplength / xdata.length : 0;
 
                             // CROSS - CORRELATION
@@ -727,7 +727,7 @@ function analyzedata() {
                                 }
                                 maxr = (maxr < r) ? r : maxr;
                             }
-                            measures[10][p][index][2] = maxr;
+                            measures[9][p][index][2] = maxr;
 
                             // SIMILARITY
                             // measures[10][p][index][2] = 1 - minsim / (xdata.length-getLag);
