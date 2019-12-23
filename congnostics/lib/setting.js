@@ -1,32 +1,37 @@
 let measures = [];  // measures[index][sample][x-var,y-var,value], value = -1 means no data
-let nummeasure = 11;
+let nummeasure = 1;
+// let measurename = [
+//     'Outlying',
+//     'Skinny',
+//     'Skewed',
+//     'Clumpy',
+//     'Sparse',
+//     'Striated',
+//     'Trend',
+//     "Intersections",
+//     "Loop",
+//     'Cross-correlation',
+//     'Length',
+// ];
+// let measureObj = {
+//     'Outlying':0,
+//     'Skinny':1,
+//     'Skewed':2,
+//     'Clumpy':3,
+//     'Sparse':4,
+//     'Striated':5,
+//     'Trend':6,
+//     "Intersections":7,
+//     "Loop":8,
+//     'Cross-correlation':9,
+//     'Length':10
+// };
 let measurename = [
-    'Outlying',
-    'Skinny',
-    'Skewed',
-    'Clumpy',
-    'Sparse',
-    'Striated',
     'Trend',
-    "Intersections",
-    "Loop",
-    'Cross-correlation',
-    'Length',
 ];
 let measureObj = {
-    'Outlying':0,
-    'Skinny':1,
-    'Skewed':2,
-    'Clumpy':3,
-    'Sparse':4,
-    'Striated':5,
-    'Trend':6,
-    "Intersections":7,
-    "Loop":8,
-    'Cross-correlation':9,
-    'Length':10
+    'Trend':0,
 };
-
 
 
 var application_name ='Joblist';
