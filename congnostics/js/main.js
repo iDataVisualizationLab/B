@@ -490,7 +490,7 @@ function analyzedata() {
                             }
                         }
                     });
-                    measures[0][p][index] = Math.abs(Sign)/(xData.length*(xData.length-1)/2);
+                    measures[0][p][index][1] = Math.abs(Sign)/(xData.length*(xData.length-1)/2);
 
                     // increase index
                     index += 1;
@@ -1764,7 +1764,8 @@ function draw() {
                     // } else {
                     //     text(mapvar2.get(xvar).substr(0,27)+'...',1.65*xBlank+oPlotSize+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*1.1);
                     // }
-                    text("time",xBlank+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*1.1);
+                    // text("time",xBlank+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*1.1);
+                    text("time",1.65*xBlank+oPlotSize+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*1.1);
 
                     //write y-variable notation
                     push();
@@ -1795,7 +1796,8 @@ function draw() {
                     timedata.forEach(function (time,step) {
                         if(step) {
                             // CS plots - X(t) for 1D
-                            if(data[sample][xvar][step]>=0 && data[sample][xvar][step-1]>=0 && data[sample][yvar][step]>=0 && data[sample][yvar][step-1]>=0) {
+                            // if(data[sample][xvar][step]>=0 && data[sample][xvar][step-1]>=0 && data[sample][yvar][step]>=0 && data[sample][yvar][step-1]>=0) {
+                            if(data[sample][xvar][step]>=0 && data[sample][xvar][step-1]>=0) {
                                 // var x1 = 0.05*csPlotSize+1.65*xBlank+oPlotSize+j*groupSize+0.9*csPlotSize*data[sample][xvar][step-1];
                                 // var x2 = 0.05*csPlotSize+1.65*xBlank+oPlotSize+j*groupSize+0.9*csPlotSize*data[sample][xvar][step];
                                 // var y1 = 0.05*csPlotSize+yBlank+50+i*(ygBlank+csPlotSize)+0.9*csPlotSize*(1-data[sample][yvar][step-1]);
