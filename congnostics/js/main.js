@@ -35,7 +35,7 @@ let needcalculation = true;
 let displayplot = [];   // displayplot[measure index][0->numplot-1:lowest, numplot->2numplot-1: middle, 2numplot->3numplot-1: highest][sample, x-var, y-var,value,index]
 let width = 2000;
 let height = 2000;
-let numColumn = 15;
+let numColumn = 7;
 let columnSize = width/numColumn;
 let numplot = 5;
 let newnumplot = 0;
@@ -1457,13 +1457,15 @@ function onchangeVizdata(vizMode){
 //////////////////
 // Variables
 let csPlotSize = columnSize;
-let oPlotSize = columnSize;
-let rPlotSize = columnSize;
-let xBlank = 0.5*columnSize;
+// let oPlotSize = columnSize;
+// let rPlotSize = columnSize;
+// let xBlank = 0.5*columnSize;
+let xBlank = columnSize;
 let xgBlank = columnSize;
 let yBlank = 50;
 let ygBlank = csPlotSize*0.3;
-let groupSize = oPlotSize+2*xBlank+csPlotSize+rPlotSize+xgBlank;
+// let groupSize = oPlotSize+2*xBlank+csPlotSize+rPlotSize+xgBlank;
+let groupSize = csPlotSize+xgBlank;
 
 function setup() {
     let canvas = createCanvas(width,height);
@@ -1528,9 +1530,10 @@ function draw() {
             fill(0);
             noStroke();
             textSize(csPlotSize/8);
-            text('Lowest values',2*xBlank+oPlotSize,yBlank);
-            text('Middle values',4*xBlank+xgBlank+2*oPlotSize+csPlotSize,yBlank);
-            text('Highest values',6*xBlank+2*xgBlank+3*oPlotSize+2*csPlotSize,yBlank);
+            // text('Lowest values',2*xBlank+oPlotSize,yBlank);
+            text('Lowest values',xBlank,yBlank);
+            text('Middle values',xBlank+xgBlank+csPlotSize,yBlank);
+            text('Highest values',xBlank+2*xgBlank+2*csPlotSize,yBlank);
             // textSize(plotsize/12);
             // text('select measure',xstartpos+plotsize+2*xblank1+0.5*splotsize,16+plotsize/10);
             // Color explanation
@@ -1662,7 +1665,8 @@ function draw() {
                     // draw rectangles for CS - X(t) for 1D
                     fill(255);
                     stroke(0);
-                    rect(1.65*xBlank+oPlotSize+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize),csPlotSize,csPlotSize);
+                    // rect(1.65*xBlank+oPlotSize+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize),csPlotSize,csPlotSize);
+                    rect(xBlank+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize),csPlotSize,csPlotSize);
 
                     // draw rectangles for time series
                     // fill(255);
@@ -1747,13 +1751,13 @@ function draw() {
                     noStroke();
                     fill(255);
                     textSize(csPlotSize/12);
-                    text(measurename[selectedmeasure]+' = '+Math.round(value*100)/100,1.65*xBlank+oPlotSize+j*groupSize+csPlotSize*0.6,yBlank+50+i*(ygBlank+csPlotSize)-5);
+                    text(measurename[selectedmeasure]+' = '+Math.round(value*100)/100,xBlank+j*groupSize+csPlotSize*0.6,yBlank+50+i*(ygBlank+csPlotSize)-5);
 
                     // write sample notation
                     noStroke();
                     fill(0);
                     textSize(csPlotSize/12);
-                    text(mapsample2.get(sample),1.65*xBlank+oPlotSize+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize)-5);
+                    text(mapsample2.get(sample),xBlank+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize)-5);
 
                     // write x-variable notation
                     noStroke();
@@ -1765,19 +1769,20 @@ function draw() {
                     //     text(mapvar2.get(xvar).substr(0,27)+'...',1.65*xBlank+oPlotSize+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*1.1);
                     // }
                     // text("time",xBlank+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*1.1);
-                    text("time",1.65*xBlank+oPlotSize+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*1.1);
+                    text("time",xBlank+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*1.1);
 
                     //write y-variable notation
                     push();
                     noStroke();
                     fill(0);
                     textSize(csPlotSize/14);
-                    translate(xBlank-5+j*groupSize,yBlank+50+i*(csPlotSize+ygBlank)+oPlotSize);
+                    // translate(xBlank-5+j*groupSize,yBlank+50+i*(csPlotSize+ygBlank));
+                    translate(xBlank-5+j*groupSize,yBlank+50+i*(csPlotSize+ygBlank));
                     rotate(-PI/2);
                     if(mapvar2.get(xvar).split("").length <= 27) {
-                        text(mapvar2.get(xvar),0,1.05*oPlotSize+0.65*xBlank-5);
+                        text(mapvar2.get(xvar),-csPlotSize,-5);
                     } else {
-                        text(mapvar2.get(xvar).substr(0,27)+'...',0,1.05*oPlotSize+0.65*xBlank-5);
+                        text(mapvar2.get(xvar).substr(0,27)+'...',-csPlotSize,-5);
                     }
                     // if(mapvar2.get(xvar).split("").length <= 14) {
                     //     text(mapvar2.get(xvar),0,0);
@@ -1802,8 +1807,8 @@ function draw() {
                                 // var x2 = 0.05*csPlotSize+1.65*xBlank+oPlotSize+j*groupSize+0.9*csPlotSize*data[sample][xvar][step];
                                 // var y1 = 0.05*csPlotSize+yBlank+50+i*(ygBlank+csPlotSize)+0.9*csPlotSize*(1-data[sample][yvar][step-1]);
                                 // var y2 = 0.05*csPlotSize+yBlank+50+i*(ygBlank+csPlotSize)+0.9*csPlotSize*(1-data[sample][yvar][step]);
-                                var x1 = 0.05*csPlotSize+1.65*xBlank+oPlotSize+j*groupSize+0.9*csPlotSize*(step-1)/timedata.length;
-                                var x2 = 0.05*csPlotSize+1.65*xBlank+oPlotSize+j*groupSize+0.9*csPlotSize*step/timedata.length;
+                                var x1 = 0.05*csPlotSize+xBlank+j*groupSize+0.9*csPlotSize*(step-1)/timedata.length;
+                                var x2 = 0.05*csPlotSize+xBlank+j*groupSize+0.9*csPlotSize*step/timedata.length;
                                 var y1 = 0.05*csPlotSize+yBlank+50+i*(ygBlank+csPlotSize)+0.9*csPlotSize*(1-data[sample][xvar][step-1]);
                                 var y2 = 0.05*csPlotSize+yBlank+50+i*(ygBlank+csPlotSize)+0.9*csPlotSize*(1-data[sample][xvar][step]);
                                 if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
