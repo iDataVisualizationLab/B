@@ -479,6 +479,18 @@ function analyzedata() {
                     var xData = sample[xVar].map(function (x) {return x});
                     xData = xData.filter(function (x) {return x >= 0});
 
+                    // OUTLIERS
+                    // Box plot method
+                    // Score = ratio of Mean Absolute Deviation of Outliers and Total.
+                    let firstLagDiff = [];
+                    xData.forEach(function (x,xi) {
+                        if(xi) firstLagDiff[xi-1] = x-xData[xi-1];
+                    });
+                    let sortFirstLagDiff = firstLagDiff.map(d=>{return d});
+                    sortFirstLagDiff.sort(function (a,b) {return a-b});
+                    let q1 = sortFirstLagDiff[Math.floor(sortFirstLagDiff.length*0.25)];
+                    let q3 = sortFirstLagDiff
+
                     // TREND
                     // Mann-Kendall test
                     let Sign = 0;
@@ -490,7 +502,7 @@ function analyzedata() {
                             }
                         }
                     });
-                    measures[0][p][index][1] = Math.abs(Sign)/(xData.length*(xData.length-1)/2);
+                    measures[1][p][index][1] = Math.abs(Sign)/(xData.length*(xData.length-1)/2);
 
                     // increase index
                     index += 1;
