@@ -489,7 +489,14 @@ function analyzedata() {
                     let sortFirstLagDiff = firstLagDiff.map(d=>{return d});
                     sortFirstLagDiff.sort(function (a,b) {return a-b});
                     let q1 = sortFirstLagDiff[Math.floor(sortFirstLagDiff.length*0.25)];
-                    let q3 = sortFirstLagDiff
+                    let q3 = sortFirstLagDiff[Math.floor(sortFirstLagDiff.length*0.75)];
+                    let q2 = sortFirstLagDiff[Math.floor(sortFirstLagDiff.length*0.5)];
+                    let outlierArr = sortFirstLagDiff.filter(d=>{return d>q3+1.5*(q3-q1)||d<q1-1.5*(q3-q1)});
+                    let adTotalLength = 0;
+                    sortFirstLagDiff.forEach(d=>{adTotalLength += Math.abs(d-q2)});
+                    let adOutlierLength = 0;
+                    outlierArr.forEach(d=>{adOutlierLength += Math.abs(d-q2)});
+                    measures[0][p][index][1] = adOutlierLength/adTotalLength;
 
                     // TREND
                     // Mann-Kendall test
