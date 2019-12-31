@@ -1,5 +1,5 @@
 let measures = [];  // measures[index][sample][x-var,y-var,value], value = -1 means no data
-let nummeasure = 2;
+let nummeasure = 3;
 // let measurename = [
 //     'Outlying',
 //     'Skinny',
@@ -29,10 +29,12 @@ let nummeasure = 2;
 let measurename = [
     'Outlying',
     'Trend',
+    'Periodicity'
 ];
 let measureObj = {
     'Outlying':0,
     'Trend':1,
+    'Periodicity':2,
 };
 
 

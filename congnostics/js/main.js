@@ -511,6 +511,18 @@ function analyzedata() {
                     });
                     measures[1][p][index][1] = Math.abs(Sign)/(xData.length*(xData.length-1)/2);
 
+                    // PERIODICITY
+                    let myPeriodogram = xData.map((x,xi)=>{
+                        let sumr = 0;
+                        let sumi = 0;
+                        xData.forEach((d,index)=>{
+                            sumr += d*Math.cos(-2*Math.PI*xi*index/xData.length);
+                            sumi += d*Math.sin(-2*Math.PI*xi*index/xData.length);
+                        });
+                        return (sumr*sumr+sumi*sumi)/xData.length;
+                    });
+
+
                     // increase index
                     index += 1;
                 }
