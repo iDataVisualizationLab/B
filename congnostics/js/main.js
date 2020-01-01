@@ -410,11 +410,12 @@ function analyzedata() {
 
         // CONTROL CALCULATION
 
-        if(selecteddata!==4) normalization();
+        // if(selecteddata!==4) normalization();
+        normalization();
         // calculatemeasures();
         calculateMeasure1D();
         initClusterObj();
-        recalculateCluster( {clusterMethod: 'kmean',bin:{k:6,iterations:50}},function(){
+        recalculateCluster( {clusterMethod: 'kmean',bin:{k:1,iterations:10}},function(){
             reCalculateTsne();
             // console.log(dataRadar1);
             // console.log(dataRadar2);
@@ -468,12 +469,12 @@ function analyzedata() {
                 for (var i = 0; i < nummeasure; i++) {
                     measures[i][p] = [];
                 }
-                var index = 0;
+                var myIndex = 0;
                 // Each plot
                 for (var xVar = 0; xVar < mapvar0.size; xVar++) {
                     // Initialize measure values
                     for (var i = 0; i < nummeasure; i++) {
-                        measures[i][p][index] = [xVar, -1];
+                        measures[i][p][myIndex] = [xVar,0, -1];
                     }
                     // create calculation data
                     var xData = sample[xVar].map(function (x) {return x});
@@ -491,12 +492,18 @@ function analyzedata() {
                     let q1 = sortFirstLagDiff[Math.floor(sortFirstLagDiff.length*0.25)];
                     let q3 = sortFirstLagDiff[Math.floor(sortFirstLagDiff.length*0.75)];
                     let q2 = sortFirstLagDiff[Math.floor(sortFirstLagDiff.length*0.5)];
-                    let outlierArr = sortFirstLagDiff.filter(d=>{return d>q3+1.5*(q3-q1)||d<q1-1.5*(q3-q1)});
+                    let outlierArr = firstLagDiff.filter(d=>{return d>q3+1.5*(q3-q1)||d<q1-1.5*(q3-q1)});
                     let adTotalLength = 0;
-                    sortFirstLagDiff.forEach(d=>{adTotalLength += Math.abs(d-q2)});
+                    firstLagDiff.forEach(d=>{adTotalLength += Math.abs(d-q2)});
                     let adOutlierLength = 0;
                     outlierArr.forEach(d=>{adOutlierLength += Math.abs(d-q2)});
-                    measures[0][p][index][1] = adOutlierLength/adTotalLength;
+                    measures[0][p][myIndex][2] = adOutlierLength/adTotalLength;
+                    let adjustXData = xData.filter((x,index)=>{
+                        if (index) {
+                            if ((firstLagDiff[index-1]>q3+1.5*(q3-q1)||firstLagDiff[index-1]<q1-1.5*(q3-q1))&&(firstLagDiff[index]>q3+1.5*(q3-q1)||firstLagDiff[index]<q1-1.5*(q3-q1))) return false;
+                            else return true;
+                        }
+                    });
 
                     // TREND
                     // Mann-Kendall test
@@ -509,22 +516,35 @@ function analyzedata() {
                             }
                         }
                     });
-                    measures[1][p][index][1] = Math.abs(Sign)/(xData.length*(xData.length-1)/2);
+                    measures[1][p][myIndex][2] = Math.abs(Sign)/(xData.length*(xData.length-1)/2);
 
                     // PERIODICITY
-                    let myPeriodogram = xData.map((x,xi)=>{
+                    let myPeriodogram = adjustXData.map((x,xi)=>{
                         let sumr = 0;
                         let sumi = 0;
-                        xData.forEach((d,index)=>{
-                            sumr += d*Math.cos(-2*Math.PI*xi*index/xData.length);
-                            sumi += d*Math.sin(-2*Math.PI*xi*index/xData.length);
+                        adjustXData.forEach((d,sIndex)=>{
+                            sumr += d*Math.cos(-2*Math.PI*xi*sIndex/adjustXData.length);
+                            sumi += d*Math.sin(-2*Math.PI*xi*sIndex/adjustXData.length);
                         });
-                        return (sumr*sumr+sumi*sumi)/xData.length;
+                        return (sumr*sumr+sumi*sumi)/adjustXData.length;
                     });
+                    let cutLimit = myPeriodogram.findIndex((d,index)=>{
+                        if(index) {
+                            if (d > myPeriodogram[index-1]) return true;
+                            else return false;
+                        }
+                    });
+                    let sortPeriodogram = myPeriodogram.filter((d,index)=>{if (index <= myPeriodogram.length/2 && index >= cutLimit) return true; else return false;});
+                    sortPeriodogram.sort((a,b)=>{return a-b});
+                    let p1 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.25)];
+                    let p3 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.75)];
+                    let p2 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.5)];
+                    let peakPeriodogram = (sortPeriodogram[sortPeriodogram.length-1] > p3+3*(p3-p1)) ? sortPeriodogram[sortPeriodogram.length-1] : 0;
+                    measures[2][p][myIndex][2] = (peakPeriodogram-p3-3*(p3-p1))/(peakPeriodogram-p2);
 
 
                     // increase index
-                    index += 1;
+                    myIndex += 1;
                 }
             });
         }
@@ -949,7 +969,7 @@ function analyzedata() {
                     let temp= {};
                     let invalid = false;
                     measures.find((m,i)=>{
-                        temp[measurename[i]] =[[m[si][index][1]]];      // [1] for 1D, [2] for 2D
+                        temp[measurename[i]] =[[m[si][index][2]]];
                         invalid = temp[measurename[i]]<0;
                         return invalid;
                     });
@@ -989,7 +1009,7 @@ function sortmeasures() {
                 for (var j = 0; j < nummeasure; j++) {
                     if (checkfilter[j]) {
                         condition[numfilter] = false;
-                        if (measures[j][si][index][1] >= valfilter[j][0] && measures[j][si][index][1] <= valfilter[j][1]) {
+                        if (measures[j][si][index][2] >= valfilter[j][0] && measures[j][si][index][2] <= valfilter[j][1]) {
                             condition[numfilter] = true;
                             numfilter += 1;
                         }
@@ -1000,13 +1020,13 @@ function sortmeasures() {
                     good = good && value;
                 });
                 if (good) {
-                    sortarr[aindex] = [si,arr[0],arr[1],index];
+                    sortarr[aindex] = [si,arr[0],arr[1],arr[2],index];
                     aindex += 1;
                 }
             });
         });
-        sortarr = sortarr.filter(function (b) {return b[2] >= 0});
-        sortarr.sort(function (b,n) {return b[2] - n[2]});    // ascending
+        sortarr = sortarr.filter(function (b) {return b[3] >= 0});
+        sortarr.sort(function (b,n) {return b[3] - n[3]});    // ascending
         if (sortarr.length >= 3*numplot) {
             displayplot[i] = [];
             for (var j = 0; j < numplot; j++) {  // get the lowest paths
@@ -1690,8 +1710,8 @@ function draw() {
                     var sample = displayplot[selectedmeasure][i+j*correctnumplot][0];
                     var xvar = displayplot[selectedmeasure][i+j*correctnumplot][1];
                     // var yvar = displayplot[selectedmeasure][i+j*correctnumplot][2];
-                    var value = displayplot[selectedmeasure][i+j*correctnumplot][2];
-                    var mindex = displayplot[selectedmeasure][i+j*correctnumplot][3];
+                    var value = displayplot[selectedmeasure][i+j*correctnumplot][3];
+                    var mindex = displayplot[selectedmeasure][i+j*correctnumplot][4];
 
                     // draw rectangles for CS - X(t) for 1D
                     fill(255);

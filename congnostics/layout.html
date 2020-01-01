@@ -206,9 +206,9 @@
                             <form action="#" class='clusterProfile row valign-wrapper' id = "kmeanprofile" onsubmit="recalculateCluster( {clusterMethod: 'kmean',normMethod:$('#normMethod').val(),bin:{k: +$('#knum').val(),iterations: +$('#kiteration').val()}},reCalculateTsne);return false;">
                                 <label for="knum" class="col s4 radarcontroller_layout">#Groups</label>
                                 <div  class="col s5 no-pad-left valign-wrapper">
-                                    <input type="number" id="knum" class="col s3 radarcontroller_layout browser-default no_leftmagrin" value="6">
+                                    <input type="number" id="knum" class="col s3 radarcontroller_layout browser-default no_leftmagrin" value="1">
                                     <span class="col s6 no_leftmagrin"> #Iterations</span>
-                                    <input type="number" id="kiteration" class="col s3 radarcontroller_layout browser-default no_leftmagrin" value="50">
+                                    <input type="number" id="kiteration" class="col s3 radarcontroller_layout browser-default no_leftmagrin" value="10">
                                 </div>
                                 <div  class="col s3 no_padding valign-wrapper center-align" >
                                     <button type="submit" class="btn-small animatIcon"><i class="material-icons">send</i><div>Submit</div></button>
