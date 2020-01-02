@@ -546,10 +546,14 @@ function analyzedata() {
                     });
                     sortPeriodogram.sort((a,b)=>{return a[0]-b[0]});
                     let frequency = (sortPeriodogram.length!==0)?sortPeriodogram[sortPeriodogram.length-1][1]:0;
-                    let halfFrequency;
-                    if((1.5*frequency/myPeriodogram.length)<0.5) halfFrequency = 1.5*frequency;
-                    else halfFrequency = 1.5*frequency-Math.floor(0.5*myPeriodogram.length);
-                    measures[2][p][myIndex][2] = (myPeriodogram[frequency]-myPeriodogram[halfFrequency])/(myPeriodogram[frequency]+myPeriodogram[halfFrequency]);
+                    let remainMultiple = (myPeriodogram.length*0.5)%frequency;
+                    let maxMultiple = (remainMultiple>0.5*frequency)?Math.floor(0.5/(frequency/myPeriodogram.length)):Math.floor(0.5/((frequency-1)/myPeriodogram.length));
+                    let above = 0, below = 0;
+                    for (let i=1; i<=maxMultiple; i++){
+                        above += myPeriodogram[frequency*i]-myPeriodogram[Math.floor(frequency*i+frequency/2)];
+                        below += myPeriodogram[frequency*i]+myPeriodogram[Math.floor(frequency*i+frequency/2)];
+                    }
+                    measures[2][p][myIndex][2] = (below!==0)?above/below:0;
 
 
                     // increase index
