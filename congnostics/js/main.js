@@ -544,21 +544,12 @@ function analyzedata() {
                     myPeriodogram.forEach((d,index)=>{
                        if(index >= cutLimit && index <= myPeriodogram.length/2) {sortPeriodogram[countSP] = [d,index]; countSP += 1;}
                     });
-                    if(sortPeriodogram.length!==0) {
-                        sortPeriodogram.sort((a,b)=>{return a[0]-b[0]});
-                        let multiplePeak = 0;
-                        let above = 0, below = 0;
-                        let frequency = sortPeriodogram[sortPeriodogram.length-1][1];
-                        while ((multiplePeak*frequency/myPeriodogram.length)<0.5) {
-                            multiplePeak += 1;
-                            above += myPeriodogram[multiplePeak*frequency][0];
-                            above -= myPeriodogram[Math.floor(multiplePeak*frequency-frequency/2)][0];
-                            below += myPeriodogram[multiplePeak*frequency][0]+myPeriodogram[Math.floor(multiplePeak*frequency-frequency/2)][0];
-                        }
-                        measures[2][p][myIndex][2] = (below !== 0) ? above/below : 0;
-                    } else {
-                        measures[2][p][myIndex][2] = 0;
-                    }
+                    sortPeriodogram.sort((a,b)=>{return a[0]-b[0]});
+                    let frequency = (sortPeriodogram.length!==0)?sortPeriodogram[sortPeriodogram.length-1][1]:0;
+                    let halfFrequency;
+                    if((1.5*frequency/myPeriodogram.length)<0.5) halfFrequency = 1.5*frequency;
+                    else halfFrequency = 1.5*frequency-Math.floor(0.5*myPeriodogram.length);
+                    measures[2][p][myIndex][2] = (myPeriodogram[frequency]-myPeriodogram[halfFrequency])/(myPeriodogram[frequency]+myPeriodogram[halfFrequency]);
 
 
                     // increase index
