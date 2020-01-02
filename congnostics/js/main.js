@@ -534,13 +534,27 @@ function analyzedata() {
                             else return false;
                         }
                     });
-                    let sortPeriodogram = myPeriodogram.filter((d,index)=>{if (index <= myPeriodogram.length/2 && index >= cutLimit) return true; else return false;});
-                    sortPeriodogram.sort((a,b)=>{return a-b});
-                    let p1 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.25)];
-                    let p3 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.75)];
-                    let p2 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.5)];
-                    let peakPeriodogram = (sortPeriodogram[sortPeriodogram.length-1] > p3+3*(p3-p1)) ? sortPeriodogram[sortPeriodogram.length-1] : 0;
-                    measures[2][p][myIndex][2] = (peakPeriodogram-p3-3*(p3-p1))/(peakPeriodogram-p2);
+                    // let sortPeriodogram = myPeriodogram.filter((d,index)=>{if (index <= myPeriodogram.length/2 && index >= cutLimit) return true; else return false;});
+                    // sortPeriodogram.sort((a,b)=>{return a-b});
+                    // let p1 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.25)];
+                    // let p3 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.75)];
+                    // let p2 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.5)];
+                    // let peakPeriodogram = (sortPeriodogram[sortPeriodogram.length-1] > p3+3*(p3-p1)) ? sortPeriodogram[sortPeriodogram.length-1] : 0;
+                    let sortPeriodogram = [], countSP = 0;
+                    myPeriodogram.forEach((d,index)=>{
+                       if(index >= cutLimit && index <= myPeriodogram.length/2) {sortPeriodogram[countSP] = [d,index]; countSP += 1;}
+                    });
+                    sortPeriodogram.sort((a,b)=>{return a[0]-b[0]});
+                    let multiplePeak = 0;
+                    let above = 0, below = 0;
+                    let frequency = sortPeriodogram[sortPeriodogram.length-1][1];
+                    while ((multiplePeak*frequency/myPeriodogram.length)<0.5) {
+                        multiplePeak += 1;
+                        above += myPeriodogram[multiplePeak*frequency][0];
+                        above -= myPeriodogram[Math.floor(multiplePeak*frequency-frequency/2)][0];
+                        below += myPeriodogram[multiplePeak*frequency][0]+myPeriodogram[Math.floor(multiplePeak*frequency-frequency/2)][0];
+                    }
+                    measures[2][p][myIndex][2] = (below !== 0) ? above/below : 0;
 
 
                     // increase index
