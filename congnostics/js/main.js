@@ -564,32 +564,33 @@ function analyzedata() {
                                 else return false;
                             }
                         });
-                        // let sortPeriodogram = myPeriodogram.filter((d,index)=>{if (index <= myPeriodogram.length/2 && index >= cutLimit) return true; else return false;});
-                        // sortPeriodogram.sort((a,b)=>{return a-b});
-                        // let p1 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.25)];
-                        // let p3 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.75)];
-                        // let p2 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.5)];
-                        // let peakPeriodogram = (sortPeriodogram[sortPeriodogram.length-1] > p3+3*(p3-p1)) ? sortPeriodogram[sortPeriodogram.length-1] : 0;
                         let sortPeriodogram = [], countSP = 0, sumI = 0;
                         myPeriodogram.forEach((d,index)=>{
                             if(index >= cutLimit && index <= myPeriodogram.length/2) {sortPeriodogram[countSP] = [d,index]; countSP += 1;}
                         });
                         sortPeriodogram.sort((a,b)=>{return a[0]-b[0]});
-                        let frequency = (sortPeriodogram.length!==0)?sortPeriodogram[sortPeriodogram.length-1][1]:0;
+                        // let sortPeriodogram = myPeriodogram.filter((d,index)=>{if (index <= myPeriodogram.length/2 && index >= cutLimit) return true; else return false;});
+                        // sortPeriodogram.sort((a,b)=>{return a-b});
+                        // let p1 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.25)];
+                        // let p3 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.75)];
+                        let p2 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.5)][0];
+                        // let peakPeriodogram = (sortPeriodogram[sortPeriodogram.length-1] > p3+3*(p3-p1)) ? sortPeriodogram[sortPeriodogram.length-1] : 0;
+                        // let frequency = (sortPeriodogram.length!==0)?sortPeriodogram[sortPeriodogram.length-1][1]:0;
                         // let maxMultiple = Math.floor(0.5/(frequency/myPeriodogram.length));
-                        let maxMultiple = 1;
-                        let above = 0, below = 0;
-                        for (let i=1; i<=maxMultiple; i++){
-                            let pCondition = ((frequency*i+frequency*0.5)/myPeriodogram.length) < 0.5;
-                            if (pCondition) {
-                                above += myPeriodogram[frequency*i]-myPeriodogram[Math.floor(frequency*i+frequency*0.5)];
-                                below += myPeriodogram[frequency*i]+myPeriodogram[Math.floor(frequency*i+frequency*0.5)];
-                            } else {
-                                above += myPeriodogram[frequency*i]-myPeriodogram[Math.floor(frequency*i-frequency*0.5)];
-                                below += myPeriodogram[frequency*i]+myPeriodogram[Math.floor(frequency*i-frequency*0.5)];
-                            }
-                        }
-                        measures[2][p][myIndex][2] = (below!==0)?above/below:0;
+                        // let maxMultiple = 1;
+                        // let above = 0, below = 0;
+                        // for (let i=1; i<=maxMultiple; i++){
+                        //     let pCondition = ((frequency*i+frequency*0.5)/myPeriodogram.length) < 0.5;
+                        //     if (pCondition) {
+                        //         above += myPeriodogram[frequency*i]-myPeriodogram[Math.floor(frequency*i+frequency*0.5)];
+                        //         below += myPeriodogram[frequency*i]+myPeriodogram[Math.floor(frequency*i+frequency*0.5)];
+                        //     } else {
+                        //         above += myPeriodogram[frequency*i]-myPeriodogram[Math.floor(frequency*i-frequency*0.5)];
+                        //         below += myPeriodogram[frequency*i]+myPeriodogram[Math.floor(frequency*i-frequency*0.5)];
+                        //     }
+                        // }
+                        let maxPeak = sortPeriodogram[sortPeriodogram.length-1][0];
+                        measures[2][p][myIndex][2] = (maxPeak-p2)/(maxPeak+p2);
                         if(measures[2][p][myIndex][2]<0) measures[2][p][myIndex][2]=-measures[2][p][myIndex][2];
                         console.log(myPeriodogram);
                     }
