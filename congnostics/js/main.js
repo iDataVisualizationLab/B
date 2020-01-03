@@ -24,7 +24,7 @@ let cellval = [];
 let minloop = 0;
 let maxloop = 48;
 let lag = 48;
-let selecteddata = 5;
+let selecteddata = 4;
 
 // VARIABLES FOR CONTROLLING
 let needupdate = false;
@@ -34,10 +34,10 @@ let needcalculation = true;
 // VARIABLES FOR VISUALIZATION
 let displayplot = [];   // displayplot[measure index][0->numplot-1:lowest, numplot->2numplot-1: middle, 2numplot->3numplot-1: highest][sample, x-var, y-var,value,index]
 let width = 2000;
-let height = 2000;
+let height = 4000;
 let numColumn = 7;
 let columnSize = width/numColumn;
-let numplot = 5;
+let numplot = 10;
 let newnumplot = 0;
 let selectedmeasure = 0;
 let choose = false;   // for selections
@@ -307,9 +307,9 @@ function analyzedata() {
             filename2 = "data/var_code.txt";
             break;
         case 4:
-            filename0 = "data/data.txt";
-            filename1 = "data/example_sample_code.txt";
-            filename2 = "data/example_variable_code.txt";
+            filename0 = "data/ECG_dog.txt";
+            filename1 = "data/ECG_sample_code.txt";
+            filename2 = "data/ECG_varCode.txt";
             break;
         case 5:
             filename0 = "data/eeg_data.txt";
@@ -417,7 +417,6 @@ function analyzedata() {
         initClusterObj();
         recalculateCluster( {clusterMethod: 'kmean',bin:{k:1,iterations:10}},function(){
             reCalculateTsne();
-            // console.log(dataRadar1);
             // console.log(dataRadar2);
         });
         measures.forEach(function (m,mi) {
@@ -426,7 +425,7 @@ function analyzedata() {
                 newmeasures[measurename[mi]][`${si}`] = s.map(d => {return d[2] >= 0});
             });
         });
-        // console.log(dataRadar1);
+        // console.log(files[2]);
         // console.log(dataRadar2);
 
         // NORMALIZE DATA
@@ -480,80 +479,102 @@ function analyzedata() {
                     var xData = sample[xVar].map(function (x) {return x});
                     xData = xData.filter(function (x) {return x >= 0});
 
-                    // OUTLIERS
-                    // Box plot method
-                    // Score = ratio of Mean Absolute Deviation of Outliers and Total.
-                    let firstLagDiff = [];
-                    xData.forEach(function (x,xi) {
-                        if(xi) firstLagDiff[xi-1] = x-xData[xi-1];
-                    });
-                    let sortFirstLagDiff = firstLagDiff.map(d=>{return d});
-                    sortFirstLagDiff.sort(function (a,b) {return a-b});
-                    let q1 = sortFirstLagDiff[Math.floor(sortFirstLagDiff.length*0.25)];
-                    let q3 = sortFirstLagDiff[Math.floor(sortFirstLagDiff.length*0.75)];
-                    let q2 = sortFirstLagDiff[Math.floor(sortFirstLagDiff.length*0.5)];
-                    let outlierArr = firstLagDiff.filter(d=>{return d>q3+1.5*(q3-q1)||d<q1-1.5*(q3-q1)});
-                    let adTotalLength = 0;
-                    firstLagDiff.forEach(d=>{adTotalLength += Math.abs(d-q2)});
-                    let adOutlierLength = 0;
-                    outlierArr.forEach(d=>{adOutlierLength += Math.abs(d-q2)});
-                    measures[0][p][myIndex][2] = adOutlierLength/adTotalLength;
-                    let adjustXData = xData.filter((x,index)=>{
-                        if (index) {
-                            if ((firstLagDiff[index-1]>q3+1.5*(q3-q1)||firstLagDiff[index-1]<q1-1.5*(q3-q1))&&(firstLagDiff[index]>q3+1.5*(q3-q1)||firstLagDiff[index]<q1-1.5*(q3-q1))) return false;
-                            else return true;
-                        }
-                    });
+                    if(xData.length>0) {
+                        // OUTLIERS
+                        // Box plot method
+                        // Score = ratio of Mean Absolute Deviation of Outliers and Total.
+                        let firstLagDiff = [];
+                        xData.forEach(function (x,xi) {
+                            if(xi) firstLagDiff[xi-1] = x-xData[xi-1];
+                        });
+                        let sortFirstLagDiff = firstLagDiff.map(d=>{return d});
+                        sortFirstLagDiff.sort(function (a,b) {return a-b});
+                        let q1 = sortFirstLagDiff[Math.floor(sortFirstLagDiff.length*0.25)];
+                        let q3 = sortFirstLagDiff[Math.floor(sortFirstLagDiff.length*0.75)];
+                        let q2 = sortFirstLagDiff[Math.floor(sortFirstLagDiff.length*0.5)];
+                        let outlierArr = firstLagDiff.filter(d=>{return d>q3+1.5*(q3-q1)||d<q1-1.5*(q3-q1)});
+                        let adTotalLength = 0;
+                        firstLagDiff.forEach(d=>{adTotalLength += Math.abs(d-q2)});
+                        let adOutlierLength = 0;
+                        outlierArr.forEach(d=>{adOutlierLength += Math.abs(d-q2)});
+                        measures[0][p][myIndex][2] = adOutlierLength/adTotalLength;
+                        // let adjustXData = xData.filter((x,index)=>{
+                        //     if (index) {
+                        //         if ((firstLagDiff[index-1]>q3+1.5*(q3-q1)||firstLagDiff[index-1]<q1-1.5*(q3-q1))&&(firstLagDiff[index]>q3+1.5*(q3-q1)||firstLagDiff[index]<q1-1.5*(q3-q1))) return false;
+                        //         else return true;
+                        //     }
+                        // });
 
-                    // TREND
-                    // Mann-Kendall test
-                    let Sign = 0;
-                    xData.forEach(function (x,xi) {
-                        if(xi !== xData.length-1) {
-                            for (var j = xi+1; j < xData.length; j++) {
-                                if (xData[j] > x) Sign += 1;
-                                if (xData[j] < x) Sign -= 1;
+                        // TREND
+                        // Mann-Kendall test
+                        let Sign = 0;
+                        xData.forEach(function (x,xi) {
+                            if(xi !== xData.length-1) {
+                                for (var j = xi+1; j < xData.length; j++) {
+                                    if (xData[j] > x) Sign += 1;
+                                    if (xData[j] < x) Sign -= 1;
+                                }
+                            }
+                        });
+                        measures[1][p][myIndex][2] = Math.abs(Sign)/(xData.length*(xData.length-1)/2);
+
+                        // PERIODICITY
+                        let myPeriodogram = xData.map((x,xi)=>{
+                            let sumr = 0;
+                            let sumi = 0;
+                            let sumx = 0;
+                            xData.forEach((d,sIndex)=>{
+                                sumr += d*Math.cos(-2*Math.PI*xi*sIndex/xData.length);
+                                sumi += d*Math.sin(-2*Math.PI*xi*sIndex/xData.length);
+                                sumx += d*d;
+                            });
+                            return (sumr*sumr+sumi*sumi)/(xData.length*sumx/2);
+                        });
+                        // let myPeriodogram = adjustXData.map((x,xi)=>{
+                        //     let sumr = 0;
+                        //     let sumi = 0;
+                        //     adjustXData.forEach((d,sIndex)=>{
+                        //         sumr += d*Math.cos(-2*Math.PI*xi*sIndex/adjustXData.length);
+                        //         sumi += d*Math.sin(-2*Math.PI*xi*sIndex/adjustXData.length);
+                        //     });
+                        //     return (sumr*sumr+sumi*sumi)/xData.length;
+                        // });
+                        let cutLimit = myPeriodogram.findIndex((d,index)=>{
+                            if(index) {
+                                if (d > myPeriodogram[index-1]) return true;
+                                else return false;
+                            }
+                        });
+                        // let sortPeriodogram = myPeriodogram.filter((d,index)=>{if (index <= myPeriodogram.length/2 && index >= cutLimit) return true; else return false;});
+                        // sortPeriodogram.sort((a,b)=>{return a-b});
+                        // let p1 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.25)];
+                        // let p3 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.75)];
+                        // let p2 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.5)];
+                        // let peakPeriodogram = (sortPeriodogram[sortPeriodogram.length-1] > p3+3*(p3-p1)) ? sortPeriodogram[sortPeriodogram.length-1] : 0;
+                        let sortPeriodogram = [], countSP = 0, sumI = 0;
+                        myPeriodogram.forEach((d,index)=>{
+                            if(index >= cutLimit && index <= myPeriodogram.length/2) {sortPeriodogram[countSP] = [d,index]; countSP += 1;}
+                        });
+                        sortPeriodogram.sort((a,b)=>{return a[0]-b[0]});
+                        let frequency = (sortPeriodogram.length!==0)?sortPeriodogram[sortPeriodogram.length-1][1]:0;
+                        let maxMultiple = Math.floor(0.5/(frequency/myPeriodogram.length));
+                        let above = 0, below = 0;
+                        for (let i=1; i<=maxMultiple; i++){
+                            let pCondition = ((frequency*i+frequency*0.5)/myPeriodogram.length) < 0.5;
+                            if (pCondition) {
+                                above += myPeriodogram[frequency*i]-myPeriodogram[Math.floor(frequency*i+frequency*0.5)];
+                                below += myPeriodogram[frequency*i]+myPeriodogram[Math.floor(frequency*i+frequency*0.5)];
+                            } else {
+                                above += myPeriodogram[frequency*i]-myPeriodogram[Math.floor(frequency*i-frequency*0.5)];
+                                below += myPeriodogram[frequency*i]+myPeriodogram[Math.floor(frequency*i-frequency*0.5)];
                             }
                         }
-                    });
-                    measures[1][p][myIndex][2] = Math.abs(Sign)/(xData.length*(xData.length-1)/2);
-
-                    // PERIODICITY
-                    let myPeriodogram = adjustXData.map((x,xi)=>{
-                        let sumr = 0;
-                        let sumi = 0;
-                        adjustXData.forEach((d,sIndex)=>{
-                            sumr += d*Math.cos(-2*Math.PI*xi*sIndex/adjustXData.length);
-                            sumi += d*Math.sin(-2*Math.PI*xi*sIndex/adjustXData.length);
-                        });
-                        return (sumr*sumr+sumi*sumi)/adjustXData.length;
-                    });
-                    let cutLimit = myPeriodogram.findIndex((d,index)=>{
-                        if(index) {
-                            if (d > myPeriodogram[index-1]) return true;
-                            else return false;
-                        }
-                    });
-                    // let sortPeriodogram = myPeriodogram.filter((d,index)=>{if (index <= myPeriodogram.length/2 && index >= cutLimit) return true; else return false;});
-                    // sortPeriodogram.sort((a,b)=>{return a-b});
-                    // let p1 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.25)];
-                    // let p3 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.75)];
-                    // let p2 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.5)];
-                    // let peakPeriodogram = (sortPeriodogram[sortPeriodogram.length-1] > p3+3*(p3-p1)) ? sortPeriodogram[sortPeriodogram.length-1] : 0;
-                    let sortPeriodogram = [], countSP = 0;
-                    myPeriodogram.forEach((d,index)=>{
-                       if(index >= cutLimit && index <= myPeriodogram.length/2) {sortPeriodogram[countSP] = [d,index]; countSP += 1;}
-                    });
-                    sortPeriodogram.sort((a,b)=>{return a[0]-b[0]});
-                    let frequency = (sortPeriodogram.length!==0)?sortPeriodogram[sortPeriodogram.length-1][1]:0;
-                    let remainMultiple = (myPeriodogram.length*0.5)%frequency;
-                    let maxMultiple = (remainMultiple>0.5*frequency)?Math.floor(0.5/(frequency/myPeriodogram.length)):Math.floor(0.5/((frequency-1)/myPeriodogram.length));
-                    let above = 0, below = 0;
-                    for (let i=1; i<=maxMultiple; i++){
-                        above += myPeriodogram[frequency*i]-myPeriodogram[Math.floor(frequency*i+frequency/2)];
-                        below += myPeriodogram[frequency*i]+myPeriodogram[Math.floor(frequency*i+frequency/2)];
+                        measures[2][p][myIndex][2] = (below!==0)?above/below:0;
+                        if(measures[2][p][myIndex][2]<0) measures[2][p][myIndex][2]=0;
+                        console.log(myPeriodogram);
                     }
-                    measures[2][p][myIndex][2] = (below!==0)?above/below:0;
+
+
 
 
                     // increase index
@@ -1042,20 +1063,20 @@ function sortmeasures() {
         sortarr.sort(function (b,n) {return b[3] - n[3]});    // ascending
         if (sortarr.length >= 3*numplot) {
             displayplot[i] = [];
-            for (var j = 0; j < numplot; j++) {  // get the lowest paths
+            for (let j = 0; j < numplot; j++) {  // get the lowest paths
                 displayplot[i][j] = sortarr[j];
             }
-            for (var j = numplot; j < 2*numplot; j++) {  // get the middle paths
+            for (let j = numplot; j < 2*numplot; j++) {  // get the middle paths
                 displayplot[i][j] = sortarr[Math.floor(sortarr.length*0.5)+j-numplot];
             }
-            for (var j = 2*numplot; j < 3*numplot; j++) {  // get the highest paths
+            for (let j = 2*numplot; j < 3*numplot; j++) {  // get the highest paths
                 displayplot[i][j] = sortarr[sortarr.length+j-3*numplot];
             }
             newnumplot = 0;
         } else {
             newnumplot = sortarr.length;
             displayplot[i] = [];
-            for (var j = 0; j < newnumplot; j++) {  // get the lowest paths
+            for (let j = 0; j < newnumplot; j++) {  // get the lowest paths
                 displayplot[i][j] = sortarr[j];
             }
         }
@@ -1716,8 +1737,8 @@ function draw() {
 
 
             // Draw plots
-            var correctnumplot = (newnumplot === 0) ? numplot : Math.floor(newnumplot/3);
-            for (var i = 0; i < numplot; i++) {
+            let correctnumplot = (newnumplot === 0) ? numplot : Math.floor(newnumplot/3);
+            for (var i = 0; i < correctnumplot; i++) {
                 for (var j = 0; j < 3; j++) {
 
                     var sample = displayplot[selectedmeasure][i+j*correctnumplot][0];
