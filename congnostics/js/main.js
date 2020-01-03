@@ -572,8 +572,8 @@ function analyzedata() {
                         // let sortPeriodogram = myPeriodogram.filter((d,index)=>{if (index <= myPeriodogram.length/2 && index >= cutLimit) return true; else return false;});
                         // sortPeriodogram.sort((a,b)=>{return a-b});
                         // let p1 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.25)][0];
-                        let p3 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.75)][0];
-                        let p2 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.5)][0];
+                        // let p3 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.75)][0];
+                        // let p2 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.5)][0];
                         // let peakPeriodogram = (sortPeriodogram[sortPeriodogram.length-1] > p3+3*(p3-p1)) ? sortPeriodogram[sortPeriodogram.length-1] : 0;
                         // let frequency = (sortPeriodogram.length!==0)?sortPeriodogram[sortPeriodogram.length-1][1]:0;
                         // let maxMultiple = Math.floor(0.5/(frequency/myPeriodogram.length));
@@ -598,8 +598,13 @@ function analyzedata() {
                         meanPower /= sortPeriodogram.length;
                         measures[2][p][myIndex][2] = (maxPeak-meanPower)/(maxPeak+meanPower);
                         // measures[2][p][myIndex][2] = (maxPeak-p3)/(maxPeak+p3);
+                        // measures[2][p][myIndex][2] = above/below;
                         if(measures[2][p][myIndex][2]<0) measures[2][p][myIndex][2]=-measures[2][p][myIndex][2];
-                        // console.log(myPeriodogram);
+
+                        // ABNORMAL PATTERNS
+                        let frequency = sortPeriodogram[sortPeriodogram.length-1][1]/myPeriodogram.length;
+                        let period = (frequency!==0)?1/frequency:0;
+                        
                     }
 
 
