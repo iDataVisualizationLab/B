@@ -549,11 +549,11 @@ function analyzedata() {
                         //     return (sumr*sumr+sumi*sumi)/xData.length;
                         // });
                         let myPeriodogram = [];
-                        for (let i=0; i<xData.length; i++){
+                        for (let i=0; i<smoothXData.length; i++){
                             let sumr=0, sumi=0, sumx=0;
-                            xData.forEach((d,index)=>{
-                                sumr += d*Math.cos(-2*Math.PI*index*i/xData.length);
-                                sumi += d*Math.sin(-2*Math.PI*index*i/xData.length);
+                            smoothXData.forEach((d,index)=>{
+                                sumr += d*Math.cos(-2*Math.PI*index*i/smoothXData.length);
+                                sumi += d*Math.sin(-2*Math.PI*index*i/smoothXData.length);
                                 sumx += d*d;
                             });
                             myPeriodogram[i] = (sumr*sumr+sumi*sumi)/(xData.length*sumx/2);
@@ -564,15 +564,15 @@ function analyzedata() {
                                 else return false;
                             }
                         });
-                        let sortPeriodogram = [], countSP = 0, sumI = 0;
+                        let sortPeriodogram = [], countSP = 0;
                         myPeriodogram.forEach((d,index)=>{
                             if(index >= cutLimit && index <= myPeriodogram.length/2) {sortPeriodogram[countSP] = [d,index]; countSP += 1;}
                         });
                         sortPeriodogram.sort((a,b)=>{return a[0]-b[0]});
                         // let sortPeriodogram = myPeriodogram.filter((d,index)=>{if (index <= myPeriodogram.length/2 && index >= cutLimit) return true; else return false;});
                         // sortPeriodogram.sort((a,b)=>{return a-b});
-                        // let p1 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.25)];
-                        // let p3 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.75)];
+                        // let p1 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.25)][0];
+                        let p3 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.75)][0];
                         let p2 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.5)][0];
                         // let peakPeriodogram = (sortPeriodogram[sortPeriodogram.length-1] > p3+3*(p3-p1)) ? sortPeriodogram[sortPeriodogram.length-1] : 0;
                         // let frequency = (sortPeriodogram.length!==0)?sortPeriodogram[sortPeriodogram.length-1][1]:0;
@@ -590,9 +590,16 @@ function analyzedata() {
                         //     }
                         // }
                         let maxPeak = sortPeriodogram[sortPeriodogram.length-1][0];
-                        measures[2][p][myIndex][2] = (maxPeak-p2)/(maxPeak+p2);
+                        let meanPower = 0;
+                        sortPeriodogram.forEach((d,index)=>{
+                            // if(index!==(sortPeriodogram.length-1)) meanPower += d[0];
+                            meanPower += d[0];
+                        });
+                        meanPower /= sortPeriodogram.length;
+                        measures[2][p][myIndex][2] = (maxPeak-meanPower)/(maxPeak+meanPower);
+                        // measures[2][p][myIndex][2] = (maxPeak-p3)/(maxPeak+p3);
                         if(measures[2][p][myIndex][2]<0) measures[2][p][myIndex][2]=-measures[2][p][myIndex][2];
-                        console.log(myPeriodogram);
+                        // console.log(myPeriodogram);
                     }
 
 
