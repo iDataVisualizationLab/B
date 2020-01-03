@@ -498,12 +498,19 @@ function analyzedata() {
                         let adOutlierLength = 0;
                         outlierArr.forEach(d=>{adOutlierLength += Math.abs(d-q2)});
                         measures[0][p][myIndex][2] = adOutlierLength/adTotalLength;
-                        // let adjustXData = xData.filter((x,index)=>{
-                        //     if (index) {
-                        //         if ((firstLagDiff[index-1]>q3+1.5*(q3-q1)||firstLagDiff[index-1]<q1-1.5*(q3-q1))&&(firstLagDiff[index]>q3+1.5*(q3-q1)||firstLagDiff[index]<q1-1.5*(q3-q1))) return false;
-                        //         else return true;
-                        //     }
-                        // });
+                        let adjustXData = xData.filter((x,index)=>{
+                            if (index) {
+                                if ((firstLagDiff[index-1]>q3+1.5*(q3-q1)||firstLagDiff[index-1]<q1-1.5*(q3-q1))&&(firstLagDiff[index]>q3+1.5*(q3-q1)||firstLagDiff[index]<q1-1.5*(q3-q1))) return false;
+                                else return true;
+                            }
+                        });
+                        let smoothXData = [];
+                        for(let i=10; i< adjustXData.length; i++){
+                            smoothXData[i-10] = 0;
+                            for(let j=0; j<10; j++){
+                                smoothXData[i-10] += adjustXData[i-j];
+                            }
+                        }
 
                         // TREND
                         // Mann-Kendall test
@@ -519,26 +526,38 @@ function analyzedata() {
                         measures[1][p][myIndex][2] = Math.abs(Sign)/(xData.length*(xData.length-1)/2);
 
                         // PERIODICITY
-                        let myPeriodogram = xData.map((x,xi)=>{
-                            let sumr = 0;
-                            let sumi = 0;
-                            let sumx = 0;
-                            xData.forEach((d,sIndex)=>{
-                                sumr += d*Math.cos(-2*Math.PI*xi*sIndex/xData.length);
-                                sumi += d*Math.sin(-2*Math.PI*xi*sIndex/xData.length);
-                                sumx += d*d;
-                            });
-                            return (sumr*sumr+sumi*sumi)/(xData.length*sumx/2);
-                        });
-                        // let myPeriodogram = adjustXData.map((x,xi)=>{
+                        // let myPeriodogram = xData.map((x,xi)=>{
                         //     let sumr = 0;
                         //     let sumi = 0;
-                        //     adjustXData.forEach((d,sIndex)=>{
-                        //         sumr += d*Math.cos(-2*Math.PI*xi*sIndex/adjustXData.length);
-                        //         sumi += d*Math.sin(-2*Math.PI*xi*sIndex/adjustXData.length);
+                        //     let sumx = 0;
+                        //     xData.forEach((d,sIndex)=>{
+                        //         sumr += d*Math.cos(-2*Math.PI*xi*sIndex/xData.length);
+                        //         sumi += d*Math.sin(-2*Math.PI*xi*sIndex/xData.length);
+                        //         sumx += d*d;
+                        //     });
+                        //     return (sumr*sumr+sumi*sumi)/(xData.length*sumx/2);
+                        // });
+                        // let myPeriodogram = xData.map((x,xi)=>{
+                        //     let sumr = 0;
+                        //     let sumi = 0;
+                        //     let sumx = 0;
+                        //     xData.forEach((d,sIndex)=>{
+                        //         sumr += d*Math.cos(-2*Math.PI*xi*sIndex/xData.length);
+                        //         sumi += d*Math.sin(-2*Math.PI*xi*sIndex/xData.length);
+                        //         sumx += d*d;
                         //     });
                         //     return (sumr*sumr+sumi*sumi)/xData.length;
                         // });
+                        let myPeriodogram = [];
+                        for (let i=0; i<xData.length; i++){
+                            let sumr=0, sumi=0, sumx=0;
+                            xData.forEach((d,index)=>{
+                                sumr += d*Math.cos(-2*Math.PI*index*i/xData.length);
+                                sumi += d*Math.sin(-2*Math.PI*index*i/xData.length);
+                                sumx += d*d;
+                            });
+                            myPeriodogram[i] = (sumr*sumr+sumi*sumi)/(xData.length*sumx/2);
+                        }
                         let cutLimit = myPeriodogram.findIndex((d,index)=>{
                             if(index) {
                                 if (d > myPeriodogram[index-1]) return true;
@@ -557,7 +576,8 @@ function analyzedata() {
                         });
                         sortPeriodogram.sort((a,b)=>{return a[0]-b[0]});
                         let frequency = (sortPeriodogram.length!==0)?sortPeriodogram[sortPeriodogram.length-1][1]:0;
-                        let maxMultiple = Math.floor(0.5/(frequency/myPeriodogram.length));
+                        // let maxMultiple = Math.floor(0.5/(frequency/myPeriodogram.length));
+                        let maxMultiple = 1;
                         let above = 0, below = 0;
                         for (let i=1; i<=maxMultiple; i++){
                             let pCondition = ((frequency*i+frequency*0.5)/myPeriodogram.length) < 0.5;
@@ -570,7 +590,7 @@ function analyzedata() {
                             }
                         }
                         measures[2][p][myIndex][2] = (below!==0)?above/below:0;
-                        if(measures[2][p][myIndex][2]<0) measures[2][p][myIndex][2]=0;
+                        if(measures[2][p][myIndex][2]<0) measures[2][p][myIndex][2]=-measures[2][p][myIndex][2];
                         console.log(myPeriodogram);
                     }
 
