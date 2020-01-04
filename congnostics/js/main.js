@@ -1894,7 +1894,7 @@ function draw() {
                             stroke(89, 135, 222);
                             break;
                     }
-                    arc(xCenter,yCenter,rPlotSize*measures[nummeasure-1][sample][mindex][2],rPlotSize*measures[nummeasure-1][sample][mindex][2],Math.PI*2*(nummeasure-1)/nummeasure-Math.PI/nummeasure-Math.PI/2,Math.PI*2*(nummeasure-1)/nummeasure+Math.PI/nummeasure-Math.PI/2);
+                    arc(xCenter,yCenter,rPlotSize*measures[nummeasure-1][sample][mindex][2],rPlotSize*measures[nummeasure-1][sample][mindex][2],Math.PI*2*(nummeasure-1)/nummeasure-Math.PI/(2*nummeasure)-Math.PI/2,Math.PI*2*(nummeasure-1)/nummeasure+Math.PI/(2*nummeasure)-Math.PI/2);
                     textSize(8);
                     noStroke();
                     textAlign(RIGHT);
