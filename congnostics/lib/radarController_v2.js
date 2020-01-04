@@ -81,7 +81,7 @@ let radarController = function () {
             const axis = arguments[0];
             const resetrequest = arguments[1];
             if(resetrequest)
-                createSchemaInit(axis,true)
+                createSchemaInit(axis,true);
             else
             {
                 if (Array.isArray(axis)) //array axis
@@ -678,7 +678,7 @@ let radarController = function () {
                         };
                     break;
                 default:
-                    deltaAng = Math.PI/10
+                    deltaAng = Math.PI/10;
                     radarLine = d3.radialLine()
                     // .curve(d3.curveCatmullRom.alpha(0.5))
                         .radius(function (d) {

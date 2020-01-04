@@ -421,10 +421,10 @@ function drawLeaderPlot(ctx_,plot_,group_,plotPosition_) {
     timedata.forEach(function (time, step) {
         if (step) {
             if(data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step]>=0 && data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step-1]>=0 && data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][1]][step]>=0 && data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][1]][step-1]>=0) {
-                var x1 = xscale(plotPosition[0])+0.05*plotSize+0.9*plotSize*data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step-1];
-                var x2 = xscale(plotPosition[0])+0.05*plotSize+0.9*plotSize*data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step];
-                var y1 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][1]][step-1]);
-                var y2 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][1]][step]);
+                var x1 = xscale(plotPosition[0])+0.05*plotSize+0.9*plotSize*(step-1)/timedata.length;
+                var x2 = xscale(plotPosition[0])+0.05*plotSize+0.9*plotSize*step/timedata.length;
+                var y1 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step-1]);
+                var y2 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step]);
                 color[0] = (step < timedata.length/2) ? 0 : (step-timedata.length/2)*255/(timedata.length/2);
                 color[1] = 0;
                 color[2] = (step < timedata.length/2) ? 255-255*step/(timedata.length/2) : 0;

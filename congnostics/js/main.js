@@ -24,7 +24,7 @@ let cellval = [];
 let minloop = 0;
 let maxloop = 48;
 let lag = 48;
-let selecteddata = 4;
+let selecteddata = 0;
 
 // VARIABLES FOR CONTROLLING
 let needupdate = false;
@@ -33,15 +33,15 @@ let needcalculation = true;
 
 // VARIABLES FOR VISUALIZATION
 let displayplot = [];   // displayplot[measure index][0->numplot-1:lowest, numplot->2numplot-1: middle, 2numplot->3numplot-1: highest][sample, x-var, y-var,value,index]
-let width = 2000;
+let width = 3000;
 let height = 4000;
-let numColumn = 7;
+let numColumn = 30;
 let columnSize = width/numColumn;
 let numplot = 10;
 let newnumplot = 0;
 let selectedmeasure = 0;
 let choose = false;   // for selections
-let type = [0,0,0,0,0,0,1,1,1,1,2];   // for type of measures in selection button
+let type = [0,0,0,0,1,1,1,2,2,2];   // for type of measures in selection button
 let checkfilter = [];
 let valfilter = [];
 for (var i = 0; i < nummeasure; i++) {
@@ -415,7 +415,7 @@ function analyzedata() {
         // calculatemeasures();
         calculateMeasure1D();
         initClusterObj();
-        recalculateCluster( {clusterMethod: 'kmean',bin:{k:1,iterations:10}},function(){
+        recalculateCluster( {clusterMethod: 'kmean',bin:{k:6,iterations:50}},function(){
             reCalculateTsne();
             // console.log(dataRadar2);
         });
@@ -599,12 +599,42 @@ function analyzedata() {
                         measures[2][p][myIndex][2] = (maxPeak-meanPower)/(maxPeak+meanPower);
                         // measures[2][p][myIndex][2] = (maxPeak-p3)/(maxPeak+p3);
                         // measures[2][p][myIndex][2] = above/below;
-                        if(measures[2][p][myIndex][2]<0) measures[2][p][myIndex][2]=-measures[2][p][myIndex][2];
+                        if(measures[2][p][myIndex][2]<0) measures[2][p][myIndex][2]=0;
 
-                        // ABNORMAL PATTERNS
-                        let frequency = sortPeriodogram[sortPeriodogram.length-1][1]/myPeriodogram.length;
-                        let period = (frequency!==0)?1/frequency:0;
-                        
+                        // FIRST AUTOCORRELATION
+                        let covX = 0, meanX = 0, deviationX = 0, skewX = 0;
+                        xData.forEach(x=>{meanX += x});
+                        meanX /= xData.length;
+                        xData.forEach((x,xi)=>{
+                            deviationX += (x-meanX)*(x-meanX);
+                            skewX += (x-meanX)*(x-meanX)*(x-meanX);
+                            if(xi<xData.length-1){
+                                covX += (x-meanX)*(xData[xi+1]-meanX);
+                            }
+                        });
+                        measures[3][p][myIndex][2] = Math.abs(covX/deviationX);
+
+                        // MEAN & STANDARD DEVIATION & SKEWNESS
+                        let sortXData = xData.map(d=>{return d});
+                        sortXData.sort((a,b)=>{return a-b});
+                        let xq1 = sortXData[Math.floor(sortXData.length*0.25)];
+                        let xq2 = sortXData[Math.floor(sortXData.length*0.5)];
+                        let xq3 = sortXData[Math.floor(sortXData.length*0.75)];
+                        measures[4][p][myIndex][2] = meanX;
+                        measures[5][p][myIndex][2] = Math.sqrt(deviationX/xData.length);
+                        measures[6][p][myIndex][2] = Math.abs((xq1+xq3-2*xq2)/(xq3-xq1));
+
+                        // FIRST LAG DIFFERENCE STANDARD DEVIATION
+                        let meanDiff = 0, devDiff = 0, skewDiff = 0;
+                        firstLagDiff.forEach(d=>{meanDiff+=d});
+                        meanDiff /= firstLagDiff.length;
+                        firstLagDiff.forEach(d=>{
+                            devDiff += (d-meanDiff)*(d-meanDiff);
+                            skewDiff += (d-meanDiff)*(d-meanDiff)*(d-meanDiff);
+                        });
+                        measures[7][p][myIndex][2] = (meanDiff+1)/2;
+                        measures[8][p][myIndex][2] = Math.sqrt(devDiff/firstLagDiff.length);
+                        measures[9][p][myIndex][2] = Math.abs((q1+q3-2*q2)/(q3-q1));
                     }
 
 
@@ -1123,8 +1153,8 @@ function prepareRadarTable() {
         var count = 0;
         measures[i].forEach(function (s,si) {
            s.forEach(function (d,index) {
-             if (d[1] >= 0) {
-                 dataRadar1[i][count] = d[1];
+             if (d[2] >= 0) {
+                 dataRadar1[i][count] = d[2];
                  dataRadar2[count] = [];
                  dataRadar2[count].name = mapsample2.get(si);
                  dataRadar2[count].timestep = index;
@@ -1147,16 +1177,18 @@ function prepareRadarTable() {
         let minObj;
         c.arr[0].find(m=>{
             const target = dataRadar2.find(d=>d.plot===m);
-            if (Radarplot_opt.clusterMethod==="leaderbin") {
-                if (_.isEqual(target.slice(), c.__metrics.normalize)) {
-                    leaderList.push(target.plot);
-                    return true;
-                }
-            }else{
-                let currentdis = distance(target.slice(),c.__metrics.normalize);
-                if(mindis> currentdis){
-                    mindis = currentdis;
-                    minObj = target.plot;
+            if (typeof(target)!=="undefined"){
+                if (Radarplot_opt.clusterMethod==="leaderbin") {
+                    if (_.isEqual(target.slice(), c.__metrics.normalize)) {
+                        leaderList.push(target.plot);
+                        return true;
+                    }
+                }else{
+                    let currentdis = distance(target.slice(),c.__metrics.normalize);
+                    if(mindis> currentdis){
+                        mindis = currentdis;
+                        minObj = target.plot;
+                    }
                 }
             }
             return false;
@@ -1447,6 +1479,7 @@ function getsummaryservice(dataf_){
                 q1: ss.quantileSorted(d,0.25) ,
                 q3: ss.quantileSorted(d,0.75),
                 median: ss.medianSorted(d) ,
+                // median: d3.mean(d) ,
                 // outlier: ,
                 arr: sumstat};
             if (d.length>4)
@@ -1574,16 +1607,16 @@ function onchangeVizdata(vizMode){
 // SET UP FUNCTION
 //////////////////
 // Variables
-let csPlotSize = columnSize;
+let csPlotSize = 2*columnSize;
 // let oPlotSize = columnSize;
-// let rPlotSize = columnSize;
+let rPlotSize = 1.5*columnSize;
 // let xBlank = 0.5*columnSize;
 let xBlank = columnSize;
-let xgBlank = columnSize;
+let xgBlank = 2*columnSize;
 let yBlank = 50;
 let ygBlank = csPlotSize*0.3;
 // let groupSize = oPlotSize+2*xBlank+csPlotSize+rPlotSize+xgBlank;
-let groupSize = csPlotSize+xgBlank;
+let groupSize = 2*csPlotSize+xBlank+2*rPlotSize+xgBlank;
 
 function setup() {
     let canvas = createCanvas(width,height);
@@ -1649,9 +1682,9 @@ function draw() {
             noStroke();
             textSize(csPlotSize/8);
             // text('Lowest values',2*xBlank+oPlotSize,yBlank);
-            text('Lowest values',xBlank,yBlank);
-            text('Middle values',xBlank+xgBlank+csPlotSize,yBlank);
-            text('Highest values',xBlank+2*xgBlank+2*csPlotSize,yBlank);
+            text('Lowest values',xBlank+0.5*groupSize,yBlank);
+            text('Middle values',xBlank+1.5*groupSize,yBlank);
+            text('Highest values',xBlank+2.5*groupSize,yBlank);
             // textSize(plotsize/12);
             // text('select measure',xstartpos+plotsize+2*xblank1+0.5*splotsize,16+plotsize/10);
             // Color explanation
@@ -1784,7 +1817,7 @@ function draw() {
                     fill(255);
                     stroke(0);
                     // rect(1.65*xBlank+oPlotSize+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize),csPlotSize,csPlotSize);
-                    rect(xBlank+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize),csPlotSize,csPlotSize);
+                    rect(xBlank+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize),2*csPlotSize,csPlotSize);
 
                     // draw rectangles for time series
                     // fill(255);
@@ -1805,71 +1838,71 @@ function draw() {
                     // bezier(xBlank+j*groupSize+oPlotSize,yBlank+50+i*(csPlotSize+ygBlank)+oPlotSize*0.25,xBlank+j*groupSize+oPlotSize*1.25,yBlank+50+i*(csPlotSize+ygBlank)+oPlotSize*0.25,xBlank+j*groupSize+oPlotSize,yBlank+50+0.5*oPlotSize+i*(csPlotSize+ygBlank),xBlank+j*groupSize+oPlotSize*1.2,yBlank+50+0.5*oPlotSize+i*(csPlotSize+ygBlank));
 
                     //  DRAW RADAR CHART
-                    // var xCenter = 2.8*xBlank+2.5*csPlotSize+j*groupSize;
-                    // var yCenter = yBlank+50+csPlotSize/2+i*(csPlotSize+ygBlank);
-                    // fill(255);
-                    // stroke(180,180,180,100);
-                    // for (var k = 5; k > 0; k--) {
-                    //     ellipse(xCenter,yCenter,rPlotSize*0.2*k,rPlotSize*0.2*k);
-                    // }
-                    // for (var k = 0; k < nummeasure-1; k++) {
-                    //     var xp1 = xCenter+rPlotSize*Math.sin(Math.PI*2*k/nummeasure)/2;
-                    //     var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*k/nummeasure)/2;
-                    //     stroke(180,180,180,100);
-                    //     line(xCenter,yCenter,xp1,yp1);
-                    //     switch (type[k]) {
-                    //         case 0:
-                    //             fill(18, 169, 101);
-                    //             stroke(18, 169, 101);
-                    //             break;
-                    //         case 1:
-                    //             fill(232, 101, 11);
-                    //             stroke(232, 101, 11);
-                    //             break;
-                    //         case 2:
-                    //             fill(89, 135, 222);
-                    //             stroke(89, 135, 222);
-                    //             break;
-                    //     }
-                    //     arc(xCenter,yCenter,rPlotSize*measures[k][sample][mindex][2],rPlotSize*measures[k][sample][mindex][2],Math.PI*2*k/nummeasure-Math.PI/nummeasure-Math.PI/2,Math.PI*2*k/nummeasure+Math.PI/nummeasure-Math.PI/2);
-                    //     textSize(8);
-                    //     noStroke();
-                    //     if (k>nummeasure/2-1) {
-                    //         textAlign(RIGHT);
-                    //     }
-                    //     text(measurename[k]+': '+Math.round(measures[k][sample][mindex][2]*100)/100,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*k/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*k/nummeasure)/2);
-                    //     textAlign(LEFT);
-                    // }
-                    // var xp1 = xCenter+rPlotSize*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2;
-                    // var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2;
-                    // stroke(180,180,180,100);
-                    // line(xCenter,yCenter,xp1,yp1);
-                    // switch (type[nummeasure-1]) {
-                    //     case 0:
-                    //         fill(18, 169, 101);
-                    //         stroke(18, 169, 101);
-                    //         break;
-                    //     case 1:
-                    //         fill(232, 101, 11);
-                    //         stroke(232, 101, 11);
-                    //         break;
-                    //     case 2:
-                    //         fill(89, 135, 222);
-                    //         stroke(89, 135, 222);
-                    //         break;
-                    // }
-                    // arc(xCenter,yCenter,rPlotSize*measures[nummeasure-1][sample][mindex][2],rPlotSize*measures[nummeasure-1][sample][mindex][2],Math.PI*2*(nummeasure-1)/nummeasure-Math.PI/nummeasure-Math.PI/2,Math.PI*2*(nummeasure-1)/nummeasure+Math.PI/nummeasure-Math.PI/2);
-                    // textSize(8);
-                    // noStroke();
-                    // textAlign(RIGHT);
-                    // text(measurename[k]+': '+Math.round(measures[k][sample][mindex][2]*100)/100,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2);
-                    // textAlign(LEFT);
+                    var xCenter = 2*xBlank+2*csPlotSize+rPlotSize+j*groupSize;
+                    var yCenter = yBlank+50+csPlotSize*0.5+i*(ygBlank+csPlotSize);
+                    fill(255);
+                    stroke(180,180,180,100);
+                    for (var k = 5; k > 0; k--) {
+                        ellipse(xCenter,yCenter,rPlotSize*0.2*k,rPlotSize*0.2*k);
+                    }
+                    for (var k = 0; k < nummeasure-1; k++) {
+                        var xp1 = xCenter+rPlotSize*Math.sin(Math.PI*2*k/nummeasure)/2;
+                        var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*k/nummeasure)/2;
+                        stroke(180,180,180,100);
+                        line(xCenter,yCenter,xp1,yp1);
+                        switch (type[k]) {
+                            case 0:
+                                fill(18, 169, 101);
+                                stroke(18, 169, 101);
+                                break;
+                            case 1:
+                                fill(232, 101, 11);
+                                stroke(232, 101, 11);
+                                break;
+                            case 2:
+                                fill(89, 135, 222);
+                                stroke(89, 135, 222);
+                                break;
+                        }
+                        arc(xCenter,yCenter,rPlotSize*measures[k][sample][mindex][2],rPlotSize*measures[k][sample][mindex][2],Math.PI*2*k/nummeasure-Math.PI/nummeasure-Math.PI/2,Math.PI*2*k/nummeasure+Math.PI/nummeasure-Math.PI/2);
+                        textSize(8);
+                        noStroke();
+                        if (k>nummeasure/2-1) {
+                            textAlign(RIGHT);
+                        }
+                        text(measurename[k]+': '+Math.round(measures[k][sample][mindex][2]*100)/100,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*k/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*k/nummeasure)/2);
+                        textAlign(LEFT);
+                    }
+                    var xp1 = xCenter+rPlotSize*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2;
+                    var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2;
+                    stroke(180,180,180,100);
+                    line(xCenter,yCenter,xp1,yp1);
+                    switch (type[nummeasure-1]) {
+                        case 0:
+                            fill(18, 169, 101);
+                            stroke(18, 169, 101);
+                            break;
+                        case 1:
+                            fill(232, 101, 11);
+                            stroke(232, 101, 11);
+                            break;
+                        case 2:
+                            fill(89, 135, 222);
+                            stroke(89, 135, 222);
+                            break;
+                    }
+                    arc(xCenter,yCenter,rPlotSize*measures[nummeasure-1][sample][mindex][2],rPlotSize*measures[nummeasure-1][sample][mindex][2],Math.PI*2*(nummeasure-1)/nummeasure-Math.PI/nummeasure-Math.PI/2,Math.PI*2*(nummeasure-1)/nummeasure+Math.PI/nummeasure-Math.PI/2);
+                    textSize(8);
+                    noStroke();
+                    textAlign(RIGHT);
+                    text(measurename[k]+': '+Math.round(measures[k][sample][mindex][2]*100)/100,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2);
+                    textAlign(LEFT);
 
                     // write value of measure
                     noStroke();
                     fill(255);
                     textSize(csPlotSize/12);
-                    text(measurename[selectedmeasure]+' = '+Math.round(value*100)/100,xBlank+j*groupSize+csPlotSize*0.6,yBlank+50+i*(ygBlank+csPlotSize)-5);
+                    text(measurename[selectedmeasure]+' = '+Math.round(value*100)/100,xBlank+j*groupSize+csPlotSize,yBlank+50+i*(ygBlank+csPlotSize)-5);
 
                     // write sample notation
                     noStroke();
@@ -1925,8 +1958,8 @@ function draw() {
                                 // var x2 = 0.05*csPlotSize+1.65*xBlank+oPlotSize+j*groupSize+0.9*csPlotSize*data[sample][xvar][step];
                                 // var y1 = 0.05*csPlotSize+yBlank+50+i*(ygBlank+csPlotSize)+0.9*csPlotSize*(1-data[sample][yvar][step-1]);
                                 // var y2 = 0.05*csPlotSize+yBlank+50+i*(ygBlank+csPlotSize)+0.9*csPlotSize*(1-data[sample][yvar][step]);
-                                var x1 = 0.05*csPlotSize+xBlank+j*groupSize+0.9*csPlotSize*(step-1)/timedata.length;
-                                var x2 = 0.05*csPlotSize+xBlank+j*groupSize+0.9*csPlotSize*step/timedata.length;
+                                var x1 = 0.05*csPlotSize+xBlank+j*groupSize+1.9*csPlotSize*(step-1)/timedata.length;
+                                var x2 = 0.05*csPlotSize+xBlank+j*groupSize+1.9*csPlotSize*step/timedata.length;
                                 var y1 = 0.05*csPlotSize+yBlank+50+i*(ygBlank+csPlotSize)+0.9*csPlotSize*(1-data[sample][xvar][step-1]);
                                 var y2 = 0.05*csPlotSize+yBlank+50+i*(ygBlank+csPlotSize)+0.9*csPlotSize*(1-data[sample][xvar][step]);
                                 if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));

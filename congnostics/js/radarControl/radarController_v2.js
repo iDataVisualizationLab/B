@@ -644,8 +644,8 @@ console.log(e);
             //update the outlines
             var blobWrapperpath = blobWrapperg.select(".radarStroke").datum(d => d);
 
-            function drawMeanLine(paths) {
-                return paths
+            function drawMeanLine(paths_) {
+                return paths_
                     .attr("d", function (d) {
                         return radarLine(d)
                     })
