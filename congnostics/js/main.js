@@ -622,7 +622,7 @@ function analyzedata() {
                         let xq3 = sortXData[Math.floor(sortXData.length*0.75)];
                         measures[4][p][myIndex][2] = meanX;
                         measures[5][p][myIndex][2] = Math.sqrt(deviationX/xData.length);
-                        measures[6][p][myIndex][2] = Math.abs((xq1+xq3-2*xq2)/(xq3-xq1));
+                        measures[6][p][myIndex][2] = (xq3!==xq1)?Math.abs((xq1+xq3-2*xq2)/(xq3-xq1)):0;
 
                         // FIRST LAG DIFFERENCE STANDARD DEVIATION
                         let meanDiff = 0, devDiff = 0, skewDiff = 0;
@@ -634,7 +634,7 @@ function analyzedata() {
                         });
                         measures[7][p][myIndex][2] = (meanDiff+1)/2;
                         measures[8][p][myIndex][2] = Math.sqrt(devDiff/firstLagDiff.length)/2;
-                        measures[9][p][myIndex][2] = Math.abs((q1+q3-2*q2)/(q3-q1));
+                        measures[9][p][myIndex][2] = (q3!==q1)?Math.abs((q1+q3-2*q2)/(q3-q1)):0;
                     }
 
 
@@ -1576,7 +1576,7 @@ function onchangeVizdata(vizMode){
     switch (vizMode) {
         case 'tSNE':
             handle_data_tsne(dataRadar2);
-            return true
+            return true;
         case 'PCA':
             handle_data_pca(dataRadar2);
             return true;
