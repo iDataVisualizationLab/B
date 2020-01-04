@@ -407,7 +407,7 @@ function drawLeaderPlot(ctx_,plot_,group_,plotPosition_) {
     var group = group_;
     var plotPosition = plotPosition_;
     var plotIndex = plot.split("-"); // [sample,#plot]
-    var plotSize = 100;
+    var plotSize = 50;
     var color = [];
     ctx.fillStyle = "rgb(255,255,255)";
     ctx.strokeStyle = colorCluster(cluster_info.name);
@@ -415,14 +415,14 @@ function drawLeaderPlot(ctx_,plot_,group_,plotPosition_) {
     ctx.translate(-plotSize/2,-plotSize/2);
     ctx.fill();
     ctx.stroke();
-    ctx.strokeRect(xscale(plotPosition[0]), yscale(plotPosition[1]), plotSize, plotSize);
-    ctx.fillRect(xscale(plotPosition[0]), yscale(plotPosition[1]), plotSize, plotSize);
+    ctx.strokeRect(xscale(plotPosition[0]), yscale(plotPosition[1]), 2*plotSize, plotSize);
+    ctx.fillRect(xscale(plotPosition[0]), yscale(plotPosition[1]), 2*plotSize, plotSize);
     ctx.lineWidth = 1;
     timedata.forEach(function (time, step) {
         if (step) {
             if(data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step]>=0 && data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step-1]>=0 && data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][1]][step]>=0 && data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][1]][step-1]>=0) {
-                var x1 = xscale(plotPosition[0])+0.05*plotSize+0.9*plotSize*(step-1)/timedata.length;
-                var x2 = xscale(plotPosition[0])+0.05*plotSize+0.9*plotSize*step/timedata.length;
+                var x1 = xscale(plotPosition[0])+0.05*plotSize+1.9*plotSize*(step-1)/timedata.length;
+                var x2 = xscale(plotPosition[0])+0.05*plotSize+1.9*plotSize*step/timedata.length;
                 var y1 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step-1]);
                 var y2 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step]);
                 color[0] = (step < timedata.length/2) ? 0 : (step-timedata.length/2)*255/(timedata.length/2);
