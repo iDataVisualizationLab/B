@@ -1685,9 +1685,9 @@ function draw() {
             noStroke();
             textSize(csPlotSize/8);
             // text('Lowest values',2*xBlank+oPlotSize,yBlank);
-            text('Lowest values',xBlank+0.5*groupSize,yBlank);
-            text('Middle values',xBlank+1.5*groupSize,yBlank);
-            text('Highest values',xBlank+2.5*groupSize,yBlank);
+            text('Lowest values',xBlank+0.3*groupSize,yBlank);
+            text('Middle values',xBlank+1.3*groupSize,yBlank);
+            text('Highest values',xBlank+2.3*groupSize,yBlank);
             // textSize(plotsize/12);
             // text('select measure',xstartpos+plotsize+2*xblank1+0.5*splotsize,16+plotsize/10);
             // Color explanation
