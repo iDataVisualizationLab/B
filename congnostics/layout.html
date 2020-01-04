@@ -18,6 +18,7 @@
     <link href="css/N.css" rel="stylesheet" type="text/css" />
     <link href="css/layout.css" rel="stylesheet" type="text/css" />
     <link href="css/main.css" rel="stylesheet" type="text/css" />
+    <link href="css/jquery.dataTables.css" rel="stylesheet" type="text/css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
 </head>
@@ -206,9 +207,9 @@
                             <form action="#" class='clusterProfile row valign-wrapper' id = "kmeanprofile" onsubmit="recalculateCluster( {clusterMethod: 'kmean',normMethod:$('#normMethod').val(),bin:{k: +$('#knum').val(),iterations: +$('#kiteration').val()}},reCalculateTsne);return false;">
                                 <label for="knum" class="col s4 radarcontroller_layout">#Groups</label>
                                 <div  class="col s5 no-pad-left valign-wrapper">
-                                    <input type="number" id="knum" class="col s3 radarcontroller_layout browser-default no_leftmagrin" value="1">
+                                    <input type="number" id="knum" class="col s3 radarcontroller_layout browser-default no_leftmagrin" value="6">
                                     <span class="col s6 no_leftmagrin"> #Iterations</span>
-                                    <input type="number" id="kiteration" class="col s3 radarcontroller_layout browser-default no_leftmagrin" value="10">
+                                    <input type="number" id="kiteration" class="col s3 radarcontroller_layout browser-default no_leftmagrin" value="50">
                                 </div>
                                 <div  class="col s3 no_padding valign-wrapper center-align" >
                                     <button type="submit" class="btn-small animatIcon"><i class="material-icons">send</i><div>Submit</div></button>
