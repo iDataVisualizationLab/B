@@ -705,7 +705,7 @@ console.log(e);
     };
 
     function handledataRate (hindex){
-        return _.unzip(arr.slice(0,hindex+1)).map((d,i)=>{return {axis: radarcomp.axisList[i].data.text, value: ss.mean(d),minval: ss.min(d),maxval: ss.max(d), q1: ss.quantile(d,0.25),q3: ss.quantile(d, 0.75)}});
+        return _.unzip(arr.slice(0,hindex+1)).map((d,i)=>{return {axis: radarcomp.axisList[i].data.text, value: ss.median(d),minval: ss.min(d),maxval: ss.max(d), q1: ss.quantile(d,0.25),q3: ss.quantile(d, 0.75)}});
     }
     /////////////////////////////////////////////////////////
     /////////////////// Helper Function /////////////////////

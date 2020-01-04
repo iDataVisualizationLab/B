@@ -633,7 +633,7 @@ function analyzedata() {
                             skewDiff += (d-meanDiff)*(d-meanDiff)*(d-meanDiff);
                         });
                         measures[7][p][myIndex][2] = (meanDiff+1)/2;
-                        measures[8][p][myIndex][2] = Math.sqrt(devDiff/firstLagDiff.length);
+                        measures[8][p][myIndex][2] = Math.sqrt(devDiff/firstLagDiff.length)/2;
                         measures[9][p][myIndex][2] = Math.abs((q1+q3-2*q2)/(q3-q1));
                     }
 
@@ -1147,7 +1147,10 @@ function sortmeasures() {
 }
 
 // Prepare data for RadarController_table
+
 function prepareRadarTable() {
+    dataRadar2 = [];
+    dataRadar1 = [];
     for (var i = 0; i < nummeasure; i++) {
         dataRadar1[i] =[];
         var count = 0;
@@ -1459,7 +1462,7 @@ function getsummaryservice(dataf_){
             dataf[mi][i] = d;
         });
     });
-    let outlierMultiply = 3;
+    let outlierMultiply = 1000000000;
     let ob = {};
     dataf.forEach((d,i)=>{
         d=d.filter(e=>e!==undefined).sort((a,b)=>a-b);
