@@ -28,7 +28,7 @@ let radarController = function () {
         axis: {}, // axis objects
         axisList : [],  // axis array
     };
-    let charType = "radar";
+    let charType = "rose";
     let radarController ={};
     // color control
     let colorLength = graphicopt.arrColor.length-1;

@@ -626,13 +626,13 @@ function analyzedata() {
 
                         // FIRST LAG DIFFERENCE STANDARD DEVIATION
                         let meanDiff = 0, devDiff = 0, skewDiff = 0;
-                        firstLagDiff.forEach(d=>{meanDiff+=d});
+                        firstLagDiff.forEach(d=>{meanDiff+=Math.abs(d)});
                         meanDiff /= firstLagDiff.length;
                         firstLagDiff.forEach(d=>{
-                            devDiff += (d-meanDiff)*(d-meanDiff);
-                            skewDiff += (d-meanDiff)*(d-meanDiff)*(d-meanDiff);
+                            devDiff += (Math.abs(d)-meanDiff)*(Math.abs(d)-meanDiff);
+                            skewDiff += (Math.abs(d)-meanDiff)*(Math.abs(d)-meanDiff)*(Math.abs(d)-meanDiff);
                         });
-                        measures[7][p][myIndex][2] = (meanDiff+1)/2;
+                        measures[7][p][myIndex][2] = Math.sqrt(meanDiff);
                         measures[8][p][myIndex][2] = Math.sqrt(devDiff/firstLagDiff.length)/2;
                         measures[9][p][myIndex][2] = (q3!==q1)?Math.abs((q1+q3-2*q2)/(q3-q1)):0;
                     }
@@ -1438,7 +1438,7 @@ function similarityCal(data){
 function updateViztype (viztype_in){
     let viztype = viztype_in;
     $('#vizController span').text(`${viztype} Controller`);
-    $('#mouseAction input[value="showseries"]+span').text(`Show ${viztype} series`)
+    $('#mouseAction input[value="showseries"]+span').text(`Show ${viztype} series`);
     $('#vizController .icon').removeClass (function (index, className) {
         return (className.match (/(^|\s)icon-\S+/g) || []).join(' ');
     }).addClass(`icon-${viztype}Shape`);
@@ -1867,7 +1867,7 @@ function draw() {
                                 stroke(89, 135, 222);
                                 break;
                         }
-                        arc(xCenter,yCenter,rPlotSize*measures[k][sample][mindex][2],rPlotSize*measures[k][sample][mindex][2],Math.PI*2*k/nummeasure-Math.PI/nummeasure-Math.PI/2,Math.PI*2*k/nummeasure+Math.PI/nummeasure-Math.PI/2);
+                        arc(xCenter,yCenter,rPlotSize*measures[k][sample][mindex][2],rPlotSize*measures[k][sample][mindex][2],Math.PI*2*k/nummeasure-Math.PI/(2*nummeasure)-Math.PI/2,Math.PI*2*k/nummeasure+Math.PI/(nummeasure*2)-Math.PI/2);
                         textSize(8);
                         noStroke();
                         if (k>nummeasure/2-1) {

@@ -1003,7 +1003,7 @@ function onSaveDescription (){
 }
 
 // chart controll ------------------------------------
-let viztype='radar';
+let viztype='rose';
 let RadarChart_func;
 let starChart_func, radarChart_func, roseChart_func, flowerChart_func;
 if (typeof RadarChart!== 'undefined') {
@@ -1011,7 +1011,7 @@ if (typeof RadarChart!== 'undefined') {
     radarChart_func = _.bind(RadarChart, {smooth: 0.5});
     roseChart_func = _.bind(RoseChart, {shape: 'rose'});
     flowerChart_func = _.bind(RoseChart, {shape: 'flower'});
-    RadarChart_func = radarChart_func;
+    RadarChart_func = roseChart_func;
 }
 
 // radar draw
