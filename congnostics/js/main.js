@@ -1149,8 +1149,8 @@ function sortmeasures() {
 // Prepare data for RadarController_table
 
 function prepareRadarTable() {
-    dataRadar2 = [];
-    dataRadar1 = [];
+    dataRadar2 = [];    // [all plot][measures for each plot]
+    dataRadar1 = [];    // [measure][all values]
     for (var i = 0; i < nummeasure; i++) {
         dataRadar1[i] =[];
         var count = 0;
