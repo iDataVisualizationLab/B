@@ -230,7 +230,7 @@ let radarController = function () {
                 "pageLength": 50,
                 "columnDefs": [
                     {   targets: 0,
-                        title: "Service name",
+                        title: "Metrics",
                         orderable: true,
                         "data": null,
                         className:'text',
