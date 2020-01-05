@@ -521,6 +521,7 @@ function analyzedata() {
                             if(xi) firstLagDiff[xi-1] = x-xData[xi-1];
                         });
                         myPeriodogramDraw[p][myIndex] = firstLagDiff;
+                        // let sortFirstLagDiff = firstLagDiff.map(d=>d);
                         let sortFirstLagDiff = firstLagDiff.filter(d=>d!==0);
                         sortFirstLagDiff.sort(function (a,b) {return a-b});
                         let q1 = sortFirstLagDiff[Math.floor(sortFirstLagDiff.length*0.25)];
