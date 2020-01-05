@@ -118,13 +118,14 @@ d3.viiolinChart = function () {
 
         let median_rect = viol_chart.selectAll('rect.median').data(d=>d.median!=undefined?[d.median]:[]);
         median_rect.exit().remove();
-        median_rect.enter().append('rect').attrs({
+        median_rect.enter().append('rect')
+            .merge(median_rect).attrs({
             class: 'median',
-            width:2,
+            width:1,
             height: 8,
             x: d=>h(d),
             y: -4,
-        }).style('fill','black')
+        }).style('fill','black');
 
         const circledata =  arr[0].outlier.map(d=>{return d.x?d:{x:d}});
 
@@ -160,7 +161,7 @@ d3.viiolinChart = function () {
 
     let kde;
     let h = d3.scaleLinear();
-    let xNum = d3.scaleLinear()
+    let xNum = d3.scaleLinear();
     function handledata(data){
         h.range([0, graphicopt.direction === 'v' ? graphicopt.heightG() : graphicopt.widthG()]);
         xNum.range([0, (graphicopt.direction === 'h' ? graphicopt.heightG() : graphicopt.widthG())/2]);
@@ -187,7 +188,7 @@ d3.viiolinChart = function () {
                 kdeValues = allBins.map(function (a) {
                     return a[1]
                 });
-                biggest = d3.max(kdeValues)
+                biggest = d3.max(kdeValues);
                 if (biggest > maxNum) {
                     maxNum = biggest
                 }
