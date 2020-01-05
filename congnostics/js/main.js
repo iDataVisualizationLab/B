@@ -1553,14 +1553,15 @@ function getsummaryservice(dataf_){
             dataf[mi][i] = d;
         });
     });
-    let outlierMultiply = 1000000000;
+    let outlierMultiply = Infinity;
     let ob = {};
     dataf.forEach((d,i)=>{
         d=d.filter(e=>e!==undefined).sort((a,b)=>a-b);
         let r;
         if (d.length){
             var x = d3.scaleLinear()
-                .domain(d3.extent(d));
+                // .domain(d3.extent(d));
+                .domain([0,1]);
             var histogram = d3.histogram()
                 .domain(x.domain())
                 .thresholds(x.ticks(20))    // Important: how many bins approx are going to be made? It is the 'resolution' of the violin plot
