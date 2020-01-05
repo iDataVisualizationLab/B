@@ -520,12 +520,13 @@ function analyzedata() {
                         xData.forEach(function (x,xi) {
                             if(xi) firstLagDiff[xi-1] = x-xData[xi-1];
                         });
+                        myPeriodogramDraw[p][myIndex] = firstLagDiff;
                         let sortFirstLagDiff = firstLagDiff.filter(d=>d!==0);
                         sortFirstLagDiff.sort(function (a,b) {return a-b});
                         let q1 = sortFirstLagDiff[Math.floor(sortFirstLagDiff.length*0.25)];
                         let q3 = sortFirstLagDiff[Math.floor(sortFirstLagDiff.length*0.75)];
                         let q2 = sortFirstLagDiff[Math.floor(sortFirstLagDiff.length*0.5)];
-                        let outlierArr = firstLagDiff.filter(d=>d>q3+1.5*(q3-q1)||d<q1-1.5*(q3-q1));
+                        let outlierArr = firstLagDiff.filter(d=>(d>q3+1.5*(q3-q1)||d<q1-1.5*(q3-q1))&&(d>0.05));
                         let adTotalLength = 0;
                         firstLagDiff.forEach(d=>{adTotalLength += Math.abs(d-q2)});
                         let adOutlierLength = 0;
@@ -649,7 +650,7 @@ function analyzedata() {
                         myPeriodogram.forEach((d,index)=>{
                             if(index <= myPeriodogram.length/2) {sortPeriodogram[countSP] = [d,index]; countSP += 1;}
                         });
-                        myPeriodogramDraw[p][myIndex] = sortPeriodogram.map(d=>(d[0]-Math.min(...sortPeriodogram.map(dd=>dd[0])))/(d[0]+Math.max(...sortPeriodogram.map(dd=>dd[0]))));
+                        // myPeriodogramDraw[p][myIndex] = sortPeriodogram.map(d=>(d[0]-Math.min(...sortPeriodogram.map(dd=>dd[0])))/(d[0]+Math.max(...sortPeriodogram.map(dd=>dd[0]))));
                         let peak = [];
                         for(let i=1; i<myPeriodogram.length/2-1; i++){
                             if((myPeriodogram[i-1]<myPeriodogram[i])&&(myPeriodogram[i+1]<myPeriodogram[i])){
@@ -1997,8 +1998,8 @@ function draw() {
                         if(index){
                             let xP1 = xCenter-rPlotSize+5+(2*rPlotSize-5)*(index-1)/myPeriodogramDraw[sample][mindex].length;
                             let xP2 = xCenter-rPlotSize+5+(2*rPlotSize-5)*index/myPeriodogramDraw[sample][mindex].length;
-                            let yP1 = yCenter+0.5*csPlotSize-5-(csPlotSize-5)*myPeriodogramDraw[sample][mindex][index-1];
-                            let yP2 = yCenter+0.5*csPlotSize-5-(csPlotSize-5)*d;
+                            let yP1 = yCenter-5-(csPlotSize-5)*myPeriodogramDraw[sample][mindex][index-1];
+                            let yP2 = yCenter-5-(csPlotSize-5)*d;
                             if (index<timedata.length/2) stroke(0,0,255-255*index/(timedata.length/2));
                             else stroke((index-timedata.length/2)*255/(timedata.length/2),0,0);
                             line(xP1,yP1,xP2,yP2);
