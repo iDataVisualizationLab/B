@@ -8,6 +8,7 @@
 
 // VARIABLES FOR STORING DATA
 let data = []; // data[sample][variable][time step] for raw data
+let dataRaw = [];
 let mapsample0 = new Map(); // code -> data sample name
 let mapsample1 = new Map(); // data sample name -> index in data[data sample]
 let mapsample2 = new Map(); // index -> data sample name
@@ -24,7 +25,9 @@ let cellval = [];
 let minloop = 0;
 let maxloop = 48;
 let lag = 48;
-let selecteddata = 0;
+let selecteddata= 0;
+let myPeriodogramDraw = [];
+let peakPeri = [];
 
 // VARIABLES FOR CONTROLLING
 let needupdate = false;
@@ -316,6 +319,10 @@ function analyzedata() {
             filename1 = "data/eeg_code.txt";
             filename2 = "data/eeg_v_code.txt";
             break;
+        case 6:
+            filename0 = "data/Bao_dataset.txt";
+            filename1 = "data/Bao_data_sample.txt";
+            filename2 = "data/Bao_data_var.txt";
     }
 
     Promise.all([
@@ -325,6 +332,7 @@ function analyzedata() {
     ]).then(function (files) {
 
         data = []; // data[sample][variable][time step] for raw data
+        dataRaw = [];
         mapsample0.clear(); // code -> data sample name
         mapsample1.clear(); // data sample name -> index in data[data sample]
         mapsample2.clear(); // index -> data sample name
@@ -343,6 +351,7 @@ function analyzedata() {
             if (!mapsample1.get(sample.name)) mapsample1.set(sample.name, p);  // name-string to index-number
             if (!mapsample2.get(p)) mapsample2.set(p, sample.name);   // index-number to name-string
             data[p] = [];
+            dataRaw[p] = [];
         });
 
         // MAP VARIABLES
@@ -353,6 +362,10 @@ function analyzedata() {
             data.forEach(function (d) {
                 d[v] = [];
             });
+            dataRaw.forEach(function (d) {
+                d[v] = [];
+            });
+
         });
 
         // TIME NAME
@@ -370,14 +383,23 @@ function analyzedata() {
                         });
                     });
                 });
+                dataRaw.forEach(function (sample) {
+                    sample.forEach(function (variable) {
+                        timedata.forEach(function (step, s) {
+                            variable[s] = -Infinity;
+                        });
+                    });
+                });
                 files[0].forEach(function (line) {
                     var sampleindex = mapsample1.get(mapsample0.get(line["Series ID"].substr(3, 2)));
                     var varindex = mapvar1.get(mapvar0.get(line["Series ID"].substr(10, 8)));
                     timedata.forEach(function (step, s) {
                         if (sampleindex !== 56 && sampleindex !== 72) {
                             data[sampleindex][varindex][s] = isNaN(parseFloat(line[step])) ? -Infinity : parseFloat(line[step]);
+                            dataRaw[sampleindex][varindex][s] = isNaN(parseFloat(line[step])) ? -Infinity : parseFloat(line[step]);
                         } else {
                             data[sampleindex][varindex][s] = -Infinity;
+                            dataRaw[sampleindex][varindex][s] = -Infinity;
                         }
                     });
                 });
@@ -391,11 +413,19 @@ function analyzedata() {
                         });
                     });
                 });
+                dataRaw.forEach(function (sample) {
+                    sample.forEach(function (variable) {
+                        timedata.forEach(function (step, s) {
+                            variable[s] = -Infinity;
+                        });
+                    });
+                });
                 files[0].forEach(function (line) {
                     var sampleindex = parseInt(line["Series ID"].split("_")[0]);
                     var varindex = parseInt(line["Series ID"].split("_")[1]);
                     timedata.forEach(function (step, s) {
                         data[sampleindex][varindex][s] = isNaN(parseFloat(line[step])) ? -Infinity : parseFloat(line[step]);
+                        dataRaw[sampleindex][varindex][s] = isNaN(parseFloat(line[step])) ? -Infinity : parseFloat(line[step]);
                     });
                 });
         }
@@ -469,6 +499,9 @@ function analyzedata() {
                     measures[i][p] = [];
                 }
                 var myIndex = 0;
+                // Peak array
+                peakPeri[p]=[];
+                myPeriodogramDraw[p]=[];
                 // Each plot
                 for (var xVar = 0; xVar < mapvar0.size; xVar++) {
                     // Initialize measure values
@@ -487,12 +520,12 @@ function analyzedata() {
                         xData.forEach(function (x,xi) {
                             if(xi) firstLagDiff[xi-1] = x-xData[xi-1];
                         });
-                        let sortFirstLagDiff = firstLagDiff.map(d=>{return d});
+                        let sortFirstLagDiff = firstLagDiff.filter(d=>d!==0);
                         sortFirstLagDiff.sort(function (a,b) {return a-b});
                         let q1 = sortFirstLagDiff[Math.floor(sortFirstLagDiff.length*0.25)];
                         let q3 = sortFirstLagDiff[Math.floor(sortFirstLagDiff.length*0.75)];
                         let q2 = sortFirstLagDiff[Math.floor(sortFirstLagDiff.length*0.5)];
-                        let outlierArr = firstLagDiff.filter(d=>{return d>q3+1.5*(q3-q1)||d<q1-1.5*(q3-q1)});
+                        let outlierArr = firstLagDiff.filter(d=>d>q3+1.5*(q3-q1)||d<q1-1.5*(q3-q1));
                         let adTotalLength = 0;
                         firstLagDiff.forEach(d=>{adTotalLength += Math.abs(d-q2)});
                         let adOutlierLength = 0;
@@ -505,10 +538,11 @@ function analyzedata() {
                             }
                         });
                         let smoothXData = [];
-                        for(let i=10; i< adjustXData.length; i++){
-                            smoothXData[i-10] = 0;
-                            for(let j=0; j<10; j++){
-                                smoothXData[i-10] += adjustXData[i-j];
+                        let smoothWindow = Math.floor(xData.length*0.1);
+                        for(let i=smoothWindow; i< adjustXData.length; i++){
+                            smoothXData[i-smoothWindow] = 0;
+                            for(let j=0; j<smoothWindow; j++){
+                                smoothXData[i-smoothWindow] += adjustXData[i-j];
                             }
                         }
 
@@ -524,82 +558,6 @@ function analyzedata() {
                             }
                         });
                         measures[1][p][myIndex][2] = Math.abs(Sign)/(xData.length*(xData.length-1)/2);
-
-                        // PERIODICITY
-                        // let myPeriodogram = xData.map((x,xi)=>{
-                        //     let sumr = 0;
-                        //     let sumi = 0;
-                        //     let sumx = 0;
-                        //     xData.forEach((d,sIndex)=>{
-                        //         sumr += d*Math.cos(-2*Math.PI*xi*sIndex/xData.length);
-                        //         sumi += d*Math.sin(-2*Math.PI*xi*sIndex/xData.length);
-                        //         sumx += d*d;
-                        //     });
-                        //     return (sumr*sumr+sumi*sumi)/(xData.length*sumx/2);
-                        // });
-                        // let myPeriodogram = xData.map((x,xi)=>{
-                        //     let sumr = 0;
-                        //     let sumi = 0;
-                        //     let sumx = 0;
-                        //     xData.forEach((d,sIndex)=>{
-                        //         sumr += d*Math.cos(-2*Math.PI*xi*sIndex/xData.length);
-                        //         sumi += d*Math.sin(-2*Math.PI*xi*sIndex/xData.length);
-                        //         sumx += d*d;
-                        //     });
-                        //     return (sumr*sumr+sumi*sumi)/xData.length;
-                        // });
-                        let myPeriodogram = [];
-                        for (let i=0; i<smoothXData.length; i++){
-                            let sumr=0, sumi=0, sumx=0;
-                            smoothXData.forEach((d,index)=>{
-                                sumr += d*Math.cos(-2*Math.PI*index*i/smoothXData.length);
-                                sumi += d*Math.sin(-2*Math.PI*index*i/smoothXData.length);
-                                sumx += d*d;
-                            });
-                            myPeriodogram[i] = (sumr*sumr+sumi*sumi)/(xData.length*sumx/2);
-                        }
-                        let cutLimit = myPeriodogram.findIndex((d,index)=>{
-                            if(index) {
-                                if (d > myPeriodogram[index-1]) return true;
-                                else return false;
-                            }
-                        });
-                        let sortPeriodogram = [], countSP = 0;
-                        myPeriodogram.forEach((d,index)=>{
-                            if(index >= cutLimit && index <= myPeriodogram.length/2) {sortPeriodogram[countSP] = [d,index]; countSP += 1;}
-                        });
-                        sortPeriodogram.sort((a,b)=>{return a[0]-b[0]});
-                        // let sortPeriodogram = myPeriodogram.filter((d,index)=>{if (index <= myPeriodogram.length/2 && index >= cutLimit) return true; else return false;});
-                        // sortPeriodogram.sort((a,b)=>{return a-b});
-                        // let p1 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.25)][0];
-                        // let p3 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.75)][0];
-                        // let p2 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.5)][0];
-                        // let peakPeriodogram = (sortPeriodogram[sortPeriodogram.length-1] > p3+3*(p3-p1)) ? sortPeriodogram[sortPeriodogram.length-1] : 0;
-                        // let frequency = (sortPeriodogram.length!==0)?sortPeriodogram[sortPeriodogram.length-1][1]:0;
-                        // let maxMultiple = Math.floor(0.5/(frequency/myPeriodogram.length));
-                        // let maxMultiple = 1;
-                        // let above = 0, below = 0;
-                        // for (let i=1; i<=maxMultiple; i++){
-                        //     let pCondition = ((frequency*i+frequency*0.5)/myPeriodogram.length) < 0.5;
-                        //     if (pCondition) {
-                        //         above += myPeriodogram[frequency*i]-myPeriodogram[Math.floor(frequency*i+frequency*0.5)];
-                        //         below += myPeriodogram[frequency*i]+myPeriodogram[Math.floor(frequency*i+frequency*0.5)];
-                        //     } else {
-                        //         above += myPeriodogram[frequency*i]-myPeriodogram[Math.floor(frequency*i-frequency*0.5)];
-                        //         below += myPeriodogram[frequency*i]+myPeriodogram[Math.floor(frequency*i-frequency*0.5)];
-                        //     }
-                        // }
-                        let maxPeak = sortPeriodogram[sortPeriodogram.length-1][0];
-                        let meanPower = 0;
-                        sortPeriodogram.forEach((d,index)=>{
-                            // if(index!==(sortPeriodogram.length-1)) meanPower += d[0];
-                            meanPower += d[0];
-                        });
-                        meanPower /= sortPeriodogram.length;
-                        measures[2][p][myIndex][2] = (maxPeak-meanPower)/(maxPeak+meanPower);
-                        // measures[2][p][myIndex][2] = (maxPeak-p3)/(maxPeak+p3);
-                        // measures[2][p][myIndex][2] = above/below;
-                        if(measures[2][p][myIndex][2]<0) measures[2][p][myIndex][2]=0;
 
                         // FIRST AUTOCORRELATION
                         let covX = 0, meanX = 0, deviationX = 0, skewX = 0;
@@ -633,8 +591,130 @@ function analyzedata() {
                             skewDiff += (Math.abs(d)-meanDiff)*(Math.abs(d)-meanDiff)*(Math.abs(d)-meanDiff);
                         });
                         measures[7][p][myIndex][2] = Math.sqrt(meanDiff);
-                        measures[8][p][myIndex][2] = Math.sqrt(devDiff/firstLagDiff.length)/2;
+                        measures[8][p][myIndex][2] = Math.sqrt(devDiff/firstLagDiff.length);
                         measures[9][p][myIndex][2] = (q3!==q1)?Math.abs((q1+q3-2*q2)/(q3-q1)):0;
+
+                        // PERIODICITY
+                        // let myPeriodogram = xData.map((x,xi)=>{
+                        //     let sumr = 0;
+                        //     let sumi = 0;
+                        //     let sumx = 0;
+                        //     xData.forEach((d,sIndex)=>{
+                        //         sumr += d*Math.cos(-2*Math.PI*xi*sIndex/xData.length);
+                        //         sumi += d*Math.sin(-2*Math.PI*xi*sIndex/xData.length);
+                        //         sumx += d*d;
+                        //     });
+                        //     return (sumr*sumr+sumi*sumi)/(xData.length*sumx/2);
+                        // });
+                        // let myPeriodogram = xData.map((x,xi)=>{
+                        //     let sumr = 0;
+                        //     let sumi = 0;
+                        //     let sumx = 0;
+                        //     xData.forEach((d,sIndex)=>{
+                        //         sumr += d*Math.cos(-2*Math.PI*xi*sIndex/xData.length);
+                        //         sumi += d*Math.sin(-2*Math.PI*xi*sIndex/xData.length);
+                        //         sumx += d*d;
+                        //     });
+                        //     return (sumr*sumr+sumi*sumi)/xData.length;
+                        // });
+                        let myPeriodogram = [];
+                        let meanRaw = 0;
+                        dataRaw[p][xVar].forEach(d=>{
+                            if(d!==-Infinity) meanRaw += d;
+                        });
+                        meanRaw /= dataRaw[p][xVar].length;
+                        for (let i=0; i<xData.length; i++){
+                            let sumr=0, sumi=0, sumx=0;
+                            dataRaw[p][xVar].forEach((d,index)=>{
+                                if (d!==-Infinity){
+                                    // sumr += (d-meanRaw)*Math.cos(-2*Math.PI*index*i/xData.length);
+                                    // sumi += (d-meanRaw)*Math.sin(-2*Math.PI*index*i/xData.length);
+                                    // sumx += (d-meanRaw)*(d-meanRaw);
+                                    sumr += d*Math.cos(-2*Math.PI*index*i/xData.length);
+                                    sumi += d*Math.sin(-2*Math.PI*index*i/xData.length);
+                                    sumx += d*d;
+                                }
+                            });
+                            myPeriodogram[i] = (sumr*sumr+sumi*sumi)/(xData.length*sumx/2);
+                        }
+                        myPeriodogram.splice(0,2);
+                        // let cutLimit = myPeriodogram.findIndex((d,index)=>{
+                        //     if(index) {
+                        //         if (d > myPeriodogram[index-1]) return true;
+                        //         else return false;
+                        //     }
+                        // });
+                        // cutLimit = (cutLimit>0.08)?cutLimit:0.05;
+                        let sortPeriodogram = [], countSP = 0;
+                        myPeriodogram.forEach((d,index)=>{
+                            if(index <= myPeriodogram.length/2) {sortPeriodogram[countSP] = [d,index]; countSP += 1;}
+                        });
+                        myPeriodogramDraw[p][myIndex] = sortPeriodogram.map(d=>(d[0]-Math.min(...sortPeriodogram.map(dd=>dd[0])))/(d[0]+Math.max(...sortPeriodogram.map(dd=>dd[0]))));
+                        let peak = [];
+                        for(let i=1; i<myPeriodogram.length/2-1; i++){
+                            if((myPeriodogram[i-1]<myPeriodogram[i])&&(myPeriodogram[i+1]<myPeriodogram[i])){
+                                peak.push([myPeriodogram[i],i]);
+                            }
+                        }
+                        peakPeri[p][myIndex] = peak.map(d=>d);
+                        // let cutLimit = myPeriodogram.findIndex((d,index)=>{
+                        //     if(myPeriodogram[index+1]>d) return true;
+                        //     else return false;
+                        // });
+                        let sumPeak = 0;
+                        let sumPower = 0;
+                        // myPeriodogram.forEach((d,i)=>{if(i>=cutLimit) sumPower+=d});
+                        myPeriodogram.forEach(d=>sumPower+=d);
+                        if(peak.length>0) peak.map(d=>d[0]).forEach(dd=>sumPeak+=dd);
+                        measures[2][p][myIndex][2] = 2*sumPeak/sumPower;
+                        // let meanPower = 0;
+                        // sortPeriodogram.forEach((d,index)=>{
+                        //     // if(index!==(sortPeriodogram.length-1)) meanPower += d[0];
+                        //     meanPower += d[0];
+                        // });
+                        // meanPower /= sortPeriodogram.length;
+                        // let valey = myPeriodogram[cutLimit];
+                        // let peak, valey;
+                        // let maxratio = -Infinity;
+                        // let oSign = (myPeriodogram[1]>myPeriodogram[0]);
+                        // for(let i=0; i<myPeriodogram.length/2; i++){
+                        //     let sign = (myPeriodogram[i+1]>myPeriodogram[i]);
+                        //     if(sign!==oSign){
+                        //         if(oSign){
+                        //             peak = myPeriodogram[i];
+                        //             let ratio = (peak-valey)/(peak+valey);
+                        //             maxratio = (maxratio<ratio)?ratio:maxratio;
+                        //             oSign = sign;
+                        //         } else {
+                        //             valey = myPeriodogram[i];
+                        //         }
+                        //     }
+                        // }
+                        // sortPeriodogram.sort((a,b)=>{return a[0]-b[0]});
+                        // let p1 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.25)][0];
+                        // let p3 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.75)][0];
+                        // let p2 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.5)][0];
+                        // let peakPeriodogram = (sortPeriodogram[sortPeriodogram.length-1] > p3+3*(p3-p1)) ? sortPeriodogram[sortPeriodogram.length-1] : 0;
+                        // let frequency = (sortPeriodogram.length!==0)?sortPeriodogram[sortPeriodogram.length-1][1]:0;
+                        // let maxMultiple = Math.floor(0.5/(frequency/myPeriodogram.length));
+                        // let maxMultiple = 1;
+                        // let above = 0, below = 0;
+                        // for (let i=1; i<=maxMultiple; i++){
+                        //     let pCondition = ((frequency*i+frequency*0.5)/myPeriodogram.length) < 0.5;
+                        //     if (pCondition) {
+                        //         above += myPeriodogram[frequency*i]-myPeriodogram[Math.floor(frequency*i+frequency*0.5)];
+                        //         below += myPeriodogram[frequency*i]+myPeriodogram[Math.floor(frequency*i+frequency*0.5)];
+                        //     } else {
+                        //         above += myPeriodogram[frequency*i]-myPeriodogram[Math.floor(frequency*i-frequency*0.5)];
+                        //         below += myPeriodogram[frequency*i]+myPeriodogram[Math.floor(frequency*i-frequency*0.5)];
+                        //     }
+                        // }
+                        // let maxPeak = sortPeriodogram[sortPeriodogram.length-1][0];
+                        // measures[2][p][myIndex][2] = (maxratio===-Infinity)?0:maxratio;
+                        // measures[2][p][myIndex][2] = (maxPeak-p3)/(maxPeak+p3);
+                        // measures[2][p][myIndex][2] = above/below;
+                        // if(measures[2][p][myIndex][2]<0) measures[2][p][myIndex][2]=0;
+
                     }
 
 
@@ -1841,65 +1921,89 @@ function draw() {
                     // bezier(xBlank+j*groupSize+oPlotSize,yBlank+50+i*(csPlotSize+ygBlank)+oPlotSize*0.25,xBlank+j*groupSize+oPlotSize*1.25,yBlank+50+i*(csPlotSize+ygBlank)+oPlotSize*0.25,xBlank+j*groupSize+oPlotSize,yBlank+50+0.5*oPlotSize+i*(csPlotSize+ygBlank),xBlank+j*groupSize+oPlotSize*1.2,yBlank+50+0.5*oPlotSize+i*(csPlotSize+ygBlank));
 
                     //  DRAW RADAR CHART
+                    // var xCenter = 2*xBlank+2*csPlotSize+rPlotSize+j*groupSize;
+                    // var yCenter = yBlank+50+csPlotSize*0.5+i*(ygBlank+csPlotSize);
+                    // fill(255);
+                    // stroke(180,180,180,100);
+                    // for (var k = 5; k > 0; k--) {
+                    //     ellipse(xCenter,yCenter,rPlotSize*0.2*k,rPlotSize*0.2*k);
+                    // }
+                    // for (var k = 0; k < nummeasure-1; k++) {
+                    //     var xp1 = xCenter+rPlotSize*Math.sin(Math.PI*2*k/nummeasure)/2;
+                    //     var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*k/nummeasure)/2;
+                    //     stroke(180,180,180,100);
+                    //     line(xCenter,yCenter,xp1,yp1);
+                    //     switch (type[k]) {
+                    //         case 0:
+                    //             fill(18, 169, 101);
+                    //             stroke(18, 169, 101);
+                    //             break;
+                    //         case 1:
+                    //             fill(232, 101, 11);
+                    //             stroke(232, 101, 11);
+                    //             break;
+                    //         case 2:
+                    //             fill(89, 135, 222);
+                    //             stroke(89, 135, 222);
+                    //             break;
+                    //     }
+                    //     arc(xCenter,yCenter,rPlotSize*measures[k][sample][mindex][2],rPlotSize*measures[k][sample][mindex][2],Math.PI*2*k/nummeasure-Math.PI/(2*nummeasure)-Math.PI/2,Math.PI*2*k/nummeasure+Math.PI/(nummeasure*2)-Math.PI/2);
+                    //     textSize(8);
+                    //     noStroke();
+                    //     if (k>nummeasure/2-1) {
+                    //         textAlign(RIGHT);
+                    //     }
+                    //     text(measurename[k]+': '+Math.round(measures[k][sample][mindex][2]*100)/100,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*k/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*k/nummeasure)/2);
+                    //     textAlign(LEFT);
+                    // }
+                    // var xp1 = xCenter+rPlotSize*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2;
+                    // var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2;
+                    // stroke(180,180,180,100);
+                    // line(xCenter,yCenter,xp1,yp1);
+                    // switch (type[nummeasure-1]) {
+                    //     case 0:
+                    //         fill(18, 169, 101);
+                    //         stroke(18, 169, 101);
+                    //         break;
+                    //     case 1:
+                    //         fill(232, 101, 11);
+                    //         stroke(232, 101, 11);
+                    //         break;
+                    //     case 2:
+                    //         fill(89, 135, 222);
+                    //         stroke(89, 135, 222);
+                    //         break;
+                    // }
+                    // arc(xCenter,yCenter,rPlotSize*measures[nummeasure-1][sample][mindex][2],rPlotSize*measures[nummeasure-1][sample][mindex][2],Math.PI*2*(nummeasure-1)/nummeasure-Math.PI/(2*nummeasure)-Math.PI/2,Math.PI*2*(nummeasure-1)/nummeasure+Math.PI/(2*nummeasure)-Math.PI/2);
+                    // textSize(8);
+                    // noStroke();
+                    // textAlign(RIGHT);
+                    // text(measurename[k]+': '+Math.round(measures[k][sample][mindex][2]*100)/100,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2);
+                    // textAlign(LEFT);
+
+                    // DRAW PERIODOGRAM
                     var xCenter = 2*xBlank+2*csPlotSize+rPlotSize+j*groupSize;
                     var yCenter = yBlank+50+csPlotSize*0.5+i*(ygBlank+csPlotSize);
                     fill(255);
-                    stroke(180,180,180,100);
-                    for (var k = 5; k > 0; k--) {
-                        ellipse(xCenter,yCenter,rPlotSize*0.2*k,rPlotSize*0.2*k);
-                    }
-                    for (var k = 0; k < nummeasure-1; k++) {
-                        var xp1 = xCenter+rPlotSize*Math.sin(Math.PI*2*k/nummeasure)/2;
-                        var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*k/nummeasure)/2;
-                        stroke(180,180,180,100);
-                        line(xCenter,yCenter,xp1,yp1);
-                        switch (type[k]) {
-                            case 0:
-                                fill(18, 169, 101);
-                                stroke(18, 169, 101);
-                                break;
-                            case 1:
-                                fill(232, 101, 11);
-                                stroke(232, 101, 11);
-                                break;
-                            case 2:
-                                fill(89, 135, 222);
-                                stroke(89, 135, 222);
-                                break;
-                        }
-                        arc(xCenter,yCenter,rPlotSize*measures[k][sample][mindex][2],rPlotSize*measures[k][sample][mindex][2],Math.PI*2*k/nummeasure-Math.PI/(2*nummeasure)-Math.PI/2,Math.PI*2*k/nummeasure+Math.PI/(nummeasure*2)-Math.PI/2);
-                        textSize(8);
-                        noStroke();
-                        if (k>nummeasure/2-1) {
-                            textAlign(RIGHT);
-                        }
-                        text(measurename[k]+': '+Math.round(measures[k][sample][mindex][2]*100)/100,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*k/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*k/nummeasure)/2);
-                        textAlign(LEFT);
-                    }
-                    var xp1 = xCenter+rPlotSize*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2;
-                    var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2;
-                    stroke(180,180,180,100);
-                    line(xCenter,yCenter,xp1,yp1);
-                    switch (type[nummeasure-1]) {
-                        case 0:
-                            fill(18, 169, 101);
-                            stroke(18, 169, 101);
-                            break;
-                        case 1:
-                            fill(232, 101, 11);
-                            stroke(232, 101, 11);
-                            break;
-                        case 2:
-                            fill(89, 135, 222);
-                            stroke(89, 135, 222);
-                            break;
-                    }
-                    arc(xCenter,yCenter,rPlotSize*measures[nummeasure-1][sample][mindex][2],rPlotSize*measures[nummeasure-1][sample][mindex][2],Math.PI*2*(nummeasure-1)/nummeasure-Math.PI/(2*nummeasure)-Math.PI/2,Math.PI*2*(nummeasure-1)/nummeasure+Math.PI/(2*nummeasure)-Math.PI/2);
-                    textSize(8);
+                    stroke(0);
+                    rect(xCenter-rPlotSize,yCenter-0.5*csPlotSize,2*rPlotSize,csPlotSize);
+                    fill(0);
                     noStroke();
-                    textAlign(RIGHT);
-                    text(measurename[k]+': '+Math.round(measures[k][sample][mindex][2]*100)/100,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2);
-                    textAlign(LEFT);
+                    textSize(13);
+                    if(peakPeri[mindex].length>0) text("Max peak value = "+d3.max(peakPeri[sample][mindex].map(d=>d[0])),xCenter-rPlotSize+5,yCenter-0.5*csPlotSize+20);
+                    else text("No peak",xCenter-rPlotSize+5,yCenter-0.5*csPlotSize+20);
+                    if(peakPeri[mindex].length>0) text("Frequency at max peak = "+0.5*d3.max(peakPeri[sample][mindex])[1]/myPeriodogramDraw[sample][mindex].length,xCenter-rPlotSize+5,yCenter-0.5*csPlotSize+40);
+                    myPeriodogramDraw[sample][mindex].forEach((d,index)=>{
+                        if(index){
+                            let xP1 = xCenter-rPlotSize+5+(2*rPlotSize-5)*(index-1)/myPeriodogramDraw[sample][mindex].length;
+                            let xP2 = xCenter-rPlotSize+5+(2*rPlotSize-5)*index/myPeriodogramDraw[sample][mindex].length;
+                            let yP1 = yCenter+0.5*csPlotSize-5-(csPlotSize-5)*myPeriodogramDraw[sample][mindex][index-1];
+                            let yP2 = yCenter+0.5*csPlotSize-5-(csPlotSize-5)*d;
+                            if (index<timedata.length/2) stroke(0,0,255-255*index/(timedata.length/2));
+                            else stroke((index-timedata.length/2)*255/(timedata.length/2),0,0);
+                            line(xP1,yP1,xP2,yP2);
+                        }
+                    });
 
                     // write value of measure
                     noStroke();
