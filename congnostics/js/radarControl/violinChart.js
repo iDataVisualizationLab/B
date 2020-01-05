@@ -118,7 +118,8 @@ d3.viiolinChart = function () {
 
         let median_rect = viol_chart.selectAll('rect.median').data(d=>d.median!=undefined?[d.median]:[]);
         median_rect.exit().remove();
-        median_rect.enter().append('rect').attrs({
+        median_rect.enter().append('rect')
+            .merge(median_rect).attrs({
             class: 'median',
             width:1,
             height: 8,
