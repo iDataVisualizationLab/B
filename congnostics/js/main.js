@@ -547,6 +547,17 @@ function analyzedata() {
                             }
                         }
                         // OUTLIERS
+                        let sortXData = xData.map(d=>{return d});
+                        sortXData.sort((a,b)=>{return a-b});
+                        let xq1 = sortXData[Math.floor(sortXData.length*0.25)];
+                        let xq2 = sortXData[Math.floor(sortXData.length*0.5)];
+                        let xq3 = sortXData[Math.floor(sortXData.length*0.75)];
+                        let xOutlierArr = xData.filter(d=>(d>xq3+1.5*(xq3-xq1)||d<xq1-1.5*(xq3-xq1)));
+                        let adOutlier = 0;
+                        xOutlierArr.forEach(d=>adOutlier+=Math.abs(d-xq2));
+                        let adTotal = 0;
+                        xData.forEach(d=>adTotal+=Math.abs(d-xq2));
+                        measures[10][p][myIndex][2] = adOutlier/adTotal;
 
 
                         // TREND
@@ -576,11 +587,6 @@ function analyzedata() {
                         measures[3][p][myIndex][2] = Math.abs(covX/deviationX);
 
                         // MEAN & STANDARD DEVIATION & SKEWNESS
-                        let sortXData = xData.map(d=>{return d});
-                        sortXData.sort((a,b)=>{return a-b});
-                        let xq1 = sortXData[Math.floor(sortXData.length*0.25)];
-                        let xq2 = sortXData[Math.floor(sortXData.length*0.5)];
-                        let xq3 = sortXData[Math.floor(sortXData.length*0.75)];
                         measures[4][p][myIndex][2] = meanX;
                         measures[5][p][myIndex][2] = Math.sqrt(deviationX/xData.length);
                         measures[6][p][myIndex][2] = (xq3!==xq1)?Math.abs((xq1+xq3-2*xq2)/(xq3-xq1)):0;

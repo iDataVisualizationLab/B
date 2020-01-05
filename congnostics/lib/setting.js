@@ -1,5 +1,5 @@
 let measures = [];  // measures[index][sample][x-var,y-var,value], value = -1 means no data
-let nummeasure = 10;
+let nummeasure = 11;
 // let measurename = [
 //     'Outlying',
 //     'Skinny',
@@ -27,7 +27,7 @@ let nummeasure = 10;
 //     'Length':10
 // };
 let measurename = [
-    'Outlying',
+    'Net Outlying',
     'Trend',
     'Periodicity',
     'Autocorrelation',
@@ -36,10 +36,11 @@ let measurename = [
     'Skewness',
     'Net mean',
     'Net standard deviation',
-    'Net skewness'
+    'Net skewness',
+    'Outlying'
 ];
 let measureObj = {
-    'Outlying':0,
+    'Net Outlying':0,
     'Trend':1,
     'Periodicity':2,
     'Autocorrelation':3,
@@ -48,7 +49,8 @@ let measureObj = {
     'Skewness':6,
     'Net mean':7,
     'Net standard deviation':8,
-    'Net skewness':9
+    'Net skewness':9,
+    'Outlying':10
 };
 
 
