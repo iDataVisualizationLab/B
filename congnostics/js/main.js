@@ -588,7 +588,7 @@ function analyzedata() {
 
                         // MEAN & STANDARD DEVIATION & SKEWNESS
                         measures[5][p][myIndex][2] = meanX;
-                        measures[6][p][myIndex][2] = Math.sqrt(deviationX/xData.length);
+                        measures[6][p][myIndex][2] = (2*Math.sqrt(deviationX/xData.length)>1)?1:2*Math.sqrt(deviationX/xData.length);
                         measures[7][p][myIndex][2] = (xq3!==xq1)?Math.abs((xq1+xq3-2*xq2)/(xq3-xq1)):0;
 
                         // FIRST LAG DIFFERENCE STANDARD DEVIATION
@@ -600,7 +600,7 @@ function analyzedata() {
                             skewDiff += (Math.abs(d)-meanDiff)*(Math.abs(d)-meanDiff)*(Math.abs(d)-meanDiff);
                         });
                         measures[8][p][myIndex][2] = (2*Math.sqrt(meanDiff)>1)?1:2*Math.sqrt(meanDiff);
-                        measures[9][p][myIndex][2] = (4*Math.sqrt(devDiff/firstLagDiff.length)>1)?1:4*Math.sqrt(devDiff/firstLagDiff.length);
+                        measures[9][p][myIndex][2] = (6*Math.sqrt(devDiff/firstLagDiff.length)>1)?1:4*Math.sqrt(devDiff/firstLagDiff.length);
                         measures[10][p][myIndex][2] = (q3!==q1)?Math.abs((q1+q3-2*q2)/(q3-q1)):0;
                         // measures[10][p][myIndex][2] = 1-Math.exp(-skewDiff/(firstLagDiff.length*Math.pow(measures[9][p][myIndex][2],3)));
 
