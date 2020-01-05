@@ -600,7 +600,7 @@ function analyzedata() {
                             devDiff += (Math.abs(d)-meanDiff)*(Math.abs(d)-meanDiff);
                             skewDiff += (Math.abs(d)-meanDiff)*(Math.abs(d)-meanDiff)*(Math.abs(d)-meanDiff);
                         });
-                        measures[8][p][myIndex][2] = (2*Math.sqrt(meanDiff)>1)?1:2*Math.sqrt(meanDiff);
+                        measures[8][p][myIndex][2] = (2*meanDiff>1)?1:2*meanDiff;
                         measures[9][p][myIndex][2] = (6*Math.sqrt(devDiff/firstLagDiff.length)>1)?1:4*Math.sqrt(devDiff/firstLagDiff.length);
                         measures[10][p][myIndex][2] = (q3!==q1)?Math.abs((q1+q3-2*q2)/(q3-q1)):0;
                         // measures[10][p][myIndex][2] = 1-Math.exp(-skewDiff/(firstLagDiff.length*Math.pow(measures[9][p][myIndex][2],3)));
