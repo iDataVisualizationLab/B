@@ -526,7 +526,7 @@ function analyzedata() {
                         let q1 = sortFirstLagDiff[Math.floor(sortFirstLagDiff.length*0.25)];
                         let q3 = sortFirstLagDiff[Math.floor(sortFirstLagDiff.length*0.75)];
                         let q2 = sortFirstLagDiff[Math.floor(sortFirstLagDiff.length*0.5)];
-                        let outlierArr = firstLagDiff.filter(d=>(d>q3+1.5*(q3-q1)||d<q1-1.5*(q3-q1))&&(d>0.01));
+                        let outlierArr = firstLagDiff.filter(d=>(d>q3+1.5*(q3-q1)||d<q1-1.5*(q3-q1))&&(d>0.01||d<-0.01));
                         let adTotalLength = 0;
                         firstLagDiff.forEach(d=>{adTotalLength += Math.abs(d-q2)});
                         let adOutlierLength = 0;
