@@ -584,7 +584,7 @@ function analyzedata() {
                                 covX += (x-meanX)*(xData[xi+1]-meanX);
                             }
                         });
-                        measures[4][p][myIndex][2] = Math.abs(covX/deviationX);
+                        measures[4][p][myIndex][2] = Math.pow(covX/deviationX,2);
 
                         // MEAN & STANDARD DEVIATION & SKEWNESS
                         measures[5][p][myIndex][2] = meanX;
@@ -599,8 +599,8 @@ function analyzedata() {
                             devDiff += (Math.abs(d)-meanDiff)*(Math.abs(d)-meanDiff);
                             skewDiff += (Math.abs(d)-meanDiff)*(Math.abs(d)-meanDiff)*(Math.abs(d)-meanDiff);
                         });
-                        measures[8][p][myIndex][2] = Math.sqrt(meanDiff);
-                        measures[9][p][myIndex][2] = Math.sqrt(devDiff/firstLagDiff.length);
+                        measures[8][p][myIndex][2] = (2*Math.sqrt(meanDiff)>1)?1:2*Math.sqrt(meanDiff);
+                        measures[9][p][myIndex][2] = (4*Math.sqrt(devDiff/firstLagDiff.length)>1)?1:4*Math.sqrt(devDiff/firstLagDiff.length);
                         measures[10][p][myIndex][2] = (q3!==q1)?Math.abs((q1+q3-2*q2)/(q3-q1)):0;
                         // measures[10][p][myIndex][2] = 1-Math.exp(-skewDiff/(firstLagDiff.length*Math.pow(measures[9][p][myIndex][2],3)));
 
