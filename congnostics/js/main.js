@@ -1930,89 +1930,89 @@ function draw() {
                     // bezier(xBlank+j*groupSize+oPlotSize,yBlank+50+i*(csPlotSize+ygBlank)+oPlotSize*0.25,xBlank+j*groupSize+oPlotSize*1.25,yBlank+50+i*(csPlotSize+ygBlank)+oPlotSize*0.25,xBlank+j*groupSize+oPlotSize,yBlank+50+0.5*oPlotSize+i*(csPlotSize+ygBlank),xBlank+j*groupSize+oPlotSize*1.2,yBlank+50+0.5*oPlotSize+i*(csPlotSize+ygBlank));
 
                     //  DRAW RADAR CHART
-                    // var xCenter = 2*xBlank+2*csPlotSize+rPlotSize+j*groupSize;
-                    // var yCenter = yBlank+50+csPlotSize*0.5+i*(ygBlank+csPlotSize);
-                    // fill(255);
-                    // stroke(180,180,180,100);
-                    // for (var k = 5; k > 0; k--) {
-                    //     ellipse(xCenter,yCenter,rPlotSize*0.2*k,rPlotSize*0.2*k);
-                    // }
-                    // for (var k = 0; k < nummeasure-1; k++) {
-                    //     var xp1 = xCenter+rPlotSize*Math.sin(Math.PI*2*k/nummeasure)/2;
-                    //     var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*k/nummeasure)/2;
-                    //     stroke(180,180,180,100);
-                    //     line(xCenter,yCenter,xp1,yp1);
-                    //     switch (type[k]) {
-                    //         case 0:
-                    //             fill(18, 169, 101);
-                    //             stroke(18, 169, 101);
-                    //             break;
-                    //         case 1:
-                    //             fill(232, 101, 11);
-                    //             stroke(232, 101, 11);
-                    //             break;
-                    //         case 2:
-                    //             fill(89, 135, 222);
-                    //             stroke(89, 135, 222);
-                    //             break;
-                    //     }
-                    //     arc(xCenter,yCenter,rPlotSize*measures[k][sample][mindex][2],rPlotSize*measures[k][sample][mindex][2],Math.PI*2*k/nummeasure-Math.PI/(2*nummeasure)-Math.PI/2,Math.PI*2*k/nummeasure+Math.PI/(nummeasure*2)-Math.PI/2);
-                    //     textSize(8);
-                    //     noStroke();
-                    //     if (k>nummeasure/2-1) {
-                    //         textAlign(RIGHT);
-                    //     }
-                    //     text(measurename[k]+': '+Math.round(measures[k][sample][mindex][2]*100)/100,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*k/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*k/nummeasure)/2);
-                    //     textAlign(LEFT);
-                    // }
-                    // var xp1 = xCenter+rPlotSize*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2;
-                    // var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2;
-                    // stroke(180,180,180,100);
-                    // line(xCenter,yCenter,xp1,yp1);
-                    // switch (type[nummeasure-1]) {
-                    //     case 0:
-                    //         fill(18, 169, 101);
-                    //         stroke(18, 169, 101);
-                    //         break;
-                    //     case 1:
-                    //         fill(232, 101, 11);
-                    //         stroke(232, 101, 11);
-                    //         break;
-                    //     case 2:
-                    //         fill(89, 135, 222);
-                    //         stroke(89, 135, 222);
-                    //         break;
-                    // }
-                    // arc(xCenter,yCenter,rPlotSize*measures[nummeasure-1][sample][mindex][2],rPlotSize*measures[nummeasure-1][sample][mindex][2],Math.PI*2*(nummeasure-1)/nummeasure-Math.PI/(2*nummeasure)-Math.PI/2,Math.PI*2*(nummeasure-1)/nummeasure+Math.PI/(2*nummeasure)-Math.PI/2);
-                    // textSize(8);
-                    // noStroke();
-                    // textAlign(RIGHT);
-                    // text(measurename[k]+': '+Math.round(measures[k][sample][mindex][2]*100)/100,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2);
-                    // textAlign(LEFT);
-
-                    // DRAW PERIODOGRAM
                     var xCenter = 2*xBlank+2*csPlotSize+rPlotSize+j*groupSize;
                     var yCenter = yBlank+50+csPlotSize*0.5+i*(ygBlank+csPlotSize);
                     fill(255);
-                    stroke(0);
-                    rect(xCenter-rPlotSize,yCenter-0.5*csPlotSize,2*rPlotSize,csPlotSize);
-                    fill(0);
-                    noStroke();
-                    textSize(13);
-                    if(peakPeri[mindex].length>0) text("Max peak value = "+d3.max(peakPeri[sample][mindex].map(d=>d[0])),xCenter-rPlotSize+5,yCenter-0.5*csPlotSize+20);
-                    else text("No peak",xCenter-rPlotSize+5,yCenter-0.5*csPlotSize+20);
-                    if(peakPeri[mindex].length>0) text("Frequency at max peak = "+0.5*d3.max(peakPeri[sample][mindex])[1]/myPeriodogramDraw[sample][mindex].length,xCenter-rPlotSize+5,yCenter-0.5*csPlotSize+40);
-                    myPeriodogramDraw[sample][mindex].forEach((d,index)=>{
-                        if(index){
-                            let xP1 = xCenter-rPlotSize+5+(2*rPlotSize-5)*(index-1)/myPeriodogramDraw[sample][mindex].length;
-                            let xP2 = xCenter-rPlotSize+5+(2*rPlotSize-5)*index/myPeriodogramDraw[sample][mindex].length;
-                            let yP1 = yCenter-5-(csPlotSize-5)*myPeriodogramDraw[sample][mindex][index-1];
-                            let yP2 = yCenter-5-(csPlotSize-5)*d;
-                            if (index<timedata.length/2) stroke(0,0,255-255*index/(timedata.length/2));
-                            else stroke((index-timedata.length/2)*255/(timedata.length/2),0,0);
-                            line(xP1,yP1,xP2,yP2);
+                    stroke(180,180,180,100);
+                    for (var k = 5; k > 0; k--) {
+                        ellipse(xCenter,yCenter,rPlotSize*0.2*k,rPlotSize*0.2*k);
+                    }
+                    for (var k = 0; k < nummeasure-1; k++) {
+                        var xp1 = xCenter+rPlotSize*Math.sin(Math.PI*2*k/nummeasure)/2;
+                        var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*k/nummeasure)/2;
+                        stroke(180,180,180,100);
+                        line(xCenter,yCenter,xp1,yp1);
+                        switch (type[k]) {
+                            case 0:
+                                fill(18, 169, 101);
+                                stroke(18, 169, 101);
+                                break;
+                            case 1:
+                                fill(232, 101, 11);
+                                stroke(232, 101, 11);
+                                break;
+                            case 2:
+                                fill(89, 135, 222);
+                                stroke(89, 135, 222);
+                                break;
                         }
-                    });
+                        arc(xCenter,yCenter,rPlotSize*measures[k][sample][mindex][2],rPlotSize*measures[k][sample][mindex][2],Math.PI*2*k/nummeasure-Math.PI/(2*nummeasure)-Math.PI/2,Math.PI*2*k/nummeasure+Math.PI/(nummeasure*2)-Math.PI/2);
+                        textSize(8);
+                        noStroke();
+                        if (k>nummeasure/2-1) {
+                            textAlign(RIGHT);
+                        }
+                        text(measurename[k]+': '+Math.round(measures[k][sample][mindex][2]*100)/100,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*k/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*k/nummeasure)/2);
+                        textAlign(LEFT);
+                    }
+                    var xp1 = xCenter+rPlotSize*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2;
+                    var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2;
+                    stroke(180,180,180,100);
+                    line(xCenter,yCenter,xp1,yp1);
+                    switch (type[nummeasure-1]) {
+                        case 0:
+                            fill(18, 169, 101);
+                            stroke(18, 169, 101);
+                            break;
+                        case 1:
+                            fill(232, 101, 11);
+                            stroke(232, 101, 11);
+                            break;
+                        case 2:
+                            fill(89, 135, 222);
+                            stroke(89, 135, 222);
+                            break;
+                    }
+                    arc(xCenter,yCenter,rPlotSize*measures[nummeasure-1][sample][mindex][2],rPlotSize*measures[nummeasure-1][sample][mindex][2],Math.PI*2*(nummeasure-1)/nummeasure-Math.PI/(2*nummeasure)-Math.PI/2,Math.PI*2*(nummeasure-1)/nummeasure+Math.PI/(2*nummeasure)-Math.PI/2);
+                    textSize(8);
+                    noStroke();
+                    textAlign(RIGHT);
+                    text(measurename[k]+': '+Math.round(measures[k][sample][mindex][2]*100)/100,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2);
+                    textAlign(LEFT);
+
+                    // DRAW PERIODOGRAM
+                    // var xCenter = 2*xBlank+2*csPlotSize+rPlotSize+j*groupSize;
+                    // var yCenter = yBlank+50+csPlotSize*0.5+i*(ygBlank+csPlotSize);
+                    // fill(255);
+                    // stroke(0);
+                    // rect(xCenter-rPlotSize,yCenter-0.5*csPlotSize,2*rPlotSize,csPlotSize);
+                    // fill(0);
+                    // noStroke();
+                    // textSize(13);
+                    // if(peakPeri[mindex].length>0) text("Max peak value = "+d3.max(peakPeri[sample][mindex].map(d=>d[0])),xCenter-rPlotSize+5,yCenter-0.5*csPlotSize+20);
+                    // else text("No peak",xCenter-rPlotSize+5,yCenter-0.5*csPlotSize+20);
+                    // if(peakPeri[mindex].length>0) text("Frequency at max peak = "+0.5*d3.max(peakPeri[sample][mindex])[1]/myPeriodogramDraw[sample][mindex].length,xCenter-rPlotSize+5,yCenter-0.5*csPlotSize+40);
+                    // myPeriodogramDraw[sample][mindex].forEach((d,index)=>{
+                    //     if(index){
+                    //         let xP1 = xCenter-rPlotSize+5+(2*rPlotSize-5)*(index-1)/myPeriodogramDraw[sample][mindex].length;
+                    //         let xP2 = xCenter-rPlotSize+5+(2*rPlotSize-5)*index/myPeriodogramDraw[sample][mindex].length;
+                    //         let yP1 = yCenter-5-(csPlotSize-5)*myPeriodogramDraw[sample][mindex][index-1];
+                    //         let yP2 = yCenter-5-(csPlotSize-5)*d;
+                    //         if (index<timedata.length/2) stroke(0,0,255-255*index/(timedata.length/2));
+                    //         else stroke((index-timedata.length/2)*255/(timedata.length/2),0,0);
+                    //         line(xP1,yP1,xP2,yP2);
+                    //     }
+                    // });
 
                     // write value of measure
                     noStroke();
