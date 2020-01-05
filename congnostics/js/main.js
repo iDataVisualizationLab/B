@@ -44,7 +44,7 @@ let numplot = 10;
 let newnumplot = 0;
 let selectedmeasure = 0;
 let choose = false;   // for selections
-let type = [0,0,0,0,1,1,1,2,2,2];   // for type of measures in selection button
+let type = [0,0,0,0,0,1,1,1,2,2,2];   // for type of measures in selection button
 let checkfilter = [];
 let valfilter = [];
 for (var i = 0; i < nummeasure; i++) {
@@ -531,7 +531,7 @@ function analyzedata() {
                         firstLagDiff.forEach(d=>{adTotalLength += Math.abs(d-q2)});
                         let adOutlierLength = 0;
                         outlierArr.forEach(d=>{adOutlierLength += Math.abs(d-q2)});
-                        measures[0][p][myIndex][2] = adOutlierLength/adTotalLength;
+                        measures[1][p][myIndex][2] = adOutlierLength/adTotalLength;
                         let adjustXData = xData.filter((x,index)=>{
                             if (index) {
                                 if ((firstLagDiff[index-1]>q3+1.5*(q3-q1)||firstLagDiff[index-1]<q1-1.5*(q3-q1))&&(firstLagDiff[index]>q3+1.5*(q3-q1)||firstLagDiff[index]<q1-1.5*(q3-q1))) return false;
@@ -557,7 +557,7 @@ function analyzedata() {
                         xOutlierArr.forEach(d=>adOutlier+=Math.abs(d-xq2));
                         let adTotal = 0;
                         xData.forEach(d=>adTotal+=Math.abs(d-xq2));
-                        measures[10][p][myIndex][2] = adOutlier/adTotal;
+                        measures[0][p][myIndex][2] = adOutlier/adTotal;
 
 
                         // TREND
@@ -571,7 +571,7 @@ function analyzedata() {
                                 }
                             }
                         });
-                        measures[1][p][myIndex][2] = Math.abs(Sign)/(xData.length*(xData.length-1)/2);
+                        measures[2][p][myIndex][2] = Math.abs(Sign)/(xData.length*(xData.length-1)/2);
 
                         // FIRST AUTOCORRELATION
                         let covX = 0, meanX = 0, deviationX = 0, skewX = 0;
@@ -584,12 +584,12 @@ function analyzedata() {
                                 covX += (x-meanX)*(xData[xi+1]-meanX);
                             }
                         });
-                        measures[3][p][myIndex][2] = Math.abs(covX/deviationX);
+                        measures[4][p][myIndex][2] = Math.abs(covX/deviationX);
 
                         // MEAN & STANDARD DEVIATION & SKEWNESS
-                        measures[4][p][myIndex][2] = meanX;
-                        measures[5][p][myIndex][2] = Math.sqrt(deviationX/xData.length);
-                        measures[6][p][myIndex][2] = (xq3!==xq1)?Math.abs((xq1+xq3-2*xq2)/(xq3-xq1)):0;
+                        measures[5][p][myIndex][2] = meanX;
+                        measures[6][p][myIndex][2] = Math.sqrt(deviationX/xData.length);
+                        measures[7][p][myIndex][2] = (xq3!==xq1)?Math.abs((xq1+xq3-2*xq2)/(xq3-xq1)):0;
 
                         // FIRST LAG DIFFERENCE STANDARD DEVIATION
                         let meanDiff = 0, devDiff = 0, skewDiff = 0;
@@ -599,9 +599,9 @@ function analyzedata() {
                             devDiff += (Math.abs(d)-meanDiff)*(Math.abs(d)-meanDiff);
                             skewDiff += (Math.abs(d)-meanDiff)*(Math.abs(d)-meanDiff)*(Math.abs(d)-meanDiff);
                         });
-                        measures[7][p][myIndex][2] = Math.sqrt(meanDiff);
-                        measures[8][p][myIndex][2] = Math.sqrt(devDiff/firstLagDiff.length);
-                        measures[9][p][myIndex][2] = (q3!==q1)?Math.abs((q1+q3-2*q2)/(q3-q1)):0;
+                        measures[8][p][myIndex][2] = Math.sqrt(meanDiff);
+                        measures[9][p][myIndex][2] = Math.sqrt(devDiff/firstLagDiff.length);
+                        measures[10][p][myIndex][2] = (q3!==q1)?Math.abs((q1+q3-2*q2)/(q3-q1)):0;
 
                         // PERIODICITY
                         // let myPeriodogram = xData.map((x,xi)=>{
@@ -675,7 +675,7 @@ function analyzedata() {
                         // myPeriodogram.forEach((d,i)=>{if(i>=cutLimit) sumPower+=d});
                         myPeriodogram.forEach(d=>sumPower+=d);
                         if(peak.length>0) peak.map(d=>d[0]).forEach(dd=>sumPeak+=dd);
-                        measures[2][p][myIndex][2] = 2*sumPeak/sumPower;
+                        measures[3][p][myIndex][2] = 2*sumPeak/sumPower;
                         // let meanPower = 0;
                         // sortPeriodogram.forEach((d,index)=>{
                         //     // if(index!==(sortPeriodogram.length-1)) meanPower += d[0];

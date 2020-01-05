@@ -27,6 +27,7 @@ let nummeasure = 11;
 //     'Length':10
 // };
 let measurename = [
+    'Outlying',
     'Net Outlying',
     'Trend',
     'Periodicity',
@@ -37,20 +38,19 @@ let measurename = [
     'Net mean',
     'Net standard deviation',
     'Net skewness',
-    'Outlying'
 ];
 let measureObj = {
-    'Net Outlying':0,
-    'Trend':1,
-    'Periodicity':2,
-    'Autocorrelation':3,
-    'Mean':4,
-    'Standard deviation':5,
-    'Skewness':6,
-    'Net mean':7,
-    'Net standard deviation':8,
-    'Net skewness':9,
-    'Outlying':10
+    'Outlying':0,
+    'Net Outlying':1,
+    'Trend':2,
+    'Periodicity':3,
+    'Autocorrelation':4,
+    'Mean':5,
+    'Standard deviation':6,
+    'Skewness':7,
+    'Net mean':8,
+    'Net standard deviation':9,
+    'Net skewness':10,
 };
 
 
