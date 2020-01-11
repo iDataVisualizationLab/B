@@ -1,6 +1,6 @@
 code	name
 0	close eye
-1	eye brown
+1	eyebrows
 2	eye left
 3	eye right
 4	normal
