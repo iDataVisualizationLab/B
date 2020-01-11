@@ -33,6 +33,7 @@ let peakPeri = [];
 let needupdate = false;
 // let needcalculation = true; //TO DO
 let needcalculation = true;
+let selectedDisplay = "1D";
 
 // VARIABLES FOR VISUALIZATION
 let displayplot = [];   // displayplot[measure index][0->numplot-1:lowest, numplot->2numplot-1: middle, 2numplot->3numplot-1: highest][sample, x-var, y-var,value,index]
