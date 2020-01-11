@@ -152,7 +152,7 @@ d3.umapTimeSpace = function () {
                 let fillColor = d3.color(colorarr[target.cluster].value);
                 fillColor.opacity = 0.8
                 background_ctx.fillStyle = fillColor + '';
-                background_ctx.fillRect(xscale(d[0]) - 2, yscale(d[1]) - 2, 4, 4);
+                background_ctx.fillRect(xscale(d[0]) - 4, yscale(d[1]) - 4, 8, 8);
             });
             solution.forEach(function(d, i) {
                 const target = datain[i];
@@ -431,7 +431,7 @@ function drawLeaderPlot(ctx_,plot_,group_,plotPosition_) {
     var group = group_;
     var plotPosition = plotPosition_;
     var plotIndex = plot.split("-"); // [sample,#plot]
-    var plotSize = 50;
+    var plotSize = 200;
     var color = [];
     ctx.fillStyle = "rgb(255,255,255)";
     ctx.strokeStyle = colorCluster(cluster_info[group].name);
