@@ -203,7 +203,7 @@ $( document ).ready(function() {
             }
         });
         // dimension option
-        d3.select('#display').on('change',function(){
+        d3.select('#analysis').on('change',function(){
             switch (this.value) {
                 case "1D":
                     nummeasure = 11;
@@ -266,6 +266,7 @@ $( document ).ready(function() {
             }
             updateMeasureName();
             needcalculation = true;
+            // update metricController
             d3.select('.cover').classed('hidden', false);
         });
         // display mode
