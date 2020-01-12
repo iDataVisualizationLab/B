@@ -58,15 +58,36 @@ var application_name ='Joblist';
 var jobList=[];
 var cluster_info,clusterDescription;
 var hostList;
-var serviceList = measurename;
+var serviceList,serviceList_selected,serviceListattr,serviceLists, serviceFullList;
+function updateMeasureName() {
+    serviceList = measurename;
 // var serviceList_selected = [{"text":"Temperature","index":0},{"text":"Memory_usage","index":1},{"text":"Fans_speed","index":2},{"text":"Power_consum","index":3}];
-var serviceList_selected = measurename.map((d,i)=>{return {text:d,index:i}});
+    serviceList_selected = measurename.map((d, i) => {
+        return {text: d, index: i}
+    });
 // var serviceListattr = ["arrTemperature","arrMemory_usage","arrFans_health","arrPower_usage","arrJob_scheduling"];
-var serviceListattr = measurename;
+    serviceListattr = measurename;
 // var serviceLists = [{"text":"Outlying","id":0,"enable":true,"sub":[{"text":"Outlying","id":0,"enable":true,"idroot":0,"angle":0,"range":[0,1]}]},{"text":"Skinny","id":1,"enable":true,"sub":[{"text":"Skinny","id":0,"enable":true,"idroot":1,"angle":0.5235987755982988,"range":[0,1]}]},{"text":"Skewed","id":2,"enable":true,"sub":[{"text":"Skewed","id":0,"enable":true,"idroot":2,"angle":1.0471975511965976,"range":[0,1]}]},{"text":"Clumpy","id":3,"enable":true,"sub":[{"text":"Clumpy","id":0,"enable":true,"idroot":3,"angle":1.5707963267948966,"range":[0,1]}]},{"text":"Sparse","id":4,"enable":true,"sub":[{"text":"Sparse","id":0,"enable":true,"idroot":4,"angle":2.0943951023931953,"range":[0,1]}]},{"text":"Striated","id":5,"enable":true,"sub":[{"text":"Striated","id":0,"enable":true,"idroot":5,"angle":2.6179938779914944,"range":[0,1]}]},{"text":"Trend","id":6,"enable":true,"sub":[{"text":"Trend","id":0,"enable":true,"idroot":6,"angle":3.141592653589793,"range":[0,1]}]},{"text":"Constant","id":7,"enable":true,"sub":[{"text":"Constant","id":0,"enable":true,"idroot":7,"angle":3.665191429188092,"range":[0,1]}]},{"text":"Intersection","id":8,"enable":true,"sub":[{"text":"Intersection","id":0,"enable":true,"idroot":8,"angle":4.1887902047863905,"range":[0,1]}]},{"text":"Loop","id":9,"enable":true,"sub":[{"text":"Loop","id":0,"enable":true,"idroot":9,"angle":4.71238898038469,"range":[0,1]}]},{"text":"CrossCorrelation","id":10,"enable":true,"sub":[{"text":"CrossCorrelation","id":0,"enable":true,"idroot":10,"angle":5.235987755982989,"range":[0,1]}]},{"text":"Length","id":11,"enable":true,"sub":[{"text":"Length","id":0,"enable":true,"idroot":11,"angle":5.759586531581287,"range":[0,1]}]}];
-var serviceLists = measurename.map((d,i)=>{return {text:d,id:i,enable:true,sub:[{"text":d,"id":0,"enable":true,"idroot":i,"angle":Math.PI*2*i/nummeasure,"range":[0,1]}]}});
+    serviceLists = measurename.map((d, i) => {
+        return {
+            text: d,
+            id: i,
+            enable: true,
+            sub: [{
+                "text": d,
+                "id": 0,
+                "enable": true,
+                "idroot": i,
+                "angle": Math.PI * 2 * i / nummeasure,
+                "range": [0, 1]
+            }]
+        }
+    });
 // var serviceLists_or = [{"text":"Temperature","id":0,"enable":true,"sub":[{"text":"CPU1 Temp","id":0,"enable":true,"idroot":0,"angle":5.585053606381854,"range":[3,98]},{"text":"CPU2 Temp","id":1,"enable":true,"idroot":0,"angle":0,"range":[3,98]},{"text":"Inlet Temp","id":2,"enable":true,"idroot":0,"angle":0.6981317007977318,"range":[3,98]}]},{"text":"Memory_usage","id":1,"enable":true,"sub":[{"text":"Memory usage","id":0,"enable":true,"idroot":1,"angle":1.5707963267948966,"range":[0,99]}]},{"text":"Fans_speed","id":2,"enable":true,"sub":[{"text":"Fan1 speed","id":0,"enable":true,"idroot":2,"angle":2.4870941840919194,"range":[1050,17850]},{"text":"Fan2 speed","id":1,"enable":true,"idroot":2,"angle":2.923426497090502,"range":[1050,17850]},{"text":"Fan3 speed","id":2,"enable":true,"idroot":2,"angle":3.3597588100890845,"range":[1050,17850]},{"text":"Fan4 speed","id":3,"enable":true,"idroot":2,"angle":3.796091123087667,"range":[1050,17850]}]},{"text":"Power_consum","id":3,"enable":true,"sub":[{"text":"Power consumption","id":0,"enable":true,"idroot":3,"angle":4.71238898038469,"range":[0,200]}]}];
-var serviceFullList = serviceLists2serviceFullList(serviceLists);
+    serviceFullList = serviceLists2serviceFullList(serviceLists);
+}
+
+updateMeasureName();
 
 srcpath = '../HiperView/';
 

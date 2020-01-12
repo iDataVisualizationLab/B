@@ -18,7 +18,7 @@ addEventListener('message',function ({data}){
             serviceList_selected = data.value.serviceList_selected;
             serviceListattr= data.value.serviceListattr;
             serviceFull_selected =[];
-            serviceList_selected.forEach(s=>serviceLists[s.index].sub.forEach(sub=>serviceFull_selected.push(sub)))
+            serviceList_selected.forEach(s=>serviceLists[s.index].sub.forEach(sub=>serviceFull_selected.push(sub)));
             break;
         case 'isRealtime':
             if (db==='csv')
@@ -79,8 +79,9 @@ function getsummaryservice(){
     let ob = {};
     measures.forEach((m,mi)=>{
         m.forEach((s,si)=>{
-            s.forEach((d,i)=>{
-                d=d.filter(e=>e>=0).sort((a,b)=>a-b);
+            // s.forEach((d,i)=>{       // Bao deleted
+                // d=d.filter(e=>e>=0).sort((a,b)=>a-b);
+                let d=s.map(e=>e[2]).filter(e=>e>=0).sort((a,b)=>a-b);      // Bao wrote
                 let r;
                 if (d.length){
                     var x = d3.scaleLinear()
@@ -94,7 +95,7 @@ function getsummaryservice(){
                     let sumstat = hisdata.map((d,i)=>[d.x0+(d.x1-d.x0)/2,(d||[]).length]);
                     r = {
                         axis: serviceFull_selected[i].text,
-                        q1: ss.quantileSorted(d,0.25) ,
+                        q1: ss.quantileSorted(d,0.25),
                         q3: ss.quantileSorted(d,0.75),
                         median: ss.medianSorted(d) ,
                         // outlier: ,
@@ -116,7 +117,7 @@ function getsummaryservice(){
                         arr: []};
                 }
                 ob[r.axis] = r;
-            });
+            // });
         });
 
     });
