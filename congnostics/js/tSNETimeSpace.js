@@ -1,5 +1,7 @@
 let xscale, yscale;
 d3.tsneTimeSpace = function () {
+    let leaderDraw = leaderList.map(d=>d);
+    let storeDraw = [];
     let graphicopt = {
             margin: {top: 60, right: 60, bottom: 60, left: 60},
             width: 1500,
@@ -172,9 +174,15 @@ d3.tsneTimeSpace = function () {
             background_ctx.fillStyle = fillColor + '';
             background_ctx.fillRect(xscale(d[0]) - 2, yscale(d[1]) - 2, 4, 4);
         });
+        let bCountTsne = 0;
         solution.forEach(function(d, i) {
             const target = datain[i];
-            leaderList.find((l,li)=>{if(l === target.plot) {drawLeaderPlot(background_ctx,l,li,d); return true;} return false;});
+            let li = (leaderDraw.length>0) ? leaderDraw.findIndex(dd=>dd===target.plot) : -1;
+            // if (li !== -1) {drawLeaderPlot(background_ctx,leaderDraw[li],li,d); leaderDraw.splice(li,1); console.log(leaderDraw);}
+            if (li !== -1) {storeDraw[bCountTsne] = [background_ctx,target,d]; bCountTsne+=1;}
+            if(i===solution.length-1) {
+                storeDraw.forEach(d=>drawLeaderPlot(d[0],d[1],d[2]));
+            }
         });
         // if (graphicopt.linkConnect) {
         //     d3.values(path).filter(d => d.length > 1 ? d.sort((a, b) => a.t - b.t) : false).forEach(path => {
@@ -437,41 +445,84 @@ function calculateMSE_num(a, b) {
 }
 
 //draw leader plots
-function drawLeaderPlot(ctx_,plot_,group_,plotPosition_) {
-    var ctx = ctx_;
-    var plot = plot_;
-    var group = group_;
-    var plotPosition = plotPosition_;
-    var plotIndex = plot.split("-"); // [sample,#plot]
-    var plotSize = 50;
-    var color = [];
-    ctx.fillStyle = "rgb(255,255,255)";
-    ctx.strokeStyle = colorCluster(cluster_info[group].name);
-    ctx.lineWidth = 5;
+function drawLeaderPlot(ctx_,target_,plotPosition_) {
+    let ctx = ctx_;
+    let plot = target_.plot;
+    let group = target_.cluster;
+    let plotPosition = plotPosition_;
+    let plotIndex = dataRadar2.map(d=>d.plot).findIndex(d=>d===plot); // [#plot in dataRadar2 and measures]
+    let sampleIndex = plot.split("-")[0];
+    let varIndex = plot.split("-")[1];
+    let plotSize = 30;
+    let color = [];
     ctx.translate(-plotSize/2,-plotSize/2);
-    ctx.fill();
-    ctx.stroke();
-    ctx.strokeRect(xscale(plotPosition[0]), yscale(plotPosition[1]), 2*plotSize, plotSize);
-    ctx.fillRect(xscale(plotPosition[0]), yscale(plotPosition[1]), 2*plotSize, plotSize);
-    ctx.lineWidth = 1;
-    timedata.forEach(function (time, step) {
-        if (step) {
-            if(data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step]>=0 && data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step-1]>=0 && data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][1]][step]>=0 && data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][1]][step-1]>=0) {
-                var x1 = xscale(plotPosition[0])+0.05*plotSize+1.9*plotSize*(step-1)/timedata.length;
-                var x2 = xscale(plotPosition[0])+0.05*plotSize+1.9*plotSize*step/timedata.length;
-                var y1 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step-1]);
-                var y2 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step]);
-                color[0] = (step < timedata.length/2) ? 0 : (step-timedata.length/2)*255/(timedata.length/2);
-                color[1] = 0;
-                color[2] = (step < timedata.length/2) ? 255-255*step/(timedata.length/2) : 0;
-                ctx.beginPath();
-                ctx.moveTo(x1,y1);
-                ctx.lineTo(x2, y2);
-                ctx.strokeStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
-                ctx.stroke();
-            }
+    if (chooseType === "radar") {
+        // draw Radar Chart
+        let dataRadarChart = dataRadar2[plotIndex];
+        let angle = Math.PI*2/dataRadarChart.length;
+        let rRadarChart = plotSize/2.1;
+        for (var k = 5; k > 0; k--) {
+            ctx.beginPath();
+            ctx.arc(xscale(plotPosition[0])+plotSize,yscale(plotPosition[1])-plotSize/2,0.2*rRadarChart*k,0,2*Math.PI);
+            ctx.strokeStyle = "rgb(180,180,180)";
+            ctx.stroke();
+            ctx.fillStyle = "rgb(255,255,255)";
+            ctx.fill();
         }
-    });
+        dataRadarChart.forEach((d,i)=>{
+            ctx.beginPath();
+            let colorRadar;
+            switch (type[i]) {
+                case 0:
+                    colorRadar = [18, 169, 101];
+                    break;
+                case 1:
+                    colorRadar = [232, 101, 11];
+                    break;
+                case 2:
+                    colorRadar = [89, 135, 222];
+                    break;
+            }
+            ctx.arc(xscale(plotPosition[0])+plotSize, yscale(plotPosition[1])-plotSize/2,d*rRadarChart,(i-0.25)*angle-Math.PI/2,(i+0.25)*angle-Math.PI/2);
+            ctx.fillStyle = `rgb(${colorRadar[0]},${colorRadar[1]},${colorRadar[2]})`;
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(xscale(plotPosition[0])+plotSize,yscale(plotPosition[1])-plotSize/2);
+            ctx.lineTo(xscale(plotPosition[0])+plotSize+d*rRadarChart*Math.cos((i-0.25)*angle-Math.PI/2),yscale(plotPosition[1])-plotSize/2+d*rRadarChart*Math.sin((i-0.25)*angle-Math.PI/2));
+            ctx.lineTo(xscale(plotPosition[0])+plotSize+d*rRadarChart*Math.cos((i+0.25)*angle-Math.PI/2),yscale(plotPosition[1])-plotSize/2+d*rRadarChart*Math.sin((i+0.25)*angle-Math.PI/2));
+            ctx.fill();
+        });
+    }
+    if (chooseType === "series") {
+        // Draw main plots
+        ctx.beginPath();
+        ctx.fillStyle = "rgb(255,255,255)";
+        ctx.strokeStyle = colorCluster(cluster_info[group].name);
+        ctx.lineWidth = 3;
+        ctx.fill();
+        ctx.stroke();
+        ctx.strokeRect(xscale(plotPosition[0]), yscale(plotPosition[1]), 2*plotSize, plotSize);
+        ctx.fillRect(xscale(plotPosition[0]), yscale(plotPosition[1]), 2*plotSize, plotSize);
+        ctx.lineWidth = 1;
+        timedata.forEach(function (time, step) {
+            if (step) {
+                if(data[sampleIndex][varIndex][step]>=0 && data[sampleIndex][varIndex][step-1]>=0 && data[sampleIndex][varIndex][step]>=0 && data[sampleIndex][varIndex][step-1]>=0) {
+                    let x1 = xscale(plotPosition[0])+0.05*plotSize+1.9*plotSize*(step-1)/timedata.length;
+                    let x2 = xscale(plotPosition[0])+0.05*plotSize+1.9*plotSize*step/timedata.length;
+                    let y1 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][varIndex][step-1]);
+                    let y2 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][varIndex][step]);
+                    color[0] = (step < timedata.length/2) ? 0 : (step-timedata.length/2)*255/(timedata.length/2);
+                    color[1] = 0;
+                    color[2] = (step < timedata.length/2) ? 255-255*step/(timedata.length/2) : 0;
+                    ctx.beginPath();
+                    ctx.moveTo(x1,y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.strokeStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
+                    ctx.stroke();
+                }
+            }
+        });
+    }
     ctx.translate(plotSize/2,plotSize/2);
 
 }
