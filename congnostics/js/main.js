@@ -39,7 +39,7 @@ let selectedDisplay = "1D";
 let displayplot = [];   // displayplot[measure index][0->numplot-1:lowest, numplot->2numplot-1: middle, 2numplot->3numplot-1: highest][sample, x-var, y-var,value,index]
 let width = 3000;
 let height = 4000;
-let numColumn = 30;
+let numColumn = (selectedDisplay === "1D") ? 30 : 72;
 let columnSize = width/numColumn;
 let numplot = 10;
 let newnumplot = 0;
@@ -59,9 +59,9 @@ let Radarplot_opt = {
 };
 let leaderList;
 // Dimension reduction variable
-let tsneTS = d3.tsneTimeSpace();
-let pcaTS = d3.pcaTimeSpace();
-let umapTS = d3.umapTimeSpace();
+let tsneTS;
+let pcaTS;
+let umapTS;
 let visualizingOption = 'LMH';
 var TsneTSopt = {width:width,height:height};
 var PCAopt = {width:width,height:height};
@@ -112,6 +112,7 @@ $( document ).ready(function() {
         mc_labelr.append('input').attr('type', 'radio').attr('name', 'orderMeasure').attr('class', 'with-gap')
             .attr('checked',d=>selectedmeasure===measureObj[d]?'':null)
             .on('change',function(d){
+                console.log(d);
                 selectedmeasure = measureObj[d];
                 needupdate = true;
             });
@@ -204,6 +205,7 @@ $( document ).ready(function() {
         });
         // dimension option
         d3.select('#analysis').on('change',function(){
+            selectedDisplay = this.value;
             switch (this.value) {
                 case "1D":
                     nummeasure = 11;
@@ -266,7 +268,17 @@ $( document ).ready(function() {
             }
             updateMeasureName();
             needcalculation = true;
-            // update metricController
+            // update MetricController
+            MetricController = radarController();
+            MetricController.graphicopt({width:365,height:365})
+                .div(d3.select('#RadarController'))
+                .tablediv(d3.select('#RadarController_Table'))
+                .axisSchema(serviceFullList)
+                .onChangeValue(onSchemaUpdate)
+                .init();
+            // update measureControl
+
+
             d3.select('.cover').classed('hidden', false);
         });
         // display mode
@@ -1407,6 +1419,9 @@ function recalculateCluster (option,calback) {
 
 function reCalculateTsne() {
     prepareRadarTable();
+    tsneTS = d3.tsneTimeSpace();
+    pcaTS = d3.pcaTimeSpace();
+    umapTS = d3.umapTimeSpace();
     MetricController.data(dataRadar2).drawSummary(dataRadar2.length-1);
     MetricController.datasummary(dataRadar);
     cluster_map(cluster_info);
@@ -1777,15 +1792,14 @@ function onchangeVizdata(vizMode){
 // SET UP FUNCTION
 //////////////////
 // Variables
-let csPlotSize = 2*columnSize;
-let oPlotSize = columnSize;
-let rPlotSize = 1.5*columnSize;
-let xBlank = columnSize;
-let xgBlank = 2*columnSize;
-let yBlank = 50;
-let ygBlank = csPlotSize*0.3;
-// let groupSize = oPlotSize+2*xBlank+csPlotSize+rPlotSize+xgBlank;
-let groupSize = 2*csPlotSize+xBlank+2*rPlotSize+xgBlank;
+let csPlotSize;
+let oPlotSize;
+let rPlotSize;
+let xBlank;
+let xgBlank;
+let yBlank;
+let ygBlank;
+let groupSize;
 
 function setup() {
     let canvas = createCanvas(width,height);
@@ -1969,10 +1983,17 @@ function draw() {
             //         }
             //     }
             // }
-
+            numColumn = (selectedDisplay === "1D") ? 30 : 72;
+            columnSize = width/numColumn;
             let correctnumplot = (newnumplot === 0) ? numplot : Math.floor(newnumplot/3);
             switch (selectedDisplay) {
                 case "1D":
+                    csPlotSize = 2*columnSize;
+                    rPlotSize = 1.5*columnSize;
+                    xBlank = columnSize;
+                    xgBlank = 2*columnSize;
+                    yBlank = 50;
+                    ygBlank = csPlotSize*0.3;
                     groupSize = 2*csPlotSize+xBlank+2*rPlotSize+xgBlank;
                     // Draw plots
                     for (var i = 0; i < correctnumplot; i++) {
@@ -2125,7 +2146,14 @@ function draw() {
                     }
                     break;
                 case "2D":
-                    groupSize = oPlotSize+2*xBlank+csPlotSize+rPlotSize+xgBlank;
+                    csPlotSize = 6*columnSize;
+                    oPlotSize = 3*columnSize;
+                    rPlotSize = 4*columnSize;
+                    xBlank = 2*columnSize;
+                    xgBlank = 3*columnSize;
+                    yBlank = 50;
+                    ygBlank = csPlotSize*0.3;
+                    groupSize = 2*(csPlotSize+xBlank)+rPlotSize+xgBlank;
                     // Draw plots
                     for (var i = 0; i < correctnumplot; i++) {
                         for (var j = 0; j < 3; j++) {
@@ -2139,25 +2167,25 @@ function draw() {
                             // draw rectangles for CS - X(t) for 1D
                             fill(255);
                             stroke(0);
-                            rect(1.65*xBlank+oPlotSize+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize),csPlotSize,csPlotSize);
+                            rect(xBlank+csPlotSize+xBlank+j*groupSize,yBlank+50+i*(csPlotSize+ygBlank),csPlotSize,csPlotSize);
 
                             // draw rectangles for time series
                             fill(255);
                             noStroke();
-                            rect(xBlank+j*groupSize,yBlank+50+0.5*oPlotSize+i*(csPlotSize+ygBlank)+oPlotSize*0.025,oPlotSize,oPlotSize*0.5); // x-data
+                            rect(xBlank+j*groupSize,yBlank+50+oPlotSize+2+i*(csPlotSize+ygBlank),csPlotSize,oPlotSize); // x-data
                             stroke(0);
-                            line(xBlank+j*groupSize,yBlank+50+0.5*oPlotSize+i*(csPlotSize+ygBlank)+oPlotSize*0.025,xBlank+j*groupSize,yBlank+50+oPlotSize+i*(csPlotSize+ygBlank)+oPlotSize*0.025);
-                            line(xBlank+j*groupSize,yBlank+50+oPlotSize+i*(csPlotSize+ygBlank)+oPlotSize*0.025,xBlank+j*groupSize+oPlotSize,yBlank+50+oPlotSize+i*(csPlotSize+ygBlank)+oPlotSize*0.025);
+                            line(xBlank+j*groupSize,yBlank+50+oPlotSize+2+i*(csPlotSize+ygBlank),xBlank+j*groupSize,yBlank+50+2*oPlotSize+2+i*(csPlotSize+ygBlank));
+                            line(xBlank+j*groupSize,yBlank+50+2*oPlotSize+2+i*(csPlotSize+ygBlank),xBlank+csPlotSize+j*groupSize,yBlank+50+2*oPlotSize+2+i*(csPlotSize+ygBlank));
                             noFill();
-                            bezier(xBlank+j*groupSize+oPlotSize,yBlank+50+0.75*oPlotSize+i*(csPlotSize+ygBlank),xBlank+j*groupSize+oPlotSize*1.25,yBlank+50+0.75*oPlotSize+i*(csPlotSize+ygBlank),xBlank+j*groupSize+oPlotSize,yBlank+50+0.5*oPlotSize+i*(csPlotSize+ygBlank),xBlank+j*groupSize+oPlotSize*1.2,yBlank+50+0.5*oPlotSize+i*(csPlotSize+ygBlank));
+                            bezier(xBlank+csPlotSize+j*groupSize,yBlank+50+1.5*oPlotSize+2+i*(csPlotSize+ygBlank),1.5*xBlank+csPlotSize+j*groupSize,yBlank+50+1.5*oPlotSize+2+i*(csPlotSize+ygBlank),xBlank+csPlotSize+j*groupSize,yBlank+50+oPlotSize+2+i*(csPlotSize+ygBlank),1.7*xBlank+csPlotSize+j*groupSize,yBlank+50+oPlotSize+i*(csPlotSize+ygBlank));
                             fill(255);
                             noStroke();
-                            rect(xBlank+j*groupSize,yBlank+50+i*(csPlotSize+ygBlank)-oPlotSize*0.025,oPlotSize,oPlotSize*0.5); // y-data
+                            rect(xBlank+j*groupSize,yBlank+48+i*(csPlotSize+ygBlank),csPlotSize,oPlotSize); // y-data
                             stroke(0);
-                            line(xBlank+j*groupSize,yBlank+50+i*(csPlotSize+ygBlank)-oPlotSize*0.025,xBlank+j*groupSize,yBlank+50+i*(csPlotSize+ygBlank)+oPlotSize*0.5-oPlotSize*0.025);
-                            line(xBlank+j*groupSize,yBlank+50+i*(csPlotSize+ygBlank)+oPlotSize*0.5-oPlotSize*0.025,xBlank+j*groupSize+oPlotSize,yBlank+50+i*(csPlotSize+ygBlank)+oPlotSize*0.5-oPlotSize*0.025);
+                            line(xBlank+j*groupSize,yBlank+48+i*(csPlotSize+ygBlank),xBlank+j*groupSize,yBlank+48+oPlotSize+i*(csPlotSize+ygBlank));
+                            line(xBlank+j*groupSize,yBlank+48+oPlotSize+i*(csPlotSize+ygBlank),xBlank+csPlotSize+j*groupSize,yBlank+48+oPlotSize+i*(csPlotSize+ygBlank));
                             noFill();
-                            bezier(xBlank+j*groupSize+oPlotSize,yBlank+50+i*(csPlotSize+ygBlank)+oPlotSize*0.25,xBlank+j*groupSize+oPlotSize*1.25,yBlank+50+i*(csPlotSize+ygBlank)+oPlotSize*0.25,xBlank+j*groupSize+oPlotSize,yBlank+50+0.5*oPlotSize+i*(csPlotSize+ygBlank),xBlank+j*groupSize+oPlotSize*1.2,yBlank+50+0.5*oPlotSize+i*(csPlotSize+ygBlank));
+                            bezier(xBlank+csPlotSize+j*groupSize,yBlank+48+0.5*oPlotSize+i*(csPlotSize+ygBlank),1.5*xBlank+csPlotSize+j*groupSize,yBlank+48+0.5*oPlotSize+i*(csPlotSize+ygBlank),xBlank+csPlotSize+j*groupSize,yBlank+50+oPlotSize+i*(csPlotSize+ygBlank),1.7*xBlank+csPlotSize+j*groupSize,yBlank+50+oPlotSize+i*(csPlotSize+ygBlank));
 
                             //  DRAW RADAR CHART
                             var xCenter = 2*xBlank+2*csPlotSize+rPlotSize+j*groupSize;
@@ -2248,22 +2276,22 @@ function draw() {
                             noStroke();
                             fill(255);
                             textSize(csPlotSize/12);
-                            text(measurename[selectedmeasure]+' = '+Math.round(value*100)/100,xBlank+j*groupSize+csPlotSize,yBlank+50+i*(ygBlank+csPlotSize)-5);
+                            text(measurename[selectedmeasure]+' = '+Math.round(value*100)/100,xBlank+csPlotSize+xBlank+j*groupSize,yBlank+45+i*(csPlotSize+ygBlank));
 
                             // write sample notation
                             noStroke();
                             fill(0);
                             textSize(csPlotSize/12);
-                            text(mapsample2.get(sample),xBlank+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize)-5);
+                            text(mapsample2.get(sample),xBlank+j*groupSize,yBlank+45+i*(ygBlank+csPlotSize));
 
                             // write x-variable notation
                             noStroke();
                             fill(0);
                             textSize(csPlotSize/14);
                             if (mapvar2.get(xvar).split("").length <= 27) {
-                                text(mapvar2.get(xvar),1.65*xBlank+oPlotSize+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*1.1);
+                                text(mapvar2.get(xvar),2*xBlank+csPlotSize+j*groupSize,yBlank+50+csPlotSize*1.1+i*(ygBlank+csPlotSize));
                             } else {
-                                text(mapvar2.get(xvar).substr(0,27)+'...',1.65*xBlank+oPlotSize+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*1.1);
+                                text(mapvar2.get(xvar).substr(0,27)+'...',2*xBlank+csPlotSize+j*groupSize,yBlank+50+csPlotSize*1.1+i*(ygBlank+csPlotSize));
                             }
                             text("time",xBlank+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*1.1);
 
@@ -2272,22 +2300,22 @@ function draw() {
                             noStroke();
                             fill(0);
                             textSize(csPlotSize/14);
-                            translate(xBlank-5+j*groupSize,yBlank+50+i*(csPlotSize+ygBlank));
+                            translate(xBlank+j*groupSize,yBlank+50+csPlotSize+i*(csPlotSize+ygBlank));
                             rotate(-PI/2);
                             if(mapvar2.get(xvar).split("").length <= 27) {
-                                text(mapvar2.get(xvar),-csPlotSize,-5);
+                                text(mapvar2.get(yvar),0,csPlotSize+xBlank-5);
                             } else {
-                                text(mapvar2.get(xvar).substr(0,27)+'...',-csPlotSize,-5);
+                                text(mapvar2.get(yvar).substr(0,27)+'...',0,csPlotSize+xBlank-5);
                             }
                             if(mapvar2.get(xvar).split("").length <= 14) {
-                                text(mapvar2.get(xvar),0,0);
+                                text(mapvar2.get(xvar),0,-5);
                             } else {
-                                text(mapvar2.get(xvar).substr(0,11)+'...',0,0);
+                                text(mapvar2.get(xvar).substr(0,11)+'...',0,-5);
                             }
                             if(mapvar2.get(yvar).split("").length <= 14) {
-                                text(mapvar2.get(yvar),0.5*oPlotSize,0);
+                                text(mapvar2.get(yvar),oPlotSize,-5);
                             } else {
-                                text(mapvar2.get(yvar).substr(0,11)+'...',0.5*oPlotSize,0);
+                                text(mapvar2.get(yvar).substr(0,11)+'...',oPlotSize,-5);
                             }
                             pop();
 
@@ -2297,30 +2325,31 @@ function draw() {
                                 if(step) {
                                     // CS plots - X(t) for 1D
                                     if(data[sample][xvar][step]>=0 && data[sample][xvar][step-1]>=0 && data[sample][yvar][step]>=0 && data[sample][yvar][step-1]>=0) {
-                                        var x1 = 0.05*csPlotSize+1.65*xBlank+oPlotSize+j*groupSize+0.9*csPlotSize*data[sample][xvar][step-1];
-                                        var x2 = 0.05*csPlotSize+1.65*xBlank+oPlotSize+j*groupSize+0.9*csPlotSize*data[sample][xvar][step];
-                                        var y1 = 0.05*csPlotSize+yBlank+50+i*(ygBlank+csPlotSize)+0.9*csPlotSize*(1-data[sample][yvar][step-1]);
-                                        var y2 = 0.05*csPlotSize+yBlank+50+i*(ygBlank+csPlotSize)+0.9*csPlotSize*(1-data[sample][yvar][step]);
+                                        var x1 = 0.05*csPlotSize+xBlank+csPlotSize+xBlank+j*groupSize+0.9*csPlotSize*data[sample][xvar][step-1];
+                                        var x2 = 0.05*csPlotSize+xBlank+csPlotSize+xBlank+j*groupSize+0.9*csPlotSize*data[sample][xvar][step];
+                                        var y1 = 0.05*csPlotSize+yBlank+50+i*(csPlotSize+ygBlank)+0.9*csPlotSize*(1-data[sample][yvar][step-1]);
+                                        var y2 = 0.05*csPlotSize+yBlank+50+i*(csPlotSize+ygBlank)+0.9*csPlotSize*(1-data[sample][yvar][step]);
                                         if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
                                         else stroke((step-timedata.length/2)*255/(timedata.length/2),0,0);
                                         line(x1,y1,x2,y2);
                                     }
                                     // X-var plots
                                     if(data[sample][xvar][step]>=0 && data[sample][xvar][step-1]>=0) {
-                                        var x1 = 0.05*oPlotSize+xBlank+j*groupSize+0.9*oPlotSize*(step-1)/timedata.length;
-                                        var x2 = 0.05*oPlotSize+xBlank+j*groupSize+0.9*oPlotSize*step/timedata.length;
-                                        var y1 = 0.025*oPlotSize+yBlank+50+0.5*oPlotSize+i*(csPlotSize+ygBlank)+0.45*oPlotSize*(1-data[sample][xvar][step-1])+oPlotSize*0.025;
-                                        var y2 = 0.025*oPlotSize+yBlank+50+0.5*oPlotSize+i*(csPlotSize+ygBlank)+0.45*oPlotSize*(1-data[sample][xvar][step])+oPlotSize*0.025;
+                                        var x1 = 0.05*oPlotSize+xBlank+j*groupSize+1.9*oPlotSize*(step-1)/timedata.length;
+                                        var x2 = 0.05*oPlotSize+xBlank+j*groupSize+1.9*oPlotSize*step/timedata.length;
+                                        var y1 = 0.05*oPlotSize+yBlank+50+oPlotSize+2+i*(csPlotSize+ygBlank)+0.9*oPlotSize*(1-data[sample][xvar][step-1]);
+                                        var y2 = 0.05*oPlotSize+yBlank+50+oPlotSize+2+i*(csPlotSize+ygBlank)+0.9*oPlotSize*(1-data[sample][xvar][step]);
                                         if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
                                         else stroke((step-timedata.length/2)*255/(timedata.length/2),0,0);
                                         line(x1,y1,x2,y2);
                                     }
                                     // Y-var plots
+                                    // xBlank+j*groupSize,yBlank+48+i*(csPlotSize+ygBlank)
                                     if(data[sample][yvar][step]>=0 && data[sample][yvar][step-1]>=0) {
-                                        var x1 = 0.05*oPlotSize+xBlank+j*groupSize+0.9*oPlotSize*(step-1)/timedata.length;
-                                        var x2 = 0.05*oPlotSize+xBlank+j*groupSize+0.9*oPlotSize*step/timedata.length;
-                                        var y1 = 0.025*oPlotSize+yBlank+50+i*(csPlotSize+ygBlank)+0.45*oPlotSize*(1-data[sample][yvar][step-1])-oPlotSize*0.025;
-                                        var y2 = 0.025*oPlotSize+yBlank+50+i*(csPlotSize+ygBlank)+0.45*oPlotSize*(1-data[sample][yvar][step])-oPlotSize*0.025;
+                                        var x1 = 0.05*oPlotSize+xBlank+j*groupSize+1.9*oPlotSize*(step-1)/timedata.length;
+                                        var x2 = 0.05*oPlotSize+xBlank+j*groupSize+1.9*oPlotSize*step/timedata.length;
+                                        var y1 = 0.05*oPlotSize+yBlank+48+i*(csPlotSize+ygBlank)+0.9*oPlotSize*(1-data[sample][yvar][step-1]);
+                                        var y2 = 0.05*oPlotSize+yBlank+48+i*(csPlotSize+ygBlank)+0.9*oPlotSize*(1-data[sample][yvar][step]);
                                         if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
                                         else stroke((step-timedata.length/2)*255/(timedata.length/2),0,0);
                                         line(x1,y1,x2,y2);

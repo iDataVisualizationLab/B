@@ -80,7 +80,7 @@ let radarController = function () {
             const axis = arguments[0];
             const resetrequest = arguments[1];
             if(resetrequest)
-                createSchemaInit(axis,true)
+                createSchemaInit(axis,true);
             else
             {
                 if (Array.isArray(axis)) //array axis
