@@ -5,7 +5,7 @@ d3.umapTimeSpace = function () {
             margin: {top: 60, right: 60, bottom: 60, left: 60},
             width: 1500,
             height: 1000,
-            scalezoom: 1,
+            scalezoom: 0.5,
             widthView: function () {
                 return this.width * this.scalezoom
             },
@@ -154,14 +154,14 @@ d3.umapTimeSpace = function () {
                 let fillColor = d3.color(colorarr[target.cluster].value);
                 fillColor.opacity = 0.8;
                 background_ctx.fillStyle = fillColor + '';
-                background_ctx.fillRect(xscale(d[0]) - 4, yscale(d[1]) - 4, 8, 8);
+                background_ctx.fillRect(xscale(d[0]) - 4, yscale(d[1]) - 4, 3, 3);
             });
-            let bCount = 0;
+            let bCountUmap = 0;
             solution.forEach(function(d, i) {
                 const target = datain[i];
                 let li = (leaderDraw.length>0) ? leaderDraw.findIndex(dd=>dd===target.plot) : -1;
                 // if (li !== -1) {drawLeaderPlot(background_ctx,leaderDraw[li],li,d); leaderDraw.splice(li,1); console.log(leaderDraw);}
-                if (li !== -1) {storeDraw[bCount] = [background_ctx,leaderDraw[li],li,d]; bCount+=1;}
+                if (li !== -1) {storeDraw[bCountUmap] = [background_ctx,leaderDraw[li],li,d]; bCountUmap+=1;}
                 if(i===solution.length-1) {
                     storeDraw.forEach(d=>drawLeaderPlot(d[0],d[1],d[2],d[3]));
                 }
@@ -434,16 +434,17 @@ function calculateMSE_num(a,b){
 
 //draw leader plots
 function drawLeaderPlot(ctx_,plot_,group_,plotPosition_) {
+    console.log(arguments);
     let ctx = ctx_;
     let plot = plot_;
     let group = group_;
     let plotPosition = plotPosition_;
     let plotIndex = plot.split("-"); // [sample,#plot]
-    let plotSize = 100;
+    let plotSize = 30;
     let color = [];
     ctx.translate(-plotSize/2,-plotSize/2);
     // draw Radar Chart
-    let dataRadarChart = dataRadar2[+plotIndex[1]];
+    let dataRadarChart = dataRadar2[dataRadar2.map(d=>d.plot).findIndex(d=>d===plot)];
     let angle = Math.PI*2/dataRadarChart.length;
     let rRadarChart = plotSize/2.1;
     for (var k = 5; k > 0; k--) {
@@ -481,7 +482,7 @@ function drawLeaderPlot(ctx_,plot_,group_,plotPosition_) {
     ctx.beginPath();
     ctx.fillStyle = "rgb(255,255,255)";
     ctx.strokeStyle = colorCluster(cluster_info[group].name);
-    ctx.lineWidth = 5;
+    ctx.lineWidth = 3;
     ctx.fill();
     ctx.stroke();
     ctx.strokeRect(xscale(plotPosition[0]), yscale(plotPosition[1]), 2*plotSize, plotSize);

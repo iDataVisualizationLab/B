@@ -63,9 +63,9 @@ let tsneTS;
 let pcaTS;
 let umapTS;
 let visualizingOption = 'LMH';
-var TsneTSopt = {width:width,height:height};
-var PCAopt = {width:width,height:height};
-var umapopt = {width:width,height:height};
+var TsneTSopt = {width:1500,height:1000};
+var PCAopt = {width:1500,height:1000};
+var umapopt = {width:1500,height:1000};
 // worker
 let clustercalWorker;
 let getDataWorker;
