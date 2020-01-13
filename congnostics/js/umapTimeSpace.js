@@ -497,8 +497,8 @@ function drawLeaderPlot(ctx_,target_,plotPosition_) {
                 if(data[sampleIndex][varIndex][step]>=0 && data[sampleIndex][varIndex][step-1]>=0 && data[sampleIndex][varIndex][step]>=0 && data[sampleIndex][varIndex][step-1]>=0) {
                     let x1 = xscale(plotPosition[0])+0.05*plotSize+1.9*plotSize*(step-1)/timedata.length;
                     let x2 = xscale(plotPosition[0])+0.05*plotSize+1.9*plotSize*step/timedata.length;
-                    let y1 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step-1]);
-                    let y2 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step]);
+                    let y1 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][varIndex][step-1]);
+                    let y2 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][varIndex][step]);
                     color[0] = (step < timedata.length/2) ? 0 : (step-timedata.length/2)*255/(timedata.length/2);
                     color[1] = 0;
                     color[2] = (step < timedata.length/2) ? 255-255*step/(timedata.length/2) : 0;
