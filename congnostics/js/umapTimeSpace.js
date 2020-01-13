@@ -512,5 +512,4 @@ function drawLeaderPlot(ctx_,target_,plotPosition_) {
         });
     }
     ctx.translate(plotSize/2,plotSize/2);
-
 }
