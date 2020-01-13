@@ -322,7 +322,7 @@ d3.umapTimeSpace = function () {
                     }
                 }
             });
-    }
+    };
     function updateTableInput(){
         table_info.select(`.datain`).text(e=>datain.length);
         try {
@@ -434,7 +434,6 @@ function calculateMSE_num(a,b){
 
 //draw leader plots
 function drawLeaderPlot(ctx_,plot_,group_,plotPosition_) {
-    console.log(arguments);
     let ctx = ctx_;
     let plot = plot_;
     let group = group_;
@@ -443,70 +442,73 @@ function drawLeaderPlot(ctx_,plot_,group_,plotPosition_) {
     let plotSize = 30;
     let color = [];
     ctx.translate(-plotSize/2,-plotSize/2);
-    // draw Radar Chart
-    let dataRadarChart = dataRadar2[dataRadar2.map(d=>d.plot).findIndex(d=>d===plot)];
-    let angle = Math.PI*2/dataRadarChart.length;
-    let rRadarChart = plotSize/2.1;
-    for (var k = 5; k > 0; k--) {
-        ctx.beginPath();
-        ctx.arc(xscale(plotPosition[0])+plotSize,yscale(plotPosition[1])-plotSize/2,0.2*rRadarChart*k,0,2*Math.PI);
-        ctx.strokeStyle = "rgb(180,180,180)";
-        ctx.stroke();
-        ctx.fillStyle = "rgb(255,255,255)";
-        ctx.fill();
-    }
-    dataRadarChart.forEach((d,i)=>{
-        ctx.beginPath();
-        let colorRadar;
-        switch (type[i]) {
-            case 0:
-                colorRadar = [18, 169, 101];
-                break;
-            case 1:
-                colorRadar = [232, 101, 11];
-                break;
-            case 2:
-                colorRadar = [89, 135, 222];
-                break;
+    if (chooseType === "radar") {
+        // draw Radar Chart
+        let dataRadarChart = dataRadar2[dataRadar2.map(d=>d.plot).findIndex(d=>d===plot)];
+        let angle = Math.PI*2/dataRadarChart.length;
+        let rRadarChart = plotSize/2.1;
+        for (var k = 5; k > 0; k--) {
+            ctx.beginPath();
+            ctx.arc(xscale(plotPosition[0])+plotSize,yscale(plotPosition[1])-plotSize/2,0.2*rRadarChart*k,0,2*Math.PI);
+            ctx.strokeStyle = "rgb(180,180,180)";
+            ctx.stroke();
+            ctx.fillStyle = "rgb(255,255,255)";
+            ctx.fill();
         }
-        ctx.arc(xscale(plotPosition[0])+plotSize, yscale(plotPosition[1])-plotSize/2,d*rRadarChart,(i-0.25)*angle-Math.PI/2,(i+0.25)*angle-Math.PI/2);
-        ctx.fillStyle = `rgb(${colorRadar[0]},${colorRadar[1]},${colorRadar[2]})`;
-        ctx.fill();
-        ctx.beginPath();
-        ctx.moveTo(xscale(plotPosition[0])+plotSize,yscale(plotPosition[1])-plotSize/2);
-        ctx.lineTo(xscale(plotPosition[0])+plotSize+d*rRadarChart*Math.cos((i-0.25)*angle-Math.PI/2),yscale(plotPosition[1])-plotSize/2+d*rRadarChart*Math.sin((i-0.25)*angle-Math.PI/2));
-        ctx.lineTo(xscale(plotPosition[0])+plotSize+d*rRadarChart*Math.cos((i+0.25)*angle-Math.PI/2),yscale(plotPosition[1])-plotSize/2+d*rRadarChart*Math.sin((i+0.25)*angle-Math.PI/2));
-        ctx.fill();
-    });
-    // Draw main plots
-    ctx.beginPath();
-    ctx.fillStyle = "rgb(255,255,255)";
-    ctx.strokeStyle = colorCluster(cluster_info[group].name);
-    ctx.lineWidth = 3;
-    ctx.fill();
-    ctx.stroke();
-    ctx.strokeRect(xscale(plotPosition[0]), yscale(plotPosition[1]), 2*plotSize, plotSize);
-    ctx.fillRect(xscale(plotPosition[0]), yscale(plotPosition[1]), 2*plotSize, plotSize);
-    ctx.lineWidth = 1;
-    timedata.forEach(function (time, step) {
-        if (step) {
-            if(data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step]>=0 && data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step-1]>=0 && data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][1]][step]>=0 && data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][1]][step-1]>=0) {
-                let x1 = xscale(plotPosition[0])+0.05*plotSize+1.9*plotSize*(step-1)/timedata.length;
-                let x2 = xscale(plotPosition[0])+0.05*plotSize+1.9*plotSize*step/timedata.length;
-                let y1 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step-1]);
-                let y2 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step]);
-                color[0] = (step < timedata.length/2) ? 0 : (step-timedata.length/2)*255/(timedata.length/2);
-                color[1] = 0;
-                color[2] = (step < timedata.length/2) ? 255-255*step/(timedata.length/2) : 0;
-                ctx.beginPath();
-                ctx.moveTo(x1,y1);
-                ctx.lineTo(x2, y2);
-                ctx.strokeStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
-                ctx.stroke();
+        dataRadarChart.forEach((d,i)=>{
+            ctx.beginPath();
+            let colorRadar;
+            switch (type[i]) {
+                case 0:
+                    colorRadar = [18, 169, 101];
+                    break;
+                case 1:
+                    colorRadar = [232, 101, 11];
+                    break;
+                case 2:
+                    colorRadar = [89, 135, 222];
+                    break;
             }
-        }
-    });
-
+            ctx.arc(xscale(plotPosition[0])+plotSize, yscale(plotPosition[1])-plotSize/2,d*rRadarChart,(i-0.25)*angle-Math.PI/2,(i+0.25)*angle-Math.PI/2);
+            ctx.fillStyle = `rgb(${colorRadar[0]},${colorRadar[1]},${colorRadar[2]})`;
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(xscale(plotPosition[0])+plotSize,yscale(plotPosition[1])-plotSize/2);
+            ctx.lineTo(xscale(plotPosition[0])+plotSize+d*rRadarChart*Math.cos((i-0.25)*angle-Math.PI/2),yscale(plotPosition[1])-plotSize/2+d*rRadarChart*Math.sin((i-0.25)*angle-Math.PI/2));
+            ctx.lineTo(xscale(plotPosition[0])+plotSize+d*rRadarChart*Math.cos((i+0.25)*angle-Math.PI/2),yscale(plotPosition[1])-plotSize/2+d*rRadarChart*Math.sin((i+0.25)*angle-Math.PI/2));
+            ctx.fill();
+        });
+    }
+    if (chooseType === "series") {
+        // Draw main plots
+        ctx.beginPath();
+        ctx.fillStyle = "rgb(255,255,255)";
+        ctx.strokeStyle = colorCluster(cluster_info[group].name);
+        ctx.lineWidth = 3;
+        ctx.fill();
+        ctx.stroke();
+        ctx.strokeRect(xscale(plotPosition[0]), yscale(plotPosition[1]), 2*plotSize, plotSize);
+        ctx.fillRect(xscale(plotPosition[0]), yscale(plotPosition[1]), 2*plotSize, plotSize);
+        ctx.lineWidth = 1;
+        timedata.forEach(function (time, step) {
+            if (step) {
+                if(data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step]>=0 && data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step-1]>=0 && data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][1]][step]>=0 && data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][1]][step-1]>=0) {
+                    let x1 = xscale(plotPosition[0])+0.05*plotSize+1.9*plotSize*(step-1)/timedata.length;
+                    let x2 = xscale(plotPosition[0])+0.05*plotSize+1.9*plotSize*step/timedata.length;
+                    let y1 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step-1]);
+                    let y2 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step]);
+                    color[0] = (step < timedata.length/2) ? 0 : (step-timedata.length/2)*255/(timedata.length/2);
+                    color[1] = 0;
+                    color[2] = (step < timedata.length/2) ? 255-255*step/(timedata.length/2) : 0;
+                    ctx.beginPath();
+                    ctx.moveTo(x1,y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.strokeStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
+                    ctx.stroke();
+                }
+            }
+        });
+    }
     ctx.translate(plotSize/2,plotSize/2);
 
 }

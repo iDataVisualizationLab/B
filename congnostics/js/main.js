@@ -45,6 +45,7 @@ let numplot = 10;
 let newnumplot = 0;
 let selectedmeasure = 0;
 let choose = false;   // for selections
+let chooseType = "series";
 let type = [0,0,0,0,0,1,1,1,2,2,2];   // for type of measures in selection button
 let checkfilter = [];
 let valfilter = [];
@@ -287,6 +288,10 @@ $( document ).ready(function() {
         //     needupdate = true;
         //     console.log('mode = '+this.value);
         // });
+
+        // change type of chart in dimension reduction techniques
+        d3.select('#tsneScreen_svg').on('click',changeTypeOfChart);
+
     }catch{}
 });
 function onSchemaUpdate(schema){ // update angle
@@ -2376,3 +2381,11 @@ function draw() {
 //         }
 //     }
 // }
+
+// CHANGE TYPE OF CHART IN DIMENSION REDUCTION TECHNIQUES
+function changeTypeOfChart() {
+    if (chooseType === "radar") chooseType = "series";
+    else chooseType = "radar";
+    reCalculateTsne();
+    onchangeVizdata();
+}
