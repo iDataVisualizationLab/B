@@ -154,7 +154,8 @@ d3.umapTimeSpace = function () {
                 let fillColor = d3.color(colorarr[target.cluster].value);
                 fillColor.opacity = 0.8;
                 background_ctx.fillStyle = fillColor + '';
-                background_ctx.fillRect(xscale(d[0]) - 4, yscale(d[1]) - 4, 3, 3);
+                // background_ctx.fillRect(xscale(d[0]) - 4, yscale(d[1]) - 4, 3, 3);
+                drawPoint(background_ctx,target,d);
             });
             let bCountUmap = 0;
             solution.forEach(function(d, i) {
@@ -516,15 +517,20 @@ function drawLeaderPlot(ctx_,target_,plotPosition_) {
 }
 
 // draw plots
-function drawPoint(ctx_,target_) {
+function drawPoint(ctx_,target_,plotPosition_) {
     let ctx = ctx_;
-    let _target = target_;
-    let plotSize = 30;
+    let plot = target_.plot;
+    let group = target_.cluster;
+    let plotPosition = plotPosition_;
+    let plotIndex = dataRadar2.map(d=>d.plot).findIndex(d=>d===plot); // [#plot in dataRadar2 and measures]
+    let sampleIndex = plot.split("-")[0];
+    let varIndex = plot.split("-")[1];
+    let plotSize = 15;
     let color = [];
     ctx.translate(-plotSize/2,-plotSize/2);
     if (chooseType === "radar") {
         // draw Radar Chart
-        let dataRadarChart = _target;
+        let dataRadarChart = dataRadar2[plotIndex];
         let angle = Math.PI*2/dataRadarChart.length;
         let rRadarChart = plotSize/2.1;
         for (var k = 5; k > 0; k--) {
@@ -572,11 +578,11 @@ function drawPoint(ctx_,target_) {
         ctx.lineWidth = 1;
         timedata.forEach(function (time, step) {
             if (step) {
-                if(data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step]>=0 && data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step-1]>=0 && data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][1]][step]>=0 && data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][1]][step-1]>=0) {
+                if(data[sampleIndex][varIndex][step]>=0 && data[sampleIndex][varIndex][step-1]>=0 && data[sampleIndex][varIndex][step]>=0 && data[sampleIndex][varIndex][step-1]>=0) {
                     let x1 = xscale(plotPosition[0])+0.05*plotSize+1.9*plotSize*(step-1)/timedata.length;
                     let x2 = xscale(plotPosition[0])+0.05*plotSize+1.9*plotSize*step/timedata.length;
-                    let y1 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step-1]);
-                    let y2 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[+plotIndex[0]][measures[0][+plotIndex[0]][+plotIndex[1]][0]][step]);
+                    let y1 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][varIndex][step-1]);
+                    let y2 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][varIndex][step]);
                     color[0] = (step < timedata.length/2) ? 0 : (step-timedata.length/2)*255/(timedata.length/2);
                     color[1] = 0;
                     color[2] = (step < timedata.length/2) ? 255-255*step/(timedata.length/2) : 0;
