@@ -1,5 +1,6 @@
+let selectedDisplay = "1D";
 let measures = [];  // measures[index][sample][x-var,y-var,value], value = -1 means no data
-let nummeasure = 11;
+let nummeasure = selectedDisplay === "1D" ? 11:11;
 // let measurename = [
 //     'Outlying',
 //     'Skinny',
@@ -26,7 +27,8 @@ let nummeasure = 11;
 //     'Cross-correlation':9,
 //     'Length':10
 // };
-let measurename = [
+let measurename = selectedDisplay === "1D" ?
+    [
     'Outlying',
     'Net Outlying',
     'Trend',
@@ -38,8 +40,22 @@ let measurename = [
     'Net mean',
     'Net standard deviation',
     'Net skewness',
+] :
+[
+    'Outlying',
+    'Skinny',
+    'Skewed',
+    'Clumpy',
+    'Sparse',
+    'Striated',
+    'Trend',
+    "Intersections",
+    "Loop",
+    'Cross-correlation',
+    'Length',
 ];
-let measureObj = {
+let measureObj = selectedDisplay === "1D" ?
+    {
     'Outlying':0,
     'Net Outlying':1,
     'Trend':2,
@@ -51,6 +67,18 @@ let measureObj = {
     'Net mean':8,
     'Net standard deviation':9,
     'Net skewness':10,
+} : {
+    'Outlying':0,
+    'Skinny':1,
+    'Skewed':2,
+    'Clumpy':3,
+    'Sparse':4,
+    'Striated':5,
+    'Trend':6,
+    "Intersections":7,
+    "Loop":8,
+    'Cross-correlation':9,
+    'Length':10
 };
 
 

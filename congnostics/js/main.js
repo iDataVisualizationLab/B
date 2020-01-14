@@ -33,7 +33,6 @@ let peakPeri = [];
 let needupdate = false;
 // let needcalculation = true; //TO DO
 let needcalculation = true;
-let selectedDisplay = "1D";
 
 // VARIABLES FOR VISUALIZATION
 let displayplot = [];   // displayplot[measure index][0->numplot-1:lowest, numplot->2numplot-1: middle, 2numplot->3numplot-1: highest][sample, x-var, y-var,value,index]
@@ -80,6 +79,49 @@ let dataRadar;
 ///////////////////////////////
 ///////////////////////////////
 
+function settingMeasureUpdate() {
+    let mc = d3.select('#measureControl').selectAll('.measureControl')
+        .data(measurename)
+        .enter().append('div').attr('class', 'measureControl row valign-wrapper')
+        .attr('disabled', 'disabled');
+
+    let mc_labelr = mc.append('label').attr('class', 'col s2');
+    mc_labelr.append('input').attr('type', 'radio').attr('name', 'orderMeasure').attr('class', 'with-gap')
+        .attr('checked', d => selectedmeasure === measureObj[d] ? '' : null)
+        .on('change', function (d) {
+            console.log(d);
+            selectedmeasure = measureObj[d];
+            needupdate = true;
+        });
+    mc_labelr.append('span');
+    let mc_labeln = mc.append('label').attr('class', 'col s6');
+    mc_labeln.append('span').attr('class', 'col measureLabel')
+        .style('color', d => 'rgb(' + getcolor(measureObj[d]).join(',') + ')').style('font-family', 'Arial')
+        .text(d => d);
+    let mc_label = mc.append('label').attr('class', 'col s1');
+    mc_label.append('input').attr('type', 'checkbox').attr('class', 'filled-in enableCheck')
+        .on('change', function (d) {
+            checkfilter[measureObj[d]] = this.checked;
+            d3.select(this.parentNode.parentNode).attr('disabled', this.checked ? null : 'disabled');
+            needupdate = true;
+        });
+    mc_label.append('span');
+    mc.append('div').attr('class', 'sliderHolder col s3').each(function () {
+        noUiSlider.create(this, {
+            start: [0, 1],
+            connect: true,
+            range: {
+                'min': 0,
+                'max': 1
+            },
+        }).on('change', function (values) {
+            valfilter[measureObj[d3.select(this.target).datum()]][0] = +(values[0]);
+            valfilter[measureObj[d3.select(this.target).datum()]][1] = +(values[1]);
+            needupdate = true;
+        });
+    });
+}
+
 $( document ).ready(function() {
     try {
         $('.collapsible.expandable').collapsible({
@@ -104,46 +146,7 @@ $( document ).ready(function() {
             d3.select(`#${this.value}profile`).classed('hide',false);
         });
         // generate measurement list
-        let mc = d3.select('#measureControl').selectAll('.measureControl')
-            .data(measurename)
-            .enter().append('div').attr('class', 'measureControl row valign-wrapper')
-            .attr('disabled','disabled');
-
-        let mc_labelr = mc.append('label').attr('class', 'col s2');
-        mc_labelr.append('input').attr('type', 'radio').attr('name', 'orderMeasure').attr('class', 'with-gap')
-            .attr('checked',d=>selectedmeasure===measureObj[d]?'':null)
-            .on('change',function(d){
-                console.log(d);
-                selectedmeasure = measureObj[d];
-                needupdate = true;
-            });
-        mc_labelr.append('span');
-        let mc_labeln = mc.append('label').attr('class', 'col s6');
-        mc_labeln.append('span').attr('class', 'col measureLabel')
-            .style('color',d=>'rgb('+getcolor(measureObj[d]).join(',')+')').style('font-family','Arial')
-            .text(d => d);
-        let mc_label = mc.append('label').attr('class', 'col s1');
-        mc_label.append('input').attr('type', 'checkbox').attr('class', 'filled-in enableCheck')
-            .on('change',function(d){
-                checkfilter[measureObj[d]] = this.checked;
-                d3.select(this.parentNode.parentNode).attr('disabled',this.checked?null:'disabled');
-                needupdate = true;
-            });
-        mc_label.append('span');
-        mc.append('div').attr('class','sliderHolder col s3').each(function(){
-            noUiSlider.create(this, {
-                start: [0, 1],
-                connect: true,
-                range: {
-                    'min': 0,
-                    'max': 1
-                },
-            }).on('change',function(values){
-                valfilter[measureObj[d3.select(this.target).datum()]][0] = +(values[0]);
-                valfilter[measureObj[d3.select(this.target).datum()]][1] = +(values[1]);
-                needupdate = true;
-            });
-        });
+        settingMeasureUpdate();
 
         // Radar control
         MetricController.graphicopt({width:365,height:365})
@@ -278,7 +281,7 @@ $( document ).ready(function() {
                 .onChangeValue(onSchemaUpdate)
                 .init();
             // update measureControl
-
+            settingMeasureUpdate();
 
             d3.select('.cover').classed('hidden', false);
         });
