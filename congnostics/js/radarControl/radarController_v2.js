@@ -657,6 +657,7 @@ console.log(e);
             function drawMeanLine(paths_) {
                 return paths_
                     .attr("d", function (d) {
+                        d.forEach(e=>{if(e.value === 0) e.value = 0.001});  // Bao wrote to advoid NaN values
                         return radarLine(d)
                     })
                     .styles({

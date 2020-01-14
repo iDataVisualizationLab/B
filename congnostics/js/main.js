@@ -1889,7 +1889,7 @@ function draw() {
             text('Highest values',xBlank+2.3*groupSize,yBlank);
 
             // draw summary chart
-            drawViolinChart();
+            // drawViolinChart();
 
             // textSize(plotsize/12);
             // text('select measure',xstartpos+plotsize+2*xblank1+0.5*splotsize,16+plotsize/10);
