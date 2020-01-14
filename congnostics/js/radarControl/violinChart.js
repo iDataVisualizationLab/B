@@ -19,7 +19,9 @@ d3.viiolinChart = function () {
                 method : 'DensityEstimator', // epsilon is learning rate (10 = default)
                 resolution : 50, // resolution
                 dataformated: false
-            }
+            },
+            middleAxis:{'stroke-width':0.5},ticks:{'stroke-width':0.5},
+            tick:{visibile:true}
         },
         runopt,
         arr = [],viiolin = undefined,

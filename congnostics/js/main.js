@@ -78,35 +78,24 @@ let dataRadar;
 // UI CODE
 ///////////////////////////////
 ///////////////////////////////
-
 function settingMeasureUpdate() {
-    let mc = d3.select('#measureControl').selectAll('.measureControl')
-        .data(measurename)
-        .enter().append('div').attr('class', 'measureControl row valign-wrapper')
-        .attr('disabled', 'disabled');
+    let mc_o = d3.select('#measureControl').selectAll('.measureControl')
+        .data(measurename); // update data
+    mc_o.exit().remove(); // remove exit data
+    let mc = mc_o.enter().append('div').attr('class', 'measureControl row valign-wrapper')
+        .attr('disabled', 'disabled'); // new data
 
-    let mc_labelr = mc.append('label').attr('class', 'col s2');
-    mc_labelr.append('input').attr('type', 'radio').attr('name', 'orderMeasure').attr('class', 'with-gap')
-        .attr('checked', d => selectedmeasure === measureObj[d] ? '' : null)
-        .on('change', function (d) {
-            console.log(d);
-            selectedmeasure = measureObj[d];
-            needupdate = true;
-        });
+    let mc_labelr = mc.append('label').attr('class', 'col s2 measureName');
+    mc_labelr.append('input').attr('type', 'radio').attr('name', 'orderMeasure').attr('class', 'with-gap');
     mc_labelr.append('span');
-    let mc_labeln = mc.append('label').attr('class', 'col s6');
-    mc_labeln.append('span').attr('class', 'col measureLabel')
-        .style('color', d => 'rgb(' + getcolor(measureObj[d]).join(',') + ')').style('font-family', 'Arial')
-        .text(d => d);
-    let mc_label = mc.append('label').attr('class', 'col s1');
-    mc_label.append('input').attr('type', 'checkbox').attr('class', 'filled-in enableCheck')
-        .on('change', function (d) {
-            checkfilter[measureObj[d]] = this.checked;
-            d3.select(this.parentNode.parentNode).attr('disabled', this.checked ? null : 'disabled');
-            needupdate = true;
-        });
+    let mc_labeln = mc.append('label').attr('class', 'col s6 measureFilter');
+    mc_labeln.append('span').attr('class', 'col measureLabel');
+    let mc_label = mc.append('label').attr('class', 'col s1 measureFilterCheck');
+    mc_label.append('input').attr('type', 'checkbox').attr('class', 'filled-in enableCheck');
     mc_label.append('span');
     mc.append('div').attr('class', 'sliderHolder col s3').each(function () {
+        if ($(this)[0].noUiSlider)
+            $(this)[0].noUiSlider.destroy();
         noUiSlider.create(this, {
             start: [0, 1],
             connect: true,
@@ -120,6 +109,27 @@ function settingMeasureUpdate() {
             needupdate = true;
         });
     });
+
+    mc = d3.select('#measureControl').selectAll('.measureControl'); // reselect
+    mc.select('label.measureName').select('input')
+        .attr('checked', d => selectedmeasure === measureObj[d] ? '' : null)
+        .on('change', function (d) {
+            console.log(d);
+            selectedmeasure = measureObj[d];
+            needupdate = true;
+        });
+    mc.select('label.measureFilter').select('span')
+        .style('color', d => 'rgb(' + getcolor(measureObj[d]).join(',') + ')').style('font-family', 'Arial')
+        .text(d => d);
+    mc.select('label.measureFilterCheck')
+        .on('change', function (d) {
+            checkfilter[measureObj[d]] = this.checked;
+            d3.select(this.parentNode.parentNode).attr('disabled', this.checked ? null : 'disabled');
+            needupdate = true;
+        });
+
+
+
 }
 
 $( document ).ready(function() {
@@ -272,7 +282,9 @@ $( document ).ready(function() {
             }
             updateMeasureName();
             needcalculation = true;
+            radarChartclusteropt.schema = serviceFullList;
             // update MetricController
+            MetricController.remove();
             MetricController = radarController();
             MetricController.graphicopt({width:365,height:365})
                 .div(d3.select('#RadarController'))
@@ -1876,6 +1888,9 @@ function draw() {
             text('Middle values',xBlank+1.3*groupSize,yBlank);
             text('Highest values',xBlank+2.3*groupSize,yBlank);
 
+            // draw summary chart
+            drawViolinChart();
+
             // textSize(plotsize/12);
             // text('select measure',xstartpos+plotsize+2*xblank1+0.5*splotsize,16+plotsize/10);
             // Color explanation
@@ -2391,4 +2406,9 @@ function changeTypeOfChart() {
     else chooseType = "radar";
     reCalculateTsne();
     onchangeVizdata();
+}
+
+// DRAW SUMMARY VIEW BY VIOLIN CHART
+function drawViolinChart() {
+
 }

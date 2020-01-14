@@ -301,7 +301,12 @@ let radarController = function () {
 
         }
     }
-    let violiin_chart = d3.viiolinChart().graphicopt({width:160,height:25,opt:{dataformated:true},margin: {top: 0, right: 30, bottom: 0, left: 30},middleAxis:{'stroke-width':0.5},ticks:{'stroke-width':0.5},tick:{visibile:false}});;
+    let violiin_chart = d3.viiolinChart()
+        .graphicopt({width:160,height:25,opt:{dataformated:true},
+            margin: {top: 0, right: 30, bottom: 0, left: 30},
+            middleAxis:{'stroke-width':0.5},ticks:{'stroke-width':0.5},
+            tick:{visibile:false}
+        });
     function eventTable(){
         tablediv.select("table").selectAll('td.angle').on('input', function (d) {
             updateAngle(svg.selectAll('.dragpoint').filter(s => s.data.text === dataTable.cell(this).data().data.text).node().parentElement, toRadian(this.firstElementChild.value * 1));
@@ -338,6 +343,11 @@ console.log(e);
         }
     }
     let dataTable;
+    radarController.remove = function(){
+        div.selectAll('*').remove();
+        tablediv.selectAll("*").remove();
+        tablediv.html('<table class="display" width="100%"></table>');
+    };
     radarController.init = function ()
     {
         try {
