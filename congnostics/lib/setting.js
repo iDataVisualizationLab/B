@@ -1,6 +1,6 @@
 let selectedDisplay = "1D";
 let measures = [];  // measures[index][sample][x-var,y-var,value], value = -1 means no data
-let nummeasure = selectedDisplay === "1D" ? 11:11;
+let nummeasure = selectedDisplay === "1D" ? 9:11;
 // let measurename = [
 //     'Outlying',
 //     'Skinny',
@@ -29,17 +29,15 @@ let nummeasure = selectedDisplay === "1D" ? 11:11;
 // };
 let measurename = selectedDisplay === "1D" ?
     [
-    'Outlying',
-    'Net Outlying',
     'Trend',
     'Periodicity',
     'Auto-correlation',
     'Mean',
     'Standard deviation',
-    'Skewness',
+    'Outlying',
     'Net mean',
     'Net standard deviation',
-    'Net skewness',
+    'Net Outlying',
 ] :
 [
     'Outlying',
@@ -56,17 +54,15 @@ let measurename = selectedDisplay === "1D" ?
 ];
 let measureObj = selectedDisplay === "1D" ?
     {
-    'Outlying':0,
-    'Net Outlying':1,
-    'Trend':2,
-    'Periodicity':3,
-    'Auto-correlation':4,
-    'Mean':5,
-    'Standard deviation':6,
-    'Skewness':7,
-    'Net mean':8,
-    'Net standard deviation':9,
-    'Net skewness':10,
+    'Trend':0,
+    'Periodicity':1,
+    'Auto-correlation':2,
+    'Mean':3,
+    'Standard deviation':4,
+    'Outlying':5,
+    'Net mean':6,
+    'Net standard deviation':7,
+    'Net Outlying':8,
 } : {
     'Outlying':0,
     'Skinny':1,
