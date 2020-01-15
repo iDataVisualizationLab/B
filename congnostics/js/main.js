@@ -224,30 +224,26 @@ $( document ).ready(function() {
                 case "1D":
                     nummeasure = 11;
                     measurename = [
-                        'Outlying',
-                        'Net Outlying',
                         'Trend',
                         'Periodicity',
                         'Auto-correlation',
                         'Mean',
                         'Standard deviation',
-                        'Skewness',
+                        'Outlying',
                         'Net mean',
                         'Net standard deviation',
-                        'Net skewness',
+                        'Net Outlying',
                     ];
                     measureObj = {
-                        'Outlying':0,
-                        'Net Outlying':1,
-                        'Trend':2,
-                        'Periodicity':3,
-                        'Auto-correlation':4,
-                        'Mean':5,
-                        'Standard deviation':6,
-                        'Skewness':7,
-                        'Net mean':8,
-                        'Net standard deviation':9,
-                        'Net skewness':10,
+                        'Trend':0,
+                        'Periodicity':1,
+                        'Auto-correlation':2,
+                        'Mean':3,
+                        'Standard deviation':4,
+                        'Skewness':5,
+                        'Net mean':6,
+                        'Net standard deviation':7,
+                        'Net skewness':8,
                     };
                     break;
                 case "2D":
