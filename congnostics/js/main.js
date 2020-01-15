@@ -1282,8 +1282,6 @@ function analyzedata() {
             sampleS.timespan = [new Date()];
         }
         needupdate = true;
-        d3.select('.cover').classed('hidden', true);
-
 ///////////////////////
 // END OF CALCULATION
 ///////////////////////
@@ -1398,6 +1396,13 @@ function prepareRadarTable() {
             leaderList.push(minObj);
         }
     });
+    d3.select('.cover').classed('hidden', true);
+    // add element for drawing Violin chart
+    let svg_violin = d3.select('#myViolinChart');
+    d3.viiolinChart()
+        .graphicopt({width:160,height:25,opt:{dataformated:true},
+            margin: {top: 0, right: 30, bottom: 0, left: 30},
+        }).data([dataRadar[measurename[selectedmeasure]]]).setTicksDisplay([0,1]).draw(svg_violin);
 }
 // Calculate Cluster
 function recalculateCluster (option,calback) {
@@ -2406,16 +2411,4 @@ function changeTypeOfChart() {
     else chooseType = "radar";
     reCalculateTsne();
     onchangeVizdata();
-}
-
-// DRAW SUMMARY VIEW BY VIOLIN CHART
-function drawViolinChart() {
-    let myViolinChart = d3.viiolinChart()
-        .graphicopt({width:160,height:25,opt:{dataformated:true},
-            margin: {top: 0, right: 30, bottom: 0, left: 30},
-            middleAxis:{'stroke-width':0.5},ticks:{'stroke-width':0.5},
-            tick:{visibile:false}
-        });
-    myViolinChart.graphicopt({customrange:[-sg.datum().data.range[0]/(sg.datum().data.range[1]-sg.datum().data.range[0]),1]});
-    myViolinChart.data([ sg.datum().summary]).setTicksDisplay([0,sg.datum().data.range[1]]).draw(selection);
 }
