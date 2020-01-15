@@ -1398,11 +1398,11 @@ function prepareRadarTable() {
     });
     d3.select('.cover').classed('hidden', true);
     // add element for drawing Violin chart
-    let svg_violin = d3.select('#myViolinChart');
-    d3.viiolinChart()
-        .graphicopt({width:160,height:25,opt:{dataformated:true},
-            margin: {top: 0, right: 30, bottom: 0, left: 30},
-        }).data([dataRadar[measurename[selectedmeasure]]]).setTicksDisplay([0,1]).draw(svg_violin);
+    // let svg_violin = d3.select('#myViolinChart');
+    // d3.viiolinChart()
+    //     .graphicopt({width:160,height:25,opt:{dataformated:true},
+    //         margin: {top: 0, right: 30, bottom: 0, left: 30},
+    //     }).data([dataRadar[measurename[selectedmeasure]]]).setTicksDisplay([0,1]).draw(svg_violin);
 }
 // Calculate Cluster
 function recalculateCluster (option,calback) {
