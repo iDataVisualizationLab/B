@@ -1812,14 +1812,14 @@ function onchangeVizdata(vizMode){
 // SET UP FUNCTION
 //////////////////
 // Variables
-let csPlotSize;
+let csPlotSize = 2*columnSize;
 let oPlotSize;
-let rPlotSize;
-let xBlank;
-let xgBlank;
-let yBlank;
-let ygBlank;
-let groupSize;
+let rPlotSize = 1.5*columnSize;
+let xBlank = selectedDisplay === "1D" ? columnSize : 2*columnSize;
+let xgBlank = 2*columnSize;
+let yBlank = 50;
+let ygBlank = csPlotSize*0.3;
+let groupSize = 2*csPlotSize+xBlank+2*rPlotSize+xgBlank;
 
 function setup() {
     let canvas = createCanvas(width,height);
@@ -2015,7 +2015,7 @@ function draw() {
                     rPlotSize = 1.5*columnSize;
                     xBlank = columnSize;
                     xgBlank = 2*columnSize;
-                    yBlank = 50;
+                    // yBlank = 50;
                     ygBlank = csPlotSize*0.3;
                     groupSize = 2*csPlotSize+xBlank+2*rPlotSize+xgBlank;
                     // Draw plots
@@ -2174,7 +2174,7 @@ function draw() {
                     rPlotSize = 4*columnSize;
                     xBlank = 2*columnSize;
                     xgBlank = 3*columnSize;
-                    yBlank = 50;
+                    // yBlank = 50;
                     ygBlank = csPlotSize*0.3;
                     groupSize = 2*(csPlotSize+xBlank)+rPlotSize+xgBlank;
                     // Draw plots
@@ -2410,5 +2410,12 @@ function changeTypeOfChart() {
 
 // DRAW SUMMARY VIEW BY VIOLIN CHART
 function drawViolinChart() {
-
+    let myViolinChart = d3.viiolinChart()
+        .graphicopt({width:160,height:25,opt:{dataformated:true},
+            margin: {top: 0, right: 30, bottom: 0, left: 30},
+            middleAxis:{'stroke-width':0.5},ticks:{'stroke-width':0.5},
+            tick:{visibile:false}
+        });
+    myViolinChart.graphicopt({customrange:[-sg.datum().data.range[0]/(sg.datum().data.range[1]-sg.datum().data.range[0]),1]});
+    myViolinChart.data([ sg.datum().summary]).setTicksDisplay([0,sg.datum().data.range[1]]).draw(selection);
 }
