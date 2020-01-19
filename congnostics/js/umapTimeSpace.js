@@ -82,6 +82,7 @@ d3.umapTimeSpace = function () {
     }
 
     function start() {
+        dimensionReductionData = [];
         svg.selectAll('*').remove();
         if (tsne)
             tsne.terminate();
@@ -95,6 +96,7 @@ d3.umapTimeSpace = function () {
         tsne.postMessage({action: "colorscale", value: colorarr});
         tsne.postMessage({action: "initDataRaw", value: datain, opt:graphicopt.opt, clusterarr: cluster});
         tsne.addEventListener('message', ({data}) => {
+            if(data.sol) dimensionReductionData = data.sol.map(d=>[d[0],d[1]]);
             switch (data.action) {
                 case "render":
                     d3.select('.cover').classed('hidden', true);
@@ -112,12 +114,14 @@ d3.umapTimeSpace = function () {
                 default:
                     break;
             }
-        })
+        });
     }
+
+
 
     master.init = function(arr,clusterin) {
         datain = arr;
-        cluster = clusterin
+        cluster = clusterin;
         handle_data(datain);
         updateTableInput();
         xscale.range([graphicopt.margin.left,graphicopt.width-graphicopt.margin.right]);
@@ -145,27 +149,29 @@ d3.umapTimeSpace = function () {
             if (filter_by_name && filter_by_name.length)
                 front_ctx.clearRect(0, 0, graphicopt.width, graphicopt.height);
             path = {};
+            let bCountUmap = 0;
             solution.forEach(function (d, i) {
                 const target = datain[i];
                 target.__metrics.position = d;
                 if (!path[target.name])
                     path[target.name] = [];
                 path[target.name].push({name: target.name, key: target.timestep, value: d, cluster: target.cluster});
-                let fillColor = d3.color(colorarr[target.cluster].value);
-                fillColor.opacity = 0.8;
-                background_ctx.fillStyle = fillColor + '';
-                background_ctx.fillRect(xscale(d[0]) - 4, yscale(d[1]) - 4, 3, 3);
-            });
-            let bCountUmap = 0;
-            solution.forEach(function(d, i) {
-                const target = datain[i];
+                let checkClicked = (clickArr.length > 0) ? clickArr.findIndex(cd => cd.clickedData[0]===d[0]&&cd.clickedData[1]===d[1]) : -1;
+                if (checkClicked === -1) {
+                    let fillColor = d3.color(colorarr[target.cluster].value);
+                    fillColor.opacity = 0.8;
+                    background_ctx.fillStyle = fillColor + '';
+                    background_ctx.fillRect(xscale(d[0]) - 2, yscale(d[1]) - 2, 4, 4);
+                } else {
+                    // drawLeaderPlot(background_ctx,target,d);
+                    drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])]);
+                }
                 let li = (leaderDraw.length>0) ? leaderDraw.findIndex(dd=>dd===target.plot) : -1;
                 // if (li !== -1) {drawLeaderPlot(background_ctx,leaderDraw[li],li,d); leaderDraw.splice(li,1); console.log(leaderDraw);}
-                if (li !== -1) {storeDraw[bCountUmap] = [background_ctx,target,d]; bCountUmap+=1;}
-                if(i===solution.length-1) {
-                    storeDraw.forEach(d=>drawLeaderPlot(d[0],d[1],d[2]));
-                }
+                // if (li !== -1) {storeDraw[bCountUmap] = [background_ctx,target,d]; bCountUmap+=1;}
+                if (li !== -1) {storeDraw[bCountUmap] = [background_ctx,target,[xscale(d[0]),yscale(d[1])]]; bCountUmap+=1;}
             });
+            storeDraw.forEach(dd=>drawLeaderPlot(dd[0],dd[1],dd[2]));
             // if (graphicopt.linkConnect) {
             //     d3.values(path).filter(d => d.length > 1 ? d.sort((a, b) => a.t - b.t) : false).forEach(path => {
             //         // make the combination of 0->4 [0,0,1,2] , [0,1,2,3], [1,2,3,4],[2,3,4,4]
@@ -240,7 +246,7 @@ d3.umapTimeSpace = function () {
                     let d = (path[i+2]||path[i+1]).value;
                     drawline(front_ctx,[a,b,c,d],path[i].cluster);
                 }
-            })
+            });
 
             d3.select(background_canvas).style('opacity', 0.1);
             d3.select(front_canvas).style('opacity', 1);
@@ -382,6 +388,10 @@ d3.umapTimeSpace = function () {
         return solution;
     };
 
+    master.render = function (_) {
+        render(_);
+    };
+
     master.color = function (_) {
         return arguments.length ? (colorscale = _, master) : colorscale;
     };
@@ -437,21 +447,22 @@ function drawLeaderPlot(ctx_,target_,plotPosition_) {
     let ctx = ctx_;
     let plot = target_.plot;
     let group = target_.cluster;
-    let plotPosition = plotPosition_;
-    let plotIndex = dataRadar2.map(d=>d.plot).findIndex(d=>d===plot); // [#plot in dataRadar2 and measures]
+    let plotPosition = plotPosition_.map(d=>d);
+    let plotIndex = dataRadar2.map(d=>d.plot).findIndex(dd=>dd===plot); // [#plot in dataRadar2 and measures]
     let sampleIndex = plot.split("-")[0];
-    let varIndex = plot.split("-")[1];
+    let varIndex = plot.split("-")[1];  // for 1D only
     let plotSize = 30;
     let color = [];
-    ctx.translate(-plotSize/2,-plotSize/2);
+    // ctx.translate(-plotSize,-plotSize/2);
     if (chooseType === "radar") {
         // draw Radar Chart
         let dataRadarChart = dataRadar2[plotIndex];
         let angle = Math.PI*2/dataRadarChart.length;
         let rRadarChart = plotSize/2.1;
-        for (var k = 5; k > 0; k--) {
+        for (let k = 5; k > 0; k--) {
             ctx.beginPath();
-            ctx.arc(xscale(plotPosition[0])+plotSize,yscale(plotPosition[1])-plotSize/2,0.2*rRadarChart*k,0,2*Math.PI);
+            ctx.arc(plotPosition[0],plotPosition[1],0.2*rRadarChart*k,0,2*Math.PI);
+            // ctx.arc(xscale(plotPosition[0]),yscale(plotPosition[1]),0.2*rRadarChart*k,0,2*Math.PI);
             ctx.strokeStyle = "rgb(180,180,180)";
             ctx.stroke();
             ctx.fillStyle = "rgb(255,255,255)";
@@ -471,17 +482,20 @@ function drawLeaderPlot(ctx_,target_,plotPosition_) {
                     colorRadar = [89, 135, 222];
                     break;
             }
-            ctx.arc(xscale(plotPosition[0])+plotSize, yscale(plotPosition[1])-plotSize/2,d*rRadarChart,(i-0.25)*angle-Math.PI/2,(i+0.25)*angle-Math.PI/2);
+            // ctx.arc(plotPosition[0],plotPosition[1],d*rRadarChart,(i-0.25)*angle-Math.PI/2,(i+0.25)*angle-Math.PI/2);
+            ctx.arc(xscale(plotPosition[0]),yscale(plotPosition[1]),d*rRadarChart,(i-0.25)*angle-Math.PI/2,(i+0.25)*angle-Math.PI/2);
             ctx.fillStyle = `rgb(${colorRadar[0]},${colorRadar[1]},${colorRadar[2]})`;
             ctx.fill();
             ctx.beginPath();
-            ctx.moveTo(xscale(plotPosition[0])+plotSize,yscale(plotPosition[1])-plotSize/2);
-            ctx.lineTo(xscale(plotPosition[0])+plotSize+d*rRadarChart*Math.cos((i-0.25)*angle-Math.PI/2),yscale(plotPosition[1])-plotSize/2+d*rRadarChart*Math.sin((i-0.25)*angle-Math.PI/2));
-            ctx.lineTo(xscale(plotPosition[0])+plotSize+d*rRadarChart*Math.cos((i+0.25)*angle-Math.PI/2),yscale(plotPosition[1])-plotSize/2+d*rRadarChart*Math.sin((i+0.25)*angle-Math.PI/2));
+            ctx.moveTo(plotPosition[0],plotPosition[1]);
+            // ctx.moveTo(xscale(plotPosition[0]),yscale(plotPosition[1]));
+            ctx.lineTo(plotPosition[0]+d*rRadarChart*Math.cos((i-0.25)*angle-Math.PI/2),plotPosition[1]+d*rRadarChart*Math.sin((i-0.25)*angle-Math.PI/2));
+            // ctx.lineTo(xscale(plotPosition[0])+d*rRadarChart*Math.cos((i-0.25)*angle-Math.PI/2),yscale(plotPosition[1])+d*rRadarChart*Math.sin((i-0.25)*angle-Math.PI/2));
+            ctx.lineTo(plotPosition[0]+d*rRadarChart*Math.cos((i+0.25)*angle-Math.PI/2),plotPosition[1]+d*rRadarChart*Math.sin((i+0.25)*angle-Math.PI/2));
+            // ctx.lineTo(xscale(plotPosition[0])+d*rRadarChart*Math.cos((i+0.25)*angle-Math.PI/2),yscale(plotPosition[1])+d*rRadarChart*Math.sin((i+0.25)*angle-Math.PI/2));
             ctx.fill();
         });
-    }
-    if (chooseType === "series") {
+    } else if (chooseType === "series") {
         // Draw main plots
         ctx.beginPath();
         ctx.fillStyle = "rgb(255,255,255)";
@@ -489,16 +503,22 @@ function drawLeaderPlot(ctx_,target_,plotPosition_) {
         ctx.lineWidth = 3;
         ctx.fill();
         ctx.stroke();
-        ctx.strokeRect(xscale(plotPosition[0]), yscale(plotPosition[1]), 2*plotSize, plotSize);
-        ctx.fillRect(xscale(plotPosition[0]), yscale(plotPosition[1]), 2*plotSize, plotSize);
+        ctx.strokeRect(plotPosition[0],plotPosition[1], 2*plotSize, plotSize);
+        // ctx.strokeRect(xscale(plotPosition[0]),yscale(plotPosition[1]), 2*plotSize, plotSize);
+        ctx.fillRect(plotPosition[0],plotPosition[1], 2*plotSize, plotSize);
+        // ctx.fillRect(xscale(plotPosition[0]),yscale(plotPosition[1]), 2*plotSize, plotSize);
         ctx.lineWidth = 1;
         timedata.forEach(function (time, step) {
             if (step) {
                 if(data[sampleIndex][varIndex][step]>=0 && data[sampleIndex][varIndex][step-1]>=0 && data[sampleIndex][varIndex][step]>=0 && data[sampleIndex][varIndex][step-1]>=0) {
-                    let x1 = xscale(plotPosition[0])+0.05*plotSize+1.9*plotSize*(step-1)/timedata.length;
-                    let x2 = xscale(plotPosition[0])+0.05*plotSize+1.9*plotSize*step/timedata.length;
-                    let y1 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][varIndex][step-1]);
-                    let y2 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][varIndex][step]);
+                    let x1 = plotPosition[0]+0.05*plotSize+1.9*plotSize*(step-1)/timedata.length;
+                    // let x1 = xscale(plotPosition[0])+0.05*plotSize+1.9*plotSize*(step-1)/timedata.length;
+                    let x2 = plotPosition[0]+0.05*plotSize+1.9*plotSize*step/timedata.length;
+                    // let x2 = xscale(plotPosition[0])+0.05*plotSize+1.9*plotSize*step/timedata.length;
+                    let y1 = plotPosition[1]+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][varIndex][step-1]);
+                    // let y1 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][varIndex][step-1]);
+                    let y2 = plotPosition[1]+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][varIndex][step]);
+                    // let y2 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][varIndex][step]);
                     color[0] = (step < timedata.length/2) ? 0 : (step-timedata.length/2)*255/(timedata.length/2);
                     color[1] = 0;
                     color[2] = (step < timedata.length/2) ? 255-255*step/(timedata.length/2) : 0;
@@ -511,5 +531,53 @@ function drawLeaderPlot(ctx_,target_,plotPosition_) {
             }
         });
     }
-    ctx.translate(plotSize/2,plotSize/2);
+    // ctx.translate(plotSize,plotSize/2);
+}
+
+function findClosestDataPoint(mousePosition_,data_) {
+    let mousePosition = mousePosition_;
+    let thisData = data_;
+    // map the clicked point to the data space
+    let xClicked = xscale.invert(mousePosition[0]);
+    let yClicked = yscale.invert(mousePosition[1]);
+    // find the closest point in the dataset to the clicked point
+    let myQuadTree = d3.quadtree().addAll(thisData);
+    let closest = myQuadTree.find(xClicked, yClicked,0.05);
+    // map the co-ordinates of the closest point to the canvas space
+    if(closest) {
+        let dX = xscale(closest[0]);
+        let dY = yscale(closest[1]);
+        // register the click if the clicked point is in the radius of the point
+        let clickRecognition = (mousePosition[0]-dX)*(mousePosition[0]-dX) < 4 && (mousePosition[1]-dY)*(mousePosition[1]-dY) < 4;
+        if(clickRecognition) {
+            let clickCheck = (clickArr.length > 0) ? clickArr.findIndex(d=>d.clickedData===closest) : -1;
+            if (clickCheck === -1) {
+                clickArr.push({
+                    'clickedData':closest,
+                });
+            } else {
+                clickArr.splice(clickCheck,1);
+            }
+        }
+    } else {
+        if (chooseType === "radar") chooseType = "series";
+        else chooseType = "radar";
+    }
+}
+
+// CHANGE TYPE OF CHART IN DIMENSION REDUCTION TECHNIQUES
+function onClickFunction() {
+    let mouse = d3.mouse(this);
+    if(dimensionReductionData.length > 0) findClosestDataPoint(mouse,dimensionReductionData);
+    switch (visualizingOption) {
+        case 'PCA':
+            pcaTS.render();
+            break;
+        case 'tSNE':
+            tsneTS.render();
+            break;
+        case 'UMAP':
+            umapTS.render();
+            break;
+    }
 }

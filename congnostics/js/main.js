@@ -301,7 +301,7 @@ $( document ).ready(function() {
         // });
 
         // change type of chart in dimension reduction techniques
-        d3.select('#tsneScreen_svg').on('click',changeTypeOfChart);
+        d3.select('#tsneScreen_svg').on('click',onClickFunction);
 
     }catch{}
 });
@@ -548,6 +548,7 @@ function analyzedata() {
         }
         initClusterObj();
         recalculateCluster( {clusterMethod: 'kmean',bin:{k:6,iterations:50}},function(){
+            clickArr = [];
             reCalculateTsne();
             // console.log(dataRadar2);
         });
@@ -2401,10 +2402,4 @@ function draw() {
 //     }
 // }
 
-// CHANGE TYPE OF CHART IN DIMENSION REDUCTION TECHNIQUES
-function changeTypeOfChart() {
-    if (chooseType === "radar") chooseType = "series";
-    else chooseType = "radar";
-    reCalculateTsne();
-    onchangeVizdata();
-}
+

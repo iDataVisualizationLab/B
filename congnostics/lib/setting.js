@@ -1,3 +1,6 @@
+let clickArr = [];
+let dimensionReductionData;
+let xscale, yscale;
 let selectedDisplay = "1D";
 let measures = [];  // measures[index][sample][x-var,y-var,value], value = -1 means no data
 let nummeasure = selectedDisplay === "1D" ? 9:11;
