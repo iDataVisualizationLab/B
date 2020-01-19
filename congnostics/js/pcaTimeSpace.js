@@ -154,14 +154,20 @@ d3.pcaTimeSpace = function () {
                 fillColor.opacity = 0.8;
                 background_ctx.fillStyle = fillColor + '';
                 background_ctx.fillRect(xscale(d[0]) - 2, yscale(d[1]) - 2, 4, 4);
-            } else {
-                // drawLeaderPlot(background_ctx,target,d);
-                drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])]);
             }
             let li = (leaderDraw.length>0) ? leaderDraw.findIndex(dd=>dd===target.plot) : -1;
             // if (li !== -1) {drawLeaderPlot(background_ctx,leaderDraw[li],li,d); leaderDraw.splice(li,1); console.log(leaderDraw);}
             // if (li !== -1) {storeDraw[bCountUmap] = [background_ctx,target,d]; bCountUmap+=1;}
             if (li !== -1) {storeDraw[bCountPCA] = [background_ctx,target,[xscale(d[0]),yscale(d[1])]]; bCountPCA+=1;}
+        });
+        solution.forEach((d,i)=>{
+            const target = datain[i];
+            target.__metrics.position = d;
+            let checkClicked = (clickArr.length > 0) ? clickArr.findIndex(cd => cd.clickedData[0]===d[0]&&cd.clickedData[1]===d[1]) : -1;
+            if(checkClicked !== -1) {
+                // drawLeaderPlot(background_ctx,target,d);
+                drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])]);
+            }
         });
         storeDraw.forEach(dd=>drawLeaderPlot(dd[0],dd[1],dd[2]));
         // if (graphicopt.linkConnect) {
