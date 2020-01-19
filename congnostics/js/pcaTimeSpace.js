@@ -75,6 +75,7 @@ d3.pcaTimeSpace = function () {
     }
 
     function start() {
+        dimensionReductionData = [];
         svg.selectAll('*').remove();
         if (tsne)
             tsne.terminate();
@@ -89,6 +90,7 @@ d3.pcaTimeSpace = function () {
         // tsne.postMessage({action: "inittsne", value: graphicopt.opt});
         tsne.postMessage({action: "initDataRaw", value: datain, clusterarr: cluster});
         tsne.addEventListener('message', ({data}) => {
+            if(data.sol) dimensionReductionData = data.sol.map(d=>[d[0],d[1]]);
             switch (data.action) {
                 case "render":
                     d3.select('.cover').classed('hidden', true);
@@ -198,7 +200,7 @@ d3.pcaTimeSpace = function () {
         }
     };
 
-    master.render = function (_) {
+    master.renderPCA = function (_) {
         render(_);
     };
 

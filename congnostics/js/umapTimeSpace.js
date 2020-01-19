@@ -388,7 +388,7 @@ d3.umapTimeSpace = function () {
         return solution;
     };
 
-    master.render = function (_) {
+    master.renderUMAP = function (_) {
         render(_);
     };
 
@@ -542,13 +542,16 @@ function findClosestDataPoint(mousePosition_,data_) {
     let yClicked = yscale.invert(mousePosition[1]);
     // find the closest point in the dataset to the clicked point
     let myQuadTree = d3.quadtree().addAll(thisData);
-    let closest = myQuadTree.find(xClicked, yClicked,0.05);
+    let maxXDistance = xscale.invert(8)-xscale.invert(0);
+    let maxYDistance = yscale.invert(8)-yscale.invert(0);
+    let maxDistance = Math.sqrt(maxXDistance*maxXDistance+maxYDistance*maxYDistance);
+    let closest = myQuadTree.find(xClicked, yClicked,maxDistance);
     // map the co-ordinates of the closest point to the canvas space
     if(closest) {
         let dX = xscale(closest[0]);
         let dY = yscale(closest[1]);
         // register the click if the clicked point is in the radius of the point
-        let clickRecognition = (mousePosition[0]-dX)*(mousePosition[0]-dX) < 4 && (mousePosition[1]-dY)*(mousePosition[1]-dY) < 4;
+        let clickRecognition = (mousePosition[0]-dX)*(mousePosition[0]-dX) < 8 && (mousePosition[1]-dY)*(mousePosition[1]-dY) < 8;
         if(clickRecognition) {
             let clickCheck = (clickArr.length > 0) ? clickArr.findIndex(d=>d.clickedData===closest) : -1;
             if (clickCheck === -1) {
@@ -571,13 +574,13 @@ function onClickFunction() {
     if(dimensionReductionData.length > 0) findClosestDataPoint(mouse,dimensionReductionData);
     switch (visualizingOption) {
         case 'PCA':
-            pcaTS.render();
+            pcaTS.renderPCA();
             break;
         case 'tSNE':
-            tsneTS.render();
+            tsneTS.renderTSNE();
             break;
         case 'UMAP':
-            umapTS.render();
+            umapTS.renderUMAP();
             break;
     }
 }
