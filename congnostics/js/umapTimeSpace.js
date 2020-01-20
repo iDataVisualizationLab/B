@@ -407,7 +407,7 @@ d3.umapTimeSpace = function () {
     };
 
     return master;
-}
+};
 function handle_data_umap(tsnedata) {
     let dataIn = tsnedata;
 
