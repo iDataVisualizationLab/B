@@ -143,16 +143,27 @@ d3.pcaTimeSpace = function () {
                 front_ctx.clearRect(0, 0, graphicopt.width, graphicopt.height);
             path = {};
             let bCountPCA = 0;
+            let mouseOverSample, mouseOverVariable;
+            let typeDraw = 'variable';
+            solution.findIndex((d,i)=>{
+                const myTarget = datain[i];
+                if (d[0] === mouseOverPosition[0] && d[1] === mouseOverPosition[1]) {
+                    mouseOverSample = myTarget.plot.split('-')[0];
+                    mouseOverVariable = myTarget.plot.split('-')[1];
+                    return true;
+                } else return false;
+            });
             solution.forEach(function(d, i) {
                 const target = datain[i];
                 target.__metrics.position = d;
                 if (!path[target.name])
                     path[target.name] = [];
                 path[target.name].push({name:target.name,key:target.timestep,value:d,cluster:target.cluster});
-                let isMouseOver = (d[0] === mouseOverPosition[0]) && (d[1] === mouseOverPosition[1]);
+                // let isMouseOver = (target.plot.split('-')[0] === mouseOverSample);  // highlight all points of the similar sample
+                let isMouseOver = (target.plot.split('-')[1] === mouseOverVariable);  // highlight all points of the similar variable
                 pointSize = (isMouseOver) ? 3*multipleMouseOver : 3;
                 let fillColor = d3.color(colorarr[target.cluster].value);
-                fillColor.opacity = (isMouseOver) ? 1 : 0.5;
+                fillColor.opacity = (mouseOverPosition.length === 0) ? 0.8 : ((isMouseOver) ? 1 : 0.1);
                 background_ctx.beginPath();
                 background_ctx.fillStyle = fillColor + '';
                 background_ctx.arc(xscale(d[0]), yscale(d[1]), pointSize,0,2*Math.PI);
@@ -166,17 +177,24 @@ d3.pcaTimeSpace = function () {
                 const target = datain[i];
                 target.__metrics.position = d;
                 let checkClicked = (clickArr.length > 0) ? clickArr.findIndex(cd => cd.clickedData[0]===d[0]&&cd.clickedData[1]===d[1]) : -1;
-                if(checkClicked !== -1) {
+                // let isSimilarMouseOver = (target.plot.split('-')[0] === mouseOverSample);   // draw chart of all point of the similar sample
+                let isSimilarMouseOver = (target.plot.split('-')[1] === mouseOverVariable);   // draw chart of all point of the similar variable
+                if (checkClicked !== -1 || isSimilarMouseOver) {
                     // drawLeaderPlot(background_ctx,target,d);
-                    let isMouseOver = (d[0] === mouseOverPosition[0]) && (d[1] === mouseOverPosition[1]);
-                    if (isMouseOver) drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],true);
-                    else drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],false);
+                    // let isMouseOver = (d[0] === mouseOverPosition[0]) && (d[1] === mouseOverPosition[1]);
+                    // if (isMouseOver) drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],true);
+                    // else drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],false);
+                    drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],true);
                 }
             });
             storeDraw.forEach(dd=>{
-                let isMouseOver = (dd[2][0] === mouseOverPosition[0]) && (dd[2][1] === mouseOverPosition[1]);
-                if (isMouseOver) drawLeaderPlot(dd[0],dd[1],[xscale(dd[2][0]),yscale(dd[2][1])],true);
-                else drawLeaderPlot(dd[0],dd[1],[xscale(dd[2][0]),yscale(dd[2][1])],false);
+                // let isSimilarMouseOver = (dd[1].plot.split('-')[0] === mouseOverSample);   // draw chart of all point of the similar sample
+                let isSimilarMouseOver = (dd[1].plot.split('-')[1] === mouseOverVariable);   // draw chart of all point of the similar variable
+                if (mouseOverPosition.length > 0) {
+                    if (isSimilarMouseOver) drawLeaderPlot(dd[0],dd[1],[xscale(dd[2][0]),yscale(dd[2][1])],true);
+                } else {
+                    drawLeaderPlot(dd[0],dd[1],[xscale(dd[2][0]),yscale(dd[2][1])],false);
+                }
             });
             // if (graphicopt.linkConnect) {
             //     d3.values(path).filter(d => d.length > 1 ? d.sort((a, b) => a.t - b.t) : false).forEach(path => {
