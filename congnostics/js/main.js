@@ -63,6 +63,7 @@ let tsneTS;
 let pcaTS;
 let umapTS;
 let visualizingOption = 'LMH';
+let mouseOverOption = 'Variable';
 var TsneTSopt = {width:1500,height:1000};
 var PCAopt = {width:1500,height:1000};
 var umapopt = {width:1500,height:1000};
@@ -197,25 +198,34 @@ $( document ).ready(function() {
             if(visualizingOption === 'LMH') {
                 d3.select('#mainCanvasHolder').classed('hide',false);
                 d3.select('#tSNE').classed('hide',true);
+                d3.select('#mouseOverDisplay').attr('disabled','');
             }
             if(visualizingOption === 'PCA') {
                 d3.select('#mainCanvasHolder').classed('hide',true);
                 d3.select('#tSNE').classed('hide',false);
                 onchangeVizType(visualizingOption);
                 onchangeVizdata(visualizingOption);
+                d3.select('#mouseOverDisplay').attr('disabled',null);
             }
             if(visualizingOption === 'UMAP') {
                 d3.select('#mainCanvasHolder').classed('hide',true);
                 d3.select('#tSNE').classed('hide',false);
                 onchangeVizType(visualizingOption);
                 onchangeVizdata(visualizingOption);
+                d3.select('#mouseOverDisplay').attr('disabled',null);
             }
             if(visualizingOption === 'tSNE') {
                 d3.select('#mainCanvasHolder').classed('hide',true);
                 d3.select('#tSNE').classed('hide',false);
                 onchangeVizType(visualizingOption);
                 onchangeVizdata(visualizingOption);
+                d3.select('#mouseOverDisplay').attr('disabled',null);
             }
+        });
+        // mouse over option
+        d3.select('#mouseOverDisplay').on('change',function(){
+            mouseOverOption = this.value;
+            console.log(mouseOverOption);
         });
         // dimension option
         d3.select('#analysis').on('change',function(){

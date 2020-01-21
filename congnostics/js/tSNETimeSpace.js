@@ -183,7 +183,7 @@ d3.tsneTimeSpace = function () {
                     path[target.name] = [];
                 path[target.name].push({name: target.name, key: target.timestep, value: d, cluster: target.cluster});
                 // let isMouseOver = (target.plot.split('-')[0] === mouseOverSample);  // highlight all points of the similar sample
-                let isMouseOver = (target.plot.split('-')[1] === mouseOverVariable);  // highlight all points of the similar variable
+                let isMouseOver = (mouseOverOption === 'Variable') ? (target.plot.split('-')[1] === mouseOverVariable) : (target.plot.split('-')[0] === mouseOverSample);  // highlight all points of the similar variable : sample
                 pointSize = (isMouseOver) ? 3*multipleMouseOver : 3;
                 let fillColor = d3.color(colorarr[target.cluster].value);
                 fillColor.opacity = (mouseOverPosition.length === 0) ? 0.8 : ((isMouseOver) ? 1 : 0.1);
@@ -201,7 +201,7 @@ d3.tsneTimeSpace = function () {
                 target.__metrics.position = d;
                 let checkClicked = (clickArr.length > 0) ? clickArr.findIndex(cd => cd.clickedData[0]===d[0]&&cd.clickedData[1]===d[1]) : -1;
                 // let isSimilarMouseOver = (target.plot.split('-')[0] === mouseOverSample);   // draw chart of all point of the similar sample
-                let isSimilarMouseOver = (target.plot.split('-')[1] === mouseOverVariable);   // draw chart of all point of the similar variable
+                let isSimilarMouseOver = (mouseOverOption === 'Variable') ? (target.plot.split('-')[1] === mouseOverVariable) : (target.plot.split('-')[0] === mouseOverSample);    // draw chart of all point of the similar variable : sample
                 if (checkClicked !== -1 || isSimilarMouseOver) {
                     // drawLeaderPlot(background_ctx,target,d);
                     // let isMouseOver = (d[0] === mouseOverPosition[0]) && (d[1] === mouseOverPosition[1]);
@@ -212,7 +212,7 @@ d3.tsneTimeSpace = function () {
             });
             storeDraw.forEach(dd=>{
                 // let isSimilarMouseOver = (dd[1].plot.split('-')[0] === mouseOverSample);   // draw chart of all point of the similar sample
-                let isSimilarMouseOver = (dd[1].plot.split('-')[1] === mouseOverVariable);   // draw chart of all point of the similar variable
+                let isSimilarMouseOver = (mouseOverOption === 'Variable') ? (dd[1].plot.split('-')[1] === mouseOverVariable) : (dd[1].plot.split('-')[0] === mouseOverSample);    // draw chart of all point of the similar variable : sample
                 if (mouseOverPosition.length > 0) {
                     if (isSimilarMouseOver) drawLeaderPlot(dd[0],dd[1],[xscale(dd[2][0]),yscale(dd[2][1])],true);
                 } else {

@@ -62,9 +62,9 @@
             <li class="settingContain active no_padding">
                 <div class="collapsible-header"  style="color: #000000"><i class="material-icons">settings</i>  Setting</div>
                 <div class="collapsible-body">
-                    <label for="datacom" class="col s3" style="color: #000000"> Dataset: </label>
+                    <label for="datacom" class="col s5" style="color: #000000"> Dataset: </label>
                     <div  class="row s12">
-                        <select id="datacom" class="col s9">
+                        <select id="datacom" class="col s7">
                             <option value="0"> US Employment Data</option>
                             <option value="1">High-performance computing systems, Mar 21th 2019</option>
                             <option value="2">RUL data</option>
@@ -74,16 +74,16 @@
                             <option value="6">Bao dataset</option>
                         </select>
                     </div>
-                    <label for="analysis" class="col s3" style="color: #000000">Types of analysis</label>
+                    <label for="analysis" class="col s5" style="color: #000000">Types of analysis</label>
                     <div class="row s12">
-                        <select id="analysis" class="col s9">
+                        <select id="analysis" class="col s7">
                             <option value="1D">One dimension</option>
                             <option value="2D">Two dimension</option>
                         </select>
                     </div>
-                    <label for="visualizing" class="col s3" style="color: #000000">Visualizing:</label>
+                    <label for="visualizing" class="col s5" style="color: #000000">Visualizing:</label>
                     <div class="row s12">
-                        <select id="visualizing" class="col s9">
+                        <select id="visualizing" class="col s7">
                             <optgroup label="snapshot">
                                 <option selected value="LMH">Low, Middle, and High</option>
                             </optgroup>
@@ -92,6 +92,13 @@
                                 <option value="tSNE">t-SNE</option>
                                 <option value="UMAP">UMAP</option>
                             </optgroup>
+                        </select>
+                    </div>
+                    <label for="mouseOverDisplay" class="col s5" style="color: #000000">Mouseover Display:</label>
+                    <div class="row s12">
+                        <select id="mouseOverDisplay" class="col s7" disabled>
+                            <option selected value="Variable">Dimension/Variable</option>
+                            <option value="Sample">Sample/Observation</option>
                         </select>
                     </div>
 <!--                    <label for="displaymode" class="col s3" style="color: #000000"> Display mode: </label>-->

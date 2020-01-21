@@ -124,6 +124,7 @@ d3.umapTimeSpace = function () {
         cluster = clusterin;
         handle_data(datain);
         updateTableInput();
+        updateTableOption();
         xscale.range([graphicopt.margin.left,graphicopt.width-graphicopt.margin.right]);
         yscale.range([graphicopt.margin.top,graphicopt.height-graphicopt.margin.bottom]);
 
@@ -151,7 +152,6 @@ d3.umapTimeSpace = function () {
             path = {};
             let bCountUmap = 0;
             let mouseOverSample, mouseOverVariable;
-            let typeDraw = 'variable';
             solution.findIndex((d,i)=>{
                 const myTarget = datain[i];
                 if (d[0] === mouseOverPosition[0] && d[1] === mouseOverPosition[1]) {
@@ -166,8 +166,7 @@ d3.umapTimeSpace = function () {
                 if (!path[target.name])
                     path[target.name] = [];
                 path[target.name].push({name: target.name, key: target.timestep, value: d, cluster: target.cluster});
-                // let isMouseOver = (target.plot.split('-')[0] === mouseOverSample);  // highlight all points of the similar sample
-                let isMouseOver = (target.plot.split('-')[1] === mouseOverVariable);  // highlight all points of the similar variable
+                let isMouseOver = (mouseOverOption === 'Variable') ? (target.plot.split('-')[1] === mouseOverVariable) : (target.plot.split('-')[0] === mouseOverSample);  // highlight all points of the similar variable : sample
                 pointSize = (isMouseOver) ? 3*multipleMouseOver : 3;
                 let fillColor = d3.color(colorarr[target.cluster].value);
                 fillColor.opacity = (mouseOverPosition.length === 0) ? 0.8 : ((isMouseOver) ? 1 : 0.1);
@@ -184,8 +183,7 @@ d3.umapTimeSpace = function () {
                 const target = datain[i];
                 target.__metrics.position = d;
                 let checkClicked = (clickArr.length > 0) ? clickArr.findIndex(cd => cd.clickedData[0]===d[0]&&cd.clickedData[1]===d[1]) : -1;
-                // let isSimilarMouseOver = (target.plot.split('-')[0] === mouseOverSample);   // draw chart of all point of the similar sample
-                let isSimilarMouseOver = (target.plot.split('-')[1] === mouseOverVariable);   // draw chart of all point of the similar variable
+                let isSimilarMouseOver = (mouseOverOption === 'Variable') ? (target.plot.split('-')[1] === mouseOverVariable) : (target.plot.split('-')[0] === mouseOverSample);    // draw chart of all point of the similar variable : sample
                 if (checkClicked !== -1 || isSimilarMouseOver) {
                     // drawLeaderPlot(background_ctx,target,d);
                     // let isMouseOver = (d[0] === mouseOverPosition[0]) && (d[1] === mouseOverPosition[1]);
@@ -195,8 +193,7 @@ d3.umapTimeSpace = function () {
                 }
             });
             storeDraw.forEach(dd=>{
-                // let isSimilarMouseOver = (dd[1].plot.split('-')[0] === mouseOverSample);   // draw chart of all point of the similar sample
-                let isSimilarMouseOver = (dd[1].plot.split('-')[1] === mouseOverVariable);   // draw chart of all point of the similar variable
+                let isSimilarMouseOver = (mouseOverOption === 'Variable') ? (dd[1].plot.split('-')[1] === mouseOverVariable) : (dd[1].plot.split('-')[0] === mouseOverSample);    // draw chart of all point of the similar variable : sample
                 if (mouseOverPosition.length > 0) {
                     if (isSimilarMouseOver) drawLeaderPlot(dd[0],dd[1],[xscale(dd[2][0]),yscale(dd[2][1])],true);
                 } else {
@@ -378,6 +375,9 @@ d3.umapTimeSpace = function () {
         d3.entries(output).forEach(d=>{
             table_info.select(`.${d.key}`).text(e=>d.value? formatTable[e.variable]? formatTable[e.variable](d.value):d3.format('.4s')(d.value) :'_');
         });
+    }
+
+    function updateTableOption() {
 
     }
 
