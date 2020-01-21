@@ -301,7 +301,7 @@ $( document ).ready(function() {
         // });
 
         // change type of chart in dimension reduction techniques
-        d3.select('#tsneScreen_svg').on('click',onClickFunction);
+        d3.select('#tsneScreen_svg').on('click',onClickFunction).on('mousemove',mouseOverFunction);
 
     }catch{}
 });
@@ -549,6 +549,7 @@ function analyzedata() {
         initClusterObj();
         recalculateCluster( {clusterMethod: 'kmean',bin:{k:6,iterations:50}},function(){
             clickArr = [];
+            plotPosition = [];
             reCalculateTsne();
             // console.log(dataRadar2);
         });

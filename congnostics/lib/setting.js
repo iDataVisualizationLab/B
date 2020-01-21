@@ -1,3 +1,7 @@
+let multipleMouseOver = 3;
+let mouseOverPosition = [];
+let plotPosition = [];
+let pointSize;
 let clickArr = [];
 let dimensionReductionData;
 let xscale, yscale;

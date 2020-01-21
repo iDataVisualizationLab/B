@@ -156,14 +156,18 @@ d3.umapTimeSpace = function () {
                 if (!path[target.name])
                     path[target.name] = [];
                 path[target.name].push({name: target.name, key: target.timestep, value: d, cluster: target.cluster});
+                let isMouseOver = (d[0] === mouseOverPosition[0]) && (d[1] === mouseOverPosition[1]);
+                pointSize = (isMouseOver) ? 3*multipleMouseOver : 3;
                 let fillColor = d3.color(colorarr[target.cluster].value);
-                fillColor.opacity = 0.8;
+                fillColor.opacity = (isMouseOver) ? 1 : 0.5;
+                background_ctx.beginPath();
                 background_ctx.fillStyle = fillColor + '';
-                background_ctx.fillRect(xscale(d[0]) - 2, yscale(d[1]) - 2, 4, 4);
+                background_ctx.arc(xscale(d[0]), yscale(d[1]), pointSize,0,2*Math.PI);
+                background_ctx.fill();
                 let li = (leaderDraw.length>0) ? leaderDraw.findIndex(dd=>dd===target.plot) : -1;
                 // if (li !== -1) {drawLeaderPlot(background_ctx,leaderDraw[li],li,d); leaderDraw.splice(li,1); console.log(leaderDraw);}
                 // if (li !== -1) {storeDraw[bCountUmap] = [background_ctx,target,d]; bCountUmap+=1;}
-                if (li !== -1) {storeDraw[bCountUmap] = [background_ctx,target,[xscale(d[0]),yscale(d[1])]]; bCountUmap+=1;}
+                if (li !== -1) {storeDraw[bCountUmap] = [background_ctx,target,[d[0],d[1]]]; bCountUmap+=1;}
             });
             solution.forEach((d,i)=>{
                 const target = datain[i];
@@ -171,10 +175,16 @@ d3.umapTimeSpace = function () {
                 let checkClicked = (clickArr.length > 0) ? clickArr.findIndex(cd => cd.clickedData[0]===d[0]&&cd.clickedData[1]===d[1]) : -1;
                 if (checkClicked !== -1) {
                     // drawLeaderPlot(background_ctx,target,d);
-                    drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])]);
+                    let isMouseOver = (d[0] === mouseOverPosition[0]) && (d[1] === mouseOverPosition[1]);
+                    if (isMouseOver) drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],true);
+                    else drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],false);
                 }
             });
-            storeDraw.forEach(dd=>drawLeaderPlot(dd[0],dd[1],dd[2]));
+            storeDraw.forEach(dd=>{
+                let isMouseOver = (dd[2][0] === mouseOverPosition[0]) && (dd[2][1] === mouseOverPosition[1]);
+                if (isMouseOver) drawLeaderPlot(dd[0],dd[1],[xscale(dd[2][0]),yscale(dd[2][1])],true);
+                else drawLeaderPlot(dd[0],dd[1],[xscale(dd[2][0]),yscale(dd[2][1])],false);
+            });
             // if (graphicopt.linkConnect) {
             //     d3.values(path).filter(d => d.length > 1 ? d.sort((a, b) => a.t - b.t) : false).forEach(path => {
             //         // make the combination of 0->4 [0,0,1,2] , [0,1,2,3], [1,2,3,4],[2,3,4,4]
@@ -446,7 +456,7 @@ function calculateMSE_num(a,b){
 }
 
 //draw leader plots
-function drawLeaderPlot(ctx_,target_,plotPosition_) {
+function drawLeaderPlot(ctx_,target_,plotPosition_,isMouseOver_) {
     let ctx = ctx_;
     let plot = target_.plot;
     let group = target_.cluster;
@@ -454,7 +464,7 @@ function drawLeaderPlot(ctx_,target_,plotPosition_) {
     let plotIndex = dataRadar2.map(d=>d.plot).findIndex(dd=>dd===plot); // [#plot in dataRadar2 and measures]
     let sampleIndex = plot.split("-")[0];
     let varIndex = plot.split("-")[1];  // for 1D only
-    let plotSize = 30;
+    let plotSize = (isMouseOver_) ? 30*multipleMouseOver : 30;
     let color = [];
     // ctx.translate(-plotSize,-plotSize/2);
     if (chooseType === "radar") {
@@ -537,7 +547,7 @@ function drawLeaderPlot(ctx_,target_,plotPosition_) {
     // ctx.translate(plotSize,plotSize/2);
 }
 
-function findClosestDataPoint(mousePosition_,data_) {
+function findClosestDataPoint(mousePosition_,data_,isClicked_) {
     let mousePosition = mousePosition_;
     let thisData = data_;
     // map the clicked point to the data space
@@ -545,28 +555,30 @@ function findClosestDataPoint(mousePosition_,data_) {
     let yClicked = yscale.invert(mousePosition[1]);
     // find the closest point in the dataset to the clicked point
     let myQuadTree = d3.quadtree().addAll(thisData);
-    let maxXDistance = xscale.invert(8)-xscale.invert(0);
-    let maxYDistance = yscale.invert(8)-yscale.invert(0);
+    let maxXDistance = xscale.invert(3*multipleMouseOver)-xscale.invert(0);
+    let maxYDistance = yscale.invert(3*multipleMouseOver)-yscale.invert(0);
     let maxDistance = Math.sqrt(maxXDistance*maxXDistance+maxYDistance*maxYDistance);
     let closest = myQuadTree.find(xClicked, yClicked,maxDistance);
     // map the co-ordinates of the closest point to the canvas space
     if(closest) {
-        let dX = xscale(closest[0]);
-        let dY = yscale(closest[1]);
-        // register the click if the clicked point is in the radius of the point
-        let clickRecognition = (mousePosition[0]-dX)*(mousePosition[0]-dX) < 8 && (mousePosition[1]-dY)*(mousePosition[1]-dY) < 8;
-        if(clickRecognition) {
+        if (isClicked_) {
+            let dX = xscale(closest[0]);
+            let dY = yscale(closest[1]);
+            // register the click if the clicked point is in the radius of the point
             let clickCheck = (clickArr.length > 0) ? clickArr.findIndex(d=>d.clickedData===closest) : -1;
             if (clickCheck === -1) {
                 clickArr.push({
                     'clickedData':closest,
                 });
+                plotPosition.push([closest[0],closest[1]]);
             } else {
                 clickArr.splice(clickCheck,1);
+                let removePlotIndex = plotPosition.findIndex(d=>d[0] === closest[0] && d[1] === closest[1]);
+                if (removePlotIndex !== -1) plotPosition.splice(removePlotIndex,1);
             }
-        }
+        } else mouseOverPosition = [closest[0],closest[1]];
     } else {
-        if (chooseType === "radar") chooseType = "series";
+        if(isClicked_) if (chooseType === "radar") chooseType = "series";
         else chooseType = "radar";
     }
 }
@@ -574,7 +586,25 @@ function findClosestDataPoint(mousePosition_,data_) {
 // CHANGE TYPE OF CHART IN DIMENSION REDUCTION TECHNIQUES
 function onClickFunction() {
     let mouse = d3.mouse(this);
-    if(dimensionReductionData.length > 0) findClosestDataPoint(mouse,dimensionReductionData);
+    if(dimensionReductionData.length > 0) findClosestDataPoint(mouse,dimensionReductionData,true);
+    switch (visualizingOption) {
+        case 'PCA':
+            pcaTS.renderPCA();
+            break;
+        case 'tSNE':
+            tsneTS.renderTSNE();
+            break;
+        case 'UMAP':
+            umapTS.renderUMAP();
+            break;
+    }
+}
+
+// MOUSE OVER FUNCTION
+function mouseOverFunction() {
+    mouseOverPosition = [];
+    let mouse = d3.mouse(this);
+    if(dimensionReductionData.length > 0) findClosestDataPoint(mouse,dimensionReductionData,false);
     switch (visualizingOption) {
         case 'PCA':
             pcaTS.renderPCA();
