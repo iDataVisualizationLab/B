@@ -128,9 +128,6 @@ function settingMeasureUpdate() {
             d3.select(this.parentNode.parentNode).attr('disabled', this.checked ? null : 'disabled');
             needupdate = true;
         });
-
-
-
 }
 
 $( document ).ready(function() {
@@ -225,7 +222,6 @@ $( document ).ready(function() {
         // mouse over option
         d3.select('#mouseOverDisplay').on('change',function(){
             mouseOverOption = this.value;
-            console.log(mouseOverOption);
         });
         // dimension option
         d3.select('#analysis').on('change',function(){

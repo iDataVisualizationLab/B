@@ -1,4 +1,4 @@
-let multipleMouseOver = 2;
+let multipleMouseOver = 1;
 let mouseOverPosition = [];
 let plotPosition = [];
 let pointSize;

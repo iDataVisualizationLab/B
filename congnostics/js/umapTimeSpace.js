@@ -490,21 +490,27 @@ function drawLeaderPlot(ctx_,target_,plotPosition_,isMouseOver_) {
         let dataRadarChart = dataRadar2[plotIndex];
         let angle = Math.PI*2/dataRadarChart.length;
         let rRadarChart = plotSize/2.1;
-        // Sample notation
-        ctx.font = "10px Arial";
-        ctx.fillStyle = 'rgb(0,0,0)';
-        ctx.fillText(mapsample2.get(+sampleIndex),plotPosition[0],plotPosition[1]-rRadarChart);
-        ctx.fill();
-        // Variable notation
-        ctx.translate(plotPosition[0]-rRadarChart,plotPosition[1]);
-        ctx.rotate(-Math.PI/2);
-        ctx.font = "6px Arial";
-        ctx.fillStyle = 'rgb(0,0,0)';
-        ctx.fillText(mapvar2.get(+varIndex),0,0);
-        ctx.fill();
-        ctx.rotate(Math.PI/2);
-        ctx.translate(-plotPosition[0]+rRadarChart,-plotPosition[1]);
-
+        if (mouseOverPosition.length > 0) {
+            // Sample notation
+            ctx.font = "10px Arial";
+            ctx.fillStyle = 'rgb(0,0,0)';
+            ctx.fillText(mapsample2.get(+sampleIndex),plotPosition[0],plotPosition[1]-rRadarChart);
+            ctx.fill();
+            // Variable notation
+            let notation = '';
+            let notationArr = mapvar2.get(+varIndex).split('');
+            for (let i = 0; i < 8; i++) {
+                notation += notationArr[i];
+            }
+            ctx.translate(plotPosition[0]-rRadarChart,plotPosition[1]);
+            ctx.rotate(-Math.PI/2);
+            ctx.font = "8px Arial";
+            ctx.fillStyle = 'rgb(0,0,0)';
+            ctx.fillText(notation,0,0);
+            ctx.fill();
+            ctx.rotate(Math.PI/2);
+            ctx.translate(-plotPosition[0]+rRadarChart,-plotPosition[1]);
+        }
         for (let k = 5; k > 0; k--) {
             ctx.beginPath();
             ctx.arc(plotPosition[0],plotPosition[1],0.2*rRadarChart*k,0,2*Math.PI);
@@ -553,21 +559,27 @@ function drawLeaderPlot(ctx_,target_,plotPosition_,isMouseOver_) {
         // ctx.strokeRect(xscale(plotPosition[0]),yscale(plotPosition[1]), 2*plotSize, plotSize);
         ctx.fillRect(plotPosition[0],plotPosition[1], 2*plotSize, plotSize);
         // ctx.fillRect(xscale(plotPosition[0]),yscale(plotPosition[1]), 2*plotSize, plotSize);
-        // Variable notation
-        ctx.translate(plotPosition[0],plotPosition[1]+plotSize);
-        ctx.rotate(-Math.PI/2);
-        ctx.font = "6px Arial";
-        ctx.fillStyle = 'rgb(0,0,0)';
-        ctx.fillText(mapvar2.get(+varIndex),0,0);
-        ctx.fill();
-        ctx.rotate(Math.PI/2);
-        ctx.translate(-plotPosition[0],-plotPosition[1]-plotSize);
-        // Sample notation
-        ctx.font = "10px Arial";
-        ctx.fillStyle = 'rgb(0,0,0)';
-        ctx.fillText(mapsample2.get(+sampleIndex),plotPosition[0],plotPosition[1]);
-        ctx.fill();
-
+        if (mouseOverPosition.length > 0) {
+            // Variable notation
+            let notation = '';
+            let notationArr = mapvar2.get(+varIndex).split('');
+            for (let i = 0; i < 8; i++) {
+                notation += notationArr[i];
+            }
+            ctx.translate(plotPosition[0],plotPosition[1]+plotSize);
+            ctx.rotate(-Math.PI/2);
+            ctx.font = "8px Arial";
+            ctx.fillStyle = 'rgb(0,0,0)';
+            ctx.fillText(notation,0,0);
+            ctx.fill();
+            ctx.rotate(Math.PI/2);
+            ctx.translate(-plotPosition[0],-plotPosition[1]-plotSize);
+            // Sample notation
+            ctx.font = "10px Arial";
+            ctx.fillStyle = 'rgb(0,0,0)';
+            ctx.fillText(mapsample2.get(+sampleIndex),plotPosition[0],plotPosition[1]);
+            ctx.fill();
+        }
         ctx.lineWidth = 1;
         timedata.forEach(function (time, step) {
             if (step) {
