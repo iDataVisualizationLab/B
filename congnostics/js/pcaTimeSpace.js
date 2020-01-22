@@ -159,11 +159,44 @@ d3.pcaTimeSpace = function () {
                 if (!path[target.name])
                     path[target.name] = [];
                 path[target.name].push({name:target.name,key:target.timestep,value:d,cluster:target.cluster});
-                // let isMouseOver = (target.plot.split('-')[0] === mouseOverSample);  // highlight all points of the similar sample
-                let isMouseOver = (mouseOverOption === 'Variable') ? (target.plot.split('-')[1] === mouseOverVariable) : (target.plot.split('-')[0] === mouseOverSample);  // highlight all points of the similar variable : sample
-                pointSize = (isMouseOver) ? 3*multipleMouseOver : 3;
+                let checkInteraction, checkSample, checkVariable, checkBothInteraction;
+                if ((interactionOption.sample === 'noOption') && (interactionOption.variable === 'noOption'))
+                    checkInteraction = false;
+                else checkInteraction = true;
+                if ((interactionOption.sample !== 'noOption') && (interactionOption.variable !== 'noOption'))
+                    checkBothInteraction = true;
+                else checkBothInteraction = false;
+                if (checkInteraction) {
+                    checkSample = target.plot.split('-')[0] === interactionOption.sample;
+                    checkVariable = target.plot.split('-')[1] === interactionOption.variable;
+                }
+                let isMouseOver = (d[0] === mouseOverPosition[0]) && (d[1] === mouseOverPosition[1]);
+                if (!checkInteraction) {
+                    if (isMouseOver) pointSize = 3*multipleMouseOver;
+                    else pointSize = 3;
+                } else {
+                    if (checkBothInteraction) {
+                        if (checkSample && checkVariable) pointSize = 3*multipleHighlight;
+                        else pointSize = 3;
+                    } else {
+                        if (checkSample || checkVariable) pointSize = 3*multipleHighlight;
+                        else pointSize = 3;
+                    }
+                }
                 let fillColor = d3.color(colorarr[target.cluster].value);
-                fillColor.opacity = (mouseOverPosition.length === 0) ? 0.8 : ((isMouseOver) ? 1 : 0.1);
+                if (!checkInteraction) {
+                    if (mouseOverPosition.length===0) fillColor.opacity = 0.8;
+                    else if (isMouseOver) fillColor.opacity = 1;
+                    else fillColor.opacity = 0.3;
+                } else {
+                    if (checkBothInteraction) {
+                        if (checkSample && checkVariable) pointSize = 1;
+                        else pointSize = 0.3;
+                    } else {
+                        if (checkSample || checkVariable) pointSize = 1;
+                        else pointSize = 0.3;
+                    }
+                }
                 background_ctx.beginPath();
                 background_ctx.fillStyle = fillColor + '';
                 background_ctx.arc(xscale(d[0]), yscale(d[1]), pointSize,0,2*Math.PI);
@@ -177,9 +210,7 @@ d3.pcaTimeSpace = function () {
                 const target = datain[i];
                 target.__metrics.position = d;
                 let checkClicked = (clickArr.length > 0) ? clickArr.findIndex(cd => cd.clickedData[0]===d[0]&&cd.clickedData[1]===d[1]) : -1;
-                // let isSimilarMouseOver = (target.plot.split('-')[0] === mouseOverSample);   // draw chart of all point of the similar sample
-                let isSimilarMouseOver = (mouseOverOption === 'Variable') ? (target.plot.split('-')[1] === mouseOverVariable) : (target.plot.split('-')[0] === mouseOverSample);    // draw chart of all point of the similar variable : sample
-                if (checkClicked !== -1 || isSimilarMouseOver) {
+                if (checkClicked !== -1) {
                     // drawLeaderPlot(background_ctx,target,d);
                     // let isMouseOver = (d[0] === mouseOverPosition[0]) && (d[1] === mouseOverPosition[1]);
                     // if (isMouseOver) drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],true);
@@ -189,12 +220,7 @@ d3.pcaTimeSpace = function () {
             });
             storeDraw.forEach(dd=>{
                 // let isSimilarMouseOver = (dd[1].plot.split('-')[0] === mouseOverSample);   // draw chart of all point of the similar sample
-                let isSimilarMouseOver = (mouseOverOption === 'Variable') ? (dd[1].plot.split('-')[1] === mouseOverVariable) : (dd[1].plot.split('-')[0] === mouseOverSample);    // draw chart of all point of the similar variable : sample
-                if (mouseOverPosition.length > 0) {
-                    if (isSimilarMouseOver) drawLeaderPlot(dd[0],dd[1],[xscale(dd[2][0]),yscale(dd[2][1])],true);
-                } else {
-                    drawLeaderPlot(dd[0],dd[1],[xscale(dd[2][0]),yscale(dd[2][1])],false);
-                }
+                drawLeaderPlot(dd[0],dd[1],[xscale(dd[2][0]),yscale(dd[2][1])],false);
             });
             // if (graphicopt.linkConnect) {
             //     d3.values(path).filter(d => d.length > 1 ? d.sort((a, b) => a.t - b.t) : false).forEach(path => {

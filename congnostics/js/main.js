@@ -63,7 +63,10 @@ let tsneTS;
 let pcaTS;
 let umapTS;
 let visualizingOption = 'LMH';
-let mouseOverOption = 'Variable';
+let interactionOption = {
+    'sample': 'noOption',
+    'variable': 'noOption'
+};
 var TsneTSopt = {width:1500,height:1000};
 var PCAopt = {width:1500,height:1000};
 var umapopt = {width:1500,height:1000};
@@ -192,36 +195,70 @@ $( document ).ready(function() {
         d3.select('#mainCanvasHolder').classed('hide',false);
         d3.select('#visualizing').on('change',function(){
             visualizingOption = this.value;
+            console.log(this.value);
             if(visualizingOption === 'LMH') {
                 d3.select('#mainCanvasHolder').classed('hide',false);
                 d3.select('#tSNE').classed('hide',true);
-                d3.select('#mouseOverDisplay').attr('disabled','');
+                d3.select('#dataInstances').attr('disabled','');
+                d3.select('#variable').attr('disabled','');
             }
             if(visualizingOption === 'PCA') {
                 d3.select('#mainCanvasHolder').classed('hide',true);
                 d3.select('#tSNE').classed('hide',false);
                 onchangeVizType(visualizingOption);
                 onchangeVizdata(visualizingOption);
-                d3.select('#mouseOverDisplay').attr('disabled',null);
+                d3.select('#dataInstances').attr('disabled',null);
+                d3.select('#variable').attr('disabled',null);
             }
             if(visualizingOption === 'UMAP') {
                 d3.select('#mainCanvasHolder').classed('hide',true);
                 d3.select('#tSNE').classed('hide',false);
                 onchangeVizType(visualizingOption);
                 onchangeVizdata(visualizingOption);
-                d3.select('#mouseOverDisplay').attr('disabled',null);
+                d3.select('#dataInstances').attr('disabled',null);
+                d3.select('#variable').attr('disabled',null);
             }
             if(visualizingOption === 'tSNE') {
                 d3.select('#mainCanvasHolder').classed('hide',true);
                 d3.select('#tSNE').classed('hide',false);
                 onchangeVizType(visualizingOption);
                 onchangeVizdata(visualizingOption);
-                d3.select('#mouseOverDisplay').attr('disabled',null);
+                d3.select('#dataInstances').attr('disabled',null);
+                d3.select('#variable').attr('disabled',null);
             }
         });
-        // mouse over option
-        d3.select('#mouseOverDisplay').on('change',function(){
-            mouseOverOption = this.value;
+        // interaction option - instances
+        d3.select('#dataInstances').on('change',function(){
+            interactionOption.sample = this.value;
+            if (this.value !== 'noOption') {
+                switch (visualizingOption) {
+                    case 'PCA':
+                        pcaTS.renderPCA();
+                        break;
+                    case 'tSNE':
+                        tsneTS.renderTSNE();
+                        break;
+                    case 'UMAP':
+                        umapTS.renderUMAP();
+                        break;
+                }
+            }
+        });
+        d3.select('#variable').on('change',function(){
+            interactionOption.variable = this.value;
+            if (this.value !== 'noOption') {
+                switch (visualizingOption) {
+                    case 'PCA':
+                        pcaTS.renderPCA();
+                        break;
+                    case 'tSNE':
+                        tsneTS.renderTSNE();
+                        break;
+                    case 'UMAP':
+                        umapTS.renderUMAP();
+                        break;
+                }
+            }
         });
         // dimension option
         d3.select('#analysis').on('change',function(){
@@ -531,6 +568,33 @@ function analyzedata() {
                     });
                 });
         }
+
+        // add variables and instances list
+        d3.selectAll('.dataInstances').remove();
+        d3.selectAll('.variable').remove();
+        // d3.select('#divDataInstances').append('select').attr('id','dataInstances').attr('class','col s7');
+        // d3.select('#divVariable').append('select').attr('id','variable').attr('class','col s7');
+        // d3.select('#dataInstances').append('option').attr('value','noOption').text('--none--');
+        // d3.select('#variable').append('option').attr('value','noOption').text('--none--');
+        data.forEach((d,i)=>{
+            d3.select('#dataInstances').append('option').attr('class','dataInstances').attr('value',i.toString()).text(mapsample2.get(i));
+        });
+        data[0].forEach((d,i)=>{
+            d3.select('#variable').append('option').attr('class','variable').attr('value',i.toString()).text(mapvar2.get(i));
+        });
+        d3.select('#dataInstances').attr('disabled','');
+        d3.select('#variable').attr('disabled','');
+        // let sampleList = [], varList = [];
+        // data.forEach((d,i)=>{
+        //     sampleList[i] = mapsample2.get(i);
+        // });
+        // data[0].forEach((d,i)=>{
+        //     varList[i] = mapvar2.get(i);
+        // });
+        // d3.select('#dataInstances').data(sampleList);
+        // d3.select('dataInstances').exit().remove();
+        // d3.select('dataInstances').enter();
+
 
 /////////////////////////
 // END OF READING DATA

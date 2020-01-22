@@ -94,13 +94,6 @@
                             </optgroup>
                         </select>
                     </div>
-                    <label for="mouseOverDisplay" class="col s5" style="color: #000000">Mouseover Display:</label>
-                    <div class="row s12">
-                        <select id="mouseOverDisplay" class="col s7" disabled>
-                            <option selected value="Variable">Dimension/Variable</option>
-                            <option value="Sample">Sample/Observation</option>
-                        </select>
-                    </div>
 <!--                    <label for="displaymode" class="col s3" style="color: #000000"> Display mode: </label>-->
 <!--                    <div  class="row s12">-->
 <!--                    <select id="displaymode" class="col s9">-->
@@ -137,6 +130,27 @@
 
                     </div>
             </div>
+            </li>
+            <li>
+                <div class="collapsible-header capitalize" id="interaction"><i class="icon-radarShape material-icons icon"></i><span>Interaction</span>  <i class="material-icons expand">chevron_right</i></div>
+                <div class="collapsible-body">
+                    <label for="dataInstances" class="col s5" style="color: #000000">Data Instances:</label>
+                    <div class="row s12">
+                        <div id="divDataInstances">
+                            <select id="dataInstances" class="col s7">
+                                <option value="noOption">--none--</option>
+                            </select>
+                        </div>
+                    </div>
+                    <label for="variable" class="col s5" style="color: #000000">Variables:</label>
+                    <div class="row s12">
+                        <div id="divVariable">
+                            <select id="variable" class="col s7">
+                                <option value="noOption">--none--</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
             </li>
             <li>
                 <div class="collapsible-header capitalize" id="vizController"><i class="icon-radarShape material-icons icon"></i><span>Radar Controller</span>  <i class="material-icons expand">chevron_right</i></div>

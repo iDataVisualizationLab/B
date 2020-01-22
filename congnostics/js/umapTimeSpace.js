@@ -151,25 +151,60 @@ d3.umapTimeSpace = function () {
                 front_ctx.clearRect(0, 0, graphicopt.width, graphicopt.height);
             path = {};
             let bCountUmap = 0;
-            let mouseOverSample, mouseOverVariable;
-            solution.findIndex((d,i)=>{
-                const myTarget = datain[i];
-                if (d[0] === mouseOverPosition[0] && d[1] === mouseOverPosition[1]) {
-                    mouseOverSample = myTarget.plot.split('-')[0];
-                    mouseOverVariable = myTarget.plot.split('-')[1];
-                    return true;
-                } else return false;
-            });
+            // let mouseOverSample, mouseOverVariable;
+            // solution.findIndex((d,i)=>{
+            //     const myTarget = datain[i];
+            //     if (d[0] === mouseOverPosition[0] && d[1] === mouseOverPosition[1]) {
+            //         mouseOverSample = myTarget.plot.split('-')[0];
+            //         mouseOverVariable = myTarget.plot.split('-')[1];
+            //         return true;
+            //     } else return false;
+            // });
             solution.forEach(function (d, i) {
                 const target = datain[i];
                 target.__metrics.position = d;
                 if (!path[target.name])
                     path[target.name] = [];
                 path[target.name].push({name: target.name, key: target.timestep, value: d, cluster: target.cluster});
-                let isMouseOver = (mouseOverOption === 'Variable') ? (target.plot.split('-')[1] === mouseOverVariable) : (target.plot.split('-')[0] === mouseOverSample);  // highlight all points of the similar variable : sample
-                pointSize = (isMouseOver) ? 3*multipleMouseOver : 3;
+                let checkInteraction, checkSample, checkVariable, checkBothInteraction;
+                if ((interactionOption.sample === 'noOption') && (interactionOption.variable === 'noOption'))
+                    checkInteraction = false;
+                else checkInteraction = true;
+                if ((interactionOption.sample !== 'noOption') && (interactionOption.variable !== 'noOption'))
+                    checkBothInteraction = true;
+                else checkBothInteraction = false;
+                if (checkInteraction) {
+                    checkSample = target.plot.split('-')[0] === interactionOption.sample;
+                    checkVariable = target.plot.split('-')[1] === interactionOption.variable;
+                }
+                let isMouseOver = (d[0] === mouseOverPosition[0]) && (d[1] === mouseOverPosition[1]);
+                if (!checkInteraction) {
+                    if (isMouseOver) pointSize = 3*multipleMouseOver;
+                    else pointSize = 3;
+                } else {
+                    if (checkBothInteraction) {
+                        if (checkSample && checkVariable) pointSize = 3*multipleHighlight;
+                        else pointSize = 3;
+                    } else {
+                        if (checkSample || checkVariable) pointSize = 3*multipleHighlight;
+                        else pointSize = 3;
+                    }
+                    console.log(pointSize);
+                }
                 let fillColor = d3.color(colorarr[target.cluster].value);
-                fillColor.opacity = (mouseOverPosition.length === 0) ? 0.8 : ((isMouseOver) ? 1 : 0.1);
+                if (!checkInteraction) {
+                    if (mouseOverPosition.length===0) fillColor.opacity = 0.8;
+                    else if (isMouseOver) fillColor.opacity = 1;
+                    else fillColor.opacity = 0.3;
+                } else {
+                    if (checkBothInteraction) {
+                        if (checkSample && checkVariable) pointSize = 1;
+                        else pointSize = 0.3;
+                    } else {
+                        if (checkSample || checkVariable) pointSize = 1;
+                        else pointSize = 0.3;
+                    }
+                }
                 background_ctx.beginPath();
                 background_ctx.fillStyle = fillColor + '';
                 background_ctx.arc(xscale(d[0]), yscale(d[1]), pointSize,0,2*Math.PI);
@@ -183,22 +218,16 @@ d3.umapTimeSpace = function () {
                 const target = datain[i];
                 target.__metrics.position = d;
                 let checkClicked = (clickArr.length > 0) ? clickArr.findIndex(cd => cd.clickedData[0]===d[0]&&cd.clickedData[1]===d[1]) : -1;
-                let isSimilarMouseOver = (mouseOverOption === 'Variable') ? (target.plot.split('-')[1] === mouseOverVariable) : (target.plot.split('-')[0] === mouseOverSample);    // draw chart of all point of the similar variable : sample
-                if (checkClicked !== -1 || isSimilarMouseOver) {
+                if (checkClicked !== -1) {
                     // drawLeaderPlot(background_ctx,target,d);
                     // let isMouseOver = (d[0] === mouseOverPosition[0]) && (d[1] === mouseOverPosition[1]);
                     // if (isMouseOver) drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],true);
                     // else drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],false);
-                    drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],true);
+                    drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],false);
                 }
             });
             storeDraw.forEach(dd=>{
-                let isSimilarMouseOver = (mouseOverOption === 'Variable') ? (dd[1].plot.split('-')[1] === mouseOverVariable) : (dd[1].plot.split('-')[0] === mouseOverSample);    // draw chart of all point of the similar variable : sample
-                if (mouseOverPosition.length > 0) {
-                    if (isSimilarMouseOver) drawLeaderPlot(dd[0],dd[1],[xscale(dd[2][0]),yscale(dd[2][1])],true);
-                } else {
-                    drawLeaderPlot(dd[0],dd[1],[xscale(dd[2][0]),yscale(dd[2][1])],false);
-                }
+                drawLeaderPlot(dd[0],dd[1],[xscale(dd[2][0]),yscale(dd[2][1])],false);
             });
             // if (graphicopt.linkConnect) {
             //     d3.values(path).filter(d => d.length > 1 ? d.sort((a, b) => a.t - b.t) : false).forEach(path => {
@@ -482,7 +511,7 @@ function drawLeaderPlot(ctx_,target_,plotPosition_,isMouseOver_) {
     let plotIndex = dataRadar2.map(d=>d.plot).findIndex(dd=>dd===plot); // [#plot in dataRadar2 and measures]
     let sampleIndex = plot.split("-")[0];
     let varIndex = plot.split("-")[1];  // for 1D only
-    let plotSize = (isMouseOver_) ? 30*multipleMouseOver : 30;
+    let plotSize = 30;
     let color = [];
     // ctx.translate(-plotSize,-plotSize/2);
     if (chooseType === "radar") {
@@ -490,27 +519,27 @@ function drawLeaderPlot(ctx_,target_,plotPosition_,isMouseOver_) {
         let dataRadarChart = dataRadar2[plotIndex];
         let angle = Math.PI*2/dataRadarChart.length;
         let rRadarChart = plotSize/2.1;
-        if (mouseOverPosition.length > 0) {
+        // if (mouseOverPosition.length > 0) {
             // Sample notation
-            ctx.font = "10px Arial";
-            ctx.fillStyle = 'rgb(0,0,0)';
-            ctx.fillText(mapsample2.get(+sampleIndex),plotPosition[0],plotPosition[1]-rRadarChart);
-            ctx.fill();
+            // ctx.font = "10px Arial";
+            // ctx.fillStyle = 'rgb(0,0,0)';
+            // ctx.fillText(mapsample2.get(+sampleIndex),plotPosition[0],plotPosition[1]-rRadarChart);
+            // ctx.fill();
             // Variable notation
-            let notation = '';
-            let notationArr = mapvar2.get(+varIndex).split('');
-            for (let i = 0; i < 8; i++) {
-                notation += notationArr[i];
-            }
-            ctx.translate(plotPosition[0]-rRadarChart,plotPosition[1]);
-            ctx.rotate(-Math.PI/2);
-            ctx.font = "8px Arial";
-            ctx.fillStyle = 'rgb(0,0,0)';
-            ctx.fillText(notation,0,0);
-            ctx.fill();
-            ctx.rotate(Math.PI/2);
-            ctx.translate(-plotPosition[0]+rRadarChart,-plotPosition[1]);
-        }
+            // let notation = '';
+            // let notationArr = mapvar2.get(+varIndex).split('');
+            // for (let i = 0; i < 8; i++) {
+            //     notation += notationArr[i];
+            // }
+            // ctx.translate(plotPosition[0]-rRadarChart,plotPosition[1]);
+            // ctx.rotate(-Math.PI/2);
+            // ctx.font = "8px Arial";
+            // ctx.fillStyle = 'rgb(0,0,0)';
+            // ctx.fillText(notation,0,0);
+            // ctx.fill();
+            // ctx.rotate(Math.PI/2);
+            // ctx.translate(-plotPosition[0]+rRadarChart,-plotPosition[1]);
+        // }
         for (let k = 5; k > 0; k--) {
             ctx.beginPath();
             ctx.arc(plotPosition[0],plotPosition[1],0.2*rRadarChart*k,0,2*Math.PI);
@@ -559,27 +588,27 @@ function drawLeaderPlot(ctx_,target_,plotPosition_,isMouseOver_) {
         // ctx.strokeRect(xscale(plotPosition[0]),yscale(plotPosition[1]), 2*plotSize, plotSize);
         ctx.fillRect(plotPosition[0],plotPosition[1], 2*plotSize, plotSize);
         // ctx.fillRect(xscale(plotPosition[0]),yscale(plotPosition[1]), 2*plotSize, plotSize);
-        if (mouseOverPosition.length > 0) {
+        // if (mouseOverPosition.length > 0) {
             // Variable notation
-            let notation = '';
-            let notationArr = mapvar2.get(+varIndex).split('');
-            for (let i = 0; i < 8; i++) {
-                notation += notationArr[i];
-            }
-            ctx.translate(plotPosition[0],plotPosition[1]+plotSize);
-            ctx.rotate(-Math.PI/2);
-            ctx.font = "8px Arial";
-            ctx.fillStyle = 'rgb(0,0,0)';
-            ctx.fillText(notation,0,0);
-            ctx.fill();
-            ctx.rotate(Math.PI/2);
-            ctx.translate(-plotPosition[0],-plotPosition[1]-plotSize);
+            // let notation = '';
+            // let notationArr = mapvar2.get(+varIndex).split('');
+            // for (let i = 0; i < 8; i++) {
+            //     notation += notationArr[i];
+            // }
+            // ctx.translate(plotPosition[0],plotPosition[1]+plotSize);
+            // ctx.rotate(-Math.PI/2);
+            // ctx.font = "8px Arial";
+            // ctx.fillStyle = 'rgb(0,0,0)';
+            // ctx.fillText(notation,0,0);
+            // ctx.fill();
+            // ctx.rotate(Math.PI/2);
+            // ctx.translate(-plotPosition[0],-plotPosition[1]-plotSize);
             // Sample notation
-            ctx.font = "10px Arial";
-            ctx.fillStyle = 'rgb(0,0,0)';
-            ctx.fillText(mapsample2.get(+sampleIndex),plotPosition[0],plotPosition[1]);
-            ctx.fill();
-        }
+            // ctx.font = "10px Arial";
+            // ctx.fillStyle = 'rgb(0,0,0)';
+            // ctx.fillText(mapsample2.get(+sampleIndex),plotPosition[0],plotPosition[1]);
+            // ctx.fill();
+        // }
         ctx.lineWidth = 1;
         timedata.forEach(function (time, step) {
             if (step) {
