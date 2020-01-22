@@ -235,15 +235,10 @@ d3.tsneTimeSpace = function () {
             solution.forEach((d,i)=>{
                 const target = datain[i];
                 target.__metrics.position = d;
-                let checkClicked = (clickArr.length > 0) ? clickArr.findIndex(cd => cd.clickedData[0]===d[0]&&cd.clickedData[1]===d[1]) : -1;
-                if (checkClicked !== -1) {
-                    // drawLeaderPlot(background_ctx,target,d);
-                    // let isMouseOver = (d[0] === mouseOverPosition[0]) && (d[1] === mouseOverPosition[1]);
-                    // if (isMouseOver) drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],true);
-                    // else drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],false);
-                    drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],true);
-                }
-                let isMouseOver = (d[0] === mouseOverPosition[0]) && (d[1] === mouseOverPosition[1]);
+
+                // zoom
+                // let dataDR = transformDR.apply([xscale(d[0]),yscale(d[1])]);
+
                 let checkInteraction, checkSample, checkVariable, checkBothInteraction;
                 if ((interactionOption.sample === 'noOption') && (interactionOption.variable === 'noOption'))
                     checkInteraction = false;
@@ -255,17 +250,29 @@ d3.tsneTimeSpace = function () {
                     checkSample = target.plot.split('-')[0] === interactionOption.sample;
                     checkVariable = target.plot.split('-')[1] === interactionOption.variable;
                     if (checkBothInteraction) {
-                        if (isMouseOver && checkSample && checkVariable)
+                        if (checkSample && checkVariable)
                             drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],false);
                     } else {
-                        if (isMouseOver && (checkVariable || checkSample))
+                        if (checkVariable || checkSample)
                             drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],false);
+                    }
+                } else {
+                    let checkClicked = (clickArr.length > 0) ? clickArr.findIndex(cd => cd.clickedData[0]===d[0]&&cd.clickedData[1]===d[1]) : -1;
+                    if (checkClicked !== -1) {
+                        // drawLeaderPlot(background_ctx,target,d);
+                        // let isMouseOver = (d[0] === mouseOverPosition[0]) && (d[1] === mouseOverPosition[1]);
+                        // if (isMouseOver) drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],true);
+                        // else drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],false);
+                        drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],false);
                     }
                 }
             });
             storeDraw.forEach(dd=>{
-                // let isSimilarMouseOver = (dd[1].plot.split('-')[0] === mouseOverSample);   // draw chart of all point of the similar sample
-                drawLeaderPlot(dd[0],dd[1],[xscale(dd[2][0]),yscale(dd[2][1])],false);
+                let checkInteraction;
+                if ((interactionOption.sample === 'noOption') && (interactionOption.variable === 'noOption'))
+                    checkInteraction = false;
+                else checkInteraction = true;
+                if (!checkInteraction) drawLeaderPlot(dd[0],dd[1],[xscale(dd[2][0]),yscale(dd[2][1])],false);
             });
             // if (graphicopt.linkConnect) {
             //     d3.values(path).filter(d => d.length > 1 ? d.sort((a, b) => a.t - b.t) : false).forEach(path => {
