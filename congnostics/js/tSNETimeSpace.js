@@ -200,24 +200,25 @@ d3.tsneTimeSpace = function () {
                 } else {
                     if (checkBothInteraction) {
                         if (checkSample && checkVariable) pointSize = 3*multipleHighlight;
-                        else pointSize = 3;
+                        else pointSize = (isMouseOver) ? 3*multipleMouseOver : 3;
                     } else {
                         if (checkSample || checkVariable) pointSize = 3*multipleHighlight;
-                        else pointSize = 3;
+                        else pointSize = (isMouseOver) ? 3*multipleMouseOver : 3;
                     }
+                    console.log(pointSize);
                 }
+
+                // color control - opacity
                 let fillColor = d3.color(colorarr[target.cluster].value);
                 if (!checkInteraction) {
                     if (mouseOverPosition.length===0) fillColor.opacity = 0.8;
                     else if (isMouseOver) fillColor.opacity = 1;
-                    else fillColor.opacity = 0.3;
+                    else fillColor.opacity = 0.2;
                 } else {
                     if (checkBothInteraction) {
-                        if (checkSample && checkVariable) pointSize = 1;
-                        else pointSize = 0.3;
+                        fillColor.opacity = (checkSample && checkVariable)?1:(isMouseOver)?1:0.2;
                     } else {
-                        if (checkSample || checkVariable) pointSize = 1;
-                        else pointSize = 0.3;
+                        fillColor.opacity = (checkSample || checkVariable)?1:(isMouseOver)?1:0.2;
                     }
                 }
                 background_ctx.beginPath();
@@ -239,6 +240,25 @@ d3.tsneTimeSpace = function () {
                     // if (isMouseOver) drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],true);
                     // else drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],false);
                     drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],true);
+                }
+                let isMouseOver = (d[0] === mouseOverPosition[0]) && (d[1] === mouseOverPosition[1]);
+                let checkInteraction, checkSample, checkVariable, checkBothInteraction;
+                if ((interactionOption.sample === 'noOption') && (interactionOption.variable === 'noOption'))
+                    checkInteraction = false;
+                else checkInteraction = true;
+                if ((interactionOption.sample !== 'noOption') && (interactionOption.variable !== 'noOption'))
+                    checkBothInteraction = true;
+                else checkBothInteraction = false;
+                if (checkInteraction) {
+                    checkSample = target.plot.split('-')[0] === interactionOption.sample;
+                    checkVariable = target.plot.split('-')[1] === interactionOption.variable;
+                    if (checkBothInteraction) {
+                        if (isMouseOver && checkSample && checkVariable)
+                            drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],false);
+                    } else {
+                        if (isMouseOver && (checkVariable || checkSample))
+                            drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],false);
+                    }
                 }
             });
             storeDraw.forEach(dd=>{

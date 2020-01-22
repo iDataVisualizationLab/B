@@ -1,6 +1,6 @@
 let multipleMouseOver = 2;
 let mouseOverPosition = [];
-let multipleHighlight = 2;
+let multipleHighlight = 2.5;
 let plotPosition = [];
 let pointSize = 3;
 let clickArr = [];

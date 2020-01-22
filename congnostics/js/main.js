@@ -230,7 +230,6 @@ $( document ).ready(function() {
         // interaction option - instances
         d3.select('#dataInstances').on('change',function(){
             interactionOption.sample = this.value;
-            if (this.value !== 'noOption') {
                 switch (visualizingOption) {
                     case 'PCA':
                         pcaTS.renderPCA();
@@ -242,11 +241,10 @@ $( document ).ready(function() {
                         umapTS.renderUMAP();
                         break;
                 }
-            }
         });
         d3.select('#variable').on('change',function(){
             interactionOption.variable = this.value;
-            if (this.value !== 'noOption') {
+
                 switch (visualizingOption) {
                     case 'PCA':
                         pcaTS.renderPCA();
@@ -258,7 +256,7 @@ $( document ).ready(function() {
                         umapTS.renderUMAP();
                         break;
                 }
-            }
+
         });
         // dimension option
         d3.select('#analysis').on('change',function(){
