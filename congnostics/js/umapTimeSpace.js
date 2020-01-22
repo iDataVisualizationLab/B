@@ -166,6 +166,11 @@ d3.umapTimeSpace = function () {
                 if (!path[target.name])
                     path[target.name] = [];
                 path[target.name].push({name: target.name, key: target.timestep, value: d, cluster: target.cluster});
+
+                // zoom
+                // let dataDR = transformDR.apply([xscale(d[0]),yscale(d[1])]);
+
+                // interaction condition
                 let checkInteraction, checkSample, checkVariable, checkBothInteraction;
                 if ((interactionOption.sample === 'noOption') && (interactionOption.variable === 'noOption'))
                     checkInteraction = false;
@@ -178,6 +183,8 @@ d3.umapTimeSpace = function () {
                     checkVariable = target.plot.split('-')[1] === interactionOption.variable;
                 }
                 let isMouseOver = (d[0] === mouseOverPosition[0]) && (d[1] === mouseOverPosition[1]);
+
+                // set up pointSize
                 if (!checkInteraction) {
                     if (isMouseOver) pointSize = 3*multipleMouseOver;
                     else pointSize = 3;
@@ -199,9 +206,11 @@ d3.umapTimeSpace = function () {
                     else fillColor.opacity = 0.2;
                 } else {
                     if (checkBothInteraction) {
-                        fillColor.opacity = (checkSample && checkVariable)?1:(isMouseOver)?1:0.2;
+                        if (checkSample && checkVariable) fillColor.opacity = 1;
+                        else fillColor.opacity = (isMouseOver)?1:0.2;
                     } else {
-                        fillColor.opacity = (checkSample || checkVariable)?1:(isMouseOver)?1:0.2;
+                        if (checkSample || checkVariable) fillColor.opacity = 1;
+                        else fillColor.opacity = (isMouseOver)?1:0.2;
                     }
                 }
 
@@ -218,15 +227,10 @@ d3.umapTimeSpace = function () {
             solution.forEach((d,i)=>{
                 const target = datain[i];
                 target.__metrics.position = d;
-                let checkClicked = (clickArr.length > 0) ? clickArr.findIndex(cd => cd.clickedData[0]===d[0]&&cd.clickedData[1]===d[1]) : -1;
-                if (checkClicked !== -1) {
-                    // drawLeaderPlot(background_ctx,target,d);
-                    // let isMouseOver = (d[0] === mouseOverPosition[0]) && (d[1] === mouseOverPosition[1]);
-                    // if (isMouseOver) drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],true);
-                    // else drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],false);
-                    drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],false);
-                }
-                let isMouseOver = (d[0] === mouseOverPosition[0]) && (d[1] === mouseOverPosition[1]);
+
+                // zoom
+                // let dataDR = transformDR.apply([xscale(d[0]),yscale(d[1])]);
+
                 let checkInteraction, checkSample, checkVariable, checkBothInteraction;
                 if ((interactionOption.sample === 'noOption') && (interactionOption.variable === 'noOption'))
                     checkInteraction = false;
@@ -238,16 +242,29 @@ d3.umapTimeSpace = function () {
                     checkSample = target.plot.split('-')[0] === interactionOption.sample;
                     checkVariable = target.plot.split('-')[1] === interactionOption.variable;
                     if (checkBothInteraction) {
-                        if (isMouseOver && checkSample && checkVariable)
+                        if (checkSample && checkVariable)
                             drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],false);
                     } else {
-                        if (isMouseOver && (checkVariable || checkSample))
+                        if (checkVariable || checkSample)
                             drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],false);
+                    }
+                } else {
+                    let checkClicked = (clickArr.length > 0) ? clickArr.findIndex(cd => cd.clickedData[0]===d[0]&&cd.clickedData[1]===d[1]) : -1;
+                    if (checkClicked !== -1) {
+                        // drawLeaderPlot(background_ctx,target,d);
+                        // let isMouseOver = (d[0] === mouseOverPosition[0]) && (d[1] === mouseOverPosition[1]);
+                        // if (isMouseOver) drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],true);
+                        // else drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],false);
+                        drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],false);
                     }
                 }
             });
             storeDraw.forEach(dd=>{
-                drawLeaderPlot(dd[0],dd[1],[xscale(dd[2][0]),yscale(dd[2][1])],false);
+                let checkInteraction;
+                if ((interactionOption.sample === 'noOption') && (interactionOption.variable === 'noOption'))
+                    checkInteraction = false;
+                else checkInteraction = true;
+                if (!checkInteraction) drawLeaderPlot(dd[0],dd[1],[xscale(dd[2][0]),yscale(dd[2][1])],false);
             });
             // if (graphicopt.linkConnect) {
             //     d3.values(path).filter(d => d.length > 1 ? d.sort((a, b) => a.t - b.t) : false).forEach(path => {
@@ -714,6 +731,23 @@ function mouseOverFunction() {
     mouseOverPosition = [];
     let mouse = d3.mouse(this);
     if(dimensionReductionData.length > 0) findClosestDataPoint(mouse,dimensionReductionData,false);
+    switch (visualizingOption) {
+        case 'PCA':
+            pcaTS.renderPCA();
+            break;
+        case 'tSNE':
+            tsneTS.renderTSNE();
+            break;
+        case 'UMAP':
+            umapTS.renderUMAP();
+            break;
+    }
+}
+
+// zoom function
+function zoomFunction(contextDR,widthDR,heightDR) {
+    context.clearRect(0, 0, width, height);
+    transformDR = d3.event.transform;
     switch (visualizingOption) {
         case 'PCA':
             pcaTS.renderPCA();

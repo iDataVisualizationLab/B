@@ -258,6 +258,15 @@ $( document ).ready(function() {
                 }
 
         });
+        // zoom effect
+        // let myDRCanvas = d3.select('tsneSreen_svg'),
+        //     context = myDRCanvas.node().getContext("2d"),
+        //     width = myDRCanvas.property("width"),
+        //     height = myDRCanvas.property("height");
+        // myDRCanvas.call(d3.zoom().scaleExtent([0.5, 8]).on("zoom", zoomFunction()));
+
+
+
         // dimension option
         d3.select('#analysis').on('change',function(){
             selectedDisplay = this.value;

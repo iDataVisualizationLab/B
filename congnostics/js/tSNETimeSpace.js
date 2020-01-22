@@ -216,9 +216,11 @@ d3.tsneTimeSpace = function () {
                     else fillColor.opacity = 0.2;
                 } else {
                     if (checkBothInteraction) {
-                        fillColor.opacity = (checkSample && checkVariable)?1:(isMouseOver)?1:0.2;
+                        if (checkSample && checkVariable) fillColor.opacity = 1;
+                        else fillColor.opacity = (isMouseOver)?1:0.2;
                     } else {
-                        fillColor.opacity = (checkSample || checkVariable)?1:(isMouseOver)?1:0.2;
+                        if (checkSample || checkVariable) fillColor.opacity = 1;
+                        else fillColor.opacity = (isMouseOver)?1:0.2;
                     }
                 }
                 background_ctx.beginPath();
