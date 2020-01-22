@@ -248,7 +248,7 @@ d3.pcaTimeSpace = function () {
                 if ((interactionOption.sample === 'noOption') && (interactionOption.variable === 'noOption'))
                     checkInteraction = false;
                 else checkInteraction = true;
-                if (!checkInteraction) drawLeaderPlot(dd[0],dd[1],[xscale(dd[2][0]),yscale(dd[2][1])],false);
+                if (!checkInteraction && mouseOverPosition.length === 0) drawLeaderPlot(dd[0],dd[1],[xscale(dd[2][0]),yscale(dd[2][1])],false);
             });
             // if (graphicopt.linkConnect) {
             //     d3.values(path).filter(d => d.length > 1 ? d.sort((a, b) => a.t - b.t) : false).forEach(path => {
