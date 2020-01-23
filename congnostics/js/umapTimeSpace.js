@@ -2,7 +2,7 @@ d3.umapTimeSpace = function () {
     let leaderDraw = leaderList.map(d=>d);
     let storeDraw = [];
     let graphicopt = {
-            margin: {top: 60, right: 60, bottom: 60, left: 60},
+            margin: {top: 60, right: 60, bottom: 60, left: 560},
             width: 1500,
             height: 1000,
             scalezoom: 0.5,
@@ -259,13 +259,14 @@ d3.umapTimeSpace = function () {
                     }
                 }
             });
-            storeDraw.forEach(dd=>{
-                let checkInteraction;
-                if ((interactionOption.sample === 'noOption') && (interactionOption.variable === 'noOption'))
-                    checkInteraction = false;
-                else checkInteraction = true;
-                if (!checkInteraction && mouseOverPosition.length === 0) drawLeaderPlot(dd[0],dd[1],[xscale(dd[2][0]),yscale(dd[2][1])],false);
-            });
+            // draw leader plots
+            // storeDraw.forEach(dd=>{
+            //     let checkInteraction;
+            //     if ((interactionOption.sample === 'noOption') && (interactionOption.variable === 'noOption'))
+            //         checkInteraction = false;
+            //     else checkInteraction = true;
+            //     if (!checkInteraction && mouseOverPosition.length === 0) drawLeaderPlot(dd[0],dd[1],[xscale(dd[2][0]),yscale(dd[2][1])],false);
+            // });
             // if (graphicopt.linkConnect) {
             //     d3.values(path).filter(d => d.length > 1 ? d.sort((a, b) => a.t - b.t) : false).forEach(path => {
             //         // make the combination of 0->4 [0,0,1,2] , [0,1,2,3], [1,2,3,4],[2,3,4,4]
@@ -282,6 +283,21 @@ d3.umapTimeSpace = function () {
             // if (isradar) {
             //     renderSvgRadar();
             // }
+
+            // draw time series
+            if (clickArr.length > 6) {
+                for (let i = clickArr.length - 1; i > clickArr.length - 7; i--) {
+                    let myIndex_ = solution.findIndex(d=>d[0] === clickArr[i].clickedData[0] && d[1] === clickArr[i].clickedData[1]);
+                    let plot_ = datain[myIndex_].plot;
+                    drawTimeSeries(background_ctx,plot_,clickArr.length-1-i);
+                }
+            } else {
+                for (let i = clickArr.length - 1; i > -1; i--) {
+                    let myIndex_ = solution.findIndex(d=>d[0] === clickArr[i].clickedData[0] && d[1] === clickArr[i].clickedData[1]);
+                    let plot_ = datain[myIndex_].plot;
+                    drawTimeSeries(background_ctx,plot_,clickArr.length-1-i);
+                }
+            }
         }
     }
 
@@ -551,7 +567,7 @@ function drawLeaderPlot(ctx_,target_,plotPosition_,isMouseOver_) {
     let plotSize = 30;
     let color = [];
     // ctx.translate(-plotSize,-plotSize/2);
-    if (chooseType === "radar") {
+    if (displayType === "radar") {
         // draw Radar Chart
         let dataRadarChart = dataRadar2[plotIndex];
         let angle = Math.PI*2/dataRadarChart.length;
@@ -613,7 +629,7 @@ function drawLeaderPlot(ctx_,target_,plotPosition_,isMouseOver_) {
             // ctx.lineTo(xscale(plotPosition[0])+d*rRadarChart*Math.cos((i+0.25)*angle-Math.PI/2),yscale(plotPosition[1])+d*rRadarChart*Math.sin((i+0.25)*angle-Math.PI/2));
             ctx.fill();
         });
-    } else if (chooseType === "series") {
+    } else if (displayType === "series") {
         // Draw main plots
         ctx.beginPath();
         ctx.fillStyle = "rgb(255,255,255)";
@@ -702,17 +718,13 @@ function findClosestDataPoint(mousePosition_,data_,isClicked_) {
                 let removePlotIndex = plotPosition.findIndex(d=>d[0] === closest[0] && d[1] === closest[1]);
                 if (removePlotIndex !== -1) plotPosition.splice(removePlotIndex,1);
             }
-        } else mouseOverPosition = [closest[0],closest[1]];
+        } else {
+            mouseOverPosition = [closest[0],closest[1]];
+        }
     } else {
         if(isClicked_) if (chooseType === "radar") chooseType = "series";
         else chooseType = "radar";
     }
-}
-
-// CHANGE TYPE OF CHART IN DIMENSION REDUCTION TECHNIQUES
-function onClickFunction() {
-    let mouse = d3.mouse(this);
-    if(dimensionReductionData.length > 0) findClosestDataPoint(mouse,dimensionReductionData,true);
     switch (visualizingOption) {
         case 'PCA':
             pcaTS.renderPCA();
@@ -724,6 +736,35 @@ function onClickFunction() {
             umapTS.renderUMAP();
             break;
     }
+}
+
+// CHANGE TYPE OF CHART IN DIMENSION REDUCTION TECHNIQUES
+function onClickFunction() {
+    let mouse = d3.mouse(this);
+
+    // click to turn off interaction
+    if ((interactionOption.sample !== 'noOption') || (interactionOption.variable !== 'noOption')) {
+        interactionOption.sample = 'noOption';
+        interactionOption.variable = 'noOption';
+        $('#dataInstances').val('noOption').selected = true;
+        $('#variable').val('noOption').selected = true;
+    }
+
+    // keep only 6 plots on the screen
+    if (clickArr.length === 6) clickArr.splice(0,1);
+
+    if(dimensionReductionData.length > 0) findClosestDataPoint(mouse,dimensionReductionData,true);
+    // switch (visualizingOption) {
+    //     case 'PCA':
+    //         pcaTS.renderPCA();
+    //         break;
+    //     case 'tSNE':
+    //         tsneTS.renderTSNE();
+    //         break;
+    //     case 'UMAP':
+    //         umapTS.renderUMAP();
+    //         break;
+    // }
 }
 
 // MOUSE OVER FUNCTION
@@ -731,17 +772,17 @@ function mouseOverFunction() {
     mouseOverPosition = [];
     let mouse = d3.mouse(this);
     if(dimensionReductionData.length > 0) findClosestDataPoint(mouse,dimensionReductionData,false);
-    switch (visualizingOption) {
-        case 'PCA':
-            pcaTS.renderPCA();
-            break;
-        case 'tSNE':
-            tsneTS.renderTSNE();
-            break;
-        case 'UMAP':
-            umapTS.renderUMAP();
-            break;
-    }
+    // switch (visualizingOption) {
+    //     case 'PCA':
+    //         pcaTS.renderPCA();
+    //         break;
+    //     case 'tSNE':
+    //         tsneTS.renderTSNE();
+    //         break;
+    //     case 'UMAP':
+    //         umapTS.renderUMAP();
+    //         break;
+    // }
 }
 
 // zoom function
@@ -759,4 +800,123 @@ function zoomFunction(contextDR,widthDR,heightDR) {
             umapTS.renderUMAP();
             break;
     }
+}
+
+// draw time series
+function drawTimeSeries(ctx_,plot_,position_) {
+
+    let sampleIndex = +plot_.split('-')[0];
+    let varIndex = +plot_.split('-')[1];
+    let plotPosition = [120,300+position_*100];
+    let plotSize = [420,100];
+    let ctx = ctx_;
+
+    ctx.beginPath();
+    ctx.fillStyle = "rgb(255,255,255)";
+    ctx.strokeStyle = "rgb(0,0,0)";
+    ctx.lineWidth = 3;
+    ctx.fill();
+    ctx.stroke();
+    ctx.strokeRect(plotPosition[0],plotPosition[1], plotSize[0], plotSize[1]);
+    ctx.fillRect(plotPosition[0],plotPosition[1], plotSize[0], plotSize[1]);
+
+    // Variable notation
+    let notation = '';
+    let countSpace = [], myCountSpace = [], countLine = 0, countIndex = 0;
+    let notationArr = mapvar2.get(varIndex).split('');
+    notationArr.forEach((d,i)=>{
+        if (d === ' ') myCountSpace.push(i);
+    });
+    countSpace = myCountSpace.map((d,i)=>{
+        if (i) {
+            if (d-myCountSpace[i-1]>3) return d;
+            else return false;
+        } else {
+            if (d>2) return d;
+            else return false;
+        }
+    });
+
+    ctx.translate(plotPosition[0]-5,plotPosition[1]+plotSize[1]);
+    ctx.rotate(-Math.PI/2);
+    ctx.font = "12px Arial";
+    ctx.fillStyle = 'rgb(0,0,0)';
+    if (notationArr.length > 14) {
+        if (countSpace.length === 0) {
+            notation = '';
+            for (let j = 0; j < 14; j++) {
+                notation += notationArr[j];
+            }
+            ctx.fillText(notation,0,0);
+        } else {
+            countLine = 0;
+            countSpace.forEach((d,i)=>{
+                if (d) {
+                    notation = '';
+                    if (i === 0) {
+                        if (countSpace.length>1) {
+                            for (let j = 0; j < d; j++) {
+                                notation += notationArr[j];
+                            }
+                            ctx.fillText(notation,0,-15*(countSpace.length));
+                            countLine += 1;
+                        } else {
+                            for (let j = 0; j < d; j++) {
+                                notation += notationArr[j];
+                            }
+                            ctx.fillText(notation,0,-15*(countSpace.length));
+                            for (let j = d+1; j < notationArr.length; j++) {
+                                notation += notationArr[j];
+                            }
+                            ctx.fillText(notation,0,0);
+                            countLine += 1;
+                        }
+                    } else if (i<countSpace.length-1) {
+                        for (let j = countSpace[i-1-countIndex]+1; j < d; j++) {
+                            notation += notationArr[j];
+                        }
+                        ctx.fillText(notation,0,-(countSpace.length-countLine)*15);
+                        countLine += 1;
+                    } else {
+                        for (let j = countSpace[i-1-countIndex]+1; j < d; j++) {
+                            notation += notationArr[j];
+                        }
+                        ctx.fillText(notation,0,-(countSpace.length-countLine)*15);
+                        notation = '';
+                        for (let j = d+1; j < notationArr.length; j++) {
+                            notation += notationArr[j];
+                        }
+                        ctx.fillText(notation,0,0);
+                        countLine += 1;
+                    }
+                    countIndex = 0;
+                } else countIndex += 1;
+            });
+        }
+    } else {
+        ctx.fillText(mapvar2.get(varIndex),0,0);
+    }
+    ctx.fill();
+    ctx.rotate(Math.PI/2);
+    ctx.translate(-plotPosition[0]+5,-plotPosition[1]-plotSize[1]);
+
+    ctx.lineWidth = 1;
+    timedata.forEach(function (time, step) {
+        if (step) {
+            if(data[sampleIndex][varIndex][step]>=0 && data[sampleIndex][varIndex][step-1]>=0 && data[sampleIndex][varIndex][step]>=0 && data[sampleIndex][varIndex][step-1]>=0) {
+                let x1 = plotPosition[0]+0.05*plotSize[0]+0.9*plotSize[0]*(step-1)/timedata.length;
+                let x2 = plotPosition[0]+0.05*plotSize[0]+0.9*plotSize[0]*step/timedata.length;
+                let y1 = plotPosition[1]+0.05*plotSize[1]+0.9*plotSize[1]*(1-data[sampleIndex][varIndex][step-1]);
+                let y2 = plotPosition[1]+0.05*plotSize[1]+0.9*plotSize[1]*(1-data[sampleIndex][varIndex][step]);
+                color[0] = (step < timedata.length/2) ? 0 : (step-timedata.length/2)*255/(timedata.length/2);
+                color[1] = 0;
+                color[2] = (step < timedata.length/2) ? 255-255*step/(timedata.length/2) : 0;
+                ctx.beginPath();
+                ctx.moveTo(x1,y1);
+                ctx.lineTo(x2, y2);
+                ctx.strokeStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
+                ctx.stroke();
+            }
+        }
+    });
 }

@@ -265,8 +265,6 @@ $( document ).ready(function() {
         //     height = myDRCanvas.property("height");
         // myDRCanvas.call(d3.zoom().scaleExtent([0.5, 8]).on("zoom", zoomFunction()));
 
-
-
         // dimension option
         d3.select('#analysis').on('change',function(){
             selectedDisplay = this.value;
@@ -326,6 +324,13 @@ $( document ).ready(function() {
                     };
                     break;
             }
+
+            // display type: time series or rose chart
+            // $('input[type=radio][name=displayType]').change(function() {
+            //     displayType = this.value; console.log(displayType);
+            // });
+
+
             updateMeasureName();
             needcalculation = true;
             radarChartclusteropt.schema = serviceFullList;

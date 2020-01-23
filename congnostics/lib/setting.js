@@ -1,3 +1,4 @@
+let displayType = 'series';
 let transformDR = d3.zoomIdentity;
 let multipleMouseOver = 1.5;
 let mouseOverPosition = [];

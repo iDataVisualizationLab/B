@@ -78,7 +78,7 @@
                     <div class="row s12">
                         <select id="analysis" class="col s7">
                             <option value="1D">One dimension</option>
-                            <option value="2D">Two dimension</option>
+                            <option value="2D" disabled>Two dimension</option>
                         </select>
                     </div>
                     <label for="visualizing" class="col s5" style="color: #000000">Visualizing:</label>
@@ -132,20 +132,34 @@
             </div>
             </li>
             <li>
-                <div class="collapsible-header capitalize" id="interaction"><i class="material-icons icon">list</i><span>Interaction</span>  <i class="material-icons expand">chevron_right</i></div>
+                <div class="collapsible-header capitalize" id="interaction"><i class="material-icons icon">mouse</i><span>Interaction</span>  <i class="material-icons expand">chevron_right</i></div>
                 <div class="collapsible-body">
-                    <label for="dataInstances" class="col s5" style="color: #000000">Data Instances:</label>
+                    <div  class="row valign-wrapper">
+                        <label for="displayType_holder" class="col s4">Display charts</label>
+                        <div id="displayType_holder" class="radio-toolbar col s8">
+                            <label class="toolTip" data-title="Series chart">
+                                <input id="seriesChart" name="displayType" type="radio" value="series"/>
+                                <i class="material-icons icon">timeline</i>
+                            </label>
+
+                            <label class="toolTip" data-title="Nightingale Rose Chart" >
+                                <input id="roseChart" name="displayType" type="radio" value="rose"/>
+                                <i class="icon-roseShape material-icons"></i>
+                            </label>
+                        </div>
+                    </div>
+                    <label for="dataInstances" class="col s4" style="color: #000000">Data Instances:</label>
                     <div class="row s12">
                         <div id="divDataInstances">
-                            <select id="dataInstances" class="col s7">
+                            <select id="dataInstances" class="col s8">
                                 <option value="noOption">--none--</option>
                             </select>
                         </div>
                     </div>
-                    <label for="variable" class="col s5" style="color: #000000">Variables:</label>
+                    <label for="variable" class="col s4" style="color: #000000">Variables:</label>
                     <div class="row s12">
                         <div id="divVariable">
-                            <select id="variable" class="col s7">
+                            <select id="variable" class="col s8">
                                 <option value="noOption">--none--</option>
                             </select>
                         </div>
