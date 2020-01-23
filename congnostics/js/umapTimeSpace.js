@@ -289,13 +289,13 @@ d3.umapTimeSpace = function () {
                 for (let i = clickArr.length - 1; i > clickArr.length - 7; i--) {
                     let myIndex_ = solution.findIndex(d=>d[0] === clickArr[i].clickedData[0] && d[1] === clickArr[i].clickedData[1]);
                     let plot_ = datain[myIndex_].plot;
-                    drawTimeSeries(background_ctx,plot_,clickArr.length-1-i);
+                    drawTimeSeries(background_ctx,plot_,clickArr.length-1-i,trueMousePosition);
                 }
             } else {
                 for (let i = clickArr.length - 1; i > -1; i--) {
                     let myIndex_ = solution.findIndex(d=>d[0] === clickArr[i].clickedData[0] && d[1] === clickArr[i].clickedData[1]);
                     let plot_ = datain[myIndex_].plot;
-                    drawTimeSeries(background_ctx,plot_,clickArr.length-1-i);
+                    drawTimeSeries(background_ctx,plot_,clickArr.length-1-i,trueMousePosition);
                 }
             }
         }
@@ -771,6 +771,8 @@ function onClickFunction() {
 function mouseOverFunction() {
     mouseOverPosition = [];
     let mouse = d3.mouse(this);
+    trueMousePosition = [];
+    trueMousePosition = d3.mouse(this);
     if(dimensionReductionData.length > 0) findClosestDataPoint(mouse,dimensionReductionData,false);
     // switch (visualizingOption) {
     //     case 'PCA':
@@ -803,7 +805,7 @@ function zoomFunction(contextDR,widthDR,heightDR) {
 }
 
 // draw time series
-function drawTimeSeries(ctx_,plot_,position_) {
+function drawTimeSeries(ctx_,plot_,position_,mousePosition_) {
 
     let sampleIndex = +plot_.split('-')[0];
     let varIndex = +plot_.split('-')[1];
@@ -865,6 +867,7 @@ function drawTimeSeries(ctx_,plot_,position_) {
                                 notation += notationArr[j];
                             }
                             ctx.fillText(notation,0,-15*(countSpace.length));
+                            notation = '';
                             for (let j = d+1; j < notationArr.length; j++) {
                                 notation += notationArr[j];
                             }
@@ -919,4 +922,45 @@ function drawTimeSeries(ctx_,plot_,position_) {
             }
         }
     });
+
+    // mouse over
+    let xMouse = mousePosition_[0];
+    let yMouse = mousePosition_[1];
+    let checkMouseOver = (xMouse >= plotPosition[0]+0.05*plotSize[0]) && (xMouse <= plotPosition[0]+0.95*plotSize[0]) && (yMouse >= plotPosition[1]+0.05*plotSize[1]) && (yMouse <= plotPosition[1]+0.95*plotSize[1]);
+    if (checkMouseOver) {
+        let dX = 0.9*plotSize[0]/timedata.length;
+        let step = Math.floor((xMouse-plotPosition[0]-0.05*plotSize[0])/dX);
+        let x = plotPosition[0]+0.05*plotSize[0]+dX*step;
+        let y = data[sampleIndex][varIndex][step]>=0 ? plotPosition[1]+0.05*plotSize[1]+0.9*plotSize[1]*(1-data[sampleIndex][varIndex][step]) : 'No data';
+        let dataValue = Math.round(dataRaw[sampleIndex][varIndex][step]).toString();
+        // draw x-notation
+        ctx.beginPath();
+        ctx.fillStyle = 'rgb(0,0,0)';
+        ctx.moveTo(x,plotPosition[1]+plotSize[1]);
+        ctx.lineTo(x-5,plotPosition[1]+plotSize[1]-5);
+        ctx.lineTo(x+5,plotPosition[1]+plotSize[1]-5);
+        ctx.lineTo(x,plotPosition[1]+plotSize[1]);
+        ctx.fill();
+        ctx.fillRect(x-25,plotPosition[1]+plotSize[1]-5-12,50,12);
+        ctx.fillStyle = 'rgb(255,255,255)';
+        ctx.font = '10px Arial';
+        ctx.fillText(timedata[step],x-23,plotPosition[1]+plotSize[1]-5-2);
+
+        // draw y-notation:
+        if (typeof (y) === 'number') {
+            ctx.beginPath();
+            ctx.fillStyle = 'rgb(0,0,0)';
+            ctx.moveTo(x,y);
+            ctx.lineTo(x+5,y-5);
+            ctx.lineTo(x+5,y+5);
+            ctx.lineTo(x,y);
+            ctx.fill();
+            ctx.fillRect(x+5,y-6,26,12);
+            ctx.fillStyle = 'rgb(255,255,255)';
+            ctx.font = '10px Arial';
+            ctx.fillText(dataValue,x+7,y+4);
+        }
+    }
+
+
 }

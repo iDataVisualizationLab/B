@@ -2,6 +2,7 @@ let displayType = 'series';
 let transformDR = d3.zoomIdentity;
 let multipleMouseOver = 1.5;
 let mouseOverPosition = [];
+let trueMousePosition = [];
 let multipleHighlight = 2;
 let plotPosition = [];
 let pointSize = 3;
