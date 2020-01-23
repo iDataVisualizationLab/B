@@ -230,33 +230,33 @@ $( document ).ready(function() {
         // interaction option - instances
         d3.select('#dataInstances').on('change',function(){
             interactionOption.sample = this.value;
-                switch (visualizingOption) {
-                    case 'PCA':
-                        pcaTS.renderPCA();
-                        break;
-                    case 'tSNE':
-                        tsneTS.renderTSNE();
-                        break;
-                    case 'UMAP':
-                        umapTS.renderUMAP();
-                        break;
-                }
+            if (interactionOption.sample !== 'noOption') {clickArr = []; currentPage = 1;}    // delete clicked charts after changing to interaction
+            switch (visualizingOption) {
+                case 'PCA':
+                    pcaTS.renderPCA();
+                    break;
+                case 'tSNE':
+                    tsneTS.renderTSNE();
+                    break;
+                case 'UMAP':
+                    umapTS.renderUMAP();
+                    break;
+            }
         });
         d3.select('#variable').on('change',function(){
             interactionOption.variable = this.value;
-
-                switch (visualizingOption) {
-                    case 'PCA':
-                        pcaTS.renderPCA();
-                        break;
-                    case 'tSNE':
-                        tsneTS.renderTSNE();
-                        break;
-                    case 'UMAP':
-                        umapTS.renderUMAP();
-                        break;
-                }
-
+            if (interactionOption.variable !== 'noOption') {clickArr = []; currentPage = 1;}   // delete clicked charts after changing to interaction
+            switch (visualizingOption) {
+                case 'PCA':
+                    pcaTS.renderPCA();
+                    break;
+                case 'tSNE':
+                    tsneTS.renderTSNE();
+                    break;
+                case 'UMAP':
+                    umapTS.renderUMAP();
+                    break;
+            }
         });
         // zoom effect
         // let myDRCanvas = d3.select('tsneSreen_svg'),

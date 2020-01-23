@@ -160,6 +160,13 @@ d3.umapTimeSpace = function () {
             //         return true;
             //     } else return false;
             // });
+
+            // interaction condition
+            let checkInteraction, checkBothInteraction;
+            checkInteraction = !((interactionOption.sample === 'noOption') && (interactionOption.variable === 'noOption'));
+            checkBothInteraction = (interactionOption.sample !== 'noOption') && (interactionOption.variable !== 'noOption');
+
+            // Draw points
             solution.forEach(function (d, i) {
                 const target = datain[i];
                 target.__metrics.position = d;
@@ -171,13 +178,7 @@ d3.umapTimeSpace = function () {
                 // let dataDR = transformDR.apply([xscale(d[0]),yscale(d[1])]);
 
                 // interaction condition
-                let checkInteraction, checkSample, checkVariable, checkBothInteraction;
-                if ((interactionOption.sample === 'noOption') && (interactionOption.variable === 'noOption'))
-                    checkInteraction = false;
-                else checkInteraction = true;
-                if ((interactionOption.sample !== 'noOption') && (interactionOption.variable !== 'noOption'))
-                    checkBothInteraction = true;
-                else checkBothInteraction = false;
+                let checkSample, checkVariable;
                 if (checkInteraction) {
                     checkSample = target.plot.split('-')[0] === interactionOption.sample;
                     checkVariable = target.plot.split('-')[1] === interactionOption.variable;
@@ -185,36 +186,40 @@ d3.umapTimeSpace = function () {
                 let isMouseOver = (d[0] === mouseOverPosition[0]) && (d[1] === mouseOverPosition[1]);
 
                 // set up pointSize
-                if (!checkInteraction) {
+                if (!checkInteraction) {    // no interaction
                     if (isMouseOver) pointSize = 3*multipleMouseOver;
                     else pointSize = 3;
-                } else {
+                } else {    // interaction
                     if (checkBothInteraction) {
-                        if (checkSample && checkVariable) pointSize = 3*multipleHighlight;
-                        else pointSize = (isMouseOver) ? 3*multipleMouseOver : 3;
+                        if (checkSample && checkVariable) pointSize = (isMouseOver) ? 3*multipleMouseOver*multipleHighlight : 3*multipleHighlight;
+                        // else pointSize = (isMouseOver) ? 3*multipleMouseOver : 3;
+                        else pointSize = 3;
                     } else {
-                        if (checkSample || checkVariable) pointSize = 3*multipleHighlight;
-                        else pointSize = (isMouseOver) ? 3*multipleMouseOver : 3;
+                        if (checkSample || checkVariable) pointSize = (isMouseOver) ? 3*multipleMouseOver*multipleHighlight : 3*multipleHighlight;
+                        // else pointSize = (isMouseOver) ? 3*multipleMouseOver : 3;
+                        else pointSize = 3;
                     }
                 }
 
                 // color control - opacity
                 let fillColor = d3.color(colorarr[target.cluster].value);
-                if (!checkInteraction) {
+                if (!checkInteraction) {    // no interaction
                     if (mouseOverPosition.length===0) fillColor.opacity = 0.8;
                     else if (isMouseOver) fillColor.opacity = 1;
                     else fillColor.opacity = 0.2;
-                } else {
+                } else {    // interaction
                     if (checkBothInteraction) {
                         if (checkSample && checkVariable) fillColor.opacity = 1;
-                        else fillColor.opacity = (isMouseOver)?1:0.2;
+                        // else fillColor.opacity = (isMouseOver)?1:0.2;
+                        else fillColor.opacity = 0.2;
                     } else {
                         if (checkSample || checkVariable) fillColor.opacity = 1;
-                        else fillColor.opacity = (isMouseOver)?1:0.2;
+                        // else fillColor.opacity = (isMouseOver)?1:0.2;
+                        else fillColor.opacity = 0.2;
                     }
                 }
 
-                // begin draw
+                // begin draw point
                 background_ctx.beginPath();
                 background_ctx.fillStyle = fillColor + '';
                 background_ctx.arc(xscale(d[0]), yscale(d[1]), pointSize,0,2*Math.PI);
@@ -224,6 +229,7 @@ d3.umapTimeSpace = function () {
                 // if (li !== -1) {storeDraw[bCountUmap] = [background_ctx,target,d]; bCountUmap+=1;}
                 if (li !== -1) {storeDraw[bCountUmap] = [background_ctx,target,[d[0],d[1]]]; bCountUmap+=1;}
             });
+            // draw clicked charts
             solution.forEach((d,i)=>{
                 const target = datain[i];
                 target.__metrics.position = d;
@@ -231,14 +237,10 @@ d3.umapTimeSpace = function () {
                 // zoom
                 // let dataDR = transformDR.apply([xscale(d[0]),yscale(d[1])]);
 
-                let checkInteraction, checkSample, checkVariable, checkBothInteraction;
-                if ((interactionOption.sample === 'noOption') && (interactionOption.variable === 'noOption'))
-                    checkInteraction = false;
-                else checkInteraction = true;
-                if ((interactionOption.sample !== 'noOption') && (interactionOption.variable !== 'noOption'))
-                    checkBothInteraction = true;
-                else checkBothInteraction = false;
-                if (checkInteraction) {
+                // interaction condition
+                let checkSample, checkVariable;
+
+                if (checkInteraction) {     // interaction
                     checkSample = target.plot.split('-')[0] === interactionOption.sample;
                     checkVariable = target.plot.split('-')[1] === interactionOption.variable;
                     if (checkBothInteraction) {
@@ -248,7 +250,7 @@ d3.umapTimeSpace = function () {
                         if (checkVariable || checkSample)
                             drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],false);
                     }
-                } else {
+                } else {    // no interaction
                     let checkClicked = (clickArr.length > 0) ? clickArr.findIndex(cd => cd.clickedData[0]===d[0]&&cd.clickedData[1]===d[1]) : -1;
                     if (checkClicked !== -1) {
                         // drawLeaderPlot(background_ctx,target,d);
@@ -284,19 +286,97 @@ d3.umapTimeSpace = function () {
             //     renderSvgRadar();
             // }
 
-            // draw time series
-            if (clickArr.length > 6) {
-                for (let i = clickArr.length - 1; i > clickArr.length - 7; i--) {
-                    let myIndex_ = solution.findIndex(d=>d[0] === clickArr[i].clickedData[0] && d[1] === clickArr[i].clickedData[1]);
-                    let plot_ = datain[myIndex_].plot;
-                    drawTimeSeries(background_ctx,plot_,clickArr.length-1-i,trueMousePosition);
+            // draw clicked-highlight time series
+            if (!checkInteraction) {        // no interaction
+                if (clickArr.length > 6) {
+                    for (let i = clickArr.length - 1; i > clickArr.length - 7; i--) {
+                        let myIndex_ = solution.findIndex(d=>d[0] === clickArr[i].clickedData[0] && d[1] === clickArr[i].clickedData[1]);
+                        let plot_ = datain[myIndex_].plot;
+                        drawTimeSeries(background_ctx,plot_,clickArr.length-1-i,trueMousePosition);
+                    }
+                } else {
+                    for (let i = clickArr.length - 1; i > -1; i--) {
+                        let myIndex_ = solution.findIndex(d=>d[0] === clickArr[i].clickedData[0] && d[1] === clickArr[i].clickedData[1]);
+                        let plot_ = datain[myIndex_].plot;
+                        drawTimeSeries(background_ctx,plot_,clickArr.length-1-i,trueMousePosition);
+                    }
                 }
-            } else {
-                for (let i = clickArr.length - 1; i > -1; i--) {
-                    let myIndex_ = solution.findIndex(d=>d[0] === clickArr[i].clickedData[0] && d[1] === clickArr[i].clickedData[1]);
-                    let plot_ = datain[myIndex_].plot;
-                    drawTimeSeries(background_ctx,plot_,clickArr.length-1-i,trueMousePosition);
+            } else {        // interaction
+                let myCase;
+                if ((interactionOption.sample !== 'noOption')&&(interactionOption.variable === 'noOption')) myCase = 'instances';
+                if ((interactionOption.sample === 'noOption')&&(interactionOption.variable !== 'noOption')) myCase = 'variable';
+                if ((interactionOption.sample !== 'noOption')&&(interactionOption.variable !== 'noOption')) myCase = 'both';
+
+                switch (myCase) {
+                    case 'both':
+                        let checkData = data[+interactionOption.sample][+interactionOption.variable].findIndex(d=>d>=0) !== -1;
+                        if (checkData) {
+                            let plot_ = interactionOption.sample + '-' + interactionOption.variable;
+                            drawTimeSeries(background_ctx,plot_,0,trueMousePosition);
+                        }
+                        break;
+                    case 'instances':
+                        let checkDataArr = [];
+                        let numTimeSeries = 0;
+                        data[+interactionOption.sample].forEach((d,i)=>{
+                            checkDataArr[i] = d.findIndex(d=>d>=0) !== -1;
+                            if (checkDataArr[i]) numTimeSeries += 1;
+                        });
+                        let indexArr = [];
+                        checkDataArr.forEach((d,i)=>{
+                            if(d) indexArr.push(i);
+                        });
+                        let numLayout = Math.ceil(numTimeSeries/6);
+                        let lastPageNum = numTimeSeries%6;
+                        // change page
+                        if (clickArr.length>0) {
+                            changePage(numLayout);
+                            clickArr=[];
+                        }
+                        if (currentPage < numLayout) {
+                            for (let j = 0; j < 6; j++) {
+                                let plot_ = interactionOption.sample + '-' + indexArr[j+6*(currentPage-1)].toString();
+                                drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
+                            }
+                        } else {
+                            for (let j = 0; j < lastPageNum; j++) {
+                                let plot_ = interactionOption.sample + '-' + indexArr[j+6*(numLayout-1)].toString();
+                                drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
+                            }
+                        }
+                        break;
+                    case 'variable':
+                        let checkDataArr2 = [];
+                        let numTimeSeries2 = 0;
+                        data.forEach((d,i)=>{
+                            checkDataArr2[i] = d[+interactionOption.variable].findIndex(d=>d>=0) !== -1;
+                            if (checkDataArr2[i]) numTimeSeries2 += 1;
+                        });
+                        let indexArr2 = [];
+                        checkDataArr.forEach((d,i)=>{
+                            if(d) indexArr2.push(i);
+                        });
+                        let numLayout2 = Math.ceil(numTimeSeries2/6);
+                        let lastPageNum2 = numTimeSeries2%6;
+                        // change page
+                        if (clickArr.length>0) {
+                            changePage(numLayout2);
+                            clickArr=[];
+                        }
+                        if (currentPage < numLayout2) {
+                            for (let j = 0; j < 6; j++) {
+                                let plot_ = indexArr2[j+6*(currentPage-1)].toString() + '-' + interactionOption.variable;
+                                drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
+                            }
+                        } else {
+                            for (let j = 0; j < lastPageNum2; j++) {
+                                let plot_ = mindexArr2[j+6*(numLayout-1)].toString() + '-' + interactionOption.variable;
+                                drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
+                            }
+                        }
+                        break;
                 }
+
             }
         }
     }
@@ -742,18 +822,53 @@ function findClosestDataPoint(mousePosition_,data_,isClicked_) {
 function onClickFunction() {
     let mouse = d3.mouse(this);
 
-    // click to turn off interaction
+    // in interaction mode
     if ((interactionOption.sample !== 'noOption') || (interactionOption.variable !== 'noOption')) {
-        interactionOption.sample = 'noOption';
-        interactionOption.variable = 'noOption';
-        $('#dataInstances').val('noOption').selected = true;
-        $('#variable').val('noOption').selected = true;
+        let leftButtonPosition = [120,250];
+        let rightButtonPosition = [150,250];
+        let buttonSize = [20,20];
+
+        let quitButtonPosition = [450,250];
+        let quitButtonSize = [100,20];
+
+        let checkChangePage1 = (mouse[0]>=leftButtonPosition[0]) && (mouse[0]<=leftButtonPosition[0]+buttonSize[0]) && (mouse[1]>=leftButtonPosition[1]) && (mouse[1]<=leftButtonPosition[1]+buttonSize[1]);
+        let checkChangePage2 = (mouse[0]>=rightButtonPosition[0]) && (mouse[0]<=rightButtonPosition[0]+buttonSize[0]) && (mouse[1]>=rightButtonPosition[1]) && (mouse[1]<=rightButtonPosition[1]+buttonSize[1]);
+        let checkQuitInteraction = (mouse[0]>=quitButtonPosition[0]) && (mouse[0]<=quitButtonPosition[0]+quitButtonSize[0]) && (mouse[1]>=quitButtonPosition[1]) && (mouse[1]<=quitButtonPosition[1]+quitButtonSize[1]);
+
+        // change the page
+        if (checkChangePage1 || checkChangePage2) {
+            clickArr.push({
+                'Page': true,
+            });
+        }
+
+        // turn off interaction mode
+        if (checkQuitInteraction) {
+            clickArr = [];      // delete clickArr after changing mode
+            interactionOption.sample = 'noOption';
+            interactionOption.variable = 'noOption';
+            $('#dataInstances').val('noOption').selected = true;
+            $('#variable').val('noOption').selected = true;
+        }
+
+        // draw again
+        switch (visualizingOption) {
+            case 'PCA':
+                pcaTS.renderPCA();
+                break;
+            case 'tSNE':
+                tsneTS.renderTSNE();
+                break;
+            case 'UMAP':
+                umapTS.renderUMAP();
+                break;
+        }
+    } else {
+        // keep only 6 plots on the screen
+        if (clickArr.length === 6) clickArr.splice(0,1);
+
+        if(dimensionReductionData.length > 0) findClosestDataPoint(mouse,dimensionReductionData,true);
     }
-
-    // keep only 6 plots on the screen
-    if (clickArr.length === 6) clickArr.splice(0,1);
-
-    if(dimensionReductionData.length > 0) findClosestDataPoint(mouse,dimensionReductionData,true);
     // switch (visualizingOption) {
     //     case 'PCA':
     //         pcaTS.renderPCA();
@@ -805,7 +920,7 @@ function zoomFunction(contextDR,widthDR,heightDR) {
 }
 
 // draw time series
-function drawTimeSeries(ctx_,plot_,position_,mousePosition_) {
+function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
 
     let sampleIndex = +plot_.split('-')[0];
     let varIndex = +plot_.split('-')[1];
@@ -962,5 +1077,56 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_) {
         }
     }
 
+    // clickable button
+    if (interactionOption.sample !== 'noOption' || interactionOption.variable !== 'noOption') {
+        let leftButtonPosition = [120,250];
+        let rightButtonPosition = [150,250];
+        let buttonSize = [20,20];
 
+        let quitButtonPosition = [450,250];
+        let quitButtonSize = [100,20];
+
+        let checkLeft = (trueMousePosition[0]>=leftButtonPosition[0]) && (trueMousePosition[0]<=leftButtonPosition[0]+buttonSize[0]) && (trueMousePosition[1]>=leftButtonPosition[1]) && (trueMousePosition[1]<=leftButtonPosition[1]+buttonSize[1]);
+        let checkRight = (trueMousePosition[0]>=rightButtonPosition[0]) && (trueMousePosition[0]<=rightButtonPosition[0]+buttonSize[0]) && (trueMousePosition[1]>=rightButtonPosition[1]) && (trueMousePosition[1]<=rightButtonPosition[1]+buttonSize[1]);
+        let checkQuit = (trueMousePosition[0]>=quitButtonPosition[0]) && (trueMousePosition[0]<=quitButtonPosition[0]+quitButtonSize[0]) && (trueMousePosition[1]>=quitButtonPosition[1]) && (trueMousePosition[1]<=quitButtonPosition[1]+quitButtonSize[1]);
+
+        let giveFeedBack = checkLeft || checkRight || checkQuit;
+        ctx.beginPath();
+        // draw buttons
+        ctx.fillStyle = (giveFeedBack) ? 'rgb(255,0,0)' : 'rgb(200,200,200)';
+        ctx.fillRect(leftButtonPosition[0],leftButtonPosition[1],buttonSize[0],buttonSize[1]);  // left button
+        ctx.fillRect(rightButtonPosition[0],rightButtonPosition[1],buttonSize[0],buttonSize[1]);    // right button
+        ctx.fillRect(quitButtonPosition[0],quitButtonPosition[1],quitButtonSize[0],quitButtonSize[1]);  // quit button
+        ctx.fill();
+        // draw signs of buttons
+        ctx.fillStyle = (giveFeedBack) ? 'rgb(100,100,0)' : 'rgb(255,255,255)';
+        ctx.moveTo(leftButtonPosition[0]+buttonSize[0]/2-5,leftButtonPosition[1]+buttonSize[1]/2);  // left
+        ctx.lineTo(leftButtonPosition[0]+buttonSize[0]/2+5,leftButtonPosition[1]+buttonSize[1]/2+5);
+        ctx.lineTo(leftButtonPosition[0]+buttonSize[0]/2+5,leftButtonPosition[1]+buttonSize[1]/2-5);
+        ctx.lineTo(leftButtonPosition[0]+buttonSize[0]/2-5,leftButtonPosition[1]+buttonSize[1]/2);
+        ctx.moveTo(rightButtonPosition[0]+buttonSize[0]/2+5,rightButtonPosition[1]+buttonSize[1]/2);  // right
+        ctx.lineTo(rightButtonPosition[0]+buttonSize[0]/2-5,rightButtonPosition[1]+buttonSize[1]/2+5);
+        ctx.lineTo(rightButtonPosition[0]+buttonSize[0]/2-5,rightButtonPosition[1]+buttonSize[1]/2-5);
+        ctx.lineTo(rightButtonPosition[0]+buttonSize[0]/2+5,rightButtonPosition[1]+buttonSize[1]/2);
+        ctx.font = '10px Arial';
+        ctx.fillText('Quit interaction section',quitButtonPosition[0]+5,quitButtonPosition[1]+quitButtonSize[1]-5);
+    }
+}
+
+// function Change layout when number of time series exceeds 6
+function changePage(num_) {
+    let leftButtonPosition = [120,250];
+    let rightButtonPosition = [150,250];
+    let buttonSize = [20,20];
+
+    let checkLeft = (trueMousePosition[0]>=leftButtonPosition[0]) && (trueMousePosition[0]<=leftButtonPosition[0]+buttonSize[0]) && (trueMousePosition[1]>=leftButtonPosition[1]) && (trueMousePosition[1]<=leftButtonPosition[1]+buttonSize[1]);
+    let checkRight = (trueMousePosition[0]>=rightButtonPosition[0]) && (trueMousePosition[0]<=rightButtonPosition[0]+buttonSize[0]) && (trueMousePosition[1]>=rightButtonPosition[1]) && (trueMousePosition[1]<=rightButtonPosition[1]+buttonSize[1]);
+
+    if (checkLeft) {
+        if (currentPage > 1) currentPage -= 1;
+    } else {
+        if (checkRight) {
+            if (currentPage<num_) currentPage += 1;
+        }
+    }
 }
