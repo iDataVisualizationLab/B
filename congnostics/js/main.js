@@ -258,6 +258,21 @@ $( document ).ready(function() {
                     break;
             }
         });
+        // display chart options
+        $('input[type=radio][name=displayType]').change(function() {
+            displayType = this.value;
+            switch (visualizingOption) {
+                case 'PCA':
+                    pcaTS.renderPCA();
+                    break;
+                case 'tSNE':
+                    tsneTS.renderTSNE();
+                    break;
+                case 'UMAP':
+                    umapTS.renderUMAP();
+                    break;
+            }
+        });
         // zoom effect
         // let myDRCanvas = d3.select('tsneSreen_svg'),
         //     context = myDRCanvas.node().getContext("2d"),
@@ -324,12 +339,6 @@ $( document ).ready(function() {
                     };
                     break;
             }
-
-            // display type: time series or rose chart
-            // $('input[type=radio][name=displayType]').change(function() {
-            //     displayType = this.value; console.log(displayType);
-            // });
-
 
             updateMeasureName();
             needcalculation = true;

@@ -143,62 +143,72 @@ d3.pcaTimeSpace = function () {
                 front_ctx.clearRect(0, 0, graphicopt.width, graphicopt.height);
             path = {};
             let bCountPCA = 0;
-            let mouseOverSample, mouseOverVariable;
-            let typeDraw = 'variable';
-            solution.findIndex((d,i)=>{
-                const myTarget = datain[i];
-                if (d[0] === mouseOverPosition[0] && d[1] === mouseOverPosition[1]) {
-                    mouseOverSample = myTarget.plot.split('-')[0];
-                    mouseOverVariable = myTarget.plot.split('-')[1];
-                    return true;
-                } else return false;
-            });
+            // let mouseOverSample, mouseOverVariable;
+            // let typeDraw = 'variable';
+            // solution.findIndex((d,i)=>{
+            //     const myTarget = datain[i];
+            //     if (d[0] === mouseOverPosition[0] && d[1] === mouseOverPosition[1]) {
+            //         mouseOverSample = myTarget.plot.split('-')[0];
+            //         mouseOverVariable = myTarget.plot.split('-')[1];
+            //         return true;
+            //     } else return false;
+            // });
+
+            // interaction condition
+            let checkInteraction, checkBothInteraction;
+            checkInteraction = !((interactionOption.sample === 'noOption') && (interactionOption.variable === 'noOption'));
+            checkBothInteraction = (interactionOption.sample !== 'noOption') && (interactionOption.variable !== 'noOption');
+
             solution.forEach(function(d, i) {
                 const target = datain[i];
                 target.__metrics.position = d;
                 if (!path[target.name])
                     path[target.name] = [];
                 path[target.name].push({name:target.name,key:target.timestep,value:d,cluster:target.cluster});
-                let checkInteraction, checkSample, checkVariable, checkBothInteraction;
-                if ((interactionOption.sample === 'noOption') && (interactionOption.variable === 'noOption'))
-                    checkInteraction = false;
-                else checkInteraction = true;
-                if ((interactionOption.sample !== 'noOption') && (interactionOption.variable !== 'noOption'))
-                    checkBothInteraction = true;
-                else checkBothInteraction = false;
+
+                // interaction condition
+                let checkSample, checkVariable;
                 if (checkInteraction) {
                     checkSample = target.plot.split('-')[0] === interactionOption.sample;
                     checkVariable = target.plot.split('-')[1] === interactionOption.variable;
                 }
                 let isMouseOver = (d[0] === mouseOverPosition[0]) && (d[1] === mouseOverPosition[1]);
-                if (!checkInteraction) {
+
+                // set up pointSize
+                if (!checkInteraction) {    // no interaction
                     if (isMouseOver) pointSize = 3*multipleMouseOver;
                     else pointSize = 3;
-                } else {
+                } else {    // interaction
                     if (checkBothInteraction) {
-                        if (checkSample && checkVariable) pointSize = 3*multipleHighlight;
-                        else pointSize = (isMouseOver) ? 3*multipleMouseOver : 3;
+                        if (checkSample && checkVariable) pointSize = (isMouseOver) ? 3*multipleMouseOver*multipleHighlight : 3*multipleHighlight;
+                        // else pointSize = (isMouseOver) ? 3*multipleMouseOver : 3;
+                        else pointSize = 3;
                     } else {
-                        if (checkSample || checkVariable) pointSize = 3*multipleHighlight;
-                        else pointSize = (isMouseOver) ? 3*multipleMouseOver : 3;
+                        if (checkSample || checkVariable) pointSize = (isMouseOver) ? 3*multipleMouseOver*multipleHighlight : 3*multipleHighlight;
+                        // else pointSize = (isMouseOver) ? 3*multipleMouseOver : 3;
+                        else pointSize = 3;
                     }
                 }
 
                 // color control - opacity
                 let fillColor = d3.color(colorarr[target.cluster].value);
-                if (!checkInteraction) {
+                if (!checkInteraction) {    // no interaction
                     if (mouseOverPosition.length===0) fillColor.opacity = 0.8;
                     else if (isMouseOver) fillColor.opacity = 1;
                     else fillColor.opacity = 0.2;
-                } else {
+                } else {    // interaction
                     if (checkBothInteraction) {
                         if (checkSample && checkVariable) fillColor.opacity = 1;
-                        else fillColor.opacity = (isMouseOver)?1:0.2;
+                        // else fillColor.opacity = (isMouseOver)?1:0.2;
+                        else fillColor.opacity = 0.2;
                     } else {
                         if (checkSample || checkVariable) fillColor.opacity = 1;
-                        else fillColor.opacity = (isMouseOver)?1:0.2;
+                        // else fillColor.opacity = (isMouseOver)?1:0.2;
+                        else fillColor.opacity = 0.2;
                     }
                 }
+
+                // begin draw point
                 background_ctx.beginPath();
                 background_ctx.fillStyle = fillColor + '';
                 background_ctx.arc(xscale(d[0]), yscale(d[1]), pointSize,0,2*Math.PI);
@@ -208,6 +218,7 @@ d3.pcaTimeSpace = function () {
                 // if (li !== -1) {storeDraw[bCountUmap] = [background_ctx,target,d]; bCountUmap+=1;}
                 if (li !== -1) {storeDraw[bCountPCA] = [background_ctx,target,[d[0],d[1]]]; bCountPCA+=1;}
             });
+            // draw clicked charts
             solution.forEach((d,i)=>{
                 const target = datain[i];
                 target.__metrics.position = d;
@@ -215,14 +226,10 @@ d3.pcaTimeSpace = function () {
                 // zoom
                 // let dataDR = transformDR.apply([xscale(d[0]),yscale(d[1])]);
 
-                let checkInteraction, checkSample, checkVariable, checkBothInteraction;
-                if ((interactionOption.sample === 'noOption') && (interactionOption.variable === 'noOption'))
-                    checkInteraction = false;
-                else checkInteraction = true;
-                if ((interactionOption.sample !== 'noOption') && (interactionOption.variable !== 'noOption'))
-                    checkBothInteraction = true;
-                else checkBothInteraction = false;
-                if (checkInteraction) {
+                // interaction condition
+                let checkSample, checkVariable;
+
+                if (checkInteraction) {     // interaction
                     checkSample = target.plot.split('-')[0] === interactionOption.sample;
                     checkVariable = target.plot.split('-')[1] === interactionOption.variable;
                     if (checkBothInteraction) {
@@ -232,7 +239,7 @@ d3.pcaTimeSpace = function () {
                         if (checkVariable || checkSample)
                             drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],false);
                     }
-                } else {
+                } else {    // no interaction
                     let checkClicked = (clickArr.length > 0) ? clickArr.findIndex(cd => cd.clickedData[0]===d[0]&&cd.clickedData[1]===d[1]) : -1;
                     if (checkClicked !== -1) {
                         // drawLeaderPlot(background_ctx,target,d);
@@ -267,6 +274,99 @@ d3.pcaTimeSpace = function () {
             // if(isradar) {
             //     renderSvgRadar();
             // }
+
+            // draw clicked-highlight time series
+            if (!checkInteraction) {        // no interaction
+                if (clickArr.length > 6) {
+                    for (let i = clickArr.length - 1; i > clickArr.length - 7; i--) {
+                        let myIndex_ = solution.findIndex(d=>d[0] === clickArr[i].clickedData[0] && d[1] === clickArr[i].clickedData[1]);
+                        let plot_ = datain[myIndex_].plot;
+                        drawTimeSeries(background_ctx,plot_,clickArr.length-1-i,trueMousePosition);
+                    }
+                } else {
+                    for (let i = clickArr.length - 1; i > -1; i--) {
+                        let myIndex_ = solution.findIndex(d=>d[0] === clickArr[i].clickedData[0] && d[1] === clickArr[i].clickedData[1]);
+                        let plot_ = datain[myIndex_].plot;
+                        drawTimeSeries(background_ctx,plot_,clickArr.length-1-i,trueMousePosition);
+                    }
+                }
+            } else {        // interaction
+                let myCase;
+                if ((interactionOption.sample !== 'noOption')&&(interactionOption.variable === 'noOption')) myCase = 'instances';
+                if ((interactionOption.sample === 'noOption')&&(interactionOption.variable !== 'noOption')) myCase = 'variable';
+                if ((interactionOption.sample !== 'noOption')&&(interactionOption.variable !== 'noOption')) myCase = 'both';
+
+                switch (myCase) {
+                    case 'both':
+                        let checkData = data[+interactionOption.sample][+interactionOption.variable].findIndex(d=>d>=0) !== -1;
+                        if (checkData) {
+                            let plot_ = interactionOption.sample + '-' + interactionOption.variable;
+                            drawTimeSeries(background_ctx,plot_,0,trueMousePosition);
+                        }
+                        break;
+                    case 'instances':
+                        let checkDataArr = [];
+                        let numTimeSeries = 0;
+                        data[+interactionOption.sample].forEach((d,i)=>{
+                            checkDataArr[i] = d.findIndex(d=>d>=0) !== -1;
+                            if (checkDataArr[i]) numTimeSeries += 1;
+                        });
+                        let indexArr = [];
+                        checkDataArr.forEach((d,i)=>{
+                            if(d) indexArr.push(i);
+                        });
+                        let numLayout = Math.ceil(numTimeSeries/6);
+                        let lastPageNum = numTimeSeries%6;
+                        // change page
+                        if (clickArr.length>0) {
+                            changePage(numLayout);
+                            clickArr=[];
+                        }
+                        if (currentPage < numLayout) {
+                            for (let j = 0; j < 6; j++) {
+                                let plot_ = interactionOption.sample + '-' + indexArr[j+6*(currentPage-1)].toString();
+                                drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
+                            }
+                        } else {
+                            for (let j = 0; j < lastPageNum; j++) {
+                                let plot_ = interactionOption.sample + '-' + indexArr[j+6*(numLayout-1)].toString();
+                                drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
+                            }
+                        }
+                        break;
+                    case 'variable':
+                        let checkDataArr2 = [];
+                        let numTimeSeries2 = 0;
+                        data.forEach((d,i)=>{
+                            checkDataArr2[i] = d[+interactionOption.variable].findIndex(d=>d>=0) !== -1;
+                            if (checkDataArr2[i]) numTimeSeries2 += 1;
+                        });
+                        let indexArr2 = [];
+                        checkDataArr2.forEach((d,i)=>{
+                            if(d) indexArr2.push(i);
+                        });
+                        let numLayout2 = Math.ceil(numTimeSeries2/6);
+                        let lastPageNum2 = numTimeSeries2%6;
+                        // change page
+                        if (clickArr.length>0) {
+                            changePage(numLayout2);
+                            clickArr=[];
+                        }
+                        if (currentPage < numLayout2) {
+                            for (let j = 0; j < 6; j++) {
+                                let plot_ = indexArr2[j+6*(currentPage-1)].toString() + '-' + interactionOption.variable;
+                                drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
+                            }
+                        } else {
+                            for (let j = 0; j < lastPageNum2; j++) {
+                                let plot_ = indexArr2[j+6*(numLayout2-1)].toString() + '-' + interactionOption.variable;
+                                drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
+                            }
+                        }
+                        break;
+                }
+
+            }
         }
     }
 

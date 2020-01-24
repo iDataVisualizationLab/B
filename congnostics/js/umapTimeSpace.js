@@ -353,7 +353,7 @@ d3.umapTimeSpace = function () {
                             if (checkDataArr2[i]) numTimeSeries2 += 1;
                         });
                         let indexArr2 = [];
-                        checkDataArr.forEach((d,i)=>{
+                        checkDataArr2.forEach((d,i)=>{
                             if(d) indexArr2.push(i);
                         });
                         let numLayout2 = Math.ceil(numTimeSeries2/6);
@@ -370,7 +370,7 @@ d3.umapTimeSpace = function () {
                             }
                         } else {
                             for (let j = 0; j < lastPageNum2; j++) {
-                                let plot_ = mindexArr2[j+6*(numLayout-1)].toString() + '-' + interactionOption.variable;
+                                let plot_ = indexArr2[j+6*(numLayout2-1)].toString() + '-' + interactionOption.variable;
                                 drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
                             }
                         }
@@ -647,7 +647,7 @@ function drawLeaderPlot(ctx_,target_,plotPosition_,isMouseOver_) {
     let plotSize = 30;
     let color = [];
     // ctx.translate(-plotSize,-plotSize/2);
-    if (displayType === "radar") {
+    if (displayType === "rose") {
         // draw Radar Chart
         let dataRadarChart = dataRadar2[plotIndex];
         let angle = Math.PI*2/dataRadarChart.length;
@@ -825,11 +825,11 @@ function onClickFunction() {
     // in interaction mode
     if ((interactionOption.sample !== 'noOption') || (interactionOption.variable !== 'noOption')) {
         let leftButtonPosition = [120,250];
-        let rightButtonPosition = [150,250];
+        let rightButtonPosition = [160,250];
         let buttonSize = [20,20];
 
-        let quitButtonPosition = [450,250];
-        let quitButtonSize = [100,20];
+        let quitButtonPosition = [400,250];
+        let quitButtonSize = [140,20];
 
         let checkChangePage1 = (mouse[0]>=leftButtonPosition[0]) && (mouse[0]<=leftButtonPosition[0]+buttonSize[0]) && (mouse[1]>=leftButtonPosition[1]) && (mouse[1]<=leftButtonPosition[1]+buttonSize[1]);
         let checkChangePage2 = (mouse[0]>=rightButtonPosition[0]) && (mouse[0]<=rightButtonPosition[0]+buttonSize[0]) && (mouse[1]>=rightButtonPosition[1]) && (mouse[1]<=rightButtonPosition[1]+buttonSize[1]);
@@ -928,6 +928,11 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
     let plotSize = [420,100];
     let ctx = ctx_;
 
+    // check interaction
+    let checkInteraction, checkBothInteraction;
+    checkInteraction = !((interactionOption.sample === 'noOption') && (interactionOption.variable === 'noOption'));
+    checkBothInteraction = (interactionOption.sample !== 'noOption') && (interactionOption.variable !== 'noOption');
+
     ctx.beginPath();
     ctx.fillStyle = "rgb(255,255,255)";
     ctx.strokeStyle = "rgb(0,0,0)";
@@ -938,85 +943,235 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
     ctx.fillRect(plotPosition[0],plotPosition[1], plotSize[0], plotSize[1]);
 
     // Variable notation
-    let notation = '';
-    let countSpace = [], myCountSpace = [], countLine = 0, countIndex = 0;
-    let notationArr = mapvar2.get(varIndex).split('');
-    notationArr.forEach((d,i)=>{
-        if (d === ' ') myCountSpace.push(i);
+    let notationVar = '';
+    let countSpaceVar = [], myCountSpaceVar = [], countLineVar = 0, countIndexVar = 0;
+    let notationArrVar = mapvar2.get(varIndex).split('');
+    notationArrVar.forEach((d,i)=>{
+        if (d === ' ') myCountSpaceVar.push(i);
     });
-    countSpace = myCountSpace.map((d,i)=>{
+    countSpaceVar = myCountSpaceVar.map((d,i)=>{
         if (i) {
-            if (d-myCountSpace[i-1]>3) return d;
+            if (d-myCountSpaceVar[i-1]>3) return d;
             else return false;
         } else {
             if (d>2) return d;
             else return false;
         }
     });
-
-    ctx.translate(plotPosition[0]-5,plotPosition[1]+plotSize[1]);
-    ctx.rotate(-Math.PI/2);
-    ctx.font = "12px Arial";
-    ctx.fillStyle = 'rgb(0,0,0)';
-    if (notationArr.length > 14) {
-        if (countSpace.length === 0) {
-            notation = '';
-            for (let j = 0; j < 14; j++) {
-                notation += notationArr[j];
-            }
-            ctx.fillText(notation,0,0);
+    // Instance notation
+    let notationIns = '';
+    let countSpaceIns = [], myCountSpaceIns = [], countLineIns = 0, countIndexIns = 0;
+    let notationArrIns = mapsample2.get(sampleIndex).split('');
+    notationArrIns.forEach((d,i)=>{
+        if (d === ' ') myCountSpaceIns.push(i);
+    });
+    countSpaceIns = myCountSpaceIns.map((d,i)=>{
+        if (i) {
+            if (d-myCountSpaceIns[i-1]>3) return d;
+            else return false;
         } else {
-            countLine = 0;
-            countSpace.forEach((d,i)=>{
-                if (d) {
-                    notation = '';
-                    if (i === 0) {
-                        if (countSpace.length>1) {
-                            for (let j = 0; j < d; j++) {
-                                notation += notationArr[j];
-                            }
-                            ctx.fillText(notation,0,-15*(countSpace.length));
-                            countLine += 1;
-                        } else {
-                            for (let j = 0; j < d; j++) {
-                                notation += notationArr[j];
-                            }
-                            ctx.fillText(notation,0,-15*(countSpace.length));
-                            notation = '';
-                            for (let j = d+1; j < notationArr.length; j++) {
-                                notation += notationArr[j];
-                            }
-                            ctx.fillText(notation,0,0);
-                            countLine += 1;
-                        }
-                    } else if (i<countSpace.length-1) {
-                        for (let j = countSpace[i-1-countIndex]+1; j < d; j++) {
-                            notation += notationArr[j];
-                        }
-                        ctx.fillText(notation,0,-(countSpace.length-countLine)*15);
-                        countLine += 1;
-                    } else {
-                        for (let j = countSpace[i-1-countIndex]+1; j < d; j++) {
-                            notation += notationArr[j];
-                        }
-                        ctx.fillText(notation,0,-(countSpace.length-countLine)*15);
-                        notation = '';
-                        for (let j = d+1; j < notationArr.length; j++) {
-                            notation += notationArr[j];
-                        }
-                        ctx.fillText(notation,0,0);
-                        countLine += 1;
-                    }
-                    countIndex = 0;
-                } else countIndex += 1;
-            });
+            if (d>2) return d;
+            else return false;
         }
-    } else {
-        ctx.fillText(mapvar2.get(varIndex),0,0);
+    });
+    if (checkInteraction) {     // in interaction mode
+        if (interactionOption.sample !== 'noOption') {      // turn on instance
+            ctx.translate(plotPosition[0]-5,plotPosition[1]+plotSize[1]);
+            ctx.rotate(-Math.PI/2);
+            ctx.font = "12px Arial";
+            ctx.fillStyle = 'rgb(0,0,0)';
+            if (notationArrVar.length > 14) {
+                if (countSpaceVar.length === 0) {
+                    notationVar = '';
+                    for (let j = 0; j < 14; j++) {
+                        notationVar += notationArrVar[j];
+                    }
+                    ctx.fillText(notationVar,0,0);
+                } else {
+                    countLineVar = 0;
+                    countSpaceVar.forEach((d,i)=>{
+                        if (d) {
+                            notationVar = '';
+                            if (i === 0) {
+                                if (countSpaceVar.length>1) {
+                                    for (let j = 0; j < d; j++) {
+                                        notationVar += notationArrVar[j];
+                                    }
+                                    ctx.fillText(notationVar,0,-15*(countSpaceVar.length));
+                                    countLineVar += 1;
+                                } else {
+                                    for (let j = 0; j < d; j++) {
+                                        notationVar += notationArrVar[j];
+                                    }
+                                    ctx.fillText(notationVar,0,-15*(countSpaceVar.length));
+                                    notationVar = '';
+                                    for (let j = d+1; j < notationArrVar.length; j++) {
+                                        notationVar += notationArrVar[j];
+                                    }
+                                    ctx.fillText(notationVar,0,0);
+                                    countLineVar += 1;
+                                }
+                            } else if (i<countSpaceVar.length-1) {
+                                for (let j = countSpaceVar[i-1-countIndexVar]+1; j < d; j++) {
+                                    notationVar += notationArrVar[j];
+                                }
+                                ctx.fillText(notationVar,0,-(countSpaceVar.length-countLineVar)*15);
+                                countLineVar += 1;
+                            } else {
+                                for (let j = countSpaceVar[i-1-countIndexVar]+1; j < d; j++) {
+                                    notationVar += notationArrVar[j];
+                                }
+                                ctx.fillText(notationVar,0,-(countSpaceVar.length-countLineVar)*15);
+                                notationVar = '';
+                                for (let j = d+1; j < notationArrVar.length; j++) {
+                                    notationVar += notationArrVar[j];
+                                }
+                                ctx.fillText(notationVar,0,0);
+                                countLineVar += 1;
+                            }
+                            countIndexVar = 0;
+                        } else countIndexVar += 1;
+                    });
+                }
+            } else {
+                ctx.fillText(mapvar2.get(varIndex),0,0);
+            }
+            ctx.fill();
+            ctx.rotate(Math.PI/2);
+            ctx.translate(-plotPosition[0]+5,-plotPosition[1]-plotSize[1]);
+        } else {        // turn on varibale or bot
+            ctx.translate(plotPosition[0]-5,plotPosition[1]+plotSize[1]);
+            ctx.rotate(-Math.PI/2);
+            ctx.font = "12px Arial";
+            ctx.fillStyle = 'rgb(0,0,0)';
+            if (notationArrIns.length > 14) {
+                if (countSpaceIns.length === 0) {
+                    notationIns = '';
+                    for (let j = 0; j < 14; j++) {
+                        notationIns += notationArrIns[j];
+                    }
+                    ctx.fillText(notationIns,0,0);
+                } else {
+                    countLineIns = 0;
+                    countSpaceIns.forEach((d,i)=>{
+                        if (d) {
+                            notationIns = '';
+                            if (i === 0) {
+                                if (countSpaceIns.length>1) {
+                                    for (let j = 0; j < d; j++) {
+                                        notationIns += notationArrIns[j];
+                                    }
+                                    ctx.fillText(notationIns,0,-15*(countSpaceIns.length));
+                                    countLineIns += 1;
+                                } else {
+                                    for (let j = 0; j < d; j++) {
+                                        notationIns += notationArrIns[j];
+                                    }
+                                    ctx.fillText(notationIns,0,-15*(countSpaceIns.length));
+                                    notationIns = '';
+                                    for (let j = d+1; j < notationArrIns.length; j++) {
+                                        notationIns += notationArrIns[j];
+                                    }
+                                    ctx.fillText(notationIns,0,0);
+                                    countLineIns += 1;
+                                }
+                            } else if (i<countSpaceIns.length-1) {
+                                for (let j = countSpaceIns[i-1-countIndexIns]+1; j < d; j++) {
+                                    notationIns += notationArrIns[j];
+                                }
+                                ctx.fillText(notationIns,0,-(countSpaceIns.length-countLineIns)*15);
+                                countLineIns += 1;
+                            } else {
+                                for (let j = countSpaceIns[i-1-countIndexIns]+1; j < d; j++) {
+                                    notationIns += notationArrIns[j];
+                                }
+                                ctx.fillText(notationIns,0,-(countSpaceIns.length-countLineIns)*15);
+                                notationIns = '';
+                                for (let j = d+1; j < notationArrIns.length; j++) {
+                                    notationIns += notationArrIns[j];
+                                }
+                                ctx.fillText(notationIns,0,0);
+                                countLineIns += 1;
+                            }
+                            countIndexIns = 0;
+                        } else countIndexIns += 1;
+                    });
+                }
+            } else {
+                ctx.fillText(mapsample2.get(sampleIndex),0,0);
+            }
+            ctx.fill();
+            ctx.rotate(Math.PI/2);
+            ctx.translate(-plotPosition[0]+5,-plotPosition[1]-plotSize[1]);
+        }
+    } else {    // no interaction mode
+        ctx.translate(plotPosition[0]-5,plotPosition[1]+plotSize[1]);
+        ctx.rotate(-Math.PI/2);
+        ctx.font = "12px Arial";
+        ctx.fillStyle = 'rgb(0,0,0)';
+        if (notationArrVar.length > 14) {
+            if (countSpaceVar.length === 0) {
+                notationVar = '';
+                for (let j = 0; j < 14; j++) {
+                    notationVar += notationArrVar[j];
+                }
+                ctx.fillText(notationVar,0,0);
+            } else {
+                countLineVar = 0;
+                countSpaceVar.forEach((d,i)=>{
+                    if (d) {
+                        notationVar = '';
+                        if (i === 0) {
+                            if (countSpaceVar.length>1) {
+                                for (let j = 0; j < d; j++) {
+                                    notationVar += notationArrVar[j];
+                                }
+                                ctx.fillText(notationVar,0,-15*(countSpaceVar.length));
+                                countLineVar += 1;
+                            } else {
+                                for (let j = 0; j < d; j++) {
+                                    notationVar += notationArrVar[j];
+                                }
+                                ctx.fillText(notationVar,0,-15*(countSpaceVar.length));
+                                notationVar = '';
+                                for (let j = d+1; j < notationArrVar.length; j++) {
+                                    notationVar += notationArrVar[j];
+                                }
+                                ctx.fillText(notationVar,0,0);
+                                countLineVar += 1;
+                            }
+                        } else if (i<countSpaceVar.length-1) {
+                            for (let j = countSpaceVar[i-1-countIndexVar]+1; j < d; j++) {
+                                notationVar += notationArrVar[j];
+                            }
+                            ctx.fillText(notationVar,0,-(countSpaceVar.length-countLineVar)*15);
+                            countLineVar += 1;
+                        } else {
+                            for (let j = countSpaceVar[i-1-countIndexVar]+1; j < d; j++) {
+                                notationVar += notationArrVar[j];
+                            }
+                            ctx.fillText(notationVar,0,-(countSpaceVar.length-countLineVar)*15);
+                            notationVar = '';
+                            for (let j = d+1; j < notationArrVar.length; j++) {
+                                notationVar += notationArrVar[j];
+                            }
+                            ctx.fillText(notationVar,0,0);
+                            countLineVar += 1;
+                        }
+                        countIndexVar = 0;
+                    } else countIndexVar += 1;
+                });
+            }
+        } else {
+            ctx.fillText(mapvar2.get(varIndex),0,0);
+        }
+        ctx.fill();
+        ctx.rotate(Math.PI/2);
+        ctx.translate(-plotPosition[0]+5,-plotPosition[1]-plotSize[1]);
+        ctx.font = '12px Arial';
+        ctx.fillText(mapsample2.get(sampleIndex),plotPosition[0]+2,plotPosition[1]+15);
     }
-    ctx.fill();
-    ctx.rotate(Math.PI/2);
-    ctx.translate(-plotPosition[0]+5,-plotPosition[1]-plotSize[1]);
+
 
     ctx.lineWidth = 1;
     timedata.forEach(function (time, step) {
@@ -1080,11 +1235,11 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
     // clickable button
     if (interactionOption.sample !== 'noOption' || interactionOption.variable !== 'noOption') {
         let leftButtonPosition = [120,250];
-        let rightButtonPosition = [150,250];
+        let rightButtonPosition = [160,250];
         let buttonSize = [20,20];
 
-        let quitButtonPosition = [450,250];
-        let quitButtonSize = [100,20];
+        let quitButtonPosition = [400,250];
+        let quitButtonSize = [140,20];
 
         let checkLeft = (trueMousePosition[0]>=leftButtonPosition[0]) && (trueMousePosition[0]<=leftButtonPosition[0]+buttonSize[0]) && (trueMousePosition[1]>=leftButtonPosition[1]) && (trueMousePosition[1]<=leftButtonPosition[1]+buttonSize[1]);
         let checkRight = (trueMousePosition[0]>=rightButtonPosition[0]) && (trueMousePosition[0]<=rightButtonPosition[0]+buttonSize[0]) && (trueMousePosition[1]>=rightButtonPosition[1]) && (trueMousePosition[1]<=rightButtonPosition[1]+buttonSize[1]);
@@ -1093,30 +1248,41 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
         let giveFeedBack = checkLeft || checkRight || checkQuit;
         ctx.beginPath();
         // draw buttons
-        ctx.fillStyle = (giveFeedBack) ? 'rgb(255,0,0)' : 'rgb(200,200,200)';
+        ctx.fillStyle = (checkLeft) ? 'rgb(255,0,0)' : 'rgb(180,180,180)';
         ctx.fillRect(leftButtonPosition[0],leftButtonPosition[1],buttonSize[0],buttonSize[1]);  // left button
+        ctx.fill();
+        ctx.fillStyle = (checkRight) ? 'rgb(255,0,0)' : 'rgb(180,180,180)';
         ctx.fillRect(rightButtonPosition[0],rightButtonPosition[1],buttonSize[0],buttonSize[1]);    // right button
+        ctx.fill();
+        ctx.fillStyle = (checkQuit) ? 'rgb(255,0,0)' : 'rgb(180,180,180)';
         ctx.fillRect(quitButtonPosition[0],quitButtonPosition[1],quitButtonSize[0],quitButtonSize[1]);  // quit button
         ctx.fill();
         // draw signs of buttons
-        ctx.fillStyle = (giveFeedBack) ? 'rgb(100,100,0)' : 'rgb(255,255,255)';
+        ctx.fillStyle = 'rgb(255,255,255)';
         ctx.moveTo(leftButtonPosition[0]+buttonSize[0]/2-5,leftButtonPosition[1]+buttonSize[1]/2);  // left
         ctx.lineTo(leftButtonPosition[0]+buttonSize[0]/2+5,leftButtonPosition[1]+buttonSize[1]/2+5);
         ctx.lineTo(leftButtonPosition[0]+buttonSize[0]/2+5,leftButtonPosition[1]+buttonSize[1]/2-5);
         ctx.lineTo(leftButtonPosition[0]+buttonSize[0]/2-5,leftButtonPosition[1]+buttonSize[1]/2);
+        ctx.fill();
         ctx.moveTo(rightButtonPosition[0]+buttonSize[0]/2+5,rightButtonPosition[1]+buttonSize[1]/2);  // right
         ctx.lineTo(rightButtonPosition[0]+buttonSize[0]/2-5,rightButtonPosition[1]+buttonSize[1]/2+5);
         ctx.lineTo(rightButtonPosition[0]+buttonSize[0]/2-5,rightButtonPosition[1]+buttonSize[1]/2-5);
         ctx.lineTo(rightButtonPosition[0]+buttonSize[0]/2+5,rightButtonPosition[1]+buttonSize[1]/2);
-        ctx.font = '10px Arial';
+        ctx.fill();
+        ctx.font = '12px Arial';
         ctx.fillText('Quit interaction section',quitButtonPosition[0]+5,quitButtonPosition[1]+quitButtonSize[1]-5);
+        ctx.fill();
+        ctx.fillStyle = 'rgb(0,0,0)';
+        ctx.font = '20px Arial';
+        ctx.fillText(currentPage.toString(),leftButtonPosition[0]+buttonSize[0]+5,leftButtonPosition[1]+buttonSize[1]-1);
+        ctx.fill();
     }
 }
 
 // function Change layout when number of time series exceeds 6
 function changePage(num_) {
     let leftButtonPosition = [120,250];
-    let rightButtonPosition = [150,250];
+    let rightButtonPosition = [160,250];
     let buttonSize = [20,20];
 
     let checkLeft = (trueMousePosition[0]>=leftButtonPosition[0]) && (trueMousePosition[0]<=leftButtonPosition[0]+buttonSize[0]) && (trueMousePosition[1]>=leftButtonPosition[1]) && (trueMousePosition[1]<=leftButtonPosition[1]+buttonSize[1]);
@@ -1124,9 +1290,8 @@ function changePage(num_) {
 
     if (checkLeft) {
         if (currentPage > 1) currentPage -= 1;
-    } else {
-        if (checkRight) {
+    }
+    if (checkRight) {
             if (currentPage<num_) currentPage += 1;
-        }
     }
 }
