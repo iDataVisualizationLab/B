@@ -863,11 +863,37 @@ function onClickFunction() {
                 umapTS.renderUMAP();
                 break;
         }
-    } else {
+    } else {    // no interaction mode
         // keep only 6 plots on the screen
         if (clickArr.length === 6) clickArr.splice(0,1);
 
-        if(dimensionReductionData.length > 0) findClosestDataPoint(mouse,dimensionReductionData,true);
+        // click turn off button of time series
+        let buttonPosition = [];
+        let buttonSize = [12,12];
+        let checkClickPoint = true;
+        clickArr.forEach((d,i)=>{
+            let plotPosition = [120,300+(clickArr.length-1-i)*100];
+            let plotSize = [420,100];
+            buttonPosition[i] = [plotPosition[0]+plotSize[0]+3,plotPosition[1]];
+        });
+        buttonPosition.forEach((d,i)=>{
+           let checkButton = (mouse[0]>=d[0])&&(mouse[0]<=d[0]+buttonSize[0])&&(mouse[1]>=d[1])&&(mouse[1]<=d[1]+buttonSize[1]);
+           checkClickPoint = checkClickPoint && !checkButton;
+           if(checkButton) clickArr.splice(i,1);
+        });
+        if (!checkClickPoint) {
+            switch (visualizingOption) {
+                case 'PCA':
+                    pcaTS.renderPCA();
+                    break;
+                case 'tSNE':
+                    tsneTS.renderTSNE();
+                    break;
+                case 'UMAP':
+                    umapTS.renderUMAP();
+                    break;
+            }
+        } else if(dimensionReductionData.length > 0) findClosestDataPoint(mouse,dimensionReductionData,true);
     }
     // switch (visualizingOption) {
     //     case 'PCA':
@@ -1276,6 +1302,25 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
         ctx.font = '20px Arial';
         ctx.fillText(currentPage.toString(),leftButtonPosition[0]+buttonSize[0]+5,leftButtonPosition[1]+buttonSize[1]-1);
         ctx.fill();
+    } else {    // no interaction mode
+        let buttonPosition = [plotPosition[0]+plotSize[0]+3,plotPosition[1]];
+        let buttonSize = [12,12];
+        let checkButton = (trueMousePosition[0]>=buttonPosition[0]) && (trueMousePosition[0]<=buttonPosition[0]+buttonSize[0]) && (trueMousePosition[1]>=buttonPosition[1]) && (trueMousePosition[1]<=buttonPosition[1]+buttonSize[1]);
+
+        // draw turn off button
+        ctx.fillStyle = (checkButton) ? 'rgb(255,0,0)' : 'rgb(0,0,0)';
+        ctx.fillRect(plotPosition[0]+plotSize[0]+3,plotPosition[1],buttonSize[0],buttonSize[1]);
+        ctx.fill();
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgb(255,255,255)';
+        ctx.moveTo(plotPosition[0]+plotSize[0]+4,plotPosition[1]+1);
+        ctx.lineTo(plotPosition[0]+plotSize[0]+buttonSize[0]+2,plotPosition[1]+buttonSize[1]-1);
+        ctx.stroke();
+        ctx.moveTo(plotPosition[0]+plotSize[0]+buttonSize[0]+2,plotPosition[1]+1);
+        ctx.lineTo(plotPosition[0]+plotSize[0]+4,plotPosition[1]+buttonSize[1]-1);
+        ctx.stroke();
+        ctx.lineWidth = 1;
+
     }
 }
 
