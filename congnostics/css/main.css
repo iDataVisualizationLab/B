@@ -266,6 +266,11 @@ textarea {
 }
 
 .p5Canvas {
-  width: 84vw!important;
+  width: 70vw!important;
+  height: auto!important;
+}
+
+#tsneScreen_svg {
+  width: 70vw!important;
   height: auto!important;
 }

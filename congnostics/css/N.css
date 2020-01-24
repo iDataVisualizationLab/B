@@ -1,5 +1,6 @@
 :root {
-    --sideNavwidth: 400px;
+    /*--sideNavwidth: 400px;*/
+    --sideNavwidth: 30vw;
 }
 
 svg.mainsvg {

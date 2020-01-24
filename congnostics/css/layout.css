@@ -3,7 +3,8 @@
     --secondary-color: rgba(255, 255, 255, 0.79);
     --containBlack: #ffffff;
     --slider: 0;
-    --sideNavwidth: 400px;
+    /*--sideNavwidth: 400px;*/
+    --sideNavwidth: 30vw;
     --colorMain2: #630016;
     --colorMain2_light: #d8d8d8;
     --buttonColor: #8a001a;
