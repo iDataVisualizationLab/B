@@ -183,13 +183,22 @@ $( document ).ready(function() {
             if(visualizingOption === 'LMH') {
                 d3.select('#mainCanvasHolder').classed('hide',false);
                 d3.select('#tSNE').classed('hide',true);
+                d3.select('#dataInstances').attr('disabled','');
+                d3.select('#variable').attr('disabled','');
             }
             if(visualizingOption === 'tSNE'||visualizingOption === 'PCA'||visualizingOption === 'UMAP') {
                 d3.select('#mainCanvasHolder').classed('hide', true);
                 d3.select('#tSNE').classed('hide', false);
                 onchangeVizType(visualizingOption);
                 onchangeVizdata(visualizingOption);
+                d3.select('#dataInstances').attr('disabled',null);
+                d3.select('#variable').attr('disabled',null);
             }
+            clickArr = [];      // delete clickArr after changing mode
+            interactionOption.sample = 'noOption';
+            interactionOption.variable = 'noOption';
+            $('#dataInstances').val('noOption').selected = true;
+            $('#variable').val('noOption').selected = true;
         });
         // visualizing option
         d3.select('#mainCanvasHolder').classed('hide',false);
@@ -209,6 +218,7 @@ $( document ).ready(function() {
                 onchangeVizdata(visualizingOption);
                 d3.select('#dataInstances').attr('disabled',null);
                 d3.select('#variable').attr('disabled',null);
+                clickArr = [];
             }
             if(visualizingOption === 'UMAP') {
                 d3.select('#mainCanvasHolder').classed('hide',true);
@@ -217,6 +227,7 @@ $( document ).ready(function() {
                 onchangeVizdata(visualizingOption);
                 d3.select('#dataInstances').attr('disabled',null);
                 d3.select('#variable').attr('disabled',null);
+                clickArr = [];
             }
             if(visualizingOption === 'tSNE') {
                 d3.select('#mainCanvasHolder').classed('hide',true);
@@ -225,6 +236,7 @@ $( document ).ready(function() {
                 onchangeVizdata(visualizingOption);
                 d3.select('#dataInstances').attr('disabled',null);
                 d3.select('#variable').attr('disabled',null);
+                clickArr = [];
             }
         });
         // interaction option - instances
@@ -603,8 +615,15 @@ function analyzedata() {
         data[0].forEach((d,i)=>{
             d3.select('#variable').append('option').attr('class','variable').attr('value',i.toString()).text(mapvar2.get(i));
         });
-        d3.select('#dataInstances').attr('disabled','');
-        d3.select('#variable').attr('disabled','');
+        if (visualizingOption === 'LMH') {
+            d3.select('#dataInstances').attr('disabled','');
+            d3.select('#variable').attr('disabled','');
+        }
+        if (visualizingOption === 'tSNE'||visualizingOption === 'PCA'||visualizingOption === 'UMAP') {
+            d3.select('#dataInstances').attr('disabled',null);
+            d3.select('#variable').attr('disabled',null);
+        }
+
         // let sampleList = [], varList = [];
         // data.forEach((d,i)=>{
         //     sampleList[i] = mapsample2.get(i);
