@@ -824,12 +824,12 @@ function onClickFunction() {
 
     // in interaction mode
     if ((interactionOption.sample !== 'noOption') || (interactionOption.variable !== 'noOption')) {
-        let leftButtonPosition = [(myWidth-400)*0.7,300];
-        let rightButtonPosition = [(myWidth-400)*0.7+40,300];
+        let leftButtonPosition = [(myWidth-400)*0.7,150];
+        let rightButtonPosition = [(myWidth-400)*0.7+40,150];
         let buttonSize = [20,20];
 
         let quitButtonSize = [140,20];
-        let quitButtonPosition = [(myWidth-400)*0.85,300];
+        let quitButtonPosition = [(myWidth-400)*0.85,150];
 
         let checkChangePage1 = (mouse[0]>=leftButtonPosition[0]) && (mouse[0]<=leftButtonPosition[0]+buttonSize[0]) && (mouse[1]>=leftButtonPosition[1]) && (mouse[1]<=leftButtonPosition[1]+buttonSize[1]);
         let checkChangePage2 = (mouse[0]>=rightButtonPosition[0]) && (mouse[0]<=rightButtonPosition[0]+buttonSize[0]) && (mouse[1]>=rightButtonPosition[1]) && (mouse[1]<=rightButtonPosition[1]+buttonSize[1]);
@@ -872,7 +872,7 @@ function onClickFunction() {
         let buttonSize = [12,12];
         let checkClickPoint = true;
         clickArr.forEach((d,i)=>{
-            let plotPosition = myHeight > 1000 ? [(myWidth-400)*0.7,350+(clickArr.length-1-i)*100] : [(myWidth-400)*0.7,350+(clickArr.length-1-i)*80];
+            let plotPosition = myHeight > 1000 ? [(myWidth-400)*0.7,200+(clickArr.length-1-i)*100] : [(myWidth-400)*0.7,200+(clickArr.length-1-i)*80];
             let plotSize = myHeight > 1000 ? [(myWidth-400)*0.25,100] : [(myWidth-460)*0.25,80];
             buttonPosition[i] = [plotPosition[0]+plotSize[0]+3,plotPosition[1]];
         });
@@ -950,7 +950,7 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
 
     let sampleIndex = +plot_.split('-')[0];
     let varIndex = +plot_.split('-')[1];
-    let plotPosition = myHeight > 1000 ? [(myWidth-400)*0.7,350+position_*100] : [(myWidth-400)*0.7,350+position_*80];
+    let plotPosition = myHeight > 1000 ? [(myWidth-400)*0.7,200+position_*100] : [(myWidth-400)*0.7,200+position_*80];
     let plotSize = myHeight > 1000 ? [(myWidth-400)*0.25,100] : [(myWidth-400)*0.25,80];
     let ctx = ctx_;
 
@@ -1260,12 +1260,12 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
 
     // clickable button
     if (interactionOption.sample !== 'noOption' || interactionOption.variable !== 'noOption') {
-        let leftButtonPosition = [(myWidth-400)*0.7,300];
-        let rightButtonPosition = [(myWidth-400)*0.7+40,300];
+        let leftButtonPosition = [(myWidth-400)*0.7,150];
+        let rightButtonPosition = [(myWidth-400)*0.7+40,150];
         let buttonSize = [20,20];
 
         let quitButtonSize = [140,20];
-        let quitButtonPosition = [(myWidth-400)*0.85,300];
+        let quitButtonPosition = [(myWidth-400)*0.85,150];
 
         let checkLeft = (trueMousePosition[0]>=leftButtonPosition[0]) && (trueMousePosition[0]<=leftButtonPosition[0]+buttonSize[0]) && (trueMousePosition[1]>=leftButtonPosition[1]) && (trueMousePosition[1]<=leftButtonPosition[1]+buttonSize[1]);
         let checkRight = (trueMousePosition[0]>=rightButtonPosition[0]) && (trueMousePosition[0]<=rightButtonPosition[0]+buttonSize[0]) && (trueMousePosition[1]>=rightButtonPosition[1]) && (trueMousePosition[1]<=rightButtonPosition[1]+buttonSize[1]);
@@ -1326,8 +1326,8 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
 
 // function Change layout when number of time series exceeds 6
 function changePage(num_) {
-    let leftButtonPosition = [(myWidth-400)*0.7,300];
-    let rightButtonPosition = [(myWidth-400)*0.7+40,300];
+    let leftButtonPosition = [(myWidth-400)*0.7,150];
+    let rightButtonPosition = [(myWidth-400)*0.7+40,150];
     let buttonSize = [20,20];
 
     let checkLeft = (trueMousePosition[0]>=leftButtonPosition[0]) && (trueMousePosition[0]<=leftButtonPosition[0]+buttonSize[0]) && (trueMousePosition[1]>=leftButtonPosition[1]) && (trueMousePosition[1]<=leftButtonPosition[1]+buttonSize[1]);
