@@ -950,8 +950,8 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
 
     let sampleIndex = +plot_.split('-')[0];
     let varIndex = +plot_.split('-')[1];
-    let plotPosition = [(myWidth-460)*0.5*0.2,350+position_*100];
-    let plotSize = [(myWidth-460)*0.5*0.7,100];
+    let plotPosition = myHeight > 1000 ? [(myWidth-460)*0.5*0.2,350+position_*100] : [(myWidth-460)*0.5*0.2,350+position_*80];
+    let plotSize = myHeight > 1000 ? [(myWidth-460)*0.5*0.7,100] : [(myWidth-460)*0.5*0.7,80];
     let ctx = ctx_;
 
     // check interaction
