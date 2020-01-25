@@ -310,7 +310,7 @@ d3.tsneTimeSpace = function () {
                         drawTimeSeries(background_ctx,plot_,clickArr.length-1-i,trueMousePosition);
                     }
                 } else {
-                    for (let i = clickArr.length - 1; i > -1; i--) {
+                    for (let i = 0; i < clickArr.length; i++) {
                         let myIndex_ = solution.findIndex(d=>d[0] === clickArr[i].clickedData[0] && d[1] === clickArr[i].clickedData[1]);
                         let plot_ = datain[myIndex_].plot;
                         drawTimeSeries(background_ctx,plot_,clickArr.length-1-i,trueMousePosition);

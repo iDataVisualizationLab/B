@@ -295,7 +295,7 @@ d3.umapTimeSpace = function () {
                         drawTimeSeries(background_ctx,plot_,clickArr.length-1-i,trueMousePosition);
                     }
                 } else {
-                    for (let i = clickArr.length - 1; i > -1; i--) {
+                    for (let i = 0; i < clickArr.length; i++) {
                         let myIndex_ = solution.findIndex(d=>d[0] === clickArr[i].clickedData[0] && d[1] === clickArr[i].clickedData[1]);
                         let plot_ = datain[myIndex_].plot;
                         drawTimeSeries(background_ctx,plot_,clickArr.length-1-i,trueMousePosition);
@@ -1233,14 +1233,14 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
         ctx.beginPath();
         ctx.fillStyle = 'rgb(0,0,0)';
         ctx.moveTo(x,plotPosition[1]+plotSize[1]);
-        ctx.lineTo(x-5,plotPosition[1]+plotSize[1]-5);
-        ctx.lineTo(x+5,plotPosition[1]+plotSize[1]-5);
+        ctx.lineTo(x-5,plotPosition[1]+plotSize[1]+5);
+        ctx.lineTo(x+5,plotPosition[1]+plotSize[1]+5);
         ctx.lineTo(x,plotPosition[1]+plotSize[1]);
         ctx.fill();
-        ctx.fillRect(x-25,plotPosition[1]+plotSize[1]-5-12,50,12);
+        ctx.fillRect(x-25,plotPosition[1]+plotSize[1]+5,50,12);
         ctx.fillStyle = 'rgb(255,255,255)';
         ctx.font = '10px Arial';
-        ctx.fillText(timedata[step],x-23,plotPosition[1]+plotSize[1]-5-2);
+        ctx.fillText(timedata[step],x-23,plotPosition[1]+plotSize[1]+5+10);
 
         // draw y-notation:
         if (typeof (y) === 'number') {
