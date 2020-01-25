@@ -2,10 +2,10 @@ d3.umapTimeSpace = function () {
     let leaderDraw = leaderList.map(d=>d);
     let storeDraw = [];
     let graphicopt = {
-            margin: {top: 60, right: 60, bottom: 60, left: 560},
-            width: 1500,
-            height: 1000,
-            scalezoom: 0.5,
+            margin: {top: 60, right: 60, bottom: 60, left: (myWidth-460)*0.5},
+            width: myWidth-400,
+            height: myHeight,
+            scalezoom: 1,
             widthView: function () {
                 return this.width * this.scalezoom
             },
@@ -824,12 +824,12 @@ function onClickFunction() {
 
     // in interaction mode
     if ((interactionOption.sample !== 'noOption') || (interactionOption.variable !== 'noOption')) {
-        let leftButtonPosition = [120,250];
-        let rightButtonPosition = [160,250];
+        let leftButtonPosition = [(myWidth-460)*0.5*0.2,300];
+        let rightButtonPosition = [(myWidth-460)*0.5*0.2+40,300];
         let buttonSize = [20,20];
 
-        let quitButtonPosition = [400,250];
         let quitButtonSize = [140,20];
+        let quitButtonPosition = [(myWidth-460)*0.5*0.9-quitButtonSize[0],300];
 
         let checkChangePage1 = (mouse[0]>=leftButtonPosition[0]) && (mouse[0]<=leftButtonPosition[0]+buttonSize[0]) && (mouse[1]>=leftButtonPosition[1]) && (mouse[1]<=leftButtonPosition[1]+buttonSize[1]);
         let checkChangePage2 = (mouse[0]>=rightButtonPosition[0]) && (mouse[0]<=rightButtonPosition[0]+buttonSize[0]) && (mouse[1]>=rightButtonPosition[1]) && (mouse[1]<=rightButtonPosition[1]+buttonSize[1]);
@@ -872,8 +872,8 @@ function onClickFunction() {
         let buttonSize = [12,12];
         let checkClickPoint = true;
         clickArr.forEach((d,i)=>{
-            let plotPosition = [120,300+(clickArr.length-1-i)*100];
-            let plotSize = [420,100];
+            let plotPosition = [(myWidth-460)*0.5*0.2,350+(clickArr.length-1-i)*100];
+            let plotSize = [(myWidth-460)*0.5*0.7,100];
             buttonPosition[i] = [plotPosition[0]+plotSize[0]+3,plotPosition[1]];
         });
         buttonPosition.forEach((d,i)=>{
@@ -950,8 +950,8 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
 
     let sampleIndex = +plot_.split('-')[0];
     let varIndex = +plot_.split('-')[1];
-    let plotPosition = [120,300+position_*100];
-    let plotSize = [420,100];
+    let plotPosition = [(myWidth-460)*0.5*0.2,350+position_*100];
+    let plotSize = [(myWidth-460)*0.5*0.7,100];
     let ctx = ctx_;
 
     // check interaction
@@ -1260,12 +1260,12 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
 
     // clickable button
     if (interactionOption.sample !== 'noOption' || interactionOption.variable !== 'noOption') {
-        let leftButtonPosition = [120,250];
-        let rightButtonPosition = [160,250];
+        let leftButtonPosition = [(myWidth-460)*0.5*0.2,300];
+        let rightButtonPosition = [(myWidth-460)*0.5*0.2+40,300];
         let buttonSize = [20,20];
 
-        let quitButtonPosition = [400,250];
         let quitButtonSize = [140,20];
+        let quitButtonPosition = [(myWidth-460)*0.5*0.9-quitButtonSize[0],300];
 
         let checkLeft = (trueMousePosition[0]>=leftButtonPosition[0]) && (trueMousePosition[0]<=leftButtonPosition[0]+buttonSize[0]) && (trueMousePosition[1]>=leftButtonPosition[1]) && (trueMousePosition[1]<=leftButtonPosition[1]+buttonSize[1]);
         let checkRight = (trueMousePosition[0]>=rightButtonPosition[0]) && (trueMousePosition[0]<=rightButtonPosition[0]+buttonSize[0]) && (trueMousePosition[1]>=rightButtonPosition[1]) && (trueMousePosition[1]<=rightButtonPosition[1]+buttonSize[1]);
@@ -1326,8 +1326,8 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
 
 // function Change layout when number of time series exceeds 6
 function changePage(num_) {
-    let leftButtonPosition = [120,250];
-    let rightButtonPosition = [160,250];
+    let leftButtonPosition = [(myWidth-460)*0.5*0.2,300];
+    let rightButtonPosition = [(myWidth-460)*0.5*0.2+40,300];
     let buttonSize = [20,20];
 
     let checkLeft = (trueMousePosition[0]>=leftButtonPosition[0]) && (trueMousePosition[0]<=leftButtonPosition[0]+buttonSize[0]) && (trueMousePosition[1]>=leftButtonPosition[1]) && (trueMousePosition[1]<=leftButtonPosition[1]+buttonSize[1]);

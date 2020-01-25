@@ -1,3 +1,5 @@
+let myWidth = window.innerWidth;
+let myHeight = window.innerHeight;
 let currentPage = 1;
 let displayType = 'series';
 let transformDR = d3.zoomIdentity;

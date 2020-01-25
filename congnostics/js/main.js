@@ -67,9 +67,9 @@ let interactionOption = {
     'sample': 'noOption',
     'variable': 'noOption'
 };
-var TsneTSopt = {width:1500,height:1000};
-var PCAopt = {width:1500,height:1000};
-var umapopt = {width:1500,height:1000};
+var TsneTSopt = {width:myWidth-400,height:myHeight};
+var PCAopt = {width:myWidth-400,height:myHeight};
+var umapopt = {width:myWidth-400,height:myHeight};
 // worker
 let clustercalWorker;
 let getDataWorker;
