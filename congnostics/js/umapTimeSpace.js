@@ -2,7 +2,7 @@ d3.umapTimeSpace = function () {
     let leaderDraw = leaderList.map(d=>d);
     let storeDraw = [];
     let graphicopt = {
-            margin: {top: 60, right: (myWidth-400)*0.3, bottom: 60, left: (myWidth-400)*0.1},
+            margin: {top: myHeight*0.2, right: (myWidth-400)*0.3, bottom: myHeight*0.1, left: (myWidth-400)*0.1},
             width: myWidth-400,
             height: myHeight,
             scalezoom: 1,
