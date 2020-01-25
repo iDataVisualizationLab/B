@@ -2,7 +2,7 @@ d3.tsneTimeSpace = function () {
     let leaderDraw = leaderList.map(d=>d);
     let storeDraw = [];
     let graphicopt = {
-            margin: {top: 60, right: 60, bottom: 60, left: (myWidth-460)*0.5},
+            margin: {top: 60, right: (myWidth-400)*0.3, bottom: 60, left: (myWidth-400)*0.1},
             width: myWidth-400,
             height: myHeight,
             scalezoom: 1,
