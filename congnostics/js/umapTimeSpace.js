@@ -334,12 +334,12 @@ d3.umapTimeSpace = function () {
                             clickArr=[];
                         }
                         if (currentPage < numLayout) {
-                            for (let j = 0; j < 6; j++) {
+                            for (let j = 5; j > -1; j--) {
                                 let plot_ = interactionOption.sample + '-' + indexArr[j+6*(currentPage-1)].toString();
                                 drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
                             }
                         } else {
-                            for (let j = 0; j < lastPageNum; j++) {
+                            for (let j = lastPageNum - 1; j > -1; j--) {
                                 let plot_ = interactionOption.sample + '-' + indexArr[j+6*(numLayout-1)].toString();
                                 drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
                             }
@@ -364,12 +364,12 @@ d3.umapTimeSpace = function () {
                             clickArr=[];
                         }
                         if (currentPage < numLayout2) {
-                            for (let j = 0; j < 6; j++) {
+                            for (let j = 5; j > -1; j--) {
                                 let plot_ = indexArr2[j+6*(currentPage-1)].toString() + '-' + interactionOption.variable;
                                 drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
                             }
                         } else {
-                            for (let j = 0; j < lastPageNum2; j++) {
+                            for (let j = lastPageNum2 - 1; j > -1; j--) {
                                 let plot_ = indexArr2[j+6*(numLayout2-1)].toString() + '-' + interactionOption.variable;
                                 drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
                             }
@@ -1228,7 +1228,8 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
         let step = Math.floor((xMouse-plotPosition[0]-0.05*plotSize[0])/dX);
         let x = plotPosition[0]+0.05*plotSize[0]+dX*step;
         let y = data[sampleIndex][varIndex][step]>=0 ? plotPosition[1]+0.05*plotSize[1]+0.9*plotSize[1]*(1-data[sampleIndex][varIndex][step]) : 'No data';
-        let dataValue = Math.round(dataRaw[sampleIndex][varIndex][step]).toString();
+        // let dataValue = Math.round(dataRaw[sampleIndex][varIndex][step]).toString();
+        let dataValue = (Math.floor(dataRaw[sampleIndex][varIndex][step]) > 100) ? Math.floor(dataRaw[sampleIndex][varIndex][step]) : Math.floor(dataRaw[sampleIndex][varIndex][step]*100)/100;
         // draw x-notation
         ctx.beginPath();
         ctx.fillStyle = 'rgb(0,0,0)';
