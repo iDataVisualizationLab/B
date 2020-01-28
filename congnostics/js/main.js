@@ -657,11 +657,12 @@ function analyzedata() {
                 break;
         }
         initClusterObj();
-        recalculateCluster( {clusterMethod: 'kmean',bin:{k:6,iterations:50}},function(){
+        let kMeanGroup = $('#knum').val() || 6;
+        let kMeanIterations = $('#kiteration').val() || 50;
+        recalculateCluster( {clusterMethod: 'kmean',bin:{k:kMeanGroup,iterations:kMeanIterations}},function(){
             clickArr = [];
             plotPosition = [];
             reCalculateTsne();
-            // console.log(dataRadar2);
         });
         measures.forEach(function (m,mi) {
             newmeasures[measurename[mi]] = {};
@@ -1514,6 +1515,9 @@ function prepareRadarTable() {
 }
 // Calculate Cluster
 function recalculateCluster (option,calback) {
+    // hide the main screen
+    d3.select('.cover').classed('hidden', false);
+
     Radarplot_opt.clusterMethod = option.clusterMethod;
     preloader(true,10,'Process grouping...','#clusterLoading');
     let group_opt = option;
@@ -1560,6 +1564,7 @@ function reCalculateTsne() {
     cluster_map(cluster_info);
     onchangeVizType(visualizingOption);
     onchangeVizdata(visualizingOption);
+    d3.select('.cover').classed('hidden', true);
 }
 
 function cluster_map (dataRaw) {

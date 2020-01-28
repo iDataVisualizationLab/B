@@ -2,7 +2,7 @@ d3.tsneTimeSpace = function () {
     let leaderDraw = leaderList.map(d=>d);
     let storeDraw = [];
     let graphicopt = {
-            margin: {top: myHeight*0.2, right: (myWidth-400)*0.3, bottom: myHeight*0.1, left: (myWidth-400)*0.1},
+            margin: {top: myHeight*0.2, right: (myWidth-400)*0.3+60, bottom: myHeight*0.1, left: (myWidth-400)*0.1},
             width: myWidth-400,
             height: myHeight,
             scalezoom: 1,
@@ -529,6 +529,7 @@ d3.tsneTimeSpace = function () {
                         });
                         div.node().noUiSlider.on("change", function () { // control panel update method
                             graphicopt.opt[d.content.variable] = +this.get();
+                            clickArr = [];
                             start();
                         });
                     } else if (d.content.type === "checkbox") {
@@ -557,6 +558,11 @@ d3.tsneTimeSpace = function () {
             }
         });
         d3.select('.perplexity div').node().noUiSlider.set(20);
+        clickArr = [];      // delete clickArr after changing mode
+        interactionOption.sample = 'noOption';
+        interactionOption.variable = 'noOption';
+        $('#dataInstances').val('noOption').selected = true;
+        $('#variable').val('noOption').selected = true;
     }
 
     function updateTableOutput(output) {

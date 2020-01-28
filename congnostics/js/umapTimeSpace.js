@@ -2,7 +2,7 @@ d3.umapTimeSpace = function () {
     let leaderDraw = leaderList.map(d=>d);
     let storeDraw = [];
     let graphicopt = {
-            margin: {top: myHeight*0.2, right: (myWidth-400)*0.3, bottom: myHeight*0.1, left: (myWidth-400)*0.1},
+            margin: {top: myHeight*0.2, right: (myWidth-400)*0.3+60, bottom: myHeight*0.1, left: (myWidth-400)*0.1},
             width: myWidth-400,
             height: myHeight,
             scalezoom: 1,
@@ -501,6 +501,7 @@ d3.umapTimeSpace = function () {
                         });
                         div.node().noUiSlider.on("change", function () { // control panel update method
                             graphicopt.opt[d.content.variable] = + this.get();
+                            clickArr = [];
                             start();
                         });
                     }else if (d.content.type === "checkbox") {
@@ -970,7 +971,7 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
 
     // Variable notation
     let notationVar = '';
-    let countSpaceVar = [], myCountSpaceVar = [], countLineVar = 0, countIndexVar = 0;
+    let countSpaceVar = [], myCountSpaceVar = [], countLineVar = 0, countIndexVar = 0, countFalse = 0;
     let notationArrVar = mapvar2.get(varIndex).split('');
     notationArrVar.forEach((d,i)=>{
         if (d === ' ') myCountSpaceVar.push(i);
@@ -984,9 +985,11 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
             else return false;
         }
     });
+    countSpaceVar.forEach(d=>{if(d===false) countFalse += 1;});
+
     // Instance notation
     let notationIns = '';
-    let countSpaceIns = [], myCountSpaceIns = [], countLineIns = 0, countIndexIns = 0;
+    let countSpaceIns = [], myCountSpaceIns = [], countLineIns = 0, countIndexIns = 0, countFalse2 = 0;
     let notationArrIns = mapsample2.get(sampleIndex).split('');
     notationArrIns.forEach((d,i)=>{
         if (d === ' ') myCountSpaceIns.push(i);
@@ -1000,6 +1003,8 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
             else return false;
         }
     });
+    countSpaceIns.forEach(d=>{if(d===false) countFalse2 += 1;});
+
     if (checkInteraction) {     // in interaction mode
         if (interactionOption.sample !== 'noOption') {      // turn on instance
             ctx.translate(plotPosition[0]-5,plotPosition[1]+plotSize[1]);
@@ -1023,13 +1028,13 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
                                     for (let j = 0; j < d; j++) {
                                         notationVar += notationArrVar[j];
                                     }
-                                    ctx.fillText(notationVar,0,-15*(countSpaceVar.length));
+                                    ctx.fillText(notationVar,0,-15*(countSpaceVar.length-countFalse));
                                     countLineVar += 1;
                                 } else {
                                     for (let j = 0; j < d; j++) {
                                         notationVar += notationArrVar[j];
                                     }
-                                    ctx.fillText(notationVar,0,-15*(countSpaceVar.length));
+                                    ctx.fillText(notationVar,0,-15*(countSpaceVar.length-countFalse));
                                     notationVar = '';
                                     for (let j = d+1; j < notationArrVar.length; j++) {
                                         notationVar += notationArrVar[j];
@@ -1041,13 +1046,13 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
                                 for (let j = countSpaceVar[i-1-countIndexVar]+1; j < d; j++) {
                                     notationVar += notationArrVar[j];
                                 }
-                                ctx.fillText(notationVar,0,-(countSpaceVar.length-countLineVar)*15);
+                                ctx.fillText(notationVar,0,-(countSpaceVar.length-countLineVar-countFalse)*15);
                                 countLineVar += 1;
                             } else {
                                 for (let j = countSpaceVar[i-1-countIndexVar]+1; j < d; j++) {
                                     notationVar += notationArrVar[j];
                                 }
-                                ctx.fillText(notationVar,0,-(countSpaceVar.length-countLineVar)*15);
+                                ctx.fillText(notationVar,0,-(countSpaceVar.length-countLineVar-countFalse)*15);
                                 notationVar = '';
                                 for (let j = d+1; j < notationArrVar.length; j++) {
                                     notationVar += notationArrVar[j];
@@ -1065,7 +1070,7 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
             ctx.fill();
             ctx.rotate(Math.PI/2);
             ctx.translate(-plotPosition[0]+5,-plotPosition[1]-plotSize[1]);
-        } else {        // turn on varibale or bot
+        } else {        // turn on variable or bot
             ctx.translate(plotPosition[0]-5,plotPosition[1]+plotSize[1]);
             ctx.rotate(-Math.PI/2);
             ctx.font = "12px Arial";
@@ -1083,17 +1088,17 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
                         if (d) {
                             notationIns = '';
                             if (i === 0) {
-                                if (countSpaceIns.length>1) {
+                                if (countSpaceIns.length-countFalse2>1) {
                                     for (let j = 0; j < d; j++) {
                                         notationIns += notationArrIns[j];
                                     }
-                                    ctx.fillText(notationIns,0,-15*(countSpaceIns.length));
+                                    ctx.fillText(notationIns,0,-15*(countSpaceIns.length-countFalse2));
                                     countLineIns += 1;
                                 } else {
                                     for (let j = 0; j < d; j++) {
                                         notationIns += notationArrIns[j];
                                     }
-                                    ctx.fillText(notationIns,0,-15*(countSpaceIns.length));
+                                    ctx.fillText(notationIns,0,-15*(countSpaceIns.length-countFalse2));
                                     notationIns = '';
                                     for (let j = d+1; j < notationArrIns.length; j++) {
                                         notationIns += notationArrIns[j];
@@ -1105,13 +1110,13 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
                                 for (let j = countSpaceIns[i-1-countIndexIns]+1; j < d; j++) {
                                     notationIns += notationArrIns[j];
                                 }
-                                ctx.fillText(notationIns,0,-(countSpaceIns.length-countLineIns)*15);
+                                ctx.fillText(notationIns,0,-(countSpaceIns.length-countLineIns-countFalse2)*15);
                                 countLineIns += 1;
                             } else {
                                 for (let j = countSpaceIns[i-1-countIndexIns]+1; j < d; j++) {
                                     notationIns += notationArrIns[j];
                                 }
-                                ctx.fillText(notationIns,0,-(countSpaceIns.length-countLineIns)*15);
+                                ctx.fillText(notationIns,0,-(countSpaceIns.length-countLineIns-countFalse2)*15);
                                 notationIns = '';
                                 for (let j = d+1; j < notationArrIns.length; j++) {
                                     notationIns += notationArrIns[j];

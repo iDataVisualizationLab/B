@@ -2,7 +2,7 @@ d3.pcaTimeSpace = function () {
     let leaderDraw = leaderList.map(d=>d);
     let storeDraw = [];
     let graphicopt = {
-            margin: {top: myHeight*0.2, right: (myWidth-400)*0.3, bottom: myHeight*0.1, left: (myWidth-400)*0.1},
+            margin: {top: myHeight*0.2, right: (myWidth-400)*0.3+60, bottom: myHeight*0.1, left: (myWidth-400)*0.1},
             width: myWidth-400,
             height: myHeight,
             scalezoom: 1,
@@ -490,6 +490,7 @@ d3.pcaTimeSpace = function () {
                         });
                         div.node().noUiSlider.on("change", function () { // control panel update method
                             graphicopt.opt[d.content.variable] = + this.get();
+                            clickArr = [];
                             start();
                         });
                     }else if (d.content.type === "checkbox") {
