@@ -251,13 +251,13 @@ d3.pcaTimeSpace = function () {
                 }
             });
             // draw leader plots
-            // storeDraw.forEach(dd=>{
-            //     let checkInteraction;
-            //     if ((interactionOption.sample === 'noOption') && (interactionOption.variable === 'noOption'))
-            //         checkInteraction = false;
-            //     else checkInteraction = true;
-            //     if (!checkInteraction && mouseOverPosition.length === 0) drawLeaderPlot(dd[0],dd[1],[xscale(dd[2][0]),yscale(dd[2][1])],false);
-            // });
+            storeDraw.forEach(dd=>{
+                let checkInteraction;
+                if ((interactionOption.sample === 'noOption') && (interactionOption.variable === 'noOption'))
+                    checkInteraction = false;
+                else checkInteraction = true;
+                if (!checkInteraction && mouseOverPosition.length === 0 && clickArr.length === 0) drawLeaderPlot(dd[0],dd[1],[xscale(dd[2][0]),yscale(dd[2][1])],false);
+            });
             // if (graphicopt.linkConnect) {
             //     d3.values(path).filter(d => d.length > 1 ? d.sort((a, b) => a.t - b.t) : false).forEach(path => {
             //         // make the combination of 0->4 [0,0,1,2] , [0,1,2,3], [1,2,3,4],[2,3,4,4]
