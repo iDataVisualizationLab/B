@@ -277,8 +277,8 @@ d3.pcaTimeSpace = function () {
 
             // draw clicked-highlight time series
             if (!checkInteraction) {        // no interaction
-                if (clickArr.length > 6) {
-                    for (let i = clickArr.length - 1; i > clickArr.length - 7; i--) {
+                if (clickArr.length > maxPerPage) {
+                    for (let i = clickArr.length - 1; i > clickArr.length - maxPerPage - 1; i--) {
                         let myIndex_ = solution.findIndex(d=>d[0] === clickArr[i].clickedData[0] && d[1] === clickArr[i].clickedData[1]);
                         let plot_ = datain[myIndex_].plot;
                         drawTimeSeries(background_ctx,plot_,clickArr.length-1-i,trueMousePosition);
@@ -315,21 +315,21 @@ d3.pcaTimeSpace = function () {
                         checkDataArr.forEach((d,i)=>{
                             if(d) indexArr.push(i);
                         });
-                        let numLayout = Math.ceil(numTimeSeries/6);
-                        let lastPageNum = numTimeSeries%6;
+                        let numLayout = Math.ceil(numTimeSeries/maxPerPage);
+                        let lastPageNum = numTimeSeries%maxPerPage;
                         // change page
                         if (clickArr.length>0) {
                             changePage(numLayout);
                             clickArr=[];
                         }
                         if (currentPage < numLayout) {
-                            for (let j = 0; j < 6; j++) {
-                                let plot_ = interactionOption.sample + '-' + indexArr[j+6*(currentPage-1)].toString();
+                            for (let j = 0; j < maxPerPage; j++) {
+                                let plot_ = interactionOption.sample + '-' + indexArr[j+maxPerPage*(currentPage-1)].toString();
                                 drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
                             }
                         } else {
                             for (let j = 0; j < lastPageNum; j++) {
-                                let plot_ = interactionOption.sample + '-' + indexArr[j+6*(numLayout-1)].toString();
+                                let plot_ = interactionOption.sample + '-' + indexArr[j+maxPerPage*(numLayout-1)].toString();
                                 drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
                             }
                         }
@@ -345,21 +345,21 @@ d3.pcaTimeSpace = function () {
                         checkDataArr2.forEach((d,i)=>{
                             if(d) indexArr2.push(i);
                         });
-                        let numLayout2 = Math.ceil(numTimeSeries2/6);
-                        let lastPageNum2 = numTimeSeries2%6;
+                        let numLayout2 = Math.ceil(numTimeSeries2/maxPerPage);
+                        let lastPageNum2 = numTimeSeries2%maxPerPage;
                         // change page
                         if (clickArr.length>0) {
                             changePage(numLayout2);
                             clickArr=[];
                         }
                         if (currentPage < numLayout2) {
-                            for (let j = 0; j < 6; j++) {
-                                let plot_ = indexArr2[j+6*(currentPage-1)].toString() + '-' + interactionOption.variable;
+                            for (let j = 0; j < maxPerPage; j++) {
+                                let plot_ = indexArr2[j+maxPerPage*(currentPage-1)].toString() + '-' + interactionOption.variable;
                                 drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
                             }
                         } else {
                             for (let j = 0; j < lastPageNum2; j++) {
-                                let plot_ = indexArr2[j+6*(numLayout2-1)].toString() + '-' + interactionOption.variable;
+                                let plot_ = indexArr2[j+maxPerPage*(numLayout2-1)].toString() + '-' + interactionOption.variable;
                                 drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
                             }
                         }

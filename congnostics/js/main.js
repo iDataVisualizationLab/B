@@ -67,9 +67,9 @@ let interactionOption = {
     'sample': 'noOption',
     'variable': 'noOption'
 };
-var TsneTSopt = {width:myWidth-400,height:myHeight};
-var PCAopt = {width:myWidth-400,height:myHeight};
-var umapopt = {width:myWidth-400,height:myHeight};
+var TsneTSopt = {width:myWidth-300,height:myHeight};
+var PCAopt = {width:myWidth-300,height:myHeight};
+var umapopt = {width:myWidth-300,height:myHeight};
 // worker
 let clustercalWorker;
 let getDataWorker;
@@ -1516,7 +1516,7 @@ function prepareRadarTable() {
 // Calculate Cluster
 function recalculateCluster (option,calback) {
     // hide the main screen
-    d3.select('.cover').classed('hidden', false);
+    d3.select('.cover').classed('hidden', true);
 
     Radarplot_opt.clusterMethod = option.clusterMethod;
     preloader(true,10,'Process grouping...','#clusterLoading');

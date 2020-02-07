@@ -288,8 +288,8 @@ d3.umapTimeSpace = function () {
 
             // draw clicked-highlight time series
             if (!checkInteraction) {        // no interaction
-                if (clickArr.length > 6) {
-                    for (let i = clickArr.length - 1; i > clickArr.length - 7; i--) {
+                if (clickArr.length > maxPerPage) {
+                    for (let i = clickArr.length - 1; i > clickArr.length - maxPerPage - 1; i--) {
                         let myIndex_ = solution.findIndex(d=>d[0] === clickArr[i].clickedData[0] && d[1] === clickArr[i].clickedData[1]);
                         let plot_ = datain[myIndex_].plot;
                         drawTimeSeries(background_ctx,plot_,clickArr.length-1-i,trueMousePosition);
@@ -326,21 +326,21 @@ d3.umapTimeSpace = function () {
                         checkDataArr.forEach((d,i)=>{
                             if(d) indexArr.push(i);
                         });
-                        let numLayout = Math.ceil(numTimeSeries/6);
-                        let lastPageNum = numTimeSeries%6;
+                        let numLayout = Math.ceil(numTimeSeries/maxPerPage);
+                        let lastPageNum = numTimeSeries%maxPerPage;
                         // change page
                         if (clickArr.length>0) {
                             changePage(numLayout);
                             clickArr=[];
                         }
                         if (currentPage < numLayout) {
-                            for (let j = 5; j > -1; j--) {
-                                let plot_ = interactionOption.sample + '-' + indexArr[j+6*(currentPage-1)].toString();
+                            for (let j = maxPerPage-1; j > -1; j--) {
+                                let plot_ = interactionOption.sample + '-' + indexArr[j+maxPerPage*(currentPage-1)].toString();
                                 drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
                             }
                         } else {
                             for (let j = lastPageNum - 1; j > -1; j--) {
-                                let plot_ = interactionOption.sample + '-' + indexArr[j+6*(numLayout-1)].toString();
+                                let plot_ = interactionOption.sample + '-' + indexArr[j+maxPerPage*(numLayout-1)].toString();
                                 drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
                             }
                         }
@@ -356,8 +356,8 @@ d3.umapTimeSpace = function () {
                         checkDataArr2.forEach((d,i)=>{
                             if(d) indexArr2.push(i);
                         });
-                        let numLayout2 = Math.ceil(numTimeSeries2/6);
-                        let lastPageNum2 = numTimeSeries2%6;
+                        let numLayout2 = Math.ceil(numTimeSeries2/maxPerPage);
+                        let lastPageNum2 = numTimeSeries2%maxPerPage;
                         // change page
                         if (clickArr.length>0) {
                             changePage(numLayout2);
@@ -365,12 +365,12 @@ d3.umapTimeSpace = function () {
                         }
                         if (currentPage < numLayout2) {
                             for (let j = 5; j > -1; j--) {
-                                let plot_ = indexArr2[j+6*(currentPage-1)].toString() + '-' + interactionOption.variable;
+                                let plot_ = indexArr2[j+maxPerPage*(currentPage-1)].toString() + '-' + interactionOption.variable;
                                 drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
                             }
                         } else {
                             for (let j = lastPageNum2 - 1; j > -1; j--) {
-                                let plot_ = indexArr2[j+6*(numLayout2-1)].toString() + '-' + interactionOption.variable;
+                                let plot_ = indexArr2[j+maxPerPage*(numLayout2-1)].toString() + '-' + interactionOption.variable;
                                 drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
                             }
                         }
@@ -825,8 +825,8 @@ function onClickFunction() {
 
     // in interaction mode
     if ((interactionOption.sample !== 'noOption') || (interactionOption.variable !== 'noOption')) {
-        let leftButtonPosition = [(myWidth-400)*0.7,50];
-        let rightButtonPosition = [(myWidth-400)*0.7+40,50];
+        let leftButtonPosition = [(myWidth-300)*0.7,50];
+        let rightButtonPosition = [(myWidth-300)*0.7+80,50];
         let buttonSize = [20,20];
 
         let quitButtonSize = [140,20];
@@ -865,8 +865,8 @@ function onClickFunction() {
                 break;
         }
     } else {    // no interaction mode
-        // keep only 6 plots on the screen
-        if (clickArr.length === 6) clickArr.splice(0,1);
+        // keep only #maxPerPage plots on the screen
+        if (clickArr.length === maxPerPage) clickArr.splice(0,1);
 
         // click turn off button of time series
         let buttonPosition = [];
@@ -951,15 +951,20 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
 
     let sampleIndex = +plot_.split('-')[0];
     let varIndex = +plot_.split('-')[1];
-    let plotPosition = myHeight > 1000 ? [(myWidth-400)*0.7,100+position_*100] : [(myWidth-400)*0.7,100+position_*80];
-    let plotSize = myHeight > 1000 ? [(myWidth-400)*0.25,100] : [(myWidth-400)*0.25,80];
+    let plotSize = [(myWidth-400)*0.25,(myHeight-200)/10];
+    let plotPosition = [(myWidth-300)*0.7,100+position_*plotSize[1]];
     let ctx = ctx_;
+    let plotIndex = dataRadar2.findIndex(d=>{
+        if (d.plot === plot_) return true;
+        else return false;
+    });
 
     // check interaction
     let checkInteraction, checkBothInteraction;
     checkInteraction = !((interactionOption.sample === 'noOption') && (interactionOption.variable === 'noOption'));
     checkBothInteraction = (interactionOption.sample !== 'noOption') && (interactionOption.variable !== 'noOption');
 
+    // draw rectangles of time series
     ctx.beginPath();
     ctx.fillStyle = "rgb(255,255,255)";
     ctx.strokeStyle = "rgb(0,0,0)";
@@ -1203,7 +1208,7 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
         ctx.fillText(mapsample2.get(sampleIndex),plotPosition[0]+2,plotPosition[1]+15);
     }
 
-
+    // draw time series
     ctx.lineWidth = 1;
     timedata.forEach(function (time, step) {
         if (step) {
@@ -1222,6 +1227,45 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
                 ctx.stroke();
             }
         }
+    });
+
+    // draw radar chart
+    let dataRadarChart = dataRadar2[plotIndex];
+    let angle = Math.PI*2/dataRadarChart.length;
+    let rRadarChart = plotSize[1]/2.1;
+    let rPlotPosition = [plotPosition[0]+plotSize[0]+rRadarChart+5,plotPosition[1]+plotSize[1]/2];
+    for (let k = 5; k > 0; k--) {
+        ctx.beginPath();
+        ctx.arc(rPlotPosition[0],rPlotPosition[1],0.2*rRadarChart*k,0,2*Math.PI);
+        // ctx.arc(xscale(plotPosition[0]),yscale(plotPosition[1]),0.2*rRadarChart*k,0,2*Math.PI);
+        ctx.strokeStyle = "rgb(180,180,180)";
+        ctx.stroke();
+        ctx.fillStyle = "rgb(255,255,255)";
+        ctx.fill();
+    }
+    dataRadarChart.forEach((d,i)=>{
+        ctx.beginPath();
+        let colorRadar;
+        switch (type[i]) {
+            case 0:
+                colorRadar = [18, 169, 101];
+                break;
+            case 1:
+                colorRadar = [232, 101, 11];
+                break;
+            case 2:
+                colorRadar = [89, 135, 222];
+                break;
+        }
+        ctx.arc(rPlotPosition[0],rPlotPosition[1],d*rRadarChart,(i-0.25)*angle-Math.PI/2,(i+0.25)*angle-Math.PI/2);
+        ctx.fillStyle = `rgb(${colorRadar[0]},${colorRadar[1]},${colorRadar[2]})`;
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(rPlotPosition[0],rPlotPosition[1]);
+        ctx.lineTo(rPlotPosition[0]+d*rRadarChart*Math.cos((i-0.25)*angle-Math.PI/2),rPlotPosition[1]+d*rRadarChart*Math.sin((i-0.25)*angle-Math.PI/2));
+        ctx.lineTo(rPlotPosition[0]+d*rRadarChart*Math.cos((i+0.25)*angle-Math.PI/2),rPlotPosition[1]+d*rRadarChart*Math.sin((i+0.25)*angle-Math.PI/2));
+        ctx.fill();
+        ctx.closePath();
     });
 
     // mouse over
@@ -1243,6 +1287,7 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
         ctx.lineTo(x+5,plotPosition[1]+plotSize[1]+5);
         ctx.lineTo(x,plotPosition[1]+plotSize[1]);
         ctx.fill();
+        ctx.closePath();
         ctx.fillRect(x-25,plotPosition[1]+plotSize[1]+5,50,12);
         ctx.fillStyle = 'rgb(255,255,255)';
         ctx.font = '10px Arial';
@@ -1257,6 +1302,7 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
             ctx.lineTo(x+5,y+5);
             ctx.lineTo(x,y);
             ctx.fill();
+            ctx.closePath();
             ctx.fillRect(x+5,y-6,26,12);
             ctx.fillStyle = 'rgb(255,255,255)';
             ctx.font = '10px Arial';
@@ -1266,8 +1312,8 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
 
     // clickable button
     if (interactionOption.sample !== 'noOption' || interactionOption.variable !== 'noOption') {
-        let leftButtonPosition = [(myWidth-400)*0.7,50];
-        let rightButtonPosition = [(myWidth-400)*0.7+40,50];
+        let leftButtonPosition = [(myWidth-300)*0.7,50];
+        let rightButtonPosition = [(myWidth-300)*0.7+80,50];
         let buttonSize = [20,20];
 
         let quitButtonSize = [140,20];
@@ -1302,11 +1348,13 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
         ctx.lineTo(rightButtonPosition[0]+buttonSize[0]/2+5,rightButtonPosition[1]+buttonSize[1]/2);
         ctx.fill();
         ctx.font = '12px Arial';
-        ctx.fillText('Quit interaction section',quitButtonPosition[0]+5,quitButtonPosition[1]+quitButtonSize[1]-5);
+        ctx.textAlign = "center";
+        ctx.fillText('Quit interaction section',quitButtonPosition[0]+70,quitButtonPosition[1]+quitButtonSize[1]-5);
         ctx.fill();
         ctx.fillStyle = 'rgb(0,0,0)';
-        ctx.font = '20px Arial';
-        ctx.fillText(currentPage.toString(),leftButtonPosition[0]+buttonSize[0]+5,leftButtonPosition[1]+buttonSize[1]-1);
+        ctx.font = '16px Arial';
+        ctx.fillText(currentPage.toString(),leftButtonPosition[0]+buttonSize[0]+30,leftButtonPosition[1]+buttonSize[1]-1);
+        ctx.textAlign = "left";
         ctx.fill();
     } else {    // no interaction mode
         let buttonPosition = [plotPosition[0]+plotSize[0]+3,plotPosition[1]];
@@ -1314,6 +1362,7 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
         let checkButton = (trueMousePosition[0]>=buttonPosition[0]) && (trueMousePosition[0]<=buttonPosition[0]+buttonSize[0]) && (trueMousePosition[1]>=buttonPosition[1]) && (trueMousePosition[1]<=buttonPosition[1]+buttonSize[1]);
 
         // draw turn off button
+        ctx.beginPath();
         ctx.fillStyle = (checkButton) ? 'rgb(255,0,0)' : 'rgb(0,0,0)';
         ctx.fillRect(plotPosition[0]+plotSize[0]+3,plotPosition[1],buttonSize[0],buttonSize[1]);
         ctx.fill();
@@ -1326,14 +1375,13 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
         ctx.lineTo(plotPosition[0]+plotSize[0]+4,plotPosition[1]+buttonSize[1]-1);
         ctx.stroke();
         ctx.lineWidth = 1;
-
     }
 }
 
 // function Change layout when number of time series exceeds 6
 function changePage(num_) {
-    let leftButtonPosition = [(myWidth-400)*0.7,50];
-    let rightButtonPosition = [(myWidth-400)*0.7+40,50];
+    let leftButtonPosition = [(myWidth-300)*0.7,50];
+    let rightButtonPosition = [(myWidth-300)*0.7+80,50];
     let buttonSize = [20,20];
 
     let checkLeft = (trueMousePosition[0]>=leftButtonPosition[0]) && (trueMousePosition[0]<=leftButtonPosition[0]+buttonSize[0]) && (trueMousePosition[1]>=leftButtonPosition[1]) && (trueMousePosition[1]<=leftButtonPosition[1]+buttonSize[1]);
@@ -1343,6 +1391,6 @@ function changePage(num_) {
         if (currentPage > 1) currentPage -= 1;
     }
     if (checkRight) {
-            if (currentPage<num_) currentPage += 1;
+        if (currentPage<num_) currentPage += 1;
     }
 }

@@ -1,6 +1,7 @@
 let myWidth = window.innerWidth;
 let myHeight = window.innerHeight;
 let currentPage = 1;
+let maxPerPage = 10;
 let displayType = 'series';
 let transformDR = d3.zoomIdentity;
 let multipleMouseOver = 1.5;
