@@ -364,7 +364,7 @@ d3.umapTimeSpace = function () {
                             clickArr=[];
                         }
                         if (currentPage < numLayout2) {
-                            for (let j = 5; j > -1; j--) {
+                            for (let j = maxPerPage - 1; j > -1; j--) {
                                 let plot_ = indexArr2[j+maxPerPage*(currentPage-1)].toString() + '-' + interactionOption.variable;
                                 drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
                             }

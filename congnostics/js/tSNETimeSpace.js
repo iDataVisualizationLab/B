@@ -349,12 +349,12 @@ d3.tsneTimeSpace = function () {
                             clickArr=[];
                         }
                         if (currentPage < numLayout) {
-                            for (let j = 0; j < maxPerPage; j++) {
+                            for (let j = maxPerPage - 1; j > -1; j--) {
                                 let plot_ = interactionOption.sample + '-' + indexArr[j+maxPerPage*(currentPage-1)].toString();
                                 drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
                             }
                         } else {
-                            for (let j = 0; j < lastPageNum; j++) {
+                            for (let j = lastPageNum - 1; j > -1; j--) {
                                 let plot_ = interactionOption.sample + '-' + indexArr[j+maxPerPage*(numLayout-1)].toString();
                                 drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
                             }
@@ -379,12 +379,12 @@ d3.tsneTimeSpace = function () {
                             clickArr=[];
                         }
                         if (currentPage < numLayout2) {
-                            for (let j = 0; j < maxPerPage; j++) {
+                            for (let j = maxPerPage - 1; j > -1; j--) {
                                 let plot_ = indexArr2[j+maxPerPage*(currentPage-1)].toString() + '-' + interactionOption.variable;
                                 drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
                             }
                         } else {
-                            for (let j = 0; j < lastPageNum2; j++) {
+                            for (let j = lastPageNum2 - 1; j > -1; j--) {
                                 let plot_ = indexArr2[j+maxPerPage*(numLayout2-1)].toString() + '-' + interactionOption.variable;
                                 drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
                             }
