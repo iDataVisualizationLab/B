@@ -871,10 +871,10 @@ function onClickFunction() {
         // click turn off button of time series
         let buttonPosition = [];
         let buttonSize = [12,12];
+        let plotSize = [(myWidth-400)*0.25,(myHeight-200)/10];
         let checkClickPoint = true;
         clickArr.forEach((d,i)=>{
-            let plotPosition = myHeight > 1000 ? [(myWidth-400)*0.7,100+(clickArr.length-1-i)*100] : [(myWidth-400)*0.7,100+(clickArr.length-1-i)*80];
-            let plotSize = myHeight > 1000 ? [(myWidth-400)*0.25,100] : [(myWidth-400)*0.25,80];
+            let plotPosition = [(myWidth-300)*0.7,100+(clickArr.length-1-i)*plotSize[1]];
             buttonPosition[i] = [plotPosition[0]+plotSize[0]+3,plotPosition[1]];
         });
         buttonPosition.forEach((d,i)=>{
@@ -1229,44 +1229,53 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
         }
     });
 
-    // draw radar chart
+    // draw rose chart
     let dataRadarChart = dataRadar2[plotIndex];
     let angle = Math.PI*2/dataRadarChart.length;
     let rRadarChart = plotSize[1]/2.1;
     let rPlotPosition = [plotPosition[0]+plotSize[0]+rRadarChart+5,plotPosition[1]+plotSize[1]/2];
-    for (let k = 5; k > 0; k--) {
-        ctx.beginPath();
-        ctx.arc(rPlotPosition[0],rPlotPosition[1],0.2*rRadarChart*k,0,2*Math.PI);
-        // ctx.arc(xscale(plotPosition[0]),yscale(plotPosition[1]),0.2*rRadarChart*k,0,2*Math.PI);
-        ctx.strokeStyle = "rgb(180,180,180)";
-        ctx.stroke();
-        ctx.fillStyle = "rgb(255,255,255)";
-        ctx.fill();
-    }
+    // for (let k = 5; k > 0; k--) {
+    //     ctx.beginPath();
+    //     ctx.arc(rPlotPosition[0],rPlotPosition[1],0.2*rRadarChart*k,0,2*Math.PI);
+    //     // ctx.arc(xscale(plotPosition[0]),yscale(plotPosition[1]),0.2*rRadarChart*k,0,2*Math.PI);
+    //     ctx.strokeStyle = "rgb(180,180,180)";
+    //     ctx.stroke();
+    //     ctx.fillStyle = "rgb(255,255,255)";
+    //     ctx.fill();
+    // }
+    // dataRadarChart.forEach((d,i)=>{
+    //     ctx.beginPath();
+    //     let colorRadar;
+    //     switch (type[i]) {
+    //         case 0:
+    //             colorRadar = [18, 169, 101];
+    //             break;
+    //         case 1:
+    //             colorRadar = [232, 101, 11];
+    //             break;
+    //         case 2:
+    //             colorRadar = [89, 135, 222];
+    //             break;
+    //     }
+    //     ctx.arc(rPlotPosition[0],rPlotPosition[1],d*rRadarChart,(i-0.25)*angle-Math.PI/2,(i+0.25)*angle-Math.PI/2);
+    //     ctx.fillStyle = `rgb(${colorRadar[0]},${colorRadar[1]},${colorRadar[2]})`;
+    //     ctx.fill();
+    //     ctx.beginPath();
+    //     ctx.moveTo(rPlotPosition[0],rPlotPosition[1]);
+    //     ctx.lineTo(rPlotPosition[0]+d*rRadarChart*Math.cos((i-0.25)*angle-Math.PI/2),rPlotPosition[1]+d*rRadarChart*Math.sin((i-0.25)*angle-Math.PI/2));
+    //     ctx.lineTo(rPlotPosition[0]+d*rRadarChart*Math.cos((i+0.25)*angle-Math.PI/2),rPlotPosition[1]+d*rRadarChart*Math.sin((i+0.25)*angle-Math.PI/2));
+    //     ctx.fill();
+    //     ctx.closePath();
+    // });
+    // draw start chart
+    ctx.beginPath();
+    ctx.moveTo(rPlotPosition[0]+dataRadarChart[0]*rRadarChart*Math.cos(i*angle-Math.PI/2),rPlotPosition[1]+dataRadarChart[0]*rRadarChart*Math.sin(i*angle-Math.PI/2));
     dataRadarChart.forEach((d,i)=>{
-        ctx.beginPath();
-        let colorRadar;
-        switch (type[i]) {
-            case 0:
-                colorRadar = [18, 169, 101];
-                break;
-            case 1:
-                colorRadar = [232, 101, 11];
-                break;
-            case 2:
-                colorRadar = [89, 135, 222];
-                break;
-        }
-        ctx.arc(rPlotPosition[0],rPlotPosition[1],d*rRadarChart,(i-0.25)*angle-Math.PI/2,(i+0.25)*angle-Math.PI/2);
-        ctx.fillStyle = `rgb(${colorRadar[0]},${colorRadar[1]},${colorRadar[2]})`;
-        ctx.fill();
-        ctx.beginPath();
-        ctx.moveTo(rPlotPosition[0],rPlotPosition[1]);
-        ctx.lineTo(rPlotPosition[0]+d*rRadarChart*Math.cos((i-0.25)*angle-Math.PI/2),rPlotPosition[1]+d*rRadarChart*Math.sin((i-0.25)*angle-Math.PI/2));
-        ctx.lineTo(rPlotPosition[0]+d*rRadarChart*Math.cos((i+0.25)*angle-Math.PI/2),rPlotPosition[1]+d*rRadarChart*Math.sin((i+0.25)*angle-Math.PI/2));
-        ctx.fill();
-        ctx.closePath();
+        if (i!==0) ctx.lineTo(rPlotPosition[0]+d*rRadarChart*Math.cos(i*angle-Math.PI/2),rPlotPosition[1]+d*rRadarChart*Math.sin(i*angle-Math.PI/2));
     });
+    ctx.fillStyle = 'rgb(89, 135, 222)';
+    ctx.fill();
+    ctx.closePath();
 
     // mouse over
     let xMouse = mousePosition_[0];
