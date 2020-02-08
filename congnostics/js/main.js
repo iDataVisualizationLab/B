@@ -301,7 +301,7 @@ $( document ).ready(function() {
                     measurename = [
                         'Trend',
                         'Periodicity',
-                        'Auto-correlation',
+                        'Randomness',
                         'Mean',
                         'Standard deviation',
                         'Outlying',
@@ -312,7 +312,7 @@ $( document ).ready(function() {
                     measureObj = {
                         'Trend':0,
                         'Periodicity':1,
-                        'Auto-correlation':2,
+                        'Randomness':2,
                         'Mean':3,
                         'Standard deviation':4,
                         'Skewness':5,
@@ -800,7 +800,7 @@ function analyzedata() {
                                 covX += (x-meanX)*(xData[xi+1]-meanX);
                             }
                         });
-                        measures[2][p][myIndex][2] = Math.pow(covX/deviationX,2);
+                        measures[2][p][myIndex][2] = 1-Math.pow(covX/deviationX,2);
 
                         // MEAN & STANDARD DEVIATION & SKEWNESS
                         measures[3][p][myIndex][2] = meanX;

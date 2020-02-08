@@ -46,7 +46,7 @@ let measurename = selectedDisplay === "1D" ?
     [
     'Trend',
     'Periodicity',
-    'Auto-correlation',
+    'Randomness',
     'Mean',
     'Standard deviation',
     'Outlying',
@@ -71,7 +71,7 @@ let measureObj = selectedDisplay === "1D" ?
     {
     'Trend':0,
     'Periodicity':1,
-    'Auto-correlation':2,
+    'Randomness':2,
     'Mean':3,
     'Standard deviation':4,
     'Outlying':5,
