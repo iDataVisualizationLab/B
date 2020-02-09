@@ -1549,7 +1549,7 @@ function prepareRadarTable() {
 // Calculate Cluster
 function recalculateCluster (option,calback) {
     // hide the main screen
-    d3.select('.cover').classed('hidden', true);
+    // d3.select('.cover').classed('hidden', true);
 
     Radarplot_opt.clusterMethod = option.clusterMethod;
     preloader(true,10,'Process grouping...','#clusterLoading');
