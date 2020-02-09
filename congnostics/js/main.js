@@ -467,34 +467,64 @@ function analyzedata() {
             filename2 = "data/Industrycode.txt";
             break;
         case 1:
-            filename0 = "data/HPCC_21Mar2019_7am_4pm.csv";
-            filename1 = "data/HPCC_host.tsv";
-            filename2 = "data/HPCC_service.tsv";
-            break;
-        case 2:
             filename0 = "data/RUL_data.txt";
             filename1 = "data/engine_code.txt";
             filename2 = "data/sensor_code.txt";
             break;
-        case 3:
+        case 2:
             filename0 = "data/stock_data.txt";
             filename1 = "data/year_code.txt";
             filename2 = "data/var_code.txt";
             break;
-        case 4:
+        case 3:
             filename0 = "data/ECG_dog.txt";
             filename1 = "data/ECG_sample_code.txt";
             filename2 = "data/ECG_varCode.txt";
             break;
-        case 5:
+        case 4:
             filename0 = "data/eeg_data.txt";
             filename1 = "data/eeg_code.txt";
             filename2 = "data/eeg_v_code.txt";
             break;
-        case 6:
+        case 5:
             filename0 = "data/Bao_dataset.txt";
             filename1 = "data/Bao_data_sample.txt";
             filename2 = "data/Bao_data_var.txt";
+        case 6:
+            filename0 = "data/HPCC_02Jun2019.csv";
+            filename1 = "data/HPCC_host.tsv";
+            filename2 = "data/HPCC_service_2.tsv";
+            break;
+        case 7:
+            filename0 = "data/HPCC_03Jun2019.csv";
+            filename1 = "data/HPCC_host.tsv";
+            filename2 = "data/HPCC_service_2.tsv";
+            break;
+        case 8:
+            filename0 = "data/HPCC_04Jun2019.csv";
+            filename1 = "data/HPCC_host.tsv";
+            filename2 = "data/HPCC_service_2.tsv";
+            break;
+        case 9:
+            filename0 = "data/HPCC_05Jun2019.csv";
+            filename1 = "data/HPCC_host.tsv";
+            filename2 = "data/HPCC_service_2.tsv";
+            break;
+        case 10:
+            filename0 = "data/HPCC_06Jun2019.csv";
+            filename1 = "data/HPCC_host.tsv";
+            filename2 = "data/HPCC_service_2.tsv";
+            break;
+        case 11:
+            filename0 = "data/HPCC_07Jun2019.csv";
+            filename1 = "data/HPCC_host.tsv";
+            filename2 = "data/HPCC_service_2.tsv";
+            break;
+        case 12:
+            filename0 = "data/HPCC_08Jun2019.csv";
+            filename1 = "data/HPCC_host.tsv";
+            filename2 = "data/HPCC_service_2.tsv";
+            break;
     }
 
     Promise.all([
