@@ -189,13 +189,6 @@ $( document ).ready(function() {
             if(visualizingOption === 'tSNE'||visualizingOption === 'PCA'||visualizingOption === 'UMAP') {
                 d3.select('#mainCanvasHolder').classed('hide', true);
                 d3.select('#tSNE').classed('hide', false);
-                // onchangeVizType(visualizingOption);
-                // onchangeVizdata(visualizingOption);
-                recalculateCluster( {clusterMethod: $('#clusterMethod').val() || 'kmean',bin:{k:$('#knum').val() || 6,iterations:$('#kiteration').val() || 50}},function(){
-                    clickArr = [];
-                    plotPosition = [];
-                    reCalculateTsne();
-                });
                 d3.select('#dataInstances').attr('disabled',null);
                 d3.select('#variable').attr('disabled',null);
             }
@@ -465,7 +458,7 @@ function switchTheme(){
 ///////////////////////////////
 //////////////////////////////
 function analyzedata() {
-    d3.select('.cover').classed('hidden', true);
+    // d3.select('.cover').classed('hidden', false);
     let filename0;
     let filename1;
     let filename2;
@@ -1435,7 +1428,7 @@ function analyzedata() {
 ///////////////////////
     });
     needcalculation = false;
-    d3.select('.cover').classed('hidden', false);
+    // d3.select('.cover').classed('hidden', true);
 }
 
 // SORT MEASURES AND WRITE DISPLAYPLOT
@@ -1556,7 +1549,7 @@ function prepareRadarTable() {
 // Calculate Cluster
 function recalculateCluster (option,calback) {
     // hide the main screen
-    d3.select('.cover').classed('hidden', false);
+    d3.select('.cover').classed('hidden', true);
 
     Radarplot_opt.clusterMethod = option.clusterMethod;
     preloader(true,10,'Process grouping...','#clusterLoading');
@@ -1592,6 +1585,7 @@ function recalculateCluster (option,calback) {
             onloaddetermire({process:data.result.process,message:`# iterations: ${data.result.iteration}`},'#clusterLoading');
         }
     }, false);
+    // d3.select('.cover').classed('hidden', true);
 }
 
 function reCalculateTsne() {
