@@ -1,6 +1,7 @@
 let myWidth = window.innerWidth;
 let myHeight = window.innerHeight;
 let currentPage = 1;
+let maxPerPage = 10;
 let displayType = 'series';
 let transformDR = d3.zoomIdentity;
 let multipleMouseOver = 1.5;
@@ -45,7 +46,7 @@ let measurename = selectedDisplay === "1D" ?
     [
     'Trend',
     'Periodicity',
-    'Auto-correlation',
+    'Randomness',
     'Mean',
     'Standard deviation',
     'Outlying',
@@ -70,7 +71,7 @@ let measureObj = selectedDisplay === "1D" ?
     {
     'Trend':0,
     'Periodicity':1,
-    'Auto-correlation':2,
+    'Randomness':2,
     'Mean':3,
     'Standard deviation':4,
     'Outlying':5,
