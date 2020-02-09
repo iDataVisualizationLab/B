@@ -189,8 +189,13 @@ $( document ).ready(function() {
             if(visualizingOption === 'tSNE'||visualizingOption === 'PCA'||visualizingOption === 'UMAP') {
                 d3.select('#mainCanvasHolder').classed('hide', true);
                 d3.select('#tSNE').classed('hide', false);
-                onchangeVizType(visualizingOption);
-                onchangeVizdata(visualizingOption);
+                // onchangeVizType(visualizingOption);
+                // onchangeVizdata(visualizingOption);
+                recalculateCluster( {clusterMethod: $('#clusterMethod').val() || 'kmean',bin:{k:$('#knum').val() || 6,iterations:$('#kiteration').val() || 50}},function(){
+                    clickArr = [];
+                    plotPosition = [];
+                    reCalculateTsne();
+                });
                 d3.select('#dataInstances').attr('disabled',null);
                 d3.select('#variable').attr('disabled',null);
             }
@@ -210,6 +215,7 @@ $( document ).ready(function() {
                 d3.select('#tSNE').classed('hide',true);
                 d3.select('#dataInstances').attr('disabled','');
                 d3.select('#variable').attr('disabled','');
+                d3.select('#metrics').classed('hide',false);
             }
             if(visualizingOption === 'PCA') {
                 d3.select('#mainCanvasHolder').classed('hide',true);
@@ -218,6 +224,7 @@ $( document ).ready(function() {
                 onchangeVizdata(visualizingOption);
                 d3.select('#dataInstances').attr('disabled',null);
                 d3.select('#variable').attr('disabled',null);
+                d3.select('#metrics').classed('hide',true);
                 clickArr = [];
             }
             if(visualizingOption === 'UMAP') {
@@ -227,6 +234,7 @@ $( document ).ready(function() {
                 onchangeVizdata(visualizingOption);
                 d3.select('#dataInstances').attr('disabled',null);
                 d3.select('#variable').attr('disabled',null);
+                d3.select('#metrics').classed('hide',true);
                 clickArr = [];
             }
             if(visualizingOption === 'tSNE') {
@@ -236,6 +244,7 @@ $( document ).ready(function() {
                 onchangeVizdata(visualizingOption);
                 d3.select('#dataInstances').attr('disabled',null);
                 d3.select('#variable').attr('disabled',null);
+                d3.select('#metrics').classed('hide',true);
                 clickArr = [];
             }
         });
@@ -456,7 +465,7 @@ function switchTheme(){
 ///////////////////////////////
 //////////////////////////////
 function analyzedata() {
-
+    d3.select('.cover').classed('hidden', true);
     let filename0;
     let filename1;
     let filename2;
@@ -1426,6 +1435,7 @@ function analyzedata() {
 ///////////////////////
     });
     needcalculation = false;
+    d3.select('.cover').classed('hidden', false);
 }
 
 // SORT MEASURES AND WRITE DISPLAYPLOT
@@ -1546,7 +1556,7 @@ function prepareRadarTable() {
 // Calculate Cluster
 function recalculateCluster (option,calback) {
     // hide the main screen
-    d3.select('.cover').classed('hidden', true);
+    d3.select('.cover').classed('hidden', false);
 
     Radarplot_opt.clusterMethod = option.clusterMethod;
     preloader(true,10,'Process grouping...','#clusterLoading');
@@ -1594,7 +1604,6 @@ function reCalculateTsne() {
     cluster_map(cluster_info);
     onchangeVizType(visualizingOption);
     onchangeVizdata(visualizingOption);
-    d3.select('.cover').classed('hidden', true);
 }
 
 function cluster_map (dataRaw) {
