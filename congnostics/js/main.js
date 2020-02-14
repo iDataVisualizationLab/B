@@ -213,10 +213,12 @@ $( document ).ready(function() {
                 d3.select('#tSNE').classed('hide',true);
                 d3.select('#dataInstances').attr('disabled','');
                 d3.select('#variable').attr('disabled','');
+                d3.select('#metrics').classed('hidden',false);
             }
             if(visualizingOption === 'PCA') {
                 d3.select('#mainCanvasHolder').classed('hide',true);
                 d3.select('#tSNE').classed('hide',false);
+                d3.select('#metrics').classed('hidden',true);
                 onchangeVizType(visualizingOption);
                 onchangeVizdata(visualizingOption);
                 d3.select('#dataInstances').attr('disabled',null);
@@ -226,6 +228,7 @@ $( document ).ready(function() {
             if(visualizingOption === 'UMAP') {
                 d3.select('#mainCanvasHolder').classed('hide',true);
                 d3.select('#tSNE').classed('hide',false);
+                d3.select('#metrics').classed('hidden',true);
                 onchangeVizType(visualizingOption);
                 onchangeVizdata(visualizingOption);
                 d3.select('#dataInstances').attr('disabled',null);
@@ -235,6 +238,7 @@ $( document ).ready(function() {
             if(visualizingOption === 'tSNE') {
                 d3.select('#mainCanvasHolder').classed('hide',true);
                 d3.select('#tSNE').classed('hide',false);
+                d3.select('#metrics').classed('hidden',true);
                 onchangeVizType(visualizingOption);
                 onchangeVizdata(visualizingOption);
                 d3.select('#dataInstances').attr('disabled',null);
