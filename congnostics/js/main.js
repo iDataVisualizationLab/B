@@ -189,6 +189,8 @@ $( document ).ready(function() {
             if(visualizingOption === 'tSNE'||visualizingOption === 'PCA'||visualizingOption === 'UMAP') {
                 d3.select('#mainCanvasHolder').classed('hide', true);
                 d3.select('#tSNE').classed('hide', false);
+                onchangeVizType(visualizingOption);
+                onchangeVizdata(visualizingOption);
                 d3.select('#dataInstances').attr('disabled',null);
                 d3.select('#variable').attr('disabled',null);
             }
@@ -208,7 +210,6 @@ $( document ).ready(function() {
                 d3.select('#tSNE').classed('hide',true);
                 d3.select('#dataInstances').attr('disabled','');
                 d3.select('#variable').attr('disabled','');
-                d3.select('#metrics').classed('hide',false);
             }
             if(visualizingOption === 'PCA') {
                 d3.select('#mainCanvasHolder').classed('hide',true);
@@ -217,7 +218,6 @@ $( document ).ready(function() {
                 onchangeVizdata(visualizingOption);
                 d3.select('#dataInstances').attr('disabled',null);
                 d3.select('#variable').attr('disabled',null);
-                d3.select('#metrics').classed('hide',true);
                 clickArr = [];
             }
             if(visualizingOption === 'UMAP') {
@@ -227,7 +227,6 @@ $( document ).ready(function() {
                 onchangeVizdata(visualizingOption);
                 d3.select('#dataInstances').attr('disabled',null);
                 d3.select('#variable').attr('disabled',null);
-                d3.select('#metrics').classed('hide',true);
                 clickArr = [];
             }
             if(visualizingOption === 'tSNE') {
@@ -237,7 +236,6 @@ $( document ).ready(function() {
                 onchangeVizdata(visualizingOption);
                 d3.select('#dataInstances').attr('disabled',null);
                 d3.select('#variable').attr('disabled',null);
-                d3.select('#metrics').classed('hide',true);
                 clickArr = [];
             }
         });
@@ -458,7 +456,7 @@ function switchTheme(){
 ///////////////////////////////
 //////////////////////////////
 function analyzedata() {
-    // d3.select('.cover').classed('hidden', false);
+
     let filename0;
     let filename1;
     let filename2;
@@ -492,37 +490,43 @@ function analyzedata() {
             filename0 = "data/Bao_dataset.txt";
             filename1 = "data/Bao_data_sample.txt";
             filename2 = "data/Bao_data_var.txt";
+            break;
         case 6:
+            filename0 = "data/death_rate.csv";
+            filename2 = "data/death_rate_code.txt";
+            filename1 = "data/death_rate_var.txt";
+            break;
+        case 7:
             filename0 = "data/HPCC_02Jun2019.csv";
             filename1 = "data/HPCC_host.tsv";
             filename2 = "data/HPCC_service_2.tsv";
             break;
-        case 7:
+        case 8:
             filename0 = "data/HPCC_03Jun2019.csv";
             filename1 = "data/HPCC_host.tsv";
             filename2 = "data/HPCC_service_2.tsv";
             break;
-        case 8:
+        case 9:
             filename0 = "data/HPCC_04Jun2019.csv";
             filename1 = "data/HPCC_host.tsv";
             filename2 = "data/HPCC_service_2.tsv";
             break;
-        case 9:
+        case 10:
             filename0 = "data/HPCC_05Jun2019.csv";
             filename1 = "data/HPCC_host.tsv";
             filename2 = "data/HPCC_service_2.tsv";
             break;
-        case 10:
+        case 11:
             filename0 = "data/HPCC_06Jun2019.csv";
             filename1 = "data/HPCC_host.tsv";
             filename2 = "data/HPCC_service_2.tsv";
             break;
-        case 11:
+        case 12:
             filename0 = "data/HPCC_07Jun2019.csv";
             filename1 = "data/HPCC_host.tsv";
             filename2 = "data/HPCC_service_2.tsv";
             break;
-        case 12:
+        case 13:
             filename0 = "data/HPCC_08Jun2019.csv";
             filename1 = "data/HPCC_host.tsv";
             filename2 = "data/HPCC_service_2.tsv";
@@ -574,7 +578,8 @@ function analyzedata() {
 
         // TIME NAME
         timedata = files[0].columns.filter(function (step) {
-            return step !== "Series ID"
+            if (selecteddata !== 6) return step !== "Series ID";
+            else return step !=='CountryName' && step !== 'CountryCode';
         });
 
         switch (selecteddata) {
@@ -605,6 +610,31 @@ function analyzedata() {
                             data[sampleindex][varindex][s] = -Infinity;
                             dataRaw[sampleindex][varindex][s] = -Infinity;
                         }
+                    });
+                });
+                break;
+            case 6:
+                // WRITE DATA TO DATA[]
+                data.forEach(function (sample) {
+                    sample.forEach(function (variable) {
+                        timedata.forEach(function (step, s) {
+                            variable[s] = -Infinity;
+                        });
+                    });
+                });
+                dataRaw.forEach(function (sample) {
+                    sample.forEach(function (variable) {
+                        timedata.forEach(function (step, s) {
+                            variable[s] = -Infinity;
+                        });
+                    });
+                });
+                files[0].forEach(function (line) {
+                    var varindex = mapvar1.get(mapvar0.get(line['CountryCode']));
+                    var sampleindex = 0;
+                    timedata.forEach(function (step, s) {
+                        data[sampleindex][varindex][s] = isNaN(parseFloat(line[step])) ? -Infinity : parseFloat(line[step]);
+                        dataRaw[sampleindex][varindex][s] = isNaN(parseFloat(line[step])) ? -Infinity : parseFloat(line[step]);
                     });
                 });
                 break;
@@ -1428,7 +1458,6 @@ function analyzedata() {
 ///////////////////////
     });
     needcalculation = false;
-    // d3.select('.cover').classed('hidden', true);
 }
 
 // SORT MEASURES AND WRITE DISPLAYPLOT
@@ -1549,7 +1578,7 @@ function prepareRadarTable() {
 // Calculate Cluster
 function recalculateCluster (option,calback) {
     // hide the main screen
-    // d3.select('.cover').classed('hidden', true);
+    d3.select('.cover').classed('hidden', true);
 
     Radarplot_opt.clusterMethod = option.clusterMethod;
     preloader(true,10,'Process grouping...','#clusterLoading');
@@ -1585,7 +1614,6 @@ function recalculateCluster (option,calback) {
             onloaddetermire({process:data.result.process,message:`# iterations: ${data.result.iteration}`},'#clusterLoading');
         }
     }, false);
-    // d3.select('.cover').classed('hidden', true);
 }
 
 function reCalculateTsne() {
@@ -1598,6 +1626,7 @@ function reCalculateTsne() {
     cluster_map(cluster_info);
     onchangeVizType(visualizingOption);
     onchangeVizdata(visualizingOption);
+    d3.select('.cover').classed('hidden', true);
 }
 
 function cluster_map (dataRaw) {
