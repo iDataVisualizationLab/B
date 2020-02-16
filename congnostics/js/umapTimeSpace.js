@@ -75,7 +75,7 @@ d3.umapTimeSpace = function () {
                 svg.selectAll('.linkLinegg').filter(e => d.name_or !== e.name_or).classed('hide', true)
                 // d3.selectAll('.h'+d[0].name).dispatch('mouseover');
             }).on('mouseleave', d => {
-            master.unhightlight(d.name_or)
+            master.unhightlight(d.name_or);
             svg.selectAll('.linkLinegg.hide').classed('hide', false)
             // d3.selectAll('.h'+d[0].name).dispatch('mouseleave');
         })
@@ -89,8 +89,8 @@ d3.umapTimeSpace = function () {
         tsne = new Worker('js/umapworker.js');
         // tsne.postMessage({action:"initcanvas", canvas: offscreen, canvasopt: {width: graphicopt.widthG(), height: graphicopt.heightG()}}, [offscreen]);
         tsne.postMessage({action: "initcanvas", canvasopt: {width: graphicopt.widthG(), height: graphicopt.heightG()}});
-        console.log(`----inint tsne with: `, graphicopt.opt)
-        colorarr = colorscale.domain().map((d, i) => ({name: d, order: +d.split('_')[1], value: colorscale.range()[i]}))
+        console.log(`----inint tsne with: `, graphicopt.opt);
+        colorarr = colorscale.domain().map((d, i) => ({name: d, order: +d.split('_')[1], value: colorscale.range()[i]}));
         colorarr.sort((a, b) => a.order - b.order);
 
         tsne.postMessage({action: "colorscale", value: colorarr});
@@ -111,6 +111,7 @@ d3.umapTimeSpace = function () {
                     isBusy = false;
                     render(true);
                     tsne.terminate();
+                    break;
                 default:
                     break;
             }
@@ -785,6 +786,7 @@ function findClosestDataPoint(mousePosition_,data_,isClicked_) {
     // map the co-ordinates of the closest point to the canvas space
     if(closest) {
         if (isClicked_) {
+            printMetrics([closest[0],closest[1]]);
             let dX = xscale(closest[0]);
             let dY = yscale(closest[1]);
             // register the click if the clicked point is in the radius of the point
@@ -1402,4 +1404,21 @@ function changePage(num_) {
     if (checkRight) {
         if (currentPage<num_) currentPage += 1;
     }
+}
+
+// print Metrics
+function printMetrics(solution_) {
+    let index;
+    switch (visualizingOption) {
+        case 'UMAP':
+            index = umapTS.solution().findIndex(d=>d[0] === solution_[0] && d[1] === solution_[1]);
+            break;
+        case 'PCA':
+            index = pcaTS.solution().findIndex(d=>d[0] === solution_[0] && d[1] === solution_[1]);
+            break;
+        case 'tSNE':
+            index = tsneTS.solution().findIndex(d=>d[0] === solution_[0] && d[1] === solution_[1]);
+            break;
+    }
+    console.log(dataRadar2[index]);
 }

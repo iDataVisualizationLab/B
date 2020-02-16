@@ -816,7 +816,7 @@ function analyzedata() {
                         firstLagDiff.forEach(d=>{adTotalLength += Math.abs(d-q2)});
                         let adOutlierLength = 0;
                         outlierArr.forEach(d=>{adOutlierLength += Math.abs(d-q2)});
-                        measures[8][p][myIndex][2] = adOutlierLength/adTotalLength;
+                        measures[8][p][myIndex][2] = (adTotalLength !== 0) ? adOutlierLength/adTotalLength : 0;
                         let adjustXData = xData.filter((x,index)=>{
                             if (index) {
                                 if ((firstLagDiff[index-1]>q3+1.5*(q3-q1)||firstLagDiff[index-1]<q1-1.5*(q3-q1))&&(firstLagDiff[index]>q3+1.5*(q3-q1)||firstLagDiff[index]<q1-1.5*(q3-q1))) return false;
@@ -842,7 +842,7 @@ function analyzedata() {
                         xOutlierArr.forEach(d=>adOutlier+=Math.abs(d-xq2));
                         let adTotal = 0;
                         xData.forEach(d=>adTotal+=Math.abs(d-xq2));
-                        measures[5][p][myIndex][2] = adOutlier/adTotal;
+                        measures[5][p][myIndex][2] = (adTotal !== 0) ? adOutlier/adTotal : 0;
 
 
                         // TREND
@@ -962,7 +962,7 @@ function analyzedata() {
                         // myPeriodogram.forEach((d,i)=>{if(i>=cutLimit) sumPower+=d});
                         myPeriodogram.forEach(d=>sumPower+=d);
                         if(peak.length>0) peak.map(d=>d[0]).forEach(dd=>sumPeak+=dd);
-                        measures[1][p][myIndex][2] = 2*sumPeak/sumPower;
+                        measures[1][p][myIndex][2] = (sumPower !== 0) ? 2*sumPeak/sumPower : 0;
                         // let meanPower = 0;
                         // sortPeriodogram.forEach((d,index)=>{
                         //     // if(index!==(sortPeriodogram.length-1)) meanPower += d[0];
@@ -1526,9 +1526,9 @@ function sortmeasures() {
 function prepareRadarTable() {
     dataRadar2 = [];    // [all plot][measures for each plot]
     dataRadar1 = [];    // [measure][all values]
-    for (var i = 0; i < nummeasure; i++) {
+    for (let i = 0; i < nummeasure; i++) {
         dataRadar1[i] =[];
-        var count = 0;
+        let count = 0;
         measures[i].forEach(function (s,si) {
            s.forEach(function (d,index) {
              if (d[2] >= 0) {
