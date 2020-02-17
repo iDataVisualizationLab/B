@@ -178,6 +178,15 @@ $( document ).ready(function() {
         // data options
         d3.select('#datacom').on('change',function(){
             selecteddata = +this.value;
+            if (selecteddata === 3 || selecteddata === 5) {
+                d3.select('#pca').attr('disabled',true);
+                d3.select('#t_sne').attr('disabled',true);
+                d3.select('#umap').attr('disabled',true);
+            } else {
+                d3.select('#pca').attr('disabled',null);
+                d3.select('#t_sne').attr('disabled',null);
+                d3.select('#umap').attr('disabled',null);
+            }
             needcalculation = true;
             d3.select('.cover').classed('hidden', false);
             if(visualizingOption === 'LMH') {
@@ -207,6 +216,13 @@ $( document ).ready(function() {
         d3.select('#mainCanvasHolder').classed('hide',false);
         d3.select('#visualizing').on('change',function(){
             visualizingOption = this.value;
+            if (visualizingOption !== 'LHM') {
+                d3.select('#ecg').attr('disabled',true);
+                d3.select('#test').attr('disabled',true);
+            } else {
+                d3.select('#ecg').attr('disabled',null);
+                d3.select('#test').attr('disabled',null);
+            }
             console.log(this.value);
             if(visualizingOption === 'LMH') {
                 d3.select('#mainCanvasHolder').classed('hide',false);
@@ -748,6 +764,7 @@ function analyzedata() {
         function normalization() {
             data.forEach(function (sample, p) {
                 sample.forEach(function (variable, v) {
+                    let numNonNegative = 0;
                     var svariable = variable.filter(function (d) {return d !== - Infinity});
                     var mymax = Math.max(...svariable);
                     var mymin = Math.min(...svariable);
@@ -755,11 +772,17 @@ function analyzedata() {
                     if (myrange !== 0) {
                         variable.forEach(function (step, s) {
                             data[p][v][s] = (step !== -Infinity) ? (step - mymin) / myrange : -1;
+                            if (step !== -Infinity) numNonNegative += 1;
                         });
                     } else {
                         variable.forEach(function (step, s) {
                             data[p][v][s] = -1;
                         });
+                    }
+                    if (numNonNegative < timedata.length*0.1) {
+                        // console.log('Country: '+mapvar2.get(v)+' has only '+numNonNegative+' time points.');
+                        // console.log('data: '+data[p][v]);
+                        data[p][v].forEach((element,index)=>data[p][v][index]=-1);
                     }
                 });
             });
@@ -770,6 +793,7 @@ function analyzedata() {
             //     drawdata[p][v] = variable.filter(function(step){return step >=0});
             //   });
             // });
+
         }
 
         // CALCULATE MEASURES FOR TIME SERIES
