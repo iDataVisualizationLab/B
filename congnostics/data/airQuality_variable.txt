@@ -1,0 +1,12 @@
+code	name
+0	PM2.5
+1	PM10
+2	SO2
+3	NO2
+4	CO
+5	O3
+6	TEMP
+7	PRES
+8	DEWP
+9	RAIN
+10	WSPM
