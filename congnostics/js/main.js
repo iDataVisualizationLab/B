@@ -2661,9 +2661,12 @@ function draw() {
                                         var x2 = 0.05*csPlotSize+xBlank+csPlotSize+xBlank+j*groupSize+0.9*csPlotSize*data[sample][xvar][step];
                                         var y1 = 0.05*csPlotSize+yBlank+50+i*(csPlotSize+ygBlank)+0.9*csPlotSize*(1-data[sample][yvar][step-1]);
                                         var y2 = 0.05*csPlotSize+yBlank+50+i*(csPlotSize+ygBlank)+0.9*csPlotSize*(1-data[sample][yvar][step]);
-                                        if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
-                                        else stroke((step-timedata.length/2)*255/(timedata.length/2),0,0);
+                                        if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2)); fill(0,0,255-255*step/(timedata.length/2));}
+                                        else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0); fill((step-timedata.length/2)*255/(timedata.length/2),0,0);}
+                                        circle(x1,y1,5);
+                                        strokeWeight(0.3);
                                         line(x1,y1,x2,y2);
+                                        strokeWeight(1);
                                     }
                                     // X-var plots
                                     if(data[sample][xvar][step]>=0 && data[sample][xvar][step-1]>=0) {
