@@ -954,11 +954,10 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
     let sampleIndex = +plot_.split('-')[0];
     let varIndex = +plot_.split('-')[1];
     let plotSize = [(myWidth-400)*0.25,(myHeight-200)/10];
-    let plotPosition = [(myWidth-300)*0.7,100+position_*plotSize[1]];
+    let plotPosition = [(myWidth-300)*0.7,100+position_*(plotSize[1]+5)];
     let ctx = ctx_;
     let plotIndex = dataRadar2.findIndex(d=>{
-        if (d.plot === plot_) return true;
-        else return false;
+        return d.plot === plot_;
     });
 
     // check interaction

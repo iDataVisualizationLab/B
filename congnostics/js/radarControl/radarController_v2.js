@@ -523,7 +523,7 @@ console.log(e);
                 d3.select(this).attr('r',4)
             }).call(d3.drag().container(function () {
             return this.parentNode.parentNode;
-        }).on("start", onDragAxisStarted).on("drag", onDragAxisDragged).on("end", onDragAxisEnded))
+        }).on("start", onDragAxisStarted).on("drag", onDragAxisDragged).on("end", onDragAxisEnded));
 
         function onDragAxisStarted (d){
             d3.select(this).style('fill','black');
