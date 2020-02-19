@@ -25,7 +25,7 @@ let cellval = [];
 let minloop = 0;
 let maxloop = 48;
 let lag = 48;
-let selecteddata= 0;
+let selecteddata= 'employment';
 let myPeriodogramDraw = [];
 let peakPeri = [];
 
@@ -177,7 +177,16 @@ $( document ).ready(function() {
         });
         // data options
         d3.select('#datacom').on('change',function(){
-            selecteddata = +this.value;
+            selecteddata = this.value;
+            if (selecteddata === 'ECG' || selecteddata === 'Bao') {
+                d3.select('#pca').attr('disabled',true);
+                d3.select('#t_sne').attr('disabled',true);
+                d3.select('#umap').attr('disabled',true);
+            } else {
+                d3.select('#pca').attr('disabled',null);
+                d3.select('#t_sne').attr('disabled',null);
+                d3.select('#umap').attr('disabled',null);
+            }
             needcalculation = true;
             d3.select('.cover').classed('hidden', false);
             if(visualizingOption === 'LMH') {
@@ -207,6 +216,13 @@ $( document ).ready(function() {
         d3.select('#mainCanvasHolder').classed('hide',false);
         d3.select('#visualizing').on('change',function(){
             visualizingOption = this.value;
+            if (visualizingOption !== 'LHM') {
+                d3.select('#ecg').attr('disabled',true);
+                d3.select('#test').attr('disabled',true);
+            } else {
+                d3.select('#ecg').attr('disabled',null);
+                d3.select('#test').attr('disabled',null);
+            }
             console.log(this.value);
             if(visualizingOption === 'LMH') {
                 d3.select('#mainCanvasHolder').classed('hide',false);
@@ -468,72 +484,87 @@ function analyzedata() {
     let filename1;
     let filename2;
     switch (selecteddata) {
-        case 0:
+        case 'employment':
             filename0 =  "data/employment.txt";
             filename1 = "data/statecode.txt";
             filename2 = "data/Industrycode.txt";
             break;
-        case 1:
+        case 'RUL':
             filename0 = "data/RUL_data.txt";
             filename1 = "data/engine_code.txt";
             filename2 = "data/sensor_code.txt";
             break;
-        case 2:
+        case 'stock':
             filename0 = "data/stock_data.txt";
             filename1 = "data/year_code.txt";
             filename2 = "data/var_code.txt";
             break;
-        case 3:
+        case 'ECG':
             filename0 = "data/ECG_dog.txt";
             filename1 = "data/ECG_sample_code.txt";
             filename2 = "data/ECG_varCode.txt";
             break;
-        case 4:
+        case 'EEG':
             filename0 = "data/eeg_data.txt";
             filename1 = "data/eeg_code.txt";
             filename2 = "data/eeg_v_code.txt";
             break;
-        case 5:
+        case 'Bao':
             filename0 = "data/Bao_dataset.txt";
             filename1 = "data/Bao_data_sample.txt";
             filename2 = "data/Bao_data_var.txt";
             break;
-        case 6:
+        case 'death_rate':
             filename0 = "data/death_rate.csv";
             filename2 = "data/death_rate_code.txt";
             filename1 = "data/death_rate_var.txt";
             break;
-        case 7:
+        case 'ozone':
+            filename0 = "data/ozone_onehour.txt";
+            filename1 = "data/ozone_sample.txt";
+            filename2 = "data/ozone_variable.txt";
+            break;
+        case 'air_quality':
+            filename0 = "data/airQuality_reduced.txt";
+            filename1 = "data/airQuality_sample.txt";
+            filename2 = "data/airQuality_variable.txt";
+            break;
+        case 'DowJones':
+            filename0 = "data/DowJonesIndex.txt";
+            filename1 = "data/DJIndex_sample.txt";
+            filename2 = "data/DJIndex_variable.txt";
+            break;
+        case 'HPCC_0':
             filename0 = "data/HPCC_02Jun2019.csv";
             filename1 = "data/HPCC_host.tsv";
             filename2 = "data/HPCC_service_2.tsv";
             break;
-        case 8:
+        case 'HPCC_1':
             filename0 = "data/HPCC_03Jun2019.csv";
             filename1 = "data/HPCC_host.tsv";
             filename2 = "data/HPCC_service_2.tsv";
             break;
-        case 9:
+        case 'HPCC_2':
             filename0 = "data/HPCC_04Jun2019.csv";
             filename1 = "data/HPCC_host.tsv";
             filename2 = "data/HPCC_service_2.tsv";
             break;
-        case 10:
+        case 'HPCC_3':
             filename0 = "data/HPCC_05Jun2019.csv";
             filename1 = "data/HPCC_host.tsv";
             filename2 = "data/HPCC_service_2.tsv";
             break;
-        case 11:
+        case 'HPCC_4':
             filename0 = "data/HPCC_06Jun2019.csv";
             filename1 = "data/HPCC_host.tsv";
             filename2 = "data/HPCC_service_2.tsv";
             break;
-        case 12:
+        case 'HPCC_5':
             filename0 = "data/HPCC_07Jun2019.csv";
             filename1 = "data/HPCC_host.tsv";
             filename2 = "data/HPCC_service_2.tsv";
             break;
-        case 13:
+        case 'HPCC_6':
             filename0 = "data/HPCC_08Jun2019.csv";
             filename1 = "data/HPCC_host.tsv";
             filename2 = "data/HPCC_service_2.tsv";
@@ -559,7 +590,6 @@ function analyzedata() {
 ///////////////////////////////////////
 // READ DATA TO RESTORING VARIABLES
 //////////////////////////////////////
-
         //MAP DATA sample
         files[1].forEach(function (sample, p) {
             if (!mapsample0.get(sample.code)) mapsample0.set(sample.code, sample.name);  // code-string to name-string
@@ -584,13 +614,14 @@ function analyzedata() {
         });
 
         // TIME NAME
-        timedata = files[0].columns.filter(function (step) {
-            if (selecteddata !== 6) return step !== "Series ID";
-            else return step !=='CountryName' && step !== 'CountryCode';
-        });
+        if (selecteddata !== 'ozone' && selecteddata !== 'air_quality' || selecteddata !== 'DowJones')
+            timedata = files[0].columns.filter(function (step) {
+                if (selecteddata !== 'death_rate') return step !== "Series ID";
+                else return step !=='CountryName' && step !== 'CountryCode';
+            });
 
         switch (selecteddata) {
-            case 0:
+            case 'employment':
                 // WRITE DATA TO DATA[]
                 data.forEach(function (sample) {
                     sample.forEach(function (variable) {
@@ -620,7 +651,7 @@ function analyzedata() {
                     });
                 });
                 break;
-            case 6:
+            case "death_rate":
                 // WRITE DATA TO DATA[]
                 data.forEach(function (sample) {
                     sample.forEach(function (variable) {
@@ -642,6 +673,89 @@ function analyzedata() {
                     timedata.forEach(function (step, s) {
                         data[sampleindex][varindex][s] = isNaN(parseFloat(line[step])) ? -Infinity : parseFloat(line[step]);
                         dataRaw[sampleindex][varindex][s] = isNaN(parseFloat(line[step])) ? -Infinity : parseFloat(line[step]);
+                    });
+                });
+                break;
+            case 'ozone':
+                files[0].forEach((line,index)=>{
+                    timedata[index] = line.Date;
+                });
+                data.forEach(function (sample) {
+                    sample.forEach(function (variable) {
+                        timedata.forEach(function (step, s) {
+                            variable[s] = -Infinity;
+                        });
+                    });
+                });
+                dataRaw.forEach(function (sample) {
+                    sample.forEach(function (variable) {
+                        timedata.forEach(function (step, s) {
+                            variable[s] = -Infinity;
+                        });
+                    });
+                });
+                files[0].forEach((line,index) => {
+                    files[2].forEach((line_,index_)=>{
+                        data[0][index_][index] = isNaN(parseFloat(line[line_.name])) ? -Infinity : parseFloat(line[line_.name]);
+                        dataRaw[0][index_][index] = isNaN(parseFloat(line[line_.name])) ? -Infinity : parseFloat(line[line_.name]);
+                    });
+                });
+                break;
+            case 'air_quality':
+                let timeLength = files[0].length/files[1].length;
+                for (let i = 0; i < timeLength; i++) {
+                    timedata[i] = files[0][i].hour+':00,'+files[0][i].month+'/'+files[0][i].day+'/'+files[0][i].year;
+                }
+                data.forEach(function (sample) {
+                    sample.forEach(function (variable) {
+                        timedata.forEach(function (step, s) {
+                            variable[s] = -Infinity;
+                        });
+                    });
+                });
+                dataRaw.forEach(function (sample) {
+                    sample.forEach(function (variable) {
+                        timedata.forEach(function (step, s) {
+                            variable[s] = -Infinity;
+                        });
+                    });
+                });
+                files[0].forEach((line,index)=>{
+                    let sampleIndex = mapsample1.get(line.station);
+                    let index__ = index%timeLength;
+                    files[2].forEach((line_,index_)=>{
+                        data[sampleIndex][index_][index__] = isNaN(parseFloat(line[line_.name])) ? -Infinity : parseFloat(line[line_.name]);
+                        dataRaw[sampleIndex][index_][index__] = isNaN(parseFloat(line[line_.name])) ? -Infinity : parseFloat(line[line_.name]);
+                    });
+                });
+                break;
+            case 'DowJones':
+                data.forEach(function (sample) {
+                    sample.forEach(function (variable) {
+                        timedata.forEach(function (step, s) {
+                            variable[s] = -Infinity;
+                        });
+                    });
+                });
+                dataRaw.forEach(function (sample) {
+                    sample.forEach(function (variable) {
+                        timedata.forEach(function (step, s) {
+                            variable[s] = -Infinity;
+                        });
+                    });
+                });
+                let count = 0;
+                files[0].forEach(line=>{
+                    if (line.stock === 'AA') {
+                        timedata[count] = line.date;
+                        count += 1;
+                    }
+                });
+                files[0].forEach((line,index)=>{
+                    let sampleIndex = mapsample1.get(mapsample0.get(line.stock));
+                    files[2].forEach((line_,index_)=>{
+                        data[sampleIndex][index_][timedata.findIndex(t=>t===line.date)] = isNaN(parseFloat(line[line_.name])) ? -Infinity : parseFloat(line[line_.name]);
+                        dataRaw[sampleIndex][index_][timedata.findIndex(t=>t===line.date)] = isNaN(parseFloat(line[line_.name])) ? -Infinity : parseFloat(line[line_.name]);
                     });
                 });
                 break;
@@ -748,6 +862,7 @@ function analyzedata() {
         function normalization() {
             data.forEach(function (sample, p) {
                 sample.forEach(function (variable, v) {
+                    let numNonNegative = 0;
                     var svariable = variable.filter(function (d) {return d !== - Infinity});
                     var mymax = Math.max(...svariable);
                     var mymin = Math.min(...svariable);
@@ -755,11 +870,17 @@ function analyzedata() {
                     if (myrange !== 0) {
                         variable.forEach(function (step, s) {
                             data[p][v][s] = (step !== -Infinity) ? (step - mymin) / myrange : -1;
+                            if (step !== -Infinity) numNonNegative += 1;
                         });
                     } else {
                         variable.forEach(function (step, s) {
                             data[p][v][s] = -1;
                         });
+                    }
+                    if (numNonNegative < timedata.length*0.1) {
+                        // console.log('Country: '+mapvar2.get(v)+' has only '+numNonNegative+' time points.');
+                        // console.log('data: '+data[p][v]);
+                        data[p][v].forEach((element,index)=>data[p][v][index]=-1);
                     }
                 });
             });
@@ -770,6 +891,7 @@ function analyzedata() {
             //     drawdata[p][v] = variable.filter(function(step){return step >=0});
             //   });
             // });
+
         }
 
         // CALCULATE MEASURES FOR TIME SERIES
@@ -816,7 +938,7 @@ function analyzedata() {
                         firstLagDiff.forEach(d=>{adTotalLength += Math.abs(d-q2)});
                         let adOutlierLength = 0;
                         outlierArr.forEach(d=>{adOutlierLength += Math.abs(d-q2)});
-                        measures[8][p][myIndex][2] = adOutlierLength/adTotalLength;
+                        measures[8][p][myIndex][2] = (adTotalLength !== 0) ? adOutlierLength/adTotalLength : 0;
                         let adjustXData = xData.filter((x,index)=>{
                             if (index) {
                                 if ((firstLagDiff[index-1]>q3+1.5*(q3-q1)||firstLagDiff[index-1]<q1-1.5*(q3-q1))&&(firstLagDiff[index]>q3+1.5*(q3-q1)||firstLagDiff[index]<q1-1.5*(q3-q1))) return false;
@@ -842,7 +964,7 @@ function analyzedata() {
                         xOutlierArr.forEach(d=>adOutlier+=Math.abs(d-xq2));
                         let adTotal = 0;
                         xData.forEach(d=>adTotal+=Math.abs(d-xq2));
-                        measures[5][p][myIndex][2] = adOutlier/adTotal;
+                        measures[5][p][myIndex][2] = (adTotal !== 0) ? adOutlier/adTotal : 0;
 
 
                         // TREND
@@ -962,7 +1084,7 @@ function analyzedata() {
                         // myPeriodogram.forEach((d,i)=>{if(i>=cutLimit) sumPower+=d});
                         myPeriodogram.forEach(d=>sumPower+=d);
                         if(peak.length>0) peak.map(d=>d[0]).forEach(dd=>sumPeak+=dd);
-                        measures[1][p][myIndex][2] = 2*sumPeak/sumPower;
+                        measures[1][p][myIndex][2] = (sumPower !== 0) ? 2*sumPeak/sumPower : 0;
                         // let meanPower = 0;
                         // sortPeriodogram.forEach((d,index)=>{
                         //     // if(index!==(sortPeriodogram.length-1)) meanPower += d[0];
@@ -1526,9 +1648,9 @@ function sortmeasures() {
 function prepareRadarTable() {
     dataRadar2 = [];    // [all plot][measures for each plot]
     dataRadar1 = [];    // [measure][all values]
-    for (var i = 0; i < nummeasure; i++) {
+    for (let i = 0; i < nummeasure; i++) {
         dataRadar1[i] =[];
-        var count = 0;
+        let count = 0;
         measures[i].forEach(function (s,si) {
            s.forEach(function (d,index) {
              if (d[2] >= 0) {

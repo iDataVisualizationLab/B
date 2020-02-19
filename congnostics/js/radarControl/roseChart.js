@@ -270,7 +270,7 @@ function RoseChart(id, data, options, name) {
             .style("stroke-opacity", 1)
             .style("fill-opacity", cfg.opacityCircles)
             .style("filter", "url(#glow)")
-            .style("visibility", (d, i) => ((cfg.bin||cfg.gradient) && i == 0) ? "hidden" : "visible");
+            .style("visibility", (d, i) => ((cfg.bin||cfg.gradient) && i === 0) ? "hidden" : "visible");
 
 
         //Create the straight lines radiating outward from the center
