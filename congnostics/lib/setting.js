@@ -13,9 +13,9 @@ let pointSize = 3;
 let clickArr = [];
 let dimensionReductionData;
 let xscale, yscale;
-let selectedDisplay = "1D";
+let selectedDisplay = "2D";
 let measures = [];  // measures[index][sample][x-var,y-var,value], value = -1 means no data
-let nummeasure = selectedDisplay === "1D" ? 9:11;
+let nummeasure = selectedDisplay === "1D" ? 9:8;
 // let measurename = [
 //     'Outlying',
 //     'Skinny',
@@ -56,10 +56,10 @@ let measurename = selectedDisplay === "1D" ?
 ] :
 [
     'Outlying',
-    'Skinny',
-    'Skewed',
+    // 'Skinny',
+    // 'Skewed',
     'Clumpy',
-    'Sparse',
+    // 'Sparse',
     'Striated',
     'Trend',
     "Intersections",
@@ -80,16 +80,16 @@ let measureObj = selectedDisplay === "1D" ?
     'Net Outlying':8,
 } : {
     'Outlying':0,
-    'Skinny':1,
-    'Skewed':2,
-    'Clumpy':3,
-    'Sparse':4,
-    'Striated':5,
-    'Trend':6,
-    "Intersections":7,
-    "Loop":8,
-    'Cross-correlation':9,
-    'Length':10
+    // 'Skinny':1,
+    // 'Skewed':2,
+    'Clumpy':1,
+    // 'Sparse':4,
+    'Striated':2,
+    'Trend':3,
+    "Intersections":4,
+    "Loop":5,
+    'Cross-correlation':6,
+    'Length':7
 };
 
 

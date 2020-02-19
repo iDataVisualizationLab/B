@@ -45,7 +45,7 @@ let newnumplot = 0;
 let selectedmeasure = 0;
 let choose = false;   // for selections
 let chooseType = "series";
-let type = selectedDisplay === "1D" ? [0,0,0,1,1,1,2,2,2] : [0,0,0,0,0,0,0,0,0,0,0];   // for type of measures in selection button
+let type = selectedDisplay === "1D" ? [0,0,0,1,1,1,2,2,2] : [0,0,0,0,1,1,1,1];   // for type of measures in selection button
 let checkfilter = [];
 let valfilter = [];
 for (var i = 0; i < nummeasure; i++) {
@@ -318,6 +318,7 @@ $( document ).ready(function() {
         // dimension option
         d3.select('#analysis').on('change',function(){
             selectedDisplay = this.value;
+            type = selectedDisplay === "1D" ? [0,0,0,1,1,1,2,2,2] : [0,0,0,0,1,1,1,1];
             switch (this.value) {
                 case "1D":
                     nummeasure = 11;
@@ -343,15 +344,17 @@ $( document ).ready(function() {
                         'Net standard deviation':7,
                         'Net skewness':8,
                     };
+                    d3.select('#note1').classed('hide',false);
+                    d3.select('#note2').classed('hide',true);
                     break;
                 case "2D":
-                    nummeasure = 11;
+                    nummeasure = 8;
                     measurename = [
                         'Outlying',
-                        'Skinny',
-                        'Skewed',
+                        // 'Skinny',
+                        // 'Skewed',
                         'Clumpy',
-                        'Sparse',
+                        // 'Sparse',
                         'Striated',
                         'Trend',
                         "Intersections",
@@ -361,17 +364,19 @@ $( document ).ready(function() {
                     ];
                     measureObj = {
                         'Outlying':0,
-                        'Skinny':1,
-                        'Skewed':2,
-                        'Clumpy':3,
-                        'Sparse':4,
-                        'Striated':5,
-                        'Trend':6,
-                        "Intersections":7,
-                        "Loop":8,
-                        'Cross-correlation':9,
-                        'Length':10
+                        // 'Skinny':1,
+                        // 'Skewed':2,
+                        'Clumpy':1,
+                        // 'Sparse':4,
+                        'Striated':2,
+                        'Trend':3,
+                        "Intersections":4,
+                        "Loop":5,
+                        'Cross-correlation':6,
+                        'Length':7
                     };
+                    d3.select('#note1').classed('hide',true);
+                    d3.select('#note2').classed('hide',false);
                     break;
             }
 
@@ -586,6 +591,7 @@ function analyzedata() {
         mapvar1.clear();  // variable name -> index in data[variable]
         mapvar2.clear(); // index -> variable name
         timedata =[];
+        measures = [];
 
 ///////////////////////////////////////
 // READ DATA TO RESTORING VARIABLES
@@ -1144,22 +1150,22 @@ function analyzedata() {
             });
         }
         function calculateMeasure2D() {
-            for (var i=0; i<nummeasure; i++) {
+            for (let i=0; i<nummeasure; i++) {
                 measures[i] = [];
             }
             data.forEach(function (sample, p) {
 
                 // Declare measure structures
-                for (var i = 0; i < nummeasure; i++) {
+                for (let i = 0; i < nummeasure; i++) {
                     measures[i][p] = [];
                 }
                 var myIndex = 0;
                 // Each plot
-                for (var yvar = 0; yvar < mapvar0.size; yvar++) {
-                    for (var xvar = 0; xvar < yvar; xvar++) {
+                for (let yvar = 0; yvar < mapvar0.size; yvar++) {
+                    for (let xvar = 0; xvar < yvar; xvar++) {
 
                         // Initialize measure values
-                        for (var i = 0; i < nummeasure; i++) {
+                        for (let i = 0; i < nummeasure; i++) {
                             measures[i][p][myIndex] = [xvar, yvar, -1];
                         }
 
@@ -1307,33 +1313,33 @@ function analyzedata() {
                                 if (xi > 0 && xi < xdata.length - 1) {
                                     // sumcos += Math.abs(calculatecos(xdata[xi - 1], ydata[xi - 1], x, ydata[xi], xdata[xi + 1], ydata[xi + 1]));
                                     sumcos += calculatecos(xdata[xi - 1], ydata[xi - 1], x, ydata[xi], xdata[xi + 1], ydata[xi + 1]);
-                                    if(calculatecos(xdata[xi - 1], ydata[xi - 1], x, ydata[xi], xdata[xi + 1], ydata[xi + 1]) > 0.75) countcosine += 1;
+                                    if(calculatecos(xdata[xi - 1], ydata[xi - 1], x, ydata[xi], xdata[xi + 1], ydata[xi + 1]) < -0.75) countcosine += 1;
                                 }
                             });
                             // LENGTH
-                            measures[10][p][myIndex][2] = sumlengtha / (xdata.length - 1);
-                            if (measures[10][p][myIndex][2] > 1) measures[10][p][myIndex][2] = 1;
+                            measures[7][p][myIndex][2] = sumlengtha / (xdata.length - 1);
+                            if (measures[7][p][myIndex][2] > 1) measures[7][p][myIndex][2] = 1;
                             // MONOTONIC TREND
-                            measures[6][p][myIndex][2] = (4/3)*Math.max(...dir) / (xdata.length*(xdata.length-1)/2)-1/3;
-                            if (measures[6][p][myIndex][2] < 0) measures[6][p][myIndex][2] = 0;
+                            measures[3][p][myIndex][2] = (4/3)*Math.max(...dir) / (xdata.length*(xdata.length-1)/2)-1/3;
+                            if (measures[3][p][myIndex][2] < 0) measures[3][p][myIndex][2] = 0;
                             // INTERSECTIONS
-                            measures[7][p][myIndex][2] = 1 - Math.exp(-countcrossing / (xdata.length - 1));
+                            measures[4][p][myIndex][2] = 1 - Math.exp(-countcrossing / (xdata.length - 1));
                             // STRIATED
-                            measures[5][p][myIndex][2] = (sumcos / (xdata.length - 2))*0.5+0.5;   //Average cosine
-                            // measures[5][p][myIndex][2] = countcosine/(xdata.length-1);     // Sacgnostic
+                            // measures[2][p][myIndex][2] = (sumcos / (xdata.length - 2))*0.5+0.5;   //Average cosine
+                            measures[2][p][myIndex][2] = countcosine/(xdata.length-1);     // Sacgnostic
                             // STRAIGHT
                             // measures[1][p][myIndex][2] = Math.sqrt(Math.pow(xdata[xdata.length - 1] - xdata[0], 2) + Math.pow(ydata[ydata.length - 1] - ydata[0], 2)) / sumlength;
                             // SKEWED
-                            var q10 = sortlengtha[Math.floor(sortlengtha.length * 0.1)];
-                            var q50 = sortlengtha[Math.floor(sortlengtha.length * 0.5)];
-                            var q90 = sortlengtha[Math.floor(sortlengtha.length * 0.9)];
-                            measures[2][p][myIndex][2] = (q90 !== q10) ? (q90 - q50) / (q90 - q10) : 0;
+                            // var q10 = sortlengtha[Math.floor(sortlengtha.length * 0.1)];
+                            // var q50 = sortlengtha[Math.floor(sortlengtha.length * 0.5)];
+                            // var q90 = sortlengtha[Math.floor(sortlengtha.length * 0.9)];
+                            // measures[2][p][myIndex][2] = (q90 !== q10) ? (q90 - q50) / (q90 - q10) : 0;
                             // SPARSE
-                            measures[4][p][myIndex][2] = q90;
-                            if (measures[4][p][myIndex][2] > 1) measures[4][p][myIndex][2] = 1;
+                            // measures[4][p][myIndex][2] = q90;
+                            // if (measures[4][p][myIndex][2] > 1) measures[4][p][myIndex][2] = 1;
 
                             // CLUMPY
-                            measures[3][p][myIndex][2] = 0;
+                            measures[1][p][myIndex][2] = 0;
                             xdata.forEach(function (x, xi) {
                                 var countleft = 0;
                                 var countright = 0;
@@ -1353,7 +1359,7 @@ function analyzedata() {
                                     var maxxi = (countright > countleft) ? maxright : maxleft;
                                     maxxi /= edgelengtha[xi];
                                     maxxi = 1 - maxxi;
-                                    measures[3][p][myIndex][2] = (measures[3][p][myIndex][2] < maxxi) ? maxxi : measures[3][p][myIndex][2];
+                                    measures[1][p][myIndex][2] = (measures[1][p][myIndex][2] < maxxi) ? maxxi : measures[1][p][myIndex][2];
                                 }
                             });
 
@@ -1377,7 +1383,7 @@ function analyzedata() {
                             //   looparr.sort(function (b,n) {return b-n});
                             //   measures[9][p][myIndex][2] = looparr[Math.floor(looparr.length*0.25)]/xdata.length;
                             // }
-                            measures[8][p][myIndex][2] = (looplength > 0) ? (looplength-minloop) / (maxloop - minloop) : 0;
+                            measures[5][p][myIndex][2] = (looplength > 0) ? (looplength-minloop) / (maxloop - minloop) : 0;
                             // measures[9][p][myIndex][2] = (looplength > 0) ? looplength / xdata.length : 0;
 
                             // CROSS - CORRELATION
@@ -1412,7 +1418,7 @@ function analyzedata() {
                                 }
                                 maxr = (maxr < r) ? r : maxr;
                             }
-                            measures[9][p][myIndex][2] = maxr;
+                            measures[6][p][myIndex][2] = maxr;
 
                             // SIMILARITY
                             // measures[10][p][myIndex][2] = 1 - minsim / (xdata.length-getLag);
@@ -1420,41 +1426,41 @@ function analyzedata() {
                             // CALCULATE AREA
                             // set value of bins inside triangles is 1, outside triangles is 0
                             // count bin of 1, multiple it with cell area
-                            for (var i = 0; i < numcell; i++) {
-                                cellval[i] = [];
-                                for (var j = 0; j < numcell; j++) {
-                                    cellval[i][j] = 0;
-                                }
-                            }
-                            if (xdata.length > 3) {
-                                for (var i = 0; i < xdata.length - 2; i++) {
-                                    var xmax = Math.max(...[xdata[i], xdata[i + 1], xdata[i + 2]]);
-                                    var xmin = Math.min(...[xdata[i], xdata[i + 1], xdata[i + 2]]);
-                                    var ymax = Math.max(...[ydata[i], ydata[i + 1], ydata[i + 2]]);
-                                    var ymin = Math.min(...[ydata[i], ydata[i + 1], ydata[i + 2]]);
-                                    xmin = Math.floor(xmin / cellsize);
-                                    xmax = Math.ceil(xmax / cellsize);
-                                    ymin = Math.floor(ymin / cellsize);
-                                    ymax = Math.ceil(ymax / cellsize);
-                                    for (var j = xmin; j <= xmax; j++) {
-                                        for (var k = ymin; k <= ymax; k++) {
-                                            var xcell = j * cellsize + cellsize / 2;
-                                            var ycell = k * cellsize + cellsize / 2;
-                                            if (checkinsidetriangle(xcell, ycell, xdata[i], ydata[i], xdata[i + 1], ydata[i + 1], xdata[i + 2], ydata[i + 2])) {
-                                                cellval[j][k] = 1;
-                                            }
-                                        }
-                                    }
-                                }
-                                measures[1][p][myIndex][2] = 0;
-                                cellval.forEach(function (row) {
-                                    row.forEach(function (column) {
-                                        measures[1][p][myIndex][2] += column;
-                                    });
-                                });
-                                measures[1][p][myIndex][2] *= cellsize * cellsize;
-                                measures[1][p][myIndex][2] = 1 -  measures[1][p][myIndex][2];
-                            }
+                            // for (var i = 0; i < numcell; i++) {
+                            //     cellval[i] = [];
+                            //     for (var j = 0; j < numcell; j++) {
+                            //         cellval[i][j] = 0;
+                            //     }
+                            // }
+                            // if (xdata.length > 3) {
+                            //     for (var i = 0; i < xdata.length - 2; i++) {
+                            //         var xmax = Math.max(...[xdata[i], xdata[i + 1], xdata[i + 2]]);
+                            //         var xmin = Math.min(...[xdata[i], xdata[i + 1], xdata[i + 2]]);
+                            //         var ymax = Math.max(...[ydata[i], ydata[i + 1], ydata[i + 2]]);
+                            //         var ymin = Math.min(...[ydata[i], ydata[i + 1], ydata[i + 2]]);
+                            //         xmin = Math.floor(xmin / cellsize);
+                            //         xmax = Math.ceil(xmax / cellsize);
+                            //         ymin = Math.floor(ymin / cellsize);
+                            //         ymax = Math.ceil(ymax / cellsize);
+                            //         for (var j = xmin; j <= xmax; j++) {
+                            //             for (var k = ymin; k <= ymax; k++) {
+                            //                 var xcell = j * cellsize + cellsize / 2;
+                            //                 var ycell = k * cellsize + cellsize / 2;
+                            //                 if (checkinsidetriangle(xcell, ycell, xdata[i], ydata[i], xdata[i + 1], ydata[i + 1], xdata[i + 2], ydata[i + 2])) {
+                            //                     cellval[j][k] = 1;
+                            //                 }
+                            //             }
+                            //         }
+                            //     }
+                            //     measures[1][p][myIndex][2] = 0;
+                            //     cellval.forEach(function (row) {
+                            //         row.forEach(function (column) {
+                            //             measures[1][p][myIndex][2] += column;
+                            //         });
+                            //     });
+                            //     measures[1][p][myIndex][2] *= cellsize * cellsize;
+                            //     measures[1][p][myIndex][2] = 1 -  measures[1][p][myIndex][2];
+                            // }
 
 
                         }
@@ -2663,7 +2669,7 @@ function draw() {
                                         var y2 = 0.05*csPlotSize+yBlank+50+i*(csPlotSize+ygBlank)+0.9*csPlotSize*(1-data[sample][yvar][step]);
                                         if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2)); fill(0,0,255-255*step/(timedata.length/2));}
                                         else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0); fill((step-timedata.length/2)*255/(timedata.length/2),0,0);}
-                                        circle(x1,y1,5);
+                                        circle(x1,y1,4);
                                         strokeWeight(0.3);
                                         line(x1,y1,x2,y2);
                                         strokeWeight(1);
