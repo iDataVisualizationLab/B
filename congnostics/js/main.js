@@ -22,9 +22,7 @@ let newmeasures = {};
 let numcell = 40;
 let cellsize = 1/numcell;
 let cellval = [];
-let minloop = 0;
-let maxloop = 48;
-let lag = 48;
+let lag = 0;
 let selecteddata= 'employment';
 let myPeriodogramDraw = [];
 let peakPeri = [];
@@ -198,7 +196,7 @@ $( document ).ready(function() {
             if(visualizingOption === 'tSNE'||visualizingOption === 'PCA'||visualizingOption === 'UMAP') {
                 d3.select('#mainCanvasHolder').classed('hide', true);
                 d3.select('#tSNE').classed('hide', false);
-                recalculateCluster( {clusterMethod: $('#clusterMethod').val() || 'kmean',bin:{k:$('#knum').val() || 6,iterations:$('#kiteration').val() || 50}},function(){
+                recalculateCluster( {clusterMethod: $('#clusterMethod').val() || 'kmean',bin:{k:$('#knum').val() || 6,iterations:$('#kiteration').val() || 1}},function(){
                     clickArr = [];
                     plotPosition = [];
                     reCalculateTsne();
@@ -847,7 +845,7 @@ function analyzedata() {
         }
         initClusterObj();
         let kMeanGroup = $('#knum').val() || 6;
-        let kMeanIterations = $('#kiteration').val() || 50;
+        let kMeanIterations = $('#kiteration').val() || 1;
         recalculateCluster( {clusterMethod: 'kmean',bin:{k:kMeanGroup,iterations:kMeanIterations}},function(){
             clickArr = [];
             plotPosition = [];
@@ -1180,6 +1178,20 @@ function analyzedata() {
                             console.log("2 series have different length at: sample = " + p + ", x-var = " + xvar + ", y-var = " + yvar);
                         }
 
+                        // SMOOTH
+                        let sliding = 30;
+                        let xSmooth = [], ySmooth =[];
+                        for (let i = 0; i < xdata.length - sliding; i++) {
+                            xSmooth[i] = 0;
+                            ySmooth[i] = 0;
+                            for (let j = 0; j < sliding; j++) {
+                                xSmooth[i] += xdata[i+j];
+                                ySmooth[i] += ydata[i+j];
+                            }
+                            xSmooth[i] /= sliding;
+                            ySmooth[i] /= sliding;
+                        }
+
                         // CALCULATIONS RELATED LENGTH
                         var edgelength = [];
                         var sumlength = 0;
@@ -1300,12 +1312,13 @@ function analyzedata() {
                                     if (xx < 0 && yy < 0) {dir[2] += 1;}
                                     if (xx > 0 && yy < 0) {dir[3] += 1;}
                                     // check intersections for INTERSECTIONS
+                                    if (i > xi + 1 && i < xSmooth.length - 1 && xi < xSmooth.length - 3) {
+                                        if (checkintersection(xSmooth[xi], ySmooth[xi], xSmooth[xi + 1], ySmooth[xi + 1], xSmooth[i], ySmooth[i], xSmooth[i + 1], ySmooth[i + 1])) {
+                                            looplength = (looplength < (i - xi)) ? i - xi : looplength;
+                                        }
+                                    }
                                     if (i > xi + 1 && i < xdata.length - 1 && xi < xdata.length - 3) {
                                         if (checkintersection(x, ydata[xi], xdata[xi + 1], ydata[xi + 1], xdata[i], ydata[i], xdata[i + 1], ydata[i + 1])) {
-                                            // looparr[countcrossing] = i-xi;
-                                            if ((i - xi) > minloop && (i - xi) < maxloop) {
-                                                looplength = (looplength < (i - xi)) ? i - xi : looplength;
-                                            }
                                             countcrossing += 1;
                                         }
                                     }
@@ -1313,7 +1326,7 @@ function analyzedata() {
                                 if (xi > 0 && xi < xdata.length - 1) {
                                     // sumcos += Math.abs(calculatecos(xdata[xi - 1], ydata[xi - 1], x, ydata[xi], xdata[xi + 1], ydata[xi + 1]));
                                     sumcos += calculatecos(xdata[xi - 1], ydata[xi - 1], x, ydata[xi], xdata[xi + 1], ydata[xi + 1]);
-                                    if(calculatecos(xdata[xi - 1], ydata[xi - 1], x, ydata[xi], xdata[xi + 1], ydata[xi + 1]) < -0.75) countcosine += 1;
+                                    if(calculatecos(xdata[xi - 1], ydata[xi - 1], x, ydata[xi], xdata[xi + 1], ydata[xi + 1]) < 0.25) countcosine += 1;
                                 }
                             });
                             // LENGTH
@@ -1383,7 +1396,7 @@ function analyzedata() {
                             //   looparr.sort(function (b,n) {return b-n});
                             //   measures[9][p][myIndex][2] = looparr[Math.floor(looparr.length*0.25)]/xdata.length;
                             // }
-                            measures[5][p][myIndex][2] = (looplength > 0) ? (looplength-minloop) / (maxloop - minloop) : 0;
+                            measures[5][p][myIndex][2] = (looplength > 0) ? looplength/xdata.length : 0;
                             // measures[9][p][myIndex][2] = (looplength > 0) ? looplength / xdata.length : 0;
 
                             // CROSS - CORRELATION
@@ -2503,8 +2516,10 @@ function draw() {
                             var mindex = displayplot[selectedmeasure][i+j*correctnumplot][4];
 
                             // draw rectangles for CS - X(t) for 1D
-                            fill(255);
+                            // fill(255);
+                            fill(200);  // for paper
                             stroke(0);
+                            strokeWeight(2);    // for paper
                             rect(xBlank+csPlotSize+xBlank+j*groupSize,yBlank+50+i*(csPlotSize+ygBlank),csPlotSize,csPlotSize);
 
                             // draw rectangles for time series
