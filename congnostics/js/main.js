@@ -2516,8 +2516,8 @@ function draw() {
                             var mindex = displayplot[selectedmeasure][i+j*correctnumplot][4];
 
                             // draw rectangles for CS - X(t) for 1D
-                            // fill(255);
-                            fill(200);  // for paper
+                            fill(255);
+                            // fill(200);  // for paper
                             stroke(0);
                             strokeWeight(2);    // for paper
                             rect(xBlank+csPlotSize+xBlank+j*groupSize,yBlank+50+i*(csPlotSize+ygBlank),csPlotSize,csPlotSize);

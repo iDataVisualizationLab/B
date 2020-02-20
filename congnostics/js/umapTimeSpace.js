@@ -646,7 +646,9 @@ function drawLeaderPlot(ctx_,target_,plotPosition_,isMouseOver_) {
     let plotIndex = dataRadar2.map(d=>d.plot).findIndex(dd=>dd===plot); // [#plot in dataRadar2 and measures]
     let sampleIndex = plot.split("-")[0];
     let varIndex = plot.split("-")[1];  // for 1D only
-    let plotSize = 30;
+    let xVarIndex = measures[0][sampleIndex][varIndex][0];  // measures[i][sample] needs has similar lengh
+    let yVarIndex = measures[0][sampleIndex][varIndex][1];
+    let plotSize = (selectedDisplay === '1D') ? 30 : 60;
     let color = [];
     // ctx.translate(-plotSize,-plotSize/2);
     if (displayType === "rose") {
@@ -719,10 +721,17 @@ function drawLeaderPlot(ctx_,target_,plotPosition_,isMouseOver_) {
         ctx.lineWidth = 3;
         ctx.fill();
         ctx.stroke();
-        ctx.strokeRect(plotPosition[0],plotPosition[1], 2*plotSize, plotSize);
-        // ctx.strokeRect(xscale(plotPosition[0]),yscale(plotPosition[1]), 2*plotSize, plotSize);
-        ctx.fillRect(plotPosition[0],plotPosition[1], 2*plotSize, plotSize);
-        // ctx.fillRect(xscale(plotPosition[0]),yscale(plotPosition[1]), 2*plotSize, plotSize);
+        if (selectedDisplay === '1D') {
+            ctx.strokeRect(plotPosition[0],plotPosition[1], 2*plotSize, plotSize);
+            // ctx.strokeRect(xscale(plotPosition[0]),yscale(plotPosition[1]), 2*plotSize, plotSize);
+            ctx.fillRect(plotPosition[0],plotPosition[1], 2*plotSize, plotSize);
+            // ctx.fillRect(xscale(plotPosition[0]),yscale(plotPosition[1]), 2*plotSize, plotSize);
+        } else {
+            ctx.strokeRect(plotPosition[0],plotPosition[1], plotSize, plotSize);
+            // ctx.strokeRect(xscale(plotPosition[0]),yscale(plotPosition[1]), 2*plotSize, plotSize);
+            ctx.fillRect(plotPosition[0],plotPosition[1], plotSize, plotSize);
+            // ctx.fillRect(xscale(plotPosition[0]),yscale(plotPosition[1]), 2*plotSize, plotSize);
+        }
         // if (mouseOverPosition.length > 0) {
             // Variable notation
             // let notation = '';
@@ -745,28 +754,65 @@ function drawLeaderPlot(ctx_,target_,plotPosition_,isMouseOver_) {
             // ctx.fill();
         // }
         ctx.lineWidth = 1;
-        timedata.forEach(function (time, step) {
-            if (step) {
-                if(data[sampleIndex][varIndex][step]>=0 && data[sampleIndex][varIndex][step-1]>=0 && data[sampleIndex][varIndex][step]>=0 && data[sampleIndex][varIndex][step-1]>=0) {
-                    let x1 = plotPosition[0]+0.05*plotSize+1.9*plotSize*(step-1)/timedata.length;
-                    // let x1 = xscale(plotPosition[0])+0.05*plotSize+1.9*plotSize*(step-1)/timedata.length;
-                    let x2 = plotPosition[0]+0.05*plotSize+1.9*plotSize*step/timedata.length;
-                    // let x2 = xscale(plotPosition[0])+0.05*plotSize+1.9*plotSize*step/timedata.length;
-                    let y1 = plotPosition[1]+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][varIndex][step-1]);
-                    // let y1 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][varIndex][step-1]);
-                    let y2 = plotPosition[1]+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][varIndex][step]);
-                    // let y2 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][varIndex][step]);
-                    color[0] = (step < timedata.length/2) ? 0 : (step-timedata.length/2)*255/(timedata.length/2);
-                    color[1] = 0;
-                    color[2] = (step < timedata.length/2) ? 255-255*step/(timedata.length/2) : 0;
-                    ctx.beginPath();
-                    ctx.moveTo(x1,y1);
-                    ctx.lineTo(x2, y2);
-                    ctx.strokeStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
-                    ctx.stroke();
-                }
-            }
-        });
+        switch (selectedDisplay) {
+            case "1D":
+                timedata.forEach(function (time, step) {
+                    if (step) {
+                        if(data[sampleIndex][varIndex][step]>=0 && data[sampleIndex][varIndex][step-1]>=0 && data[sampleIndex][varIndex][step]>=0 && data[sampleIndex][varIndex][step-1]>=0) {
+                            let x1 = plotPosition[0]+0.05*plotSize+1.9*plotSize*(step-1)/timedata.length;
+                            // let x1 = xscale(plotPosition[0])+0.05*plotSize+1.9*plotSize*(step-1)/timedata.length;
+                            let x2 = plotPosition[0]+0.05*plotSize+1.9*plotSize*step/timedata.length;
+                            // let x2 = xscale(plotPosition[0])+0.05*plotSize+1.9*plotSize*step/timedata.length;
+                            let y1 = plotPosition[1]+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][varIndex][step-1]);
+                            // let y1 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][varIndex][step-1]);
+                            let y2 = plotPosition[1]+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][varIndex][step]);
+                            // let y2 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][varIndex][step]);
+                            color[0] = (step < timedata.length/2) ? 0 : (step-timedata.length/2)*255/(timedata.length/2);
+                            color[1] = 0;
+                            color[2] = (step < timedata.length/2) ? 255-255*step/(timedata.length/2) : 0;
+                            ctx.beginPath();
+                            ctx.moveTo(x1,y1);
+                            ctx.lineTo(x2, y2);
+                            ctx.strokeStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
+                            ctx.stroke();
+                        }
+                    }
+                });
+                break;
+            case "2D":
+                timedata.forEach((time,step)=>{
+                    if(step) {
+                        // CS plots - X(t) for 1D
+                        if(data[sampleIndex][xVarIndex][step]>=0 && data[sampleIndex][xVarIndex][step-1]>=0 && data[sampleIndex][yVarIndex][step]>=0 && data[sampleIndex][yVarIndex][step-1]>=0) {
+                            let x1 = plotPosition[0]+0.05*plotSize+0.9*plotSize*data[sampleIndex][xVarIndex][step-1];
+                            let x2 = plotPosition[0]+0.05*plotSize+0.9*plotSize*data[sampleIndex][xVarIndex][step];
+                            let y1 = plotPosition[1]+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][yVarIndex][step-1]);
+                            let y2 = plotPosition[1]+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][yVarIndex][step]);
+                            // if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2)); fill(0,0,255-255*step/(timedata.length/2));}
+                            // else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0); fill((step-timedata.length/2)*255/(timedata.length/2),0,0);}
+                            // circle(x1,y1,4);
+                            // strokeWeight(0.3);
+                            // line(x1,y1,x2,y2);
+                            // strokeWeight(1);
+                            color[0] = (step < timedata.length/2) ? 0 : (step-timedata.length/2)*255/(timedata.length/2);
+                            color[1] = 0;
+                            color[2] = (step < timedata.length/2) ? 255-255*step/(timedata.length/2) : 0;
+                            ctx.beginPath();
+                            ctx.moveTo(x1,y1);
+                            ctx.lineTo(x2, y2);
+                            ctx.arc(x2,y2,1,0,2*Math.PI);
+                            ctx.strokeStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
+                            ctx.fillStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
+                            ctx.lineWidth = 0.1;
+                            ctx.stroke();
+                            ctx.fill();
+                        }
+
+                    }
+                });
+                break;
+        }
+
     }
     // ctx.translate(plotSize,plotSize/2);
 }
@@ -953,7 +999,9 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
 
     let sampleIndex = +plot_.split('-')[0];
     let varIndex = +plot_.split('-')[1];
-    let plotSize = [(myWidth-400)*0.25,(myHeight-200)/10];
+    let xVarIndex = measures[0][sampleIndex][varIndex][0];
+    let yVarIndex = measures[0][sampleIndex][varIndex][1];
+    let plotSize = (selectedDisplay === '1D') ? [(myWidth-400)*0.25,(myHeight-200)/10] : [(myHeight-200)/10,(myHeight-200)/10];
     let plotPosition = [(myWidth-300)*0.7,100+position_*(plotSize[1]+5)];
     let ctx = ctx_;
     let plotIndex = dataRadar2.findIndex(d=>{
@@ -1211,24 +1259,53 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
 
     // draw time series
     ctx.lineWidth = 1;
-    timedata.forEach(function (time, step) {
-        if (step) {
-            if(data[sampleIndex][varIndex][step]>=0 && data[sampleIndex][varIndex][step-1]>=0 && data[sampleIndex][varIndex][step]>=0 && data[sampleIndex][varIndex][step-1]>=0) {
-                let x1 = plotPosition[0]+0.05*plotSize[0]+0.9*plotSize[0]*(step-1)/timedata.length;
-                let x2 = plotPosition[0]+0.05*plotSize[0]+0.9*plotSize[0]*step/timedata.length;
-                let y1 = plotPosition[1]+0.05*plotSize[1]+0.9*plotSize[1]*(1-data[sampleIndex][varIndex][step-1]);
-                let y2 = plotPosition[1]+0.05*plotSize[1]+0.9*plotSize[1]*(1-data[sampleIndex][varIndex][step]);
-                color[0] = (step < timedata.length/2) ? 0 : (step-timedata.length/2)*255/(timedata.length/2);
-                color[1] = 0;
-                color[2] = (step < timedata.length/2) ? 255-255*step/(timedata.length/2) : 0;
-                ctx.beginPath();
-                ctx.moveTo(x1,y1);
-                ctx.lineTo(x2, y2);
-                ctx.strokeStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
-                ctx.stroke();
-            }
-        }
-    });
+    switch (selectedDisplay) {
+        case "1D":
+            timedata.forEach(function (time, step) {
+                if (step) {
+                    if(data[sampleIndex][varIndex][step]>=0 && data[sampleIndex][varIndex][step-1]>=0) {
+                        let x1 = plotPosition[0]+0.05*plotSize[0]+0.9*plotSize[0]*(step-1)/timedata.length;
+                        let x2 = plotPosition[0]+0.05*plotSize[0]+0.9*plotSize[0]*step/timedata.length;
+                        let y1 = plotPosition[1]+0.05*plotSize[1]+0.9*plotSize[1]*(1-data[sampleIndex][varIndex][step-1]);
+                        let y2 = plotPosition[1]+0.05*plotSize[1]+0.9*plotSize[1]*(1-data[sampleIndex][varIndex][step]);
+                        color[0] = (step < timedata.length/2) ? 0 : (step-timedata.length/2)*255/(timedata.length/2);
+                        color[1] = 0;
+                        color[2] = (step < timedata.length/2) ? 255-255*step/(timedata.length/2) : 0;
+                        ctx.beginPath();
+                        ctx.moveTo(x1,y1);
+                        ctx.lineTo(x2, y2);
+                        ctx.strokeStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
+                        ctx.stroke();
+                    }
+                }
+            });
+            break;
+        case "2D":
+            timedata.forEach(function (time, step) {
+                if (step) {
+                    if(data[sampleIndex][xVarIndex][step]>=0 && data[sampleIndex][xVarIndex][step-1]>=0 && data[sampleIndex][yVarIndex][step]>=0 && data[sampleIndex][yVarIndex][step-1]>=0) {
+                        let x1 = plotPosition[0]+0.05*plotSize[0]+0.9*plotSize[0]*data[sampleIndex][xVarIndex][step-1];
+                        let x2 = plotPosition[0]+0.05*plotSize[0]+0.9*plotSize[0]*data[sampleIndex][xVarIndex][step];
+                        let y1 = plotPosition[1]+0.05*plotSize[1]+0.9*plotSize[1]*(1-data[sampleIndex][yVarIndex][step-1]);
+                        let y2 = plotPosition[1]+0.05*plotSize[1]+0.9*plotSize[1]*(1-data[sampleIndex][yVarIndex][step]);
+                        color[0] = (step < timedata.length/2) ? 0 : (step-timedata.length/2)*255/(timedata.length/2);
+                        color[1] = 0;
+                        color[2] = (step < timedata.length/2) ? 255-255*step/(timedata.length/2) : 0;
+                        ctx.beginPath();
+                        ctx.moveTo(x1,y1);
+                        ctx.lineTo(x2, y2);
+                        ctx.arc(x2,y2,4,0,2*Math.PI);
+                        ctx.strokeStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
+                        ctx.fillStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
+                        ctx.lineWidth = 0.3;
+                        ctx.stroke();
+                        ctx.fill();
+                    }
+                }
+            });
+            break;
+    }
+
 
     // draw rose chart
     let dataRadarChart = dataRadar2[plotIndex];
