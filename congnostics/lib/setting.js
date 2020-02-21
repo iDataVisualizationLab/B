@@ -1,21 +1,23 @@
 let myWidth = window.innerWidth;
 let myHeight = window.innerHeight;
+let selectedDisplay = "2D";
 let currentPage = 1;
-let maxPerPage = 10;
+let maxPerPage = (selectedDisplay === '1D') ? 10 : 5;
 let displayType = 'series';
 let transformDR = d3.zoomIdentity;
 let multipleMouseOver = 1.5;
 let mouseOverPosition = [];
 let trueMousePosition = [];
+let LMH_mouseOver = true;
 let multipleHighlight = 1.5;
 let plotPosition = [];
 let pointSize = 3;
 let clickArr = [];
 let dimensionReductionData;
 let xscale, yscale;
-let selectedDisplay = "2D";
 let measures = [];  // measures[index][sample][x-var,y-var,value], value = -1 means no data
 let nummeasure = selectedDisplay === "1D" ? 9:8;
+let limitList = [];     // for paper
 // let measurename = [
 //     'Outlying',
 //     'Skinny',

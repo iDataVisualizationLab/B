@@ -196,7 +196,14 @@ d3.tsneTimeSpace = function () {
                 let checkSample, checkVariable;
                 if (checkInteraction) {
                     checkSample = target.plot.split('-')[0] === interactionOption.sample;
-                    checkVariable = target.plot.split('-')[1] === interactionOption.variable;
+                    switch (selectedDisplay) {
+                        case '1D':
+                            checkVariable = target.plot.split('-')[1] === interactionOption.variable;
+                            break;
+                        case '2D':
+                            checkVariable = measures[0][0][+target.plot.split('-')[1]][0] === +interactionOption.variable || measures[0][0][+target.plot.split('-')[1]][1] === +interactionOption.variable;
+                            break;
+                    }
                 }
                 let isMouseOver = (d[0] === mouseOverPosition[0]) && (d[1] === mouseOverPosition[1]);
 
@@ -257,7 +264,14 @@ d3.tsneTimeSpace = function () {
 
                 if (checkInteraction) {     // interaction
                     checkSample = target.plot.split('-')[0] === interactionOption.sample;
-                    checkVariable = target.plot.split('-')[1] === interactionOption.variable;
+                    switch (selectedDisplay) {
+                        case '1D':
+                            checkVariable = target.plot.split('-')[1] === interactionOption.variable;
+                            break;
+                        case '2D':
+                            checkVariable = measures[0][0][+target.plot.split('-')[1]][0] === +interactionOption.variable || measures[0][0][+target.plot.split('-')[1]][1] === +interactionOption.variable;
+                            break;
+                    }
                     if (checkBothInteraction) {
                         if (checkSample && checkVariable)
                             drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],false);
@@ -324,70 +338,139 @@ d3.tsneTimeSpace = function () {
 
                 switch (myCase) {
                     case 'both':
-                        let checkData = data[+interactionOption.sample][+interactionOption.variable].findIndex(d=>d>=0) !== -1;
-                        if (checkData) {
-                            let plot_ = interactionOption.sample + '-' + interactionOption.variable;
-                            drawTimeSeries(background_ctx,plot_,0,trueMousePosition);
+                        switch (selectedDisplay) {
+                            case '1D':
+                                let checkData = data[+interactionOption.sample][+interactionOption.variable].findIndex(d=>d>=0) !== -1;
+                                if (checkData) {
+                                    let plot_ = interactionOption.sample + '-' + interactionOption.variable;
+                                    drawTimeSeries(background_ctx,plot_,0,trueMousePosition);
+                                }
+                                break;
+                            case '2D':
+                                measures[0][+interactionOption.sample].forEach((element,index)=>{
+                                    if (element[0] === +interactionOption.variable || element[1] === +interactionOption.variable) {
+                                        let plot_ = interactionOption.sample + '-' + index.toString();
+                                        drawTimeSeries(background_ctx,plot_,0,trueMousePosition);
+                                    }
+                                });
+                                break;
                         }
                         break;
                     case 'instances':
-                        let checkDataArr = [];
-                        let numTimeSeries = 0;
-                        data[+interactionOption.sample].forEach((d,i)=>{
-                            checkDataArr[i] = d.findIndex(d=>d>=0) !== -1;
-                            if (checkDataArr[i]) numTimeSeries += 1;
-                        });
-                        let indexArr = [];
-                        checkDataArr.forEach((d,i)=>{
-                            if(d) indexArr.push(i);
-                        });
-                        let numLayout = Math.ceil(numTimeSeries/maxPerPage);
-                        let lastPageNum = numTimeSeries%maxPerPage;
-                        // change page
-                        if (clickArr.length>0) {
-                            changePage(numLayout);
-                            clickArr=[];
-                        }
-                        if (currentPage < numLayout) {
-                            for (let j = maxPerPage - 1; j > -1; j--) {
-                                let plot_ = interactionOption.sample + '-' + indexArr[j+maxPerPage*(currentPage-1)].toString();
-                                drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
-                            }
-                        } else {
-                            for (let j = lastPageNum - 1; j > -1; j--) {
-                                let plot_ = interactionOption.sample + '-' + indexArr[j+maxPerPage*(numLayout-1)].toString();
-                                drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
-                            }
+                        switch (selectedDisplay) {
+                            case '1D':
+                                let checkDataArr = [];
+                                let numTimeSeries = 0;
+                                data[+interactionOption.sample].forEach((d,i)=>{
+                                    checkDataArr[i] = d.findIndex(d=>d>=0) !== -1;
+                                    if (checkDataArr[i]) numTimeSeries += 1;
+                                });
+                                let indexArr = [];
+                                checkDataArr.forEach((d,i)=>{
+                                    if(d) indexArr.push(i);
+                                });
+                                let numLayout = Math.ceil(numTimeSeries/maxPerPage);
+                                let lastPageNum = numTimeSeries%maxPerPage;
+                                // change page
+                                if (clickArr.length>0) {
+                                    changePage(numLayout);
+                                    clickArr=[];
+                                }
+                                if (currentPage < numLayout) {
+                                    for (let j = maxPerPage-1; j > -1; j--) {
+                                        let plot_ = interactionOption.sample + '-' + indexArr[j+maxPerPage*(currentPage-1)].toString();
+                                        drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
+                                    }
+                                } else {
+                                    for (let j = lastPageNum - 1; j > -1; j--) {
+                                        let plot_ = interactionOption.sample + '-' + indexArr[j+maxPerPage*(numLayout-1)].toString();
+                                        drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
+                                    }
+                                }
+                                break;
+                            case '2D':
+                                let numLayout2D = Math.ceil(measures[0][+interactionOption.sample].length/maxPerPage);
+                                let lastPageNum2D = measures[0][+interactionOption.sample].length%maxPerPage;
+                                // change page
+                                if (clickArr.length>0) {
+                                    changePage(numLayout2D);
+                                    clickArr=[];
+                                }
+                                measures[0][+interactionOption.sample].forEach((element,index)=>{
+                                    if (currentPage < numLayout2D) {
+                                        for (let j = maxPerPage-1; j > -1; j--) {
+                                            let plot_ = interactionOption.sample + '-' + index.toString();
+                                            drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
+                                        }
+                                    } else {
+                                        for (let j = lastPageNum2D - 1; j > -1; j--) {
+                                            let plot_ = interactionOption.sample + '-' + index.toString();
+                                            drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
+                                        }
+                                    }
+                                });
+                                break;
                         }
                         break;
                     case 'variable':
-                        let checkDataArr2 = [];
-                        let numTimeSeries2 = 0;
-                        data.forEach((d,i)=>{
-                            checkDataArr2[i] = d[+interactionOption.variable].findIndex(d=>d>=0) !== -1;
-                            if (checkDataArr2[i]) numTimeSeries2 += 1;
-                        });
-                        let indexArr2 = [];
-                        checkDataArr2.forEach((d,i)=>{
-                            if(d) indexArr2.push(i);
-                        });
-                        let numLayout2 = Math.ceil(numTimeSeries2/maxPerPage);
-                        let lastPageNum2 = numTimeSeries2%maxPerPage;
-                        // change page
-                        if (clickArr.length>0) {
-                            changePage(numLayout2);
-                            clickArr=[];
-                        }
-                        if (currentPage < numLayout2) {
-                            for (let j = maxPerPage - 1; j > -1; j--) {
-                                let plot_ = indexArr2[j+maxPerPage*(currentPage-1)].toString() + '-' + interactionOption.variable;
-                                drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
-                            }
-                        } else {
-                            for (let j = lastPageNum2 - 1; j > -1; j--) {
-                                let plot_ = indexArr2[j+maxPerPage*(numLayout2-1)].toString() + '-' + interactionOption.variable;
-                                drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
-                            }
+                        switch (selectedDisplay) {
+                            case '1D':
+                                let checkDataArr2 = [];
+                                let numTimeSeries2 = 0;
+                                data.forEach((d,i)=>{
+                                    checkDataArr2[i] = d[+interactionOption.variable].findIndex(d=>d>=0) !== -1;
+                                    if (checkDataArr2[i]) numTimeSeries2 += 1;
+                                });
+                                let indexArr2 = [];
+                                checkDataArr2.forEach((d,i)=>{
+                                    if(d) indexArr2.push(i);
+                                });
+                                let numLayout2 = Math.ceil(numTimeSeries2/maxPerPage);
+                                let lastPageNum2 = numTimeSeries2%maxPerPage;
+                                // change page
+                                if (clickArr.length>0) {
+                                    changePage(numLayout2);
+                                    clickArr=[];
+                                }
+                                if (currentPage < numLayout2) {
+                                    for (let j = maxPerPage - 1; j > -1; j--) {
+                                        let plot_ = indexArr2[j+maxPerPage*(currentPage-1)].toString() + '-' + interactionOption.variable;
+                                        drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
+                                    }
+                                } else {
+                                    for (let j = lastPageNum2 - 1; j > -1; j--) {
+                                        let plot_ = indexArr2[j+maxPerPage*(numLayout2-1)].toString() + '-' + interactionOption.variable;
+                                        drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
+                                    }
+                                }
+                                break;
+                            case '2D':
+                                let numTimeSeries2D = 0;
+                                let timeSeriesIndexArr = [];
+                                measures[0].forEach((element,index)=>{
+                                    element.forEach((element_,index_)=>{
+                                        if (element_[0] === +interactionOption.variable || element_[1] === +interactionOption.variable) {timeSeriesIndexArr[numTimeSeries2D] = index.toString()+'-'+index_.toString(); numTimeSeries2D += 1;}
+                                    });
+                                });
+                                let numLayout22D = Math.ceil(timeSeriesIndexArr.length/maxPerPage);
+                                let lastPageNum22D = timeSeriesIndexArr.length%maxPerPage;
+                                // change page
+                                if (clickArr.length>0) {
+                                    changePage(numLayout22D);
+                                    clickArr=[];
+                                }
+                                if (currentPage < numLayout22D) {
+                                    for (let j = maxPerPage - 1; j > -1; j--) {
+                                        let plot_ = timeSeriesIndexArr[j+maxPerPage*(currentPage-1)];
+                                        drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
+                                    }
+                                } else {
+                                    for (let j = lastPageNum22D - 1; j > -1; j--) {
+                                        let plot_ = timeSeriesIndexArr[j+maxPerPage*(numLayout22D-1)];
+                                        drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
+                                    }
+                                }
+                                break;
                         }
                         break;
                 }

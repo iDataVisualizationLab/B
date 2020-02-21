@@ -617,6 +617,21 @@ function analyzedata() {
 
         });
 
+        // for paper - remove some variables
+        limitList = [];
+        if (mapvar1.get('Mining, Logging')) limitList.push(mapvar1.get('Mining, Logging'));
+        if (mapvar1.get('Wholesale Trade')) limitList.push(mapvar1.get('Wholesale Trade'));
+        if (mapvar1.get('Retail Trade')) limitList.push(mapvar1.get('Retail Trade'));
+        if (mapvar1.get('Finance and Insurance')) limitList.push(mapvar1.get('Finance and Insurance'));
+        if (mapvar1.get('Educational Services')) limitList.push(mapvar1.get('Educational Services'));
+        if (mapvar1.get('Private Service Providing')) limitList.push(mapvar1.get('Private Service Providing'));
+        if (mapvar1.get('State Government')) limitList.push(mapvar1.get('State Government'));
+        if (mapvar1.get('Local Government')) limitList.push(mapvar1.get('Local Government'));
+        if (mapvar1.get('Health Care, Social Assistance')) limitList.push(mapvar1.get('Health Care, Social Assistance'));
+        if (mapvar1.get('Durable Goods')) limitList.push(mapvar1.get('Durable Goods'));
+        if (mapvar1.get('Non-Durable Goods')) limitList.push(mapvar1.get('Non-Durable Goods'));
+        if (mapvar1.get('Administrative and Support and Waste Management and Remediation Services')) limitList.push(mapvar1.get('Administrative and Support and Waste Management and Remediation Services'));
+
         // TIME NAME
         if (selecteddata !== 'ozone' && selecteddata !== 'air_quality' || selecteddata !== 'DowJones')
             timedata = files[0].columns.filter(function (step) {
@@ -800,7 +815,9 @@ function analyzedata() {
             d3.select('#dataInstances').append('option').attr('class','dataInstances').attr('value',i.toString()).text(mapsample2.get(i));
         });
         data[0].forEach((d,i)=>{
-            d3.select('#variable').append('option').attr('class','variable').attr('value',i.toString()).text(mapvar2.get(i));
+            let limitCondition = limitList.findIndex(element => element === i);
+            if (limitCondition === -1)
+                d3.select('#variable').append('option').attr('class','variable').attr('value',i.toString()).text(mapvar2.get(i));
         });
         if (visualizingOption === 'LMH') {
             d3.select('#dataInstances').attr('disabled','');
@@ -1353,26 +1370,33 @@ function analyzedata() {
 
                             // CLUMPY
                             measures[1][p][myIndex][2] = 0;
+                            let Q3 = sortlengtha[Math.floor(sortlengtha.length*0.75)];
                             xdata.forEach(function (x, xi) {
-                                var countleft = 0;
-                                var countright = 0;
-                                var maxleft = 0;
-                                var maxright = 0;
-                                for (var j = xi - 1; j >= 0; j--) {
-                                    if (edgelengtha[j] >= edgelengtha[xi]) break;
-                                    countleft += 1;
-                                    maxleft = (maxleft < edgelengtha[j]) ? edgelengtha[j] : maxleft;
-                                }
-                                for (j = xi + 1; j < xdata.length; j++) {
-                                    if (edgelengtha[j] >= edgelengtha[xi]) break;
-                                    countright += 1;
-                                    maxright = (maxright < edgelengtha[j]) ? edgelengtha[j] : maxright;
-                                }
-                                if (countleft > 0 && countright > 0) {
-                                    var maxxi = (countright > countleft) ? maxright : maxleft;
-                                    maxxi /= edgelengtha[xi];
-                                    maxxi = 1 - maxxi;
-                                    measures[1][p][myIndex][2] = (measures[1][p][myIndex][2] < maxxi) ? maxxi : measures[1][p][myIndex][2];
+                                if (edgelengtha[xi] >= Q3) {
+                                    var countleft = 0;
+                                    var countright = 0;
+                                    var maxleft = 0;
+                                    var maxright = 0;
+                                    let stepLeft = xi-1;
+                                    while (edgelengtha[stepLeft] < edgelengtha[xi] && stepLeft >= 0) {
+                                        countleft += 1;
+                                        maxleft = (maxleft < edgelengtha[stepLeft]) ? edgelengtha[stepLeft] : maxleft;
+                                        stepLeft -= 1;
+                                    }
+                                    let stepRight = xi+1;
+                                    while (edgelengtha[stepRight] < edgelengtha[xi] && stepRight < xdata.length) {
+                                        countright += 1;
+                                        maxright = (maxright < edgelengtha[stepRight]) ? edgelengtha[stepRight] : maxright;
+                                        stepRight += 1;
+                                    }
+                                    if (countleft > 0 && countright > 0) {
+                                        var maxxi = (countright > countleft) ? maxright : maxleft;
+                                        maxxi /= edgelengtha[xi];
+                                        maxxi = 1 - maxxi;
+                                        // maxxi = maxxi*edgelengtha[xi]/0.3;
+                                        // maxxi = maxxi > 1 ? 1 : maxxi;
+                                        measures[1][p][myIndex][2] = (measures[1][p][myIndex][2] < maxxi) ? maxxi : measures[1][p][myIndex][2];
+                                    }
                                 }
                             });
 
@@ -1667,12 +1691,14 @@ function sortmeasures() {
 function prepareRadarTable() {
     dataRadar2 = [];    // [all plot][measures for each plot]
     dataRadar1 = [];    // [measure][all values]
+
     for (let i = 0; i < nummeasure; i++) {
         dataRadar1[i] =[];
         let count = 0;
         measures[i].forEach(function (s,si) {
            s.forEach(function (d,index) {
-             if (d[2] >= 0) {
+               let limitCondition = limitList.findIndex(element=>element === d[0] || element === d[1]);
+             if (d[2] >= 0 && limitCondition === -1) {
                  dataRadar1[i][count] = d[2];
                  dataRadar2[count] = [];
                  dataRadar2[count].name = mapsample2.get(si);
@@ -2192,7 +2218,7 @@ function draw() {
     if(needcalculation) {
         analyzedata();
     }
-    if (needupdate){
+    if (needupdate || LMH_mouseOver){
 
         background(200);
 
@@ -2516,14 +2542,15 @@ function draw() {
                             var mindex = displayplot[selectedmeasure][i+j*correctnumplot][4];
 
                             // draw rectangles for CS - X(t) for 1D
-                            fill(255);
-                            // fill(200);  // for paper
+                            // fill(255);
+                            fill(200);  // for paper
                             stroke(0);
                             strokeWeight(2);    // for paper
                             rect(xBlank+csPlotSize+xBlank+j*groupSize,yBlank+50+i*(csPlotSize+ygBlank),csPlotSize,csPlotSize);
 
                             // draw rectangles for time series
-                            fill(255);
+                            // fill(255);
+                            fill(200);  // for paper
                             noStroke();
                             rect(xBlank+j*groupSize,yBlank+50+oPlotSize+2+i*(csPlotSize+ygBlank),csPlotSize,oPlotSize); // x-data
                             stroke(0);
@@ -2531,7 +2558,8 @@ function draw() {
                             line(xBlank+j*groupSize,yBlank+50+2*oPlotSize+2+i*(csPlotSize+ygBlank),xBlank+csPlotSize+j*groupSize,yBlank+50+2*oPlotSize+2+i*(csPlotSize+ygBlank));
                             noFill();
                             bezier(xBlank+csPlotSize+j*groupSize,yBlank+50+1.5*oPlotSize+2+i*(csPlotSize+ygBlank),1.5*xBlank+csPlotSize+j*groupSize,yBlank+50+1.5*oPlotSize+2+i*(csPlotSize+ygBlank),xBlank+csPlotSize+j*groupSize,yBlank+50+oPlotSize+2+i*(csPlotSize+ygBlank),1.7*xBlank+csPlotSize+j*groupSize,yBlank+50+oPlotSize+i*(csPlotSize+ygBlank));
-                            fill(255);
+                            // fill(255);
+                            fill(200);  // for paper
                             noStroke();
                             rect(xBlank+j*groupSize,yBlank+48+i*(csPlotSize+ygBlank),csPlotSize,oPlotSize); // y-data
                             stroke(0);
@@ -2688,6 +2716,17 @@ function draw() {
                                         strokeWeight(0.3);
                                         line(x1,y1,x2,y2);
                                         strokeWeight(1);
+                                        if (LMH_mouseOver) {
+                                            if (Math.abs(mouseX-x2) < 0.9*csPlotSize/timedata.length && Math.abs(mouseY-y2) < 0.9*csPlotSize/timedata.length) {
+                                                fill(0);
+                                                triangle(x2,y2,x2+5,y2+5,x2+5,y2-5);
+                                                rect(x2+5,y2-23,40,46);
+                                                stroke(255);
+                                                text('X: '+dataRaw[sample][xvar][step],x2+6,y2-8);
+                                                text('Y: '+dataRaw[sample][yvar][step],x2+6,y2+7);
+                                                text('time: '+time,x2+6,y2+22);
+                                            }
+                                        }
                                     }
                                     // X-var plots
                                     if(data[sample][xvar][step]>=0 && data[sample][xvar][step-1]>=0) {
@@ -2698,6 +2737,25 @@ function draw() {
                                         if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
                                         else stroke((step-timedata.length/2)*255/(timedata.length/2),0,0);
                                         line(x1,y1,x2,y2);
+                                        // draw x-y information
+                                        if (LMH_mouseOver) {
+                                            if ((Math.abs(mouseX - x2) < 1.9*oPlotSize/(2*timedata.length))&&(mouseY >= yBlank+50+2+i*(csPlotSize+ygBlank))&&(mouseY <= yBlank+50+2*oPlotSize+2+i*(csPlotSize+ygBlank))) {
+                                                let x22 = 0.05*oPlotSize+xBlank+j*groupSize+1.9*oPlotSize*step/timedata.length;
+                                                let y22 = 0.05*oPlotSize+yBlank+48+i*(csPlotSize+ygBlank)+0.9*oPlotSize*(1-data[sample][yvar][step]);
+                                                fill(0);
+                                                triangle(x2,y2,x2+5,y2-5,x2+5,y2+5);
+                                                triangle(x22,y22,x22+5,y22+5,x22+5,y22-5);
+                                                triangle(x2,yBlank+50+2*oPlotSize,x2+5,yBlank+55+2*oPlotSize,x2-5,yBlank+55+2*oPlotSize);
+                                                rect(x2+5,y2-10,30,20);
+                                                rect(x22+5,y22-10,30,20);
+                                                rect(x2-20,yBlank+55+2*oPlotSize,40,20);
+                                                stroke(255);
+                                                text(dataRaw[sample][xvar][step],x2+6,y2+8);
+                                                text(dataRaw[sample][yvar][step],x22+6,y22+8);
+                                                text(time,x2-18,yBlank+50+2*oPlotSize+18)
+                                            }
+                                            LMH_mouseOver = false
+                                        }
                                     }
                                     // Y-var plots
                                     // xBlank+j*groupSize,yBlank+48+i*(csPlotSize+ygBlank)
@@ -2722,15 +2780,8 @@ function draw() {
     }
 }
 
-// function mousePressed() {
-//     for (var i = 0; i < numplot; i++) {
-//         for (var j = 0; j < 3; j++) {
-//             if (mouseX > xstartpos + j * (plotsize + 2 * splotsize + 2 * xblank1 + xblank2) && mouseX < xstartpos + j * (plotsize + 2 * splotsize + 2 * xblank1 + xblank2) + plotsize && mouseY > ystartpos + i * (plotsize + yblank) && mouseY < ystartpos + i * (plotsize + yblank) + plotsize) {
-//                 choose = !choose;
-//                 needupdate = true;
-//             }
-//         }
-//     }
-// }
-
+// Mouse Over
+function mouseMoved() {
+    LMH_mouseOver = true;
+}
 

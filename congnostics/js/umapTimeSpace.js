@@ -182,7 +182,14 @@ d3.umapTimeSpace = function () {
                 let checkSample, checkVariable;
                 if (checkInteraction) {
                     checkSample = target.plot.split('-')[0] === interactionOption.sample;
-                    checkVariable = target.plot.split('-')[1] === interactionOption.variable;
+                    switch (selectedDisplay) {
+                        case '1D':
+                            checkVariable = target.plot.split('-')[1] === interactionOption.variable;
+                            break;
+                        case '2D':
+                            checkVariable = measures[0][0][+target.plot.split('-')[1]][0] === +interactionOption.variable || measures[0][0][+target.plot.split('-')[1]][1] === +interactionOption.variable;
+                            break;
+                    }
                 }
                 let isMouseOver = (d[0] === mouseOverPosition[0]) && (d[1] === mouseOverPosition[1]);
 
@@ -243,7 +250,14 @@ d3.umapTimeSpace = function () {
 
                 if (checkInteraction) {     // interaction
                     checkSample = target.plot.split('-')[0] === interactionOption.sample;
-                    checkVariable = target.plot.split('-')[1] === interactionOption.variable;
+                    switch (selectedDisplay) {
+                        case '1D':
+                            checkVariable = target.plot.split('-')[1] === interactionOption.variable;
+                            break;
+                        case '2D':
+                            checkVariable = measures[0][0][+target.plot.split('-')[1]][0] === +interactionOption.variable || measures[0][0][+target.plot.split('-')[1]][1] === +interactionOption.variable;
+                            break;
+                    }
                     if (checkBothInteraction) {
                         if (checkSample && checkVariable)
                             drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],false);
@@ -265,9 +279,7 @@ d3.umapTimeSpace = function () {
             // draw leader plots
             storeDraw.forEach(dd=>{
                 let checkInteraction;
-                if ((interactionOption.sample === 'noOption') && (interactionOption.variable === 'noOption'))
-                    checkInteraction = false;
-                else checkInteraction = true;
+                checkInteraction = !((interactionOption.sample === 'noOption') && (interactionOption.variable === 'noOption'));
                 if (!checkInteraction && mouseOverPosition.length === 0 && clickArr.length === 0) drawLeaderPlot(dd[0],dd[1],[xscale(dd[2][0]),yscale(dd[2][1])],false);
             });
             // if (graphicopt.linkConnect) {
@@ -310,70 +322,139 @@ d3.umapTimeSpace = function () {
 
                 switch (myCase) {
                     case 'both':
-                        let checkData = data[+interactionOption.sample][+interactionOption.variable].findIndex(d=>d>=0) !== -1;
-                        if (checkData) {
-                            let plot_ = interactionOption.sample + '-' + interactionOption.variable;
-                            drawTimeSeries(background_ctx,plot_,0,trueMousePosition);
+                        switch (selectedDisplay) {
+                            case '1D':
+                                let checkData = data[+interactionOption.sample][+interactionOption.variable].findIndex(d=>d>=0) !== -1;
+                                if (checkData) {
+                                    let plot_ = interactionOption.sample + '-' + interactionOption.variable;
+                                    drawTimeSeries(background_ctx,plot_,0,trueMousePosition);
+                                }
+                                break;
+                            case '2D':
+                                measures[0][+interactionOption.sample].forEach((element,index)=>{
+                                    if (element[0] === +interactionOption.variable || element[1] === +interactionOption.variable) {
+                                        let plot_ = interactionOption.sample + '-' + index.toString();
+                                        drawTimeSeries(background_ctx,plot_,0,trueMousePosition);
+                                    }
+                                });
+                                break;
                         }
                         break;
                     case 'instances':
-                        let checkDataArr = [];
-                        let numTimeSeries = 0;
-                        data[+interactionOption.sample].forEach((d,i)=>{
-                            checkDataArr[i] = d.findIndex(d=>d>=0) !== -1;
-                            if (checkDataArr[i]) numTimeSeries += 1;
-                        });
-                        let indexArr = [];
-                        checkDataArr.forEach((d,i)=>{
-                            if(d) indexArr.push(i);
-                        });
-                        let numLayout = Math.ceil(numTimeSeries/maxPerPage);
-                        let lastPageNum = numTimeSeries%maxPerPage;
-                        // change page
-                        if (clickArr.length>0) {
-                            changePage(numLayout);
-                            clickArr=[];
-                        }
-                        if (currentPage < numLayout) {
-                            for (let j = maxPerPage-1; j > -1; j--) {
-                                let plot_ = interactionOption.sample + '-' + indexArr[j+maxPerPage*(currentPage-1)].toString();
-                                drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
-                            }
-                        } else {
-                            for (let j = lastPageNum - 1; j > -1; j--) {
-                                let plot_ = interactionOption.sample + '-' + indexArr[j+maxPerPage*(numLayout-1)].toString();
-                                drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
-                            }
+                        switch (selectedDisplay) {
+                            case '1D':
+                                let checkDataArr = [];
+                                let numTimeSeries = 0;
+                                data[+interactionOption.sample].forEach((d,i)=>{
+                                    checkDataArr[i] = d.findIndex(d=>d>=0) !== -1;
+                                    if (checkDataArr[i]) numTimeSeries += 1;
+                                });
+                                let indexArr = [];
+                                checkDataArr.forEach((d,i)=>{
+                                    if(d) indexArr.push(i);
+                                });
+                                let numLayout = Math.ceil(numTimeSeries/maxPerPage);
+                                let lastPageNum = numTimeSeries%maxPerPage;
+                                // change page
+                                if (clickArr.length>0) {
+                                    changePage(numLayout);
+                                    clickArr=[];
+                                }
+                                if (currentPage < numLayout) {
+                                    for (let j = maxPerPage-1; j > -1; j--) {
+                                        let plot_ = interactionOption.sample + '-' + indexArr[j+maxPerPage*(currentPage-1)].toString();
+                                        drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
+                                    }
+                                } else {
+                                    for (let j = lastPageNum - 1; j > -1; j--) {
+                                        let plot_ = interactionOption.sample + '-' + indexArr[j+maxPerPage*(numLayout-1)].toString();
+                                        drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
+                                    }
+                                }
+                                break;
+                            case '2D':
+                                let numLayout2D = Math.ceil(measures[0][+interactionOption.sample].length/maxPerPage);
+                                let lastPageNum2D = measures[0][+interactionOption.sample].length%maxPerPage;
+                                // change page
+                                if (clickArr.length>0) {
+                                    changePage(numLayout2D);
+                                    clickArr=[];
+                                }
+                                measures[0][+interactionOption.sample].forEach((element,index)=>{
+                                    if (currentPage < numLayout2D) {
+                                        for (let j = maxPerPage-1; j > -1; j--) {
+                                            let plot_ = interactionOption.sample + '-' + index.toString();
+                                            drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
+                                        }
+                                    } else {
+                                        for (let j = lastPageNum2D - 1; j > -1; j--) {
+                                            let plot_ = interactionOption.sample + '-' + index.toString();
+                                            drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
+                                        }
+                                    }
+                                });
+                                break;
                         }
                         break;
                     case 'variable':
-                        let checkDataArr2 = [];
-                        let numTimeSeries2 = 0;
-                        data.forEach((d,i)=>{
-                            checkDataArr2[i] = d[+interactionOption.variable].findIndex(d=>d>=0) !== -1;
-                            if (checkDataArr2[i]) numTimeSeries2 += 1;
-                        });
-                        let indexArr2 = [];
-                        checkDataArr2.forEach((d,i)=>{
-                            if(d) indexArr2.push(i);
-                        });
-                        let numLayout2 = Math.ceil(numTimeSeries2/maxPerPage);
-                        let lastPageNum2 = numTimeSeries2%maxPerPage;
-                        // change page
-                        if (clickArr.length>0) {
-                            changePage(numLayout2);
-                            clickArr=[];
-                        }
-                        if (currentPage < numLayout2) {
-                            for (let j = maxPerPage - 1; j > -1; j--) {
-                                let plot_ = indexArr2[j+maxPerPage*(currentPage-1)].toString() + '-' + interactionOption.variable;
-                                drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
-                            }
-                        } else {
-                            for (let j = lastPageNum2 - 1; j > -1; j--) {
-                                let plot_ = indexArr2[j+maxPerPage*(numLayout2-1)].toString() + '-' + interactionOption.variable;
-                                drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
-                            }
+                        switch (selectedDisplay) {
+                            case '1D':
+                                let checkDataArr2 = [];
+                                let numTimeSeries2 = 0;
+                                data.forEach((d,i)=>{
+                                    checkDataArr2[i] = d[+interactionOption.variable].findIndex(d=>d>=0) !== -1;
+                                    if (checkDataArr2[i]) numTimeSeries2 += 1;
+                                });
+                                let indexArr2 = [];
+                                checkDataArr2.forEach((d,i)=>{
+                                    if(d) indexArr2.push(i);
+                                });
+                                let numLayout2 = Math.ceil(numTimeSeries2/maxPerPage);
+                                let lastPageNum2 = numTimeSeries2%maxPerPage;
+                                // change page
+                                if (clickArr.length>0) {
+                                    changePage(numLayout2);
+                                    clickArr=[];
+                                }
+                                if (currentPage < numLayout2) {
+                                    for (let j = maxPerPage - 1; j > -1; j--) {
+                                        let plot_ = indexArr2[j+maxPerPage*(currentPage-1)].toString() + '-' + interactionOption.variable;
+                                        drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
+                                    }
+                                } else {
+                                    for (let j = lastPageNum2 - 1; j > -1; j--) {
+                                        let plot_ = indexArr2[j+maxPerPage*(numLayout2-1)].toString() + '-' + interactionOption.variable;
+                                        drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
+                                    }
+                                }
+                                break;
+                            case '2D':
+                                let numTimeSeries2D = 0;
+                                let timeSeriesIndexArr = [];
+                                measures[0].forEach((element,index)=>{
+                                    element.forEach((element_,index_)=>{
+                                        if (element_[0] === +interactionOption.variable || element_[1] === +interactionOption.variable) {timeSeriesIndexArr[numTimeSeries2D] = index.toString()+'-'+index_.toString(); numTimeSeries2D += 1;}
+                                    });
+                                });
+                                let numLayout22D = Math.ceil(timeSeriesIndexArr.length/maxPerPage);
+                                let lastPageNum22D = timeSeriesIndexArr.length%maxPerPage;
+                                // change page
+                                if (clickArr.length>0) {
+                                    changePage(numLayout22D);
+                                    clickArr=[];
+                                }
+                                if (currentPage < numLayout22D) {
+                                    for (let j = maxPerPage - 1; j > -1; j--) {
+                                        let plot_ = timeSeriesIndexArr[j+maxPerPage*(currentPage-1)];
+                                        drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
+                                    }
+                                } else {
+                                    for (let j = lastPageNum22D - 1; j > -1; j--) {
+                                        let plot_ = timeSeriesIndexArr[j+maxPerPage*(numLayout22D-1)];
+                                        drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
+                                    }
+                                }
+                                break;
                         }
                         break;
                 }
@@ -919,10 +1000,10 @@ function onClickFunction() {
         // click turn off button of time series
         let buttonPosition = [];
         let buttonSize = [12,12];
-        let plotSize = [(myWidth-400)*0.25,(myHeight-200)/10];
+        let plotSize = (selectedDisplay === '1D') ? [(myWidth-400)*0.25,(myHeight-200)/maxPerPage] : [(myHeight-300)/maxPerPage,(myHeight-300)/maxPerPage];
         let checkClickPoint = true;
         clickArr.forEach((d,i)=>{
-            let plotPosition = [(myWidth-300)*0.7,100+(clickArr.length-1-i)*plotSize[1]];
+            let plotPosition = (selectedDisplay === '1D') ? [(myWidth-300)*0.7,100+(clickArr.length-1-i)*plotSize[1]+5] : [(myWidth-300)*0.7,80+(clickArr.length-1-i)*(plotSize[1]+40)];
             buttonPosition[i] = [plotPosition[0]+plotSize[0]+3,plotPosition[1]];
         });
         buttonPosition.forEach((d,i)=>{
@@ -1001,12 +1082,13 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
     let varIndex = +plot_.split('-')[1];
     let xVarIndex = measures[0][sampleIndex][varIndex][0];
     let yVarIndex = measures[0][sampleIndex][varIndex][1];
-    let plotSize = (selectedDisplay === '1D') ? [(myWidth-400)*0.25,(myHeight-200)/10] : [(myHeight-200)/10,(myHeight-200)/10];
-    let plotPosition = [(myWidth-300)*0.7,100+position_*(plotSize[1]+5)];
+    let plotSize = (selectedDisplay === '1D') ? [(myWidth-400)*0.25,(myHeight-200)/maxPerPage] : [(myHeight-300)/maxPerPage,(myHeight-300)/maxPerPage];
+    let plotPosition = (selectedDisplay === '1D') ? [(myWidth-300)*0.7,100+position_*(plotSize[1]+5)] : [(myWidth-300)*0.7,80+position_*(plotSize[1]+40)];
     let ctx = ctx_;
     let plotIndex = dataRadar2.findIndex(d=>{
         return d.plot === plot_;
     });
+    let group = dataRadar2[plotIndex].cluster;
 
     // check interaction
     let checkInteraction, checkBothInteraction;
@@ -1016,79 +1098,228 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
     // draw rectangles of time series
     ctx.beginPath();
     ctx.fillStyle = "rgb(255,255,255)";
-    ctx.strokeStyle = "rgb(0,0,0)";
+    ctx.strokeStyle = colorCluster(cluster_info[group].name);
     ctx.lineWidth = 3;
     ctx.fill();
     ctx.stroke();
     ctx.strokeRect(plotPosition[0],plotPosition[1], plotSize[0], plotSize[1]);
     ctx.fillRect(plotPosition[0],plotPosition[1], plotSize[0], plotSize[1]);
 
-    // Variable notation
-    let notationVar = '';
-    let countSpaceVar = [], myCountSpaceVar = [], countLineVar = 0, countIndexVar = 0, countFalse = 0;
-    let notationArrVar = mapvar2.get(varIndex).split('');
-    notationArrVar.forEach((d,i)=>{
-        if (d === ' ') myCountSpaceVar.push(i);
-    });
-    countSpaceVar = myCountSpaceVar.map((d,i)=>{
-        if (i) {
-            if (d-myCountSpaceVar[i-1]>3) return d;
-            else return false;
-        } else {
-            if (d>2) return d;
-            else return false;
-        }
-    });
-    countSpaceVar.forEach(d=>{if(d===false) countFalse += 1;});
-
-    // Instance notation
-    let notationIns = '';
-    let countSpaceIns = [], myCountSpaceIns = [], countLineIns = 0, countIndexIns = 0, countFalse2 = 0;
-    let notationArrIns = mapsample2.get(sampleIndex).split('');
-    notationArrIns.forEach((d,i)=>{
-        if (d === ' ') myCountSpaceIns.push(i);
-    });
-    countSpaceIns = myCountSpaceIns.map((d,i)=>{
-        if (i) {
-            if (d-myCountSpaceIns[i-1]>3) return d;
-            else return false;
-        } else {
-            if (d>2) return d;
-            else return false;
-        }
-    });
-    countSpaceIns.forEach(d=>{if(d===false) countFalse2 += 1;});
-
-    if (checkInteraction) {     // in interaction mode
-        if (interactionOption.sample !== 'noOption') {      // turn on instance
-            ctx.translate(plotPosition[0]-5,plotPosition[1]+plotSize[1]);
-            ctx.rotate(-Math.PI/2);
-            ctx.font = "12px Arial";
-            ctx.fillStyle = 'rgb(0,0,0)';
-            if (notationArrVar.length > 14) {
-                if (countSpaceVar.length === 0) {
-                    notationVar = '';
-                    for (let j = 0; j < 14; j++) {
-                        notationVar += notationArrVar[j];
-                    }
-                    ctx.fillText(notationVar,0,0);
+    switch (selectedDisplay) {
+        case '1D':
+            // Variable notation
+            let notationVar = '';
+            let countSpaceVar = [], myCountSpaceVar = [], countLineVar = 0, countIndexVar = 0, countFalse = 0;
+            let notationArrVar = mapvar2.get(varIndex).split('');
+            notationArrVar.forEach((d,i)=>{
+                if (d === ' ') myCountSpaceVar.push(i);
+            });
+            countSpaceVar = myCountSpaceVar.map((d,i)=>{
+                if (i) {
+                    if (d-myCountSpaceVar[i-1]>3) return d;
+                    else return false;
                 } else {
-                    countLineVar = 0;
-                    countSpaceVar.forEach((d,i)=>{
-                        if (d) {
+                    if (d>2) return d;
+                    else return false;
+                }
+            });
+            countSpaceVar.forEach(d=>{if(d===false) countFalse += 1;});
+
+            // Instance notation
+            let notationIns = '';
+            let countSpaceIns = [], myCountSpaceIns = [], countLineIns = 0, countIndexIns = 0, countFalse2 = 0;
+            let notationArrIns = mapsample2.get(sampleIndex).split('');
+            notationArrIns.forEach((d,i)=>{
+                if (d === ' ') myCountSpaceIns.push(i);
+            });
+            countSpaceIns = myCountSpaceIns.map((d,i)=>{
+                if (i) {
+                    if (d-myCountSpaceIns[i-1]>3) return d;
+                    else return false;
+                } else {
+                    if (d>2) return d;
+                    else return false;
+                }
+            });
+            countSpaceIns.forEach(d=>{if(d===false) countFalse2 += 1;});
+
+            if (checkInteraction) {     // in interaction mode
+                if (interactionOption.sample !== 'noOption') {      // turn on instance
+                    ctx.translate(plotPosition[0]-5,plotPosition[1]+plotSize[1]);
+                    ctx.rotate(-Math.PI/2);
+                    ctx.font = "12px Arial";
+                    ctx.fillStyle = 'rgb(0,0,0)';
+                    if (notationArrVar.length > 14) {
+                        if (countSpaceVar.length === 0) {
                             notationVar = '';
-                            if (i === 0) {
-                                if (countSpaceVar.length>1) {
-                                    for (let j = 0; j < d; j++) {
+                            for (let j = 0; j < 14; j++) {
+                                notationVar += notationArrVar[j];
+                            }
+                            ctx.fillText(notationVar,0,0);
+                        } else {
+                            countLineVar = 0;
+                            countSpaceVar.forEach((d,i)=>{
+                                if (d) {
+                                    notationVar = '';
+                                    if (i === 0) {
+                                        if (countSpaceVar.length>1) {
+                                            for (let j = 0; j < d; j++) {
+                                                notationVar += notationArrVar[j];
+                                            }
+                                            ctx.fillText(notationVar,0,-15*(countSpaceVar.length-countFalse));
+                                            countLineVar += 1;
+                                        } else {
+                                            for (let j = 0; j < d; j++) {
+                                                notationVar += notationArrVar[j];
+                                            }
+                                            ctx.fillText(notationVar,0,-15*(countSpaceVar.length-countFalse));
+                                            notationVar = '';
+                                            for (let j = d+1; j < notationArrVar.length; j++) {
+                                                notationVar += notationArrVar[j];
+                                            }
+                                            ctx.fillText(notationVar,0,0);
+                                            countLineVar += 1;
+                                        }
+                                    } else if (i<countSpaceVar.length-1) {
+                                        for (let j = countSpaceVar[i-1-countIndexVar]+1; j < d; j++) {
+                                            notationVar += notationArrVar[j];
+                                        }
+                                        ctx.fillText(notationVar,0,-(countSpaceVar.length-countLineVar-countFalse)*15);
+                                        countLineVar += 1;
+                                    } else {
+                                        for (let j = countSpaceVar[i-1-countIndexVar]+1; j < d; j++) {
+                                            notationVar += notationArrVar[j];
+                                        }
+                                        ctx.fillText(notationVar,0,-(countSpaceVar.length-countLineVar-countFalse)*15);
+                                        notationVar = '';
+                                        for (let j = d+1; j < notationArrVar.length; j++) {
+                                            notationVar += notationArrVar[j];
+                                        }
+                                        ctx.fillText(notationVar,0,0);
+                                        countLineVar += 1;
+                                    }
+                                    countIndexVar = 0;
+                                } else countIndexVar += 1;
+                            });
+                        }
+                    } else {
+                        ctx.fillText(mapvar2.get(varIndex),0,0);
+                    }
+                    ctx.fill();
+                    ctx.rotate(Math.PI/2);
+                    ctx.translate(-plotPosition[0]+5,-plotPosition[1]-plotSize[1]);
+                } else {        // turn on variable or bot
+                    ctx.translate(plotPosition[0]-5,plotPosition[1]+plotSize[1]);
+                    ctx.rotate(-Math.PI/2);
+                    ctx.font = "12px Arial";
+                    ctx.fillStyle = 'rgb(0,0,0)';
+                    if (notationArrIns.length > 14) {
+                        if (countSpaceIns.length === 0) {
+                            notationIns = '';
+                            for (let j = 0; j < 14; j++) {
+                                notationIns += notationArrIns[j];
+                            }
+                            ctx.fillText(notationIns,0,0);
+                        } else {
+                            countLineIns = 0;
+                            countSpaceIns.forEach((d,i)=>{
+                                if (d) {
+                                    notationIns = '';
+                                    if (i === 0) {
+                                        if (countSpaceIns.length-countFalse2>1) {
+                                            for (let j = 0; j < d; j++) {
+                                                notationIns += notationArrIns[j];
+                                            }
+                                            ctx.fillText(notationIns,0,-15*(countSpaceIns.length-countFalse2));
+                                            countLineIns += 1;
+                                        } else {
+                                            for (let j = 0; j < d; j++) {
+                                                notationIns += notationArrIns[j];
+                                            }
+                                            ctx.fillText(notationIns,0,-15*(countSpaceIns.length-countFalse2));
+                                            notationIns = '';
+                                            for (let j = d+1; j < notationArrIns.length; j++) {
+                                                notationIns += notationArrIns[j];
+                                            }
+                                            ctx.fillText(notationIns,0,0);
+                                            countLineIns += 1;
+                                        }
+                                    } else if (i<countSpaceIns.length-1) {
+                                        for (let j = countSpaceIns[i-1-countIndexIns]+1; j < d; j++) {
+                                            notationIns += notationArrIns[j];
+                                        }
+                                        ctx.fillText(notationIns,0,-(countSpaceIns.length-countLineIns-countFalse2)*15);
+                                        countLineIns += 1;
+                                    } else {
+                                        for (let j = countSpaceIns[i-1-countIndexIns]+1; j < d; j++) {
+                                            notationIns += notationArrIns[j];
+                                        }
+                                        ctx.fillText(notationIns,0,-(countSpaceIns.length-countLineIns-countFalse2)*15);
+                                        notationIns = '';
+                                        for (let j = d+1; j < notationArrIns.length; j++) {
+                                            notationIns += notationArrIns[j];
+                                        }
+                                        ctx.fillText(notationIns,0,0);
+                                        countLineIns += 1;
+                                    }
+                                    countIndexIns = 0;
+                                } else countIndexIns += 1;
+                            });
+                        }
+                    } else {
+                        ctx.fillText(mapsample2.get(sampleIndex),0,0);
+                    }
+                    ctx.fill();
+                    ctx.rotate(Math.PI/2);
+                    ctx.translate(-plotPosition[0]+5,-plotPosition[1]-plotSize[1]);
+                }
+            } else {    // no interaction mode
+                ctx.translate(plotPosition[0]-5,plotPosition[1]+plotSize[1]);
+                ctx.rotate(-Math.PI/2);
+                ctx.font = "12px Arial";
+                ctx.fillStyle = 'rgb(0,0,0)';
+                if (notationArrVar.length > 14) {
+                    if (countSpaceVar.length === 0) {
+                        notationVar = '';
+                        for (let j = 0; j < 14; j++) {
+                            notationVar += notationArrVar[j];
+                        }
+                        ctx.fillText(notationVar,0,0);
+                    } else {
+                        countLineVar = 0;
+                        countSpaceVar.forEach((d,i)=>{
+                            if (d) {
+                                notationVar = '';
+                                if (i === 0) {
+                                    if (countSpaceVar.length>1) {
+                                        for (let j = 0; j < d; j++) {
+                                            notationVar += notationArrVar[j];
+                                        }
+                                        ctx.fillText(notationVar,0,-15*(countSpaceVar.length));
+                                        countLineVar += 1;
+                                    } else {
+                                        for (let j = 0; j < d; j++) {
+                                            notationVar += notationArrVar[j];
+                                        }
+                                        ctx.fillText(notationVar,0,-15*(countSpaceVar.length));
+                                        notationVar = '';
+                                        for (let j = d+1; j < notationArrVar.length; j++) {
+                                            notationVar += notationArrVar[j];
+                                        }
+                                        ctx.fillText(notationVar,0,0);
+                                        countLineVar += 1;
+                                    }
+                                } else if (i<countSpaceVar.length-1) {
+                                    for (let j = countSpaceVar[i-1-countIndexVar]+1; j < d; j++) {
                                         notationVar += notationArrVar[j];
                                     }
-                                    ctx.fillText(notationVar,0,-15*(countSpaceVar.length-countFalse));
+                                    ctx.fillText(notationVar,0,-(countSpaceVar.length-countLineVar)*15);
                                     countLineVar += 1;
                                 } else {
-                                    for (let j = 0; j < d; j++) {
+                                    for (let j = countSpaceVar[i-1-countIndexVar]+1; j < d; j++) {
                                         notationVar += notationArrVar[j];
                                     }
-                                    ctx.fillText(notationVar,0,-15*(countSpaceVar.length-countFalse));
+                                    ctx.fillText(notationVar,0,-(countSpaceVar.length-countLineVar)*15);
                                     notationVar = '';
                                     for (let j = d+1; j < notationArrVar.length; j++) {
                                         notationVar += notationArrVar[j];
@@ -1096,166 +1327,204 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
                                     ctx.fillText(notationVar,0,0);
                                     countLineVar += 1;
                                 }
-                            } else if (i<countSpaceVar.length-1) {
-                                for (let j = countSpaceVar[i-1-countIndexVar]+1; j < d; j++) {
-                                    notationVar += notationArrVar[j];
-                                }
-                                ctx.fillText(notationVar,0,-(countSpaceVar.length-countLineVar-countFalse)*15);
-                                countLineVar += 1;
-                            } else {
-                                for (let j = countSpaceVar[i-1-countIndexVar]+1; j < d; j++) {
-                                    notationVar += notationArrVar[j];
-                                }
-                                ctx.fillText(notationVar,0,-(countSpaceVar.length-countLineVar-countFalse)*15);
-                                notationVar = '';
-                                for (let j = d+1; j < notationArrVar.length; j++) {
-                                    notationVar += notationArrVar[j];
-                                }
-                                ctx.fillText(notationVar,0,0);
-                                countLineVar += 1;
-                            }
-                            countIndexVar = 0;
-                        } else countIndexVar += 1;
-                    });
-                }
-            } else {
-                ctx.fillText(mapvar2.get(varIndex),0,0);
-            }
-            ctx.fill();
-            ctx.rotate(Math.PI/2);
-            ctx.translate(-plotPosition[0]+5,-plotPosition[1]-plotSize[1]);
-        } else {        // turn on variable or bot
-            ctx.translate(plotPosition[0]-5,plotPosition[1]+plotSize[1]);
-            ctx.rotate(-Math.PI/2);
-            ctx.font = "12px Arial";
-            ctx.fillStyle = 'rgb(0,0,0)';
-            if (notationArrIns.length > 14) {
-                if (countSpaceIns.length === 0) {
-                    notationIns = '';
-                    for (let j = 0; j < 14; j++) {
-                        notationIns += notationArrIns[j];
+                                countIndexVar = 0;
+                            } else countIndexVar += 1;
+                        });
                     }
-                    ctx.fillText(notationIns,0,0);
                 } else {
-                    countLineIns = 0;
-                    countSpaceIns.forEach((d,i)=>{
-                        if (d) {
-                            notationIns = '';
-                            if (i === 0) {
-                                if (countSpaceIns.length-countFalse2>1) {
-                                    for (let j = 0; j < d; j++) {
-                                        notationIns += notationArrIns[j];
-                                    }
-                                    ctx.fillText(notationIns,0,-15*(countSpaceIns.length-countFalse2));
-                                    countLineIns += 1;
-                                } else {
-                                    for (let j = 0; j < d; j++) {
-                                        notationIns += notationArrIns[j];
-                                    }
-                                    ctx.fillText(notationIns,0,-15*(countSpaceIns.length-countFalse2));
-                                    notationIns = '';
-                                    for (let j = d+1; j < notationArrIns.length; j++) {
-                                        notationIns += notationArrIns[j];
-                                    }
-                                    ctx.fillText(notationIns,0,0);
-                                    countLineIns += 1;
-                                }
-                            } else if (i<countSpaceIns.length-1) {
-                                for (let j = countSpaceIns[i-1-countIndexIns]+1; j < d; j++) {
-                                    notationIns += notationArrIns[j];
-                                }
-                                ctx.fillText(notationIns,0,-(countSpaceIns.length-countLineIns-countFalse2)*15);
-                                countLineIns += 1;
-                            } else {
-                                for (let j = countSpaceIns[i-1-countIndexIns]+1; j < d; j++) {
-                                    notationIns += notationArrIns[j];
-                                }
-                                ctx.fillText(notationIns,0,-(countSpaceIns.length-countLineIns-countFalse2)*15);
-                                notationIns = '';
-                                for (let j = d+1; j < notationArrIns.length; j++) {
-                                    notationIns += notationArrIns[j];
-                                }
-                                ctx.fillText(notationIns,0,0);
-                                countLineIns += 1;
-                            }
-                            countIndexIns = 0;
-                        } else countIndexIns += 1;
-                    });
+                    ctx.fillText(mapvar2.get(varIndex),0,0);
                 }
-            } else {
-                ctx.fillText(mapsample2.get(sampleIndex),0,0);
+                ctx.fill();
+                ctx.rotate(Math.PI/2);
+                ctx.translate(-plotPosition[0]+5,-plotPosition[1]-plotSize[1]);
+                ctx.font = '12px Arial';
+                ctx.fillText(mapsample2.get(sampleIndex),plotPosition[0]+2,plotPosition[1]+15);
             }
-            ctx.fill();
-            ctx.rotate(Math.PI/2);
-            ctx.translate(-plotPosition[0]+5,-plotPosition[1]-plotSize[1]);
-        }
-    } else {    // no interaction mode
-        ctx.translate(plotPosition[0]-5,plotPosition[1]+plotSize[1]);
-        ctx.rotate(-Math.PI/2);
-        ctx.font = "12px Arial";
-        ctx.fillStyle = 'rgb(0,0,0)';
-        if (notationArrVar.length > 14) {
-            if (countSpaceVar.length === 0) {
-                notationVar = '';
-                for (let j = 0; j < 14; j++) {
-                    notationVar += notationArrVar[j];
-                }
-                ctx.fillText(notationVar,0,0);
-            } else {
-                countLineVar = 0;
-                countSpaceVar.forEach((d,i)=>{
-                    if (d) {
-                        notationVar = '';
-                        if (i === 0) {
-                            if (countSpaceVar.length>1) {
-                                for (let j = 0; j < d; j++) {
-                                    notationVar += notationArrVar[j];
-                                }
-                                ctx.fillText(notationVar,0,-15*(countSpaceVar.length));
-                                countLineVar += 1;
-                            } else {
-                                for (let j = 0; j < d; j++) {
-                                    notationVar += notationArrVar[j];
-                                }
-                                ctx.fillText(notationVar,0,-15*(countSpaceVar.length));
-                                notationVar = '';
-                                for (let j = d+1; j < notationArrVar.length; j++) {
-                                    notationVar += notationArrVar[j];
-                                }
-                                ctx.fillText(notationVar,0,0);
-                                countLineVar += 1;
-                            }
-                        } else if (i<countSpaceVar.length-1) {
-                            for (let j = countSpaceVar[i-1-countIndexVar]+1; j < d; j++) {
-                                notationVar += notationArrVar[j];
-                            }
-                            ctx.fillText(notationVar,0,-(countSpaceVar.length-countLineVar)*15);
-                            countLineVar += 1;
-                        } else {
-                            for (let j = countSpaceVar[i-1-countIndexVar]+1; j < d; j++) {
-                                notationVar += notationArrVar[j];
-                            }
-                            ctx.fillText(notationVar,0,-(countSpaceVar.length-countLineVar)*15);
-                            notationVar = '';
-                            for (let j = d+1; j < notationArrVar.length; j++) {
-                                notationVar += notationArrVar[j];
-                            }
-                            ctx.fillText(notationVar,0,0);
-                            countLineVar += 1;
-                        }
-                        countIndexVar = 0;
-                    } else countIndexVar += 1;
+            break;
+            case "2D":
+                // x Variable notation
+                let xNotation = '';
+                let xCountSpace = [], myXCountSpace = [], xCountLine = 0, xCountIndex = 0, xCountFalse = 0;
+                let xNotationArr = mapvar2.get(xVarIndex).split('');
+                xNotationArr.forEach((d,i)=>{
+                    if (d === ' ') myXCountSpace.push(i);
                 });
-            }
-        } else {
-            ctx.fillText(mapvar2.get(varIndex),0,0);
-        }
-        ctx.fill();
-        ctx.rotate(Math.PI/2);
-        ctx.translate(-plotPosition[0]+5,-plotPosition[1]-plotSize[1]);
-        ctx.font = '12px Arial';
-        ctx.fillText(mapsample2.get(sampleIndex),plotPosition[0]+2,plotPosition[1]+15);
+                xCountSpace = myXCountSpace.map((d,i)=>{
+                    if (i) {
+                        if (d-myXCountSpace[i-1]>3) return d;
+                        else return false;
+                    } else {
+                        if (d>2) return d;
+                        else return false;
+                    }
+                });
+                xCountSpace.forEach(d=>{if(d===false) xCountFalse += 1;});
+
+                // y Variable notation
+                let yNotation = '';
+                let yCountSpace = [], myYCountSpace = [], yCountLine = 0, yCountIndex = 0, yCountFalse = 0;
+                let yNotationArr = mapvar2.get(yVarIndex).split('');
+                yNotationArr.forEach((d,i)=>{
+                    if (d === ' ') myYCountSpace.push(i);
+                });
+                yCountSpace = myYCountSpace.map((d,i)=>{
+                    if (i) {
+                        if (d-myYCountSpace[i-1]>3) return d;
+                        else return false;
+                    } else {
+                        if (d>2) return d;
+                        else return false;
+                    }
+                });
+                yCountSpace.forEach(d=>{if(d===false) yCountFalse += 1;});
+
+                // Instance notation
+                let notationIns2D = '';
+                let countSpaceIns2D = [], myCountSpaceIns2D = [], countLineIns2D = 0, countIndexIns2D = 0, countFalse2D = 0;
+                let notationArrIns2D = mapsample2.get(sampleIndex).split('');
+                notationArrIns2D.forEach((d,i)=>{
+                    if (d === ' ') myCountSpaceIns2D.push(i);
+                });
+                countSpaceIns2D = myCountSpaceIns2D.map((d,i)=>{
+                    if (i) {
+                        if (d-myCountSpaceIns2D[i-1]>3) return d;
+                        else return false;
+                    } else {
+                        if (d>2) return d;
+                        else return false;
+                    }
+                });
+                countSpaceIns2D.forEach(d=>{if(d===false) countFalse2D += 1;});
+
+                ctx.translate(plotPosition[0]-5,plotPosition[1]+plotSize[1]);
+                ctx.rotate(-Math.PI/2);
+                ctx.font = "12px Arial";
+                ctx.fillStyle = 'rgb(0,0,0)';
+                if (yNotationArr.length > 14) {
+                    if (yCountSpace.length === 0) {
+                        yNotation = '';
+                        for (let j = 0; j < 14; j++) {
+                            yNotation += yNotationArr[j];
+                        }
+                        ctx.fillText(yNotation,0,0);
+                    } else {
+                        yCountLine = 0;
+                        yCountSpace.forEach((d,i)=>{
+                            if (d) {
+                                yNotation = '';
+                                if (i === 0) {
+                                    if (yCountSpace.length>1) {
+                                        for (let j = 0; j < d; j++) {
+                                            yNotation += yNotationArr[j];
+                                        }
+                                        ctx.fillText(yNotation,0,-15*(yCountSpace.length-yCountFalse));
+                                        yCountLine += 1;
+                                    } else {
+                                        for (let j = 0; j < d; j++) {
+                                            yNotation += yNotationArr[j];
+                                        }
+                                        ctx.fillText(yNotation,0,-15*(yCountSpace.length-yCountFalse));
+                                        yNotation = '';
+                                        for (let j = d+1; j < yNotationArr.length; j++) {
+                                            yNotation += yNotationArr[j];
+                                        }
+                                        ctx.fillText(yNotation,0,0);
+                                        yCountLine += 1;
+                                    }
+                                } else if (i<yCountSpace.length-1) {
+                                    for (let j = yCountSpace[i-1-yCountIndex]+1; j < d; j++) {
+                                        yNotation += yNotationArr[j];
+                                    }
+                                    ctx.fillText(yNotation,0,-(yCountSpace.length-yCountLine-yCountFalse)*15);
+                                    yCountLine += 1;
+                                } else {
+                                    for (let j = yCountSpace[i-1-yCountIndex]+1; j < d; j++) {
+                                        yNotation += yNotationArr[j];
+                                    }
+                                    ctx.fillText(yNotation,0,-(yCountSpace.length-yCountLine-yCountFalse)*15);
+                                    yNotation = '';
+                                    for (let j = d+1; j < yNotationArr.length; j++) {
+                                        yNotation += yNotationArr[j];
+                                    }
+                                    ctx.fillText(yNotation,0,0);
+                                    yCountLine += 1;
+                                }
+                                yCountIndex = 0;
+                            } else yCountIndex += 1;
+                        });
+                    }
+                } else {
+                    ctx.fillText(mapvar2.get(yVarIndex),0,0);
+                }
+                ctx.fill();
+                ctx.rotate(Math.PI/2);
+                ctx.translate(-plotPosition[0]+5,-plotPosition[1]-plotSize[1]);
+                ctx.translate(plotPosition[0],plotPosition[1]+plotSize[1]+10);
+                // if (xNotationArr.length > 14) {
+                //     if (xCountSpace.length === 0) {
+                //         xNotation = '';
+                //         for (let j = 0; j < 14; j++) {
+                //             xNotation += xNotationArr[j];
+                //         }
+                //         ctx.fillText(xNotation,0,0);
+                //     } else {
+                //         xCountLine = 0;
+                //         xCountSpace.forEach((d,i)=>{
+                //             if (d) {
+                //                 xNotation = '';
+                //                 if (i === 0) {
+                //                     if (xCountSpace.length>1) {
+                //                         for (let j = 0; j < d; j++) {
+                //                             xNotation += xNotationArr[j];
+                //                         }
+                //                         ctx.fillText(xNotation,0,-15*(xCountSpace.length-xCountFalse));
+                //                         xCountLine += 1;
+                //                     } else {
+                //                         for (let j = 0; j < d; j++) {
+                //                             xNotation += xNotationArr[j];
+                //                         }
+                //                         ctx.fillText(xNotation,0,-15*(xCountSpace.length-xCountFalse));
+                //                         xNotation = '';
+                //                         for (let j = d+1; j < xNotationArr.length; j++) {
+                //                             xNotation += xNotationArr[j];
+                //                         }
+                //                         ctx.fillText(xNotation,0,0);
+                //                         xCountLine += 1;
+                //                     }
+                //                 } else if (i<xCountSpace.length-1) {
+                //                     for (let j = xCountSpace[i-1-xCountIndex]+1; j < d; j++) {
+                //                         xNotation += xNotationArr[j];
+                //                     }
+                //                     ctx.fillText(xNotation,0,-(xCountSpace.length-xCountLine-xCountFalse)*15);
+                //                     xCountLine += 1;
+                //                 } else {
+                //                     for (let j = xCountSpace[i-1-xCountIndex]+1; j < d; j++) {
+                //                         xNotation += xNotationArr[j];
+                //                     }
+                //                     ctx.fillText(xNotation,0,-(xCountSpace.length-xCountLine-xCountFalse)*15);
+                //                     xNotation = '';
+                //                     for (let j = d+1; j < xNotationArr.length; j++) {
+                //                         xNotation += xNotationArr[j];
+                //                     }
+                //                     ctx.fillText(xNotation,0,0);
+                //                     xCountLine += 1;
+                //                 }
+                //                 xCountIndex = 0;
+                //             } else xCountIndex += 1;
+                //         });
+                //     }
+                // } else {
+                //     ctx.fillText(mapvar2.get(xVarIndex),0,0);
+                // }
+                ctx.fillText(mapvar2.get(xVarIndex),0,0);
+                ctx.translate(-plotPosition[0],-plotPosition[1]-plotSize[1]-10);
+                ctx.translate(plotPosition[0],plotPosition[1]-3);
+                ctx.fillText(mapsample2.get(sampleIndex),0,0);
+                ctx.translate(-plotPosition[0],-plotPosition[1]+3);
+
+                break;
     }
+
 
     // draw time series
     ctx.lineWidth = 1;
@@ -1294,7 +1563,7 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
                         ctx.beginPath();
                         ctx.moveTo(x1,y1);
                         ctx.lineTo(x2, y2);
-                        ctx.arc(x2,y2,4,0,2*Math.PI);
+                        ctx.arc(x2,y2,1,0,2*Math.PI);
                         ctx.strokeStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
                         ctx.fillStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
                         ctx.lineWidth = 0.3;
