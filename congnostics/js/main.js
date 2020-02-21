@@ -2218,7 +2218,7 @@ function draw() {
     if(needcalculation) {
         analyzedata();
     }
-    if (needupdate || LMH_mouseOver){
+    if (needupdate){
 
         background(200);
 
