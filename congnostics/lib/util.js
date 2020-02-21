@@ -1005,13 +1005,17 @@ function onSaveDescription (){
 // chart controll ------------------------------------
 let viztype='rose';
 let RadarChart_func;
+let RadarChart_c_func;
 let starChart_func, radarChart_func, roseChart_func, flowerChart_func;
 if (typeof RadarChart!== 'undefined') {
     starChart_func = _.bind(RadarChart, {smooth: 1});
     radarChart_func = _.bind(RadarChart, {smooth: 0.5});
+    starChart_c_func = _.bind(RadarChart_canvas, {smooth: 1});
+    radarChart_c_func = _.bind(RadarChart_canvas, {smooth: 0.5});
     roseChart_func = _.bind(RoseChart, {shape: 'rose'});
     flowerChart_func = _.bind(RoseChart, {shape: 'flower'});
     RadarChart_func = roseChart_func;
+    RadarChart_c_func = radarChart_c_func;
 }
 
 // radar draw
@@ -1046,8 +1050,6 @@ function createRadar_func(datapoint, bg, data, customopt,radaropt,colorscale) {
     });
     return datapoint;
 }
-
-
 
 
 

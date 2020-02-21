@@ -1749,6 +1749,7 @@ function prepareRadarTable() {
     //     .graphicopt({width:160,height:25,opt:{dataformated:true},
     //         margin: {top: 0, right: 30, bottom: 0, left: 30},
     //     }).data([dataRadar[measurename[selectedmeasure]]]).setTicksDisplay([0,1]).draw(svg_violin);
+    firstTime = false;
 }
 // Calculate Cluster
 function recalculateCluster (option,calback) {
@@ -2000,13 +2001,15 @@ function updateViztype (viztype_in){
     RadarChart_func = eval(`${viztype}Chart_func`);
     d3.selectAll('.radarPlot .radarWrapper').remove();
     if (!firstTime) {
-        updateSummaryChartAll();
+
         MetricController.charType(viztype).drawSummary();
         if (cluster_info) {
             cluster_map(cluster_info);
         }
     }
 }
+
+
 
 let serviceFull_selected =[];
 function getsummaryservice(dataf_){
@@ -2576,7 +2579,7 @@ function draw() {
                             for (var k = 5; k > 0; k--) {
                                 ellipse(xCenter,yCenter,rPlotSize*0.2*k,rPlotSize*0.2*k);
                             }
-                            for (var k = 0; k < nummeasure-1; k++) {
+                            for (let k = 0; k < nummeasure-1; k++) {
                                 var xp1 = xCenter+rPlotSize*Math.sin(Math.PI*2*k/nummeasure)/2;
                                 var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*k/nummeasure)/2;
                                 stroke(180,180,180,100);
@@ -2595,7 +2598,10 @@ function draw() {
                                         stroke(89, 135, 222);
                                         break;
                                 }
-                                arc(xCenter,yCenter,rPlotSize*measures[k][sample][mindex][2],rPlotSize*measures[k][sample][mindex][2],Math.PI*2*k/nummeasure-Math.PI/(2*nummeasure)-Math.PI/2,Math.PI*2*k/nummeasure+Math.PI/(nummeasure*2)-Math.PI/2);
+
+                                // arc(xCenter,yCenter,rPlotSize*measures[k][sample][mindex][2],rPlotSize*measures[k][sample][mindex][2],Math.PI*2*k/nummeasure-Math.PI/(2*nummeasure)-Math.PI/2,Math.PI*2*k/nummeasure+Math.PI/(nummeasure*2)-Math.PI/2);
+                                //triangle(xCenter,yCenter,xCenter-0.5*rPlotSize*measures[k][sample][mindex][2]*Math.sin(Math.PI*2*k/nummeasure+0.1),yCenter+0.5*rPlotSize*measures[k][sample][mindex][2]*Math.cos(Math.PI*2*k/nummeasure+0.1),xCenter-0.5*rPlotSize*measures[k+1][sample][mindex][2]*Math.sin(Math.PI*2*(k+1)/nummeasure-0.1),yCenter+0.5*rPlotSize*measures[k+1][sample][mindex][2]*Math.cos(Math.PI*2*(k+1)/nummeasure-0.1));
+                                // arc(xCenter,yCenter,rPlotSize*measures[k][sample][mindex][2],rPlotSize*measures[k][sample][mindex][2],Math.PI*2*k/nummeasure-Math.PI/2-0.1,Math.PI*2*k/nummeasure-Math.PI/2+0.1);
                                 textSize(8);
                                 noStroke();
                                 if (k>nummeasure/2-1) {
@@ -2604,6 +2610,11 @@ function draw() {
                                 text(measurename[k]+': '+Math.round(measures[k][sample][mindex][2]*100)/100,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*k/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*k/nummeasure)/2);
                                 textAlign(LEFT);
                             }
+                            radarChartclusteropt.pos = {x:xCenter,y:yCenter};
+                            let datum = serviceList.map((s,si)=>{
+                                return {axis:s,value:measures[si][sample][mindex][2]}
+                            });
+                            RadarChart_c_func('#mainCanvasHolder canvas',[datum],radarChartclusteropt,'');
                             var xp1 = xCenter+rPlotSize*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2;
                             var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2;
                             stroke(180,180,180,100);
@@ -2622,11 +2633,15 @@ function draw() {
                                     stroke(89, 135, 222);
                                     break;
                             }
-                            arc(xCenter,yCenter,rPlotSize*measures[nummeasure-1][sample][mindex][2],rPlotSize*measures[nummeasure-1][sample][mindex][2],Math.PI*2*(nummeasure-1)/nummeasure-Math.PI/(2*nummeasure)-Math.PI/2,Math.PI*2*(nummeasure-1)/nummeasure+Math.PI/(2*nummeasure)-Math.PI/2);
+                            // fill(180);
+                            // stroke(180);
+                            // arc(xCenter,yCenter,rPlotSize*measures[nummeasure-1][sample][mindex][2],rPlotSize*measures[nummeasure-1][sample][mindex][2],Math.PI*2*(nummeasure-1)/nummeasure-Math.PI/(2*nummeasure)-Math.PI/2,Math.PI*2*(nummeasure-1)/nummeasure+Math.PI/(2*nummeasure)-Math.PI/2);
+                            // triangle(xCenter,yCenter,xCenter-0.5*rPlotSize*measures[nummeasure-1][sample][mindex][2]*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure+0.1),yCenter+0.5*rPlotSize*measures[nummeasure-1][sample][mindex][2]*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure+0.1),xCenter-0.5*rPlotSize*measures[0][sample][mindex][2]*Math.sin(-0.1),yCenter+0.5*rPlotSize*measures[0][sample][mindex][2]*Math.cos(-0.1));
+                            // arc(xCenter,yCenter,rPlotSize*measures[k][sample][mindex][2],rPlotSize*measures[k][sample][mindex][2],Math.PI*2*k/nummeasure-Math.PI/2-0.1,Math.PI*2*k/nummeasure-Math.PI/2+0.1);
                             textSize(8);
                             noStroke();
                             textAlign(RIGHT);
-                            text(measurename[k]+': '+Math.round(measures[k][sample][mindex][2]*100)/100,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2);
+                            text(measurename[nummeasure-1]+': '+Math.round(measures[nummeasure-1][sample][mindex][2]*100)/100,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2);
                             textAlign(LEFT);
 
                             // DRAW PERIODOGRAM

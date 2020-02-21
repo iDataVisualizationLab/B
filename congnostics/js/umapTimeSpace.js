@@ -769,18 +769,19 @@ function drawLeaderPlot(ctx_,target_,plotPosition_,isMouseOver_) {
         }
         dataRadarChart.forEach((d,i)=>{
             ctx.beginPath();
-            let colorRadar;
-            switch (type[i]) {
-                case 0:
-                    colorRadar = [18, 169, 101];
-                    break;
-                case 1:
-                    colorRadar = [232, 101, 11];
-                    break;
-                case 2:
-                    colorRadar = [89, 135, 222];
-                    break;
-            }
+            let colorRadar = colorCluster(cluster_info[group].name);    // for paper
+            // let colorRadar;
+            // switch (type[i]) {
+            //     case 0:
+            //         colorRadar = [18, 169, 101];
+            //         break;
+            //     case 1:
+            //         colorRadar = [232, 101, 11];
+            //         break;
+            //     case 2:
+            //         colorRadar = [89, 135, 222];
+            //         break;
+            // }
             // ctx.arc(plotPosition[0],plotPosition[1],d*rRadarChart,(i-0.25)*angle-Math.PI/2,(i+0.25)*angle-Math.PI/2);
             ctx.arc(xscale(plotPosition[0]),yscale(plotPosition[1]),d*rRadarChart,(i-0.25)*angle-Math.PI/2,(i+0.25)*angle-Math.PI/2);
             ctx.fillStyle = `rgb(${colorRadar[0]},${colorRadar[1]},${colorRadar[2]})`;
