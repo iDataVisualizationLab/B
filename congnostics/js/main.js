@@ -2610,11 +2610,6 @@ function draw() {
                                 text(measurename[k]+': '+Math.round(measures[k][sample][mindex][2]*100)/100,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*k/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*k/nummeasure)/2);
                                 textAlign(LEFT);
                             }
-                            radarChartclusteropt.pos = {x:xCenter,y:yCenter};
-                            let datum = serviceList.map((s,si)=>{
-                                return {axis:s,value:measures[si][sample][mindex][2]}
-                            });
-                            RadarChart_c_func('#mainCanvasHolder canvas',[datum],radarChartclusteropt,'');
                             var xp1 = xCenter+rPlotSize*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2;
                             var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2;
                             stroke(180,180,180,100);
@@ -2643,6 +2638,13 @@ function draw() {
                             textAlign(RIGHT);
                             text(measurename[nummeasure-1]+': '+Math.round(measures[nummeasure-1][sample][mindex][2]*100)/100,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2);
                             textAlign(LEFT);
+                            // draw radar, not rose
+                            radarChartclusteropt.pos = {x:xCenter,y:yCenter};
+                            let datum = serviceList.map((s,si)=>{
+                                return {axis:s,value:measures[si][sample][mindex][2]}
+                            });
+                            RadarChart_c_func('#mainCanvasHolder canvas',[datum],radarChartclusteropt,'');
+
 
                             // DRAW PERIODOGRAM
                             // var xCenter = 2*xBlank+2*csPlotSize+rPlotSize+j*groupSize;

@@ -213,7 +213,8 @@ d3.umapTimeSpace = function () {
                 let fillColor = d3.color(colorarr[target.cluster].value);
                 if (!checkInteraction) {    // no interaction
                     if (mouseOverPosition.length===0) fillColor.opacity = 0.8;
-                    else if (isMouseOver) fillColor.opacity = 1;
+                    // else if (isMouseOver) fillColor.opacity = 1;
+                    else if (isMouseOver) fillColor.opacity = 0.5;      // for paper
                     else fillColor.opacity = 0.2;
                 } else {    // interaction
                     if (checkBothInteraction) {
@@ -226,6 +227,7 @@ d3.umapTimeSpace = function () {
                         else fillColor.opacity = 0.2;
                     }
                 }
+                fillColor.opacity = 0.3;        // for paper
 
                 // begin draw point
                 background_ctx.beginPath();
@@ -799,7 +801,9 @@ function drawLeaderPlot(ctx_,target_,plotPosition_,isMouseOver_) {
         // Draw main plots
         ctx.beginPath();
         ctx.fillStyle = "rgb(255,255,255)";
-        ctx.strokeStyle = colorCluster(cluster_info[group].name);
+        let strokeColor = colorCluster(cluster_info[group].name);
+        strokeColor.opacity = 0.5;      // for paper
+        ctx.strokeStyle = strokeColor;
         ctx.lineWidth = 3;
         ctx.fill();
         ctx.stroke();

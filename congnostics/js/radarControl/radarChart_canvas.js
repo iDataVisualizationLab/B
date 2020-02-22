@@ -189,9 +189,11 @@ function RadarChart_canvas(id, data, options, name) {
     let d = data[0];i = 0;
     g.beginPath();
     radarLine(data[0]);
-    g.lineWidth = cfg.strokeWidth;
-    g.strokeStyle = cfg.color(i,d);
-    g.fillStyle = cfg.fillin?cfg.color(i,d):"none";
+    // g.lineWidth = cfg.strokeWidth;
+    // g.strokeStyle = cfg.color(i,d);
+    g.strokeStyle = 'rgb(200,200,200)';
+    // g.fillStyle = cfg.fillin?cfg.color(i,d):"none";
+    g.fillStyle = 'rgb(200,200,200)';
     g.fill();
     g.stroke();
 
