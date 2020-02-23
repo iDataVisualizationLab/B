@@ -317,6 +317,8 @@ $( document ).ready(function() {
         d3.select('#analysis').on('change',function(){
             selectedDisplay = this.value;
             type = selectedDisplay === "1D" ? [0,0,0,1,1,1,2,2,2] : [0,0,0,0,1,1,1,1];
+            measurename = [];
+            measureObj = {};
             switch (this.value) {
                 case "1D":
                     nummeasure = 11;
@@ -354,10 +356,10 @@ $( document ).ready(function() {
                         'Clumpy',
                         // 'Sparse',
                         'Striated',
-                        'Trend',
+                        'Cross-correlation',
                         "Intersections",
                         "Loop",
-                        'Cross-correlation',
+                        'Trend',
                         'Length',
                     ];
                     measureObj = {
@@ -367,10 +369,10 @@ $( document ).ready(function() {
                         'Clumpy':1,
                         // 'Sparse':4,
                         'Striated':2,
-                        'Trend':3,
+                        'Cross-correlation':3,
                         "Intersections":4,
                         "Loop":5,
-                        'Cross-correlation':6,
+                        'Trend':6,
                         'Length':7
                     };
                     d3.select('#note1').classed('hide',true);
@@ -382,7 +384,7 @@ $( document ).ready(function() {
             needcalculation = true;
             radarChartclusteropt.schema = serviceFullList;
             // update MetricController
-            MetricController.remove();
+            MetricController = {};
             MetricController = radarController();
             MetricController.graphicopt({width:365,height:365})
                 .div(d3.select('#RadarController'))
@@ -1350,8 +1352,8 @@ function analyzedata() {
                             measures[7][p][myIndex][2] = sumlengtha / (xdata.length - 1);
                             if (measures[7][p][myIndex][2] > 1) measures[7][p][myIndex][2] = 1;
                             // MONOTONIC TREND
-                            measures[3][p][myIndex][2] = (4/3)*Math.max(...dir) / (xdata.length*(xdata.length-1)/2)-1/3;
-                            if (measures[3][p][myIndex][2] < 0) measures[3][p][myIndex][2] = 0;
+                            measures[6][p][myIndex][2] = (4/3)*Math.max(...dir) / (xdata.length*(xdata.length-1)/2)-1/3;
+                            if (measures[6][p][myIndex][2] < 0) measures[6][p][myIndex][2] = 0;
                             // INTERSECTIONS
                             measures[4][p][myIndex][2] = 1 - Math.exp(-countcrossing / (xdata.length - 1));
                             // STRIATED
@@ -1455,7 +1457,7 @@ function analyzedata() {
                                 }
                                 maxr = (maxr < r) ? r : maxr;
                             }
-                            measures[6][p][myIndex][2] = maxr;
+                            measures[3][p][myIndex][2] = maxr;
 
                             // SIMILARITY
                             // measures[10][p][myIndex][2] = 1 - minsim / (xdata.length-getLag);
@@ -1691,6 +1693,7 @@ function sortmeasures() {
 function prepareRadarTable() {
     dataRadar2 = [];    // [all plot][measures for each plot]
     dataRadar1 = [];    // [measure][all values]
+    dataRadar = {};
 
     for (let i = 0; i < nummeasure; i++) {
         dataRadar1[i] =[];

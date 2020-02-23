@@ -63,10 +63,10 @@ let measurename = selectedDisplay === "1D" ?
     'Clumpy',
     // 'Sparse',
     'Striated',
-    'Trend',
+    'Cross-correlation',
     "Intersections",
     "Loop",
-    'Cross-correlation',
+    'Trend',
     'Length',
 ];
 let measureObj = selectedDisplay === "1D" ?
@@ -87,10 +87,10 @@ let measureObj = selectedDisplay === "1D" ?
     'Clumpy':1,
     // 'Sparse':4,
     'Striated':2,
-    'Trend':3,
+    'Cross-correlation':3,
     "Intersections":4,
     "Loop":5,
-    'Cross-correlation':6,
+    'Trend':6,
     'Length':7
 };
 
