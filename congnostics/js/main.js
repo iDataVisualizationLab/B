@@ -125,7 +125,9 @@ function settingMeasureUpdate() {
         .text(d => d);
     mc.select('label.measureFilterCheck')
         .on('change', function (d) {
-            checkfilter[measureObj[d]] = this.checked;
+            checkfilter[measureObj[d]] = !checkfilter[measureObj[d]];
+            // console.log(this.checked);
+            // console.log(d);
             d3.select(this.parentNode.parentNode).attr('disabled', this.checked ? null : 'disabled');
             needupdate = true;
         });
@@ -221,7 +223,7 @@ $( document ).ready(function() {
                 d3.select('#ecg').attr('disabled',null);
                 d3.select('#test').attr('disabled',null);
             }
-            console.log(this.value);
+            // console.log(this.value);
             if(visualizingOption === 'LMH') {
                 d3.select('#mainCanvasHolder').classed('hide',false);
                 d3.select('#tSNE').classed('hide',true);
@@ -1319,7 +1321,7 @@ function analyzedata() {
                             var countcrossing = 0;  // count #intersections
                             var sumcos = 0;   // sum of cosine of angles
                             // var looparr = [];
-                            var looplength = 0;
+                            var looplength = Infinity;
                             var countcosine = 0;
                             xdata.forEach(function (x, xi) {
                                 for (var i = xi + 1; i < xdata.length; i++) {   // for all data after x
@@ -1333,7 +1335,7 @@ function analyzedata() {
                                     // check intersections for INTERSECTIONS
                                     if (i > xi + 1 && i < xSmooth.length - 1 && xi < xSmooth.length - 3) {
                                         if (checkintersection(xSmooth[xi], ySmooth[xi], xSmooth[xi + 1], ySmooth[xi + 1], xSmooth[i], ySmooth[i], xSmooth[i + 1], ySmooth[i + 1])) {
-                                            looplength = (looplength < (i - xi)) ? i - xi : looplength;
+                                            looplength = (looplength > (i - xi)) ? i - xi : looplength;
                                         }
                                     }
                                     if (i > xi + 1 && i < xdata.length - 1 && xi < xdata.length - 3) {
@@ -1422,7 +1424,7 @@ function analyzedata() {
                             //   looparr.sort(function (b,n) {return b-n});
                             //   measures[9][p][myIndex][2] = looparr[Math.floor(looparr.length*0.25)]/xdata.length;
                             // }
-                            measures[5][p][myIndex][2] = (looplength > 0) ? looplength/xdata.length : 0;
+                            measures[5][p][myIndex][2] = (looplength === Infinity) ? 0 : looplength/xdata.length;
                             // measures[9][p][myIndex][2] = (looplength > 0) ? looplength / xdata.length : 0;
 
                             // CROSS - CORRELATION
@@ -1638,6 +1640,8 @@ function analyzedata() {
 // SORT MEASURES AND WRITE DISPLAYPLOT
 function sortmeasures() {
     displayplot = [];
+    // console.log(checkfilter);
+    // console.log(valfilter);
     for (var i = 0; i < nummeasure; i++) {
         var sortarr = [];
         var aindex = 0;

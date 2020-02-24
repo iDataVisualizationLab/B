@@ -226,7 +226,7 @@ let radarController = function () {
         if (tablediv) {
             let table = tablediv.select("table");
             dataTable = $(table.node()).DataTable({
-                data: radarcomp.axisList,
+                data: radarcomp.axisList,               // remove -> no violin charts
                 "order": [[3, "desc"], [2, "asc"]],
                 "pageLength": 50,
                 "columnDefs": [
