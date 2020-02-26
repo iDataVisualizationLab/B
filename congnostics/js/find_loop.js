@@ -76,7 +76,9 @@ Promise.all([
         };
         let layout = {
             title: instance+', '+x_var+', '+y_var,
-        }
+            heigh: 600,
+            width: 600,
+        };
         Plotly.newPlot(id,[trace],layout);
     });
 });
