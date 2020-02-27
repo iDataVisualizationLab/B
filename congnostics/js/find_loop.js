@@ -95,8 +95,8 @@ Promise.all([
                     text: y_var
                 },
             },
-            height: 600,
-            width: 600,
+            height: 400,
+            width: 400,
             colorway: colorWay,
             // annotations: notations,
         };
@@ -170,8 +170,8 @@ Promise.all([
                     text: y_var
                 },
             },
-            height: 600,
-            width: 600,
+            height: 400,
+            width: 400,
             colorway: colorWay,
             // annotations: notations,
         };
