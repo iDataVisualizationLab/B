@@ -13,14 +13,19 @@ class DesignHTML {
                 .append('div')
                 .attr('id',parentID)
                 .attr('class','row');
-            // create first column
+            // create three first columns
             for (let j = 0; j < 3; j++) {
                 let columnID = parentID+'_'+j.toString();
                 d3.select('#'+parentID)
                     .append('div')
                     .attr('id',columnID)
-                    .attr('class','column');
+                    .attr('class','column_3');
             }
+            // create last column
+            d3.select('#'+parentID)
+                .append('div')
+                .attr('id',parentID+'_3')
+                .attr('class','column_1')
         }
     }
 }

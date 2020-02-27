@@ -66,10 +66,10 @@ Promise.all([
                 trace[i].hovertemplate = 'Loop length: ' + element[1][2][(i-1)/2][1];
                 colorWay[i] = experiment.colorList[i];
                 // write info:
-                d3.select('#'+'myDiv'+index.toString()+'_0')
+                d3.select('#'+'myDiv'+index.toString()+'_3')
                     .append('p')
                     .text('Loop length: '+element[1][2][(i-1)/2][1])
-                    .attr('style','color:'+experiment.colorList[i]);
+                    .attr('style','text-align:center; color:'+experiment.colorList[i]);
                 // notations[(i-1)/2] = {
                 //     x: experiment.dataSmooth[instance][x_var][element[1][2][(i-1)/2][0]],
                 //     y: experiment.dataSmooth[instance][y_var][element[1][2][(i-1)/2][0]],
@@ -95,8 +95,8 @@ Promise.all([
                     text: y_var
                 },
             },
-            height: 400,
-            width: 400,
+            height: experiment.window_size[0]*0.3,
+            width: experiment.window_size[0]*0.3,
             colorway: colorWay,
             // annotations: notations,
         };
@@ -170,11 +170,49 @@ Promise.all([
                     text: y_var
                 },
             },
-            height: 400,
-            width: 400,
+            height: experiment.window_size[0]*0.3,
+            width: experiment.window_size[0]*0.3,
             colorway: colorWay,
             // annotations: notations,
         };
         Plotly.newPlot(id,trace,layout);
+    });
+    experiment.highLoop.forEach((element,index)=>{
+       let id = 'myDiv'+index+'_0';
+        let instance = element[0];
+        let x_var = element[1][0];
+        let y_var = element[1][1];
+        let xTrace = {
+            type: 'scatter',
+            mode: 'lines',
+            x: experiment.timeInfo,
+            y: experiment.data[instance][x_var],
+            name: x_var,
+            hoverinfo: 'x+y',
+        };
+        let yTrace = {
+            type: 'scatter',
+            mode: 'lines',
+            x: experiment.timeInfo,
+            y: experiment.data[instance][y_var],
+            name: y_var,
+            hoverinfo: 'x+y',
+        };
+        let layout = {
+            title: instance,
+            width: experiment.window_size[0]*0.3,
+            height: experiment.window_size[0]*0.2,
+            xaxis: {
+                title: {
+                    text: 'Time'
+                }
+            },
+            yaxis: {
+                title: {
+                    text: 'US employment in thousands'
+                }
+            }
+        };
+        Plotly.newPlot(id,[xTrace,yTrace],layout);
     });
 });

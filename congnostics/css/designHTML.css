@@ -1,6 +1,11 @@
-.column {
+.column_3 {
     float: left;
     width: 30%;
+}
+
+.column_1 {
+    float: left;
+    width: 10%;
 }
 
 .row:after {
