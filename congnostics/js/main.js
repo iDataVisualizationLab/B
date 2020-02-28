@@ -622,19 +622,19 @@ function analyzedata() {
         });
 
         // for paper - remove some variables
-        limitList = [];
-        if (mapvar1.get('Mining, Logging')) limitList.push(mapvar1.get('Mining, Logging'));
-        if (mapvar1.get('Wholesale Trade')) limitList.push(mapvar1.get('Wholesale Trade'));
-        if (mapvar1.get('Retail Trade')) limitList.push(mapvar1.get('Retail Trade'));
-        if (mapvar1.get('Finance and Insurance')) limitList.push(mapvar1.get('Finance and Insurance'));
-        if (mapvar1.get('Educational Services')) limitList.push(mapvar1.get('Educational Services'));
-        if (mapvar1.get('Private Service Providing')) limitList.push(mapvar1.get('Private Service Providing'));
-        if (mapvar1.get('State Government')) limitList.push(mapvar1.get('State Government'));
-        if (mapvar1.get('Local Government')) limitList.push(mapvar1.get('Local Government'));
-        if (mapvar1.get('Health Care, Social Assistance')) limitList.push(mapvar1.get('Health Care, Social Assistance'));
-        if (mapvar1.get('Durable Goods')) limitList.push(mapvar1.get('Durable Goods'));
-        if (mapvar1.get('Non-Durable Goods')) limitList.push(mapvar1.get('Non-Durable Goods'));
-        if (mapvar1.get('Administrative and Support and Waste Management and Remediation Services')) limitList.push(mapvar1.get('Administrative and Support and Waste Management and Remediation Services'));
+        // limitList = [];
+        // if (mapvar1.get('Mining, Logging')) limitList.push(mapvar1.get('Mining, Logging'));
+        // if (mapvar1.get('Wholesale Trade')) limitList.push(mapvar1.get('Wholesale Trade'));
+        // if (mapvar1.get('Retail Trade')) limitList.push(mapvar1.get('Retail Trade'));
+        // if (mapvar1.get('Finance and Insurance')) limitList.push(mapvar1.get('Finance and Insurance'));
+        // if (mapvar1.get('Educational Services')) limitList.push(mapvar1.get('Educational Services'));
+        // if (mapvar1.get('Private Service Providing')) limitList.push(mapvar1.get('Private Service Providing'));
+        // if (mapvar1.get('State Government')) limitList.push(mapvar1.get('State Government'));
+        // if (mapvar1.get('Local Government')) limitList.push(mapvar1.get('Local Government'));
+        // if (mapvar1.get('Health Care, Social Assistance')) limitList.push(mapvar1.get('Health Care, Social Assistance'));
+        // if (mapvar1.get('Durable Goods')) limitList.push(mapvar1.get('Durable Goods'));
+        // if (mapvar1.get('Non-Durable Goods')) limitList.push(mapvar1.get('Non-Durable Goods'));
+        // if (mapvar1.get('Administrative and Support and Waste Management and Remediation Services')) limitList.push(mapvar1.get('Administrative and Support and Waste Management and Remediation Services'));
 
         // TIME NAME
         if (selecteddata !== 'ozone' && selecteddata !== 'air_quality' || selecteddata !== 'DowJones')
