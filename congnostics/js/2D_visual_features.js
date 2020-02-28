@@ -28,7 +28,7 @@ class Visual_feature_2D {
                                         let x4 = experiment.dataSmooth[instance][x_var][tt+1], y4 = experiment.dataSmooth[instance][y_var][tt+1];
                                         if ( Visual_feature_2D.checkIntersection(x1,y1,x2,y2,x3,y3,x4,y4)) {
                                             if (tt-t>=12) {
-                                                loopLength[loopNum] = [t,tt-t];
+                                                loopLength[loopNum] = [t,tt];
                                                 loopNum += 1;
                                             }
                                             t = tt;          // do not consider loops inside a loop
@@ -55,7 +55,7 @@ class Visual_feature_2D {
                                         let x4 = experiment.data[instance][x_var][tt+1], y4 = experiment.data[instance][y_var][tt+1];
                                         if ( Visual_feature_2D.checkIntersection(x1,y1,x2,y2,x3,y3,x4,y4)) {
                                             if (tt-t>=12) {
-                                                loopLength[loopNum] = [t,tt-t];
+                                                loopLength[loopNum] = [t,tt];
                                                 loopNum += 1;
                                             }
                                             t = tt;          // do not consider loops inside a loop
@@ -86,6 +86,14 @@ class Visual_feature_2D {
         let checkV1 = (v1x * v23y - v1y * v23x) * (v1x * v24y - v1y * v24x);
         let checkV2 = (v2x * v41y - v2y * v41x) * (v2y * v24x - v2x * v24y);
         return (checkV1 < 0) && (checkV2 < 0);
+    }
+
+    // compute convex score
+    static convex_score (sites) {
+        let convex = hulls.convexHull(sites);
+        let convexArea = hulls.convexHullArea(convex);
+        let alpha = 1000;
+        
     }
 
 }
