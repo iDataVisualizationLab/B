@@ -105,14 +105,14 @@ class Visual_feature_2D {
 
     // compute convex score
     static convex_score (instance, x_var, y_var, sites) {
-        // let convex = hulls.convexHull(sites);
-        // let convexArea = hulls.convexHullArea(convex);
-        // let threshold = Data_processing.upperBoxPlot2D(instance,x_var,y_var);
+        let convex = hulls.convexHull(sites);
+        let convexArea = hulls.convexHullArea(convex);
+        let threshold = Data_processing.upperBoxPlot2D(instance,x_var,y_var);
         // let alpha = (typeof (threshold) === "number") ? 1/threshold : 10;
-        // let alpha = 20;
-        // let concave = hulls.concaveHull(alpha,sites);
-        // let concaveArea = hulls.concaveHullArea(concave);
-        // return concaveArea/convexArea;
+        let alpha = 20;
+        let concave = hulls.concaveHull(alpha,sites);
+        let concaveArea = hulls.concaveHullArea(concave);
+        return concaveArea/convexArea;
 
         // count number of angle less than pi/2
         // let loopSize = sites.length;
@@ -125,9 +125,9 @@ class Visual_feature_2D {
         // return convex_score/loopSize;
 
         // check ratio of convex hulls and loop size
-        let loopSize = sites.length;
-        let convex = hulls.convexHull(sites);
-        return convex.length/loopSize;
+        // let loopSize = sites.length;
+        // let convex = hulls.convexHull(sites);
+        // return convex.length/loopSize;
     }
 
     static computeCosine(x1_, y1_, x2_, y2_, x3_, y3_) {
