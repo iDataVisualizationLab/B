@@ -618,7 +618,6 @@ function analyzedata() {
             dataRaw.forEach(function (d) {
                 d[v] = [];
             });
-
         });
 
         // for paper - remove some variables

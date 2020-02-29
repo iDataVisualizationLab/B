@@ -1,14 +1,21 @@
 class Data_processing {
     constructor (data) {
         this.data = data;   // this.data has the same reference with input parameter: data
+
+        // clear the global variable
+        experiment.data = {};
+        experiment.dataRaw = {};
+        experiment.dataSmooth = {};
+        experiment.dataSmoothRaw = {};
+        experiment.firstDifference = {};
+        experiment.timeInfo = [];
+        experiment.instanceInfo = [];
+        experiment.variableInfo = [];
     }
 
     // read to global variables
     read () {
         // read some information of data
-        experiment.timeInfo = [];
-        experiment.instanceInfo = [];
-        experiment.variableInfo = [];
         experiment.timeInfo = this.data[0].columns.filter((element,index)=>index!==0);
         experiment.instanceInfo = this.data[1].map(element=>element.name);
         experiment.variableInfo = this.data[2].map(element=>element.name);
@@ -20,30 +27,35 @@ class Data_processing {
         let mapSeries = [];
         for (let i = 0; i < n_timeSeries; i++) {
             let sampleCode = this.data[0][i]['Series ID'].substr(3,2);
-            let n_variable = this.data[0][i]['Series ID'].substr(10,8);
-            mapSeries[i] = [sampleCode,n_variable,i];
+            let variableCode = this.data[0][i]['Series ID'].substr(10,8);
+            if (this.data[2].findIndex(element=>element.code===variableCode)!==-1)
+                mapSeries.push([sampleCode,variableCode,i]);
         }
         for (let i = 0; i < n_instances; i++) {
             experiment.data[this.data[1][i].name] = {};
             experiment.dataRaw[this.data[1][i].name] = {};
             for (let j = 0; j < n_variable; j++) {
                 let sampleCode = this.data[1][i].code;
-                let n_variable = this.data[2][j].code;
-                let rowMatrix = mapSeries.find(element=>element[0]===sampleCode&&element[1]===n_variable);
-                if (rowMatrix) {
-                    let row = rowMatrix[2];
-                    let timeSeries = [];
-                    for (let t = 0; t < n_timePoint; t++) {
-                        timeSeries[t] = isNaN(parseFloat(this.data[0][row][experiment.timeInfo[t]])) ? Infinity : parseFloat(this.data[0][row][experiment.timeInfo[t]]);
+                let variableCode = this.data[2][j].code;
+                let variable = this.data[2][j].name;
+                let limit = experiment.limit.findIndex(element=>element===variable);
+                if (limit === -1) {
+                    let rowMatrix = mapSeries.find(element=>element[0]===sampleCode&&element[1]===variableCode);
+                    if (rowMatrix) {
+                        let row = rowMatrix[2];
+                        let timeSeries = [];
+                        for (let t = 0; t < n_timePoint; t++) {
+                            timeSeries[t] = isNaN(parseFloat(this.data[0][row][experiment.timeInfo[t]])) ? Infinity : parseFloat(this.data[0][row][experiment.timeInfo[t]]);
+                        }
+                        experiment.dataRaw[this.data[1][i].name][this.data[2][j].name] = timeSeries;
+                        let maxValue = Math.max(...timeSeries.filter(element=>element!==Infinity));
+                        let minValue = Math.min(...timeSeries.filter(element=>element!==Infinity));
+                        let rangeValue = maxValue - minValue;
+                        experiment.data[this.data[1][i].name][this.data[2][j].name] = timeSeries.map(element=>{
+                            if (maxValue !== Infinity && minValue !== Infinity) return (element-minValue)/rangeValue;
+                            else return Infinity;
+                        });
                     }
-                    experiment.dataRaw[this.data[1][i].name][this.data[2][j].name] = timeSeries;
-                    let maxValue = Math.max(...timeSeries.filter(element=>element!==Infinity));
-                    let minValue = Math.min(...timeSeries.filter(element=>element!==Infinity));
-                    let rangeValue = maxValue - minValue;
-                    experiment.data[this.data[1][i].name][this.data[2][j].name] = timeSeries.map(element=>{
-                        if (maxValue !== Infinity && minValue !== Infinity) return (element-minValue)/rangeValue;
-                        else return Infinity;
-                    });
                 }
             }
         }
@@ -82,6 +94,49 @@ class Data_processing {
         return true;
     }
 
+    // get first difference
+    firstDifference () {
+        let n_timePoint = this.data[0].columns.length-1;
+        let n_instance = this.data[1].length;
+        let n_variable = this.data[2].length;
+        for (let i = 0; i < n_instance; i++) {
+            let instance = experiment.instanceInfo[i];
+            experiment.firstDifference[instance] = {};
+            for (let j = 0; j < n_variable; j++) {
+                let variable = experiment.variableInfo[j];
+                experiment.firstDifference[instance][variable] = [];
+                if (experiment.data[instance][variable]) {
+                    for (let t = 0; t < n_timePoint - 1; t++) {
+                        if (experiment.data[instance][variable][t] !== Infinity && experiment.data[instance][variable][t+1] !== Infinity) {
+                            experiment.firstDifference[instance][variable][t] = experiment.data[instance][variable][t+1] - experiment.data[instance][variable][t];
+                        } else {
+                            experiment.firstDifference[instance][variable][t] = Infinity;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // get upper threshold for box-plot rule
+    static upperBoxPlot2D (instance,x_var,y_var) {
+        let n_timePoint = experiment.timeInfo.length;
+        if (experiment.firstDifference) {
+            let doublySeriesFirstDiff = [];
+            for (let t = 0; t < n_timePoint - 1; t++) {
+                if (experiment.firstDifference[instance][x_var][t] !== Infinity && experiment.firstDifference[instance][y_var][t] !== Infinity) {
+                    doublySeriesFirstDiff[t] = Math.sqrt(Math.pow(experiment.firstDifference[instance][x_var][t],2)+Math.pow(experiment.firstDifference[instance][y_var][t],2));
+                } else {
+                    doublySeriesFirstDiff[t] = Infinity;
+                }
+            }
+            doublySeriesFirstDiff = doublySeriesFirstDiff.filter(element=>element!==Infinity);
+            doublySeriesFirstDiff.sort((a,b)=>a-b);
+            let Q3 = doublySeriesFirstDiff[Math.floor((n_timePoint-1)*0.75)];
+            let Q1 = doublySeriesFirstDiff[Math.floor((n_timePoint-1)*0.25)];
+            return Q3+1.5*(Q3-Q1);
+        } else return 'No result';
+    }
 
 
 }

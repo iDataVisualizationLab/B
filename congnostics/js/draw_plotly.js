@@ -122,7 +122,7 @@ class Draw_plotly {
                 height: experiment.window_size[0]*0.2,
                 xaxis: {
                     title: {
-                        text: 'Time'
+                        text:''
                     }
                 },
                 yaxis: {
@@ -137,7 +137,7 @@ class Draw_plotly {
             for (let i = 0; i < n_loop; i++) {
                 d3.select('#'+'myDiv'+index.toString()+'_3')
                     .append('p')
-                    .text('Loop length: '+element[1][2][i][1])
+                    .text('Loop length: '+element[1][2][i][1]+', Convex score:'+Math.floor(element[1][2][i][2]*100)/100)
                     .attr('style','text-align:center; color:'+experiment.colorList[2*i+1]);
             }
         });

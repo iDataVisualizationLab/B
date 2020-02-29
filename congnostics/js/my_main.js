@@ -1,7 +1,7 @@
 Promise.all([
     d3.csv("data/employment.txt"),
     d3.tsv('data/statecode.txt'),
-    d3.tsv('data/Industrycode.txt'),
+    d3.tsv('data/Industrycode_reduced.txt'),
 ]).then(function (files) {
     // design HTML
     let designHTML = new DesignHTML('myDiv',10);
@@ -9,6 +9,7 @@ Promise.all([
     // main code
     let myData = new Data_processing(files);
     myData.read();
+    myData.firstDifference();
     myData.smooth(experiment.sliding);
     let compute = new Visual_feature_2D(true);
     compute.Loop();
