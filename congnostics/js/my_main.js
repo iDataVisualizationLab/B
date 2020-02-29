@@ -16,7 +16,8 @@ Promise.all([
     let loopArr = [];
     for (let plot in experiment.loop) {
         experiment.loop[plot].forEach(element=>{
-            loopArr.push([plot,element[0],element[1],element[2].length]);
+            let max_score = (element[2].length > 0) ? Math.max(...element[2].map(element_=>element_[2])) : 0;
+            loopArr.push([plot,element[0],element[1],max_score]);
         })
     }
     loopArr.sort((a,b)=>b[3]-a[3]);
