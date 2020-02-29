@@ -1,5 +1,5 @@
 Promise.all([
-    d3.csv("data/employment.txt"),
+    d3.csv("data/US_employment.txt"),
     d3.tsv('data/statecode.txt'),
     d3.tsv('data/Industrycode_reduced.txt'),
 ]).then(function (files) {
