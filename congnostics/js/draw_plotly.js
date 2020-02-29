@@ -79,10 +79,10 @@ class Draw_plotly {
                     trace1[i].line = {
                         color: experiment.colorList[i],
                     };
-                    trace[i].x = experiment.dataRaw[instance][x_var].slice(element[1][2][(i-1)/2][0],element[1][2][(i-1)/2][1]+2);
-                    trace[i].y = experiment.dataRaw[instance][y_var].slice(element[1][2][(i-1)/2][0],element[1][2][(i-1)/2][1]+2);
-                    trace1[i].x = experiment.dataRaw[instance][x_var].slice(element[1][2][(i-1)/2][0],element[1][2][(i-1)/2][1]+2);
-                    trace1[i].y = experiment.dataRaw[instance][y_var].slice(element[1][2][(i-1)/2][0],element[1][2][(i-1)/2][1]+2);
+                    trace[i].x = experiment.dataRaw[instance][x_var].slice(element[1][2][(i-1)/2][0],element[1][2][(i-1)/2][1]+3);
+                    trace[i].y = experiment.dataRaw[instance][y_var].slice(element[1][2][(i-1)/2][0],element[1][2][(i-1)/2][1]+3);
+                    trace1[i].x = experiment.dataRaw[instance][x_var].slice(element[1][2][(i-1)/2][0],element[1][2][(i-1)/2][1]+3);
+                    trace1[i].y = experiment.dataRaw[instance][y_var].slice(element[1][2][(i-1)/2][0],element[1][2][(i-1)/2][1]+3);
                 }
             }
             let trace2_x = {
@@ -137,7 +137,7 @@ class Draw_plotly {
             for (let i = 0; i < n_loop; i++) {
                 d3.select('#'+'myDiv'+index.toString()+'_3')
                     .append('p')
-                    .text('Loop length: '+(element[1][2][i][1]-element[1][2][i][0])+', Convex score:'+Math.floor(element[1][2][i][2]*100)/100+', concave area: '+Math.floor(element[1][2][i][3]*100)/100+', my area: '+Math.floor(element[1][2][i][4]*100)/100)
+                    .text('Loop length: '+(element[1][2][i][1]-element[1][2][i][0])+', Convex score:'+Math.floor(element[1][2][i][2]*100)/100+', concave area: '+Math.floor(element[1][2][i][3]*100)/100+', convex area: '+Math.floor(element[1][2][i][4]*100)/100+', my area: '+Math.floor(element[1][2][i][5]*100)/100)
                     .attr('style','text-align:center; color:'+experiment.colorList[2*i+1]);
             }
         });

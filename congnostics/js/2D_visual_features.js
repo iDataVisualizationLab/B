@@ -36,9 +36,10 @@ class Visual_feature_2D {
                                                         }
                                                         let convex_score = Visual_feature_2D.convex_score(instance,x_let,y_let,sites);
                                                         let concave_area = hulls.concaveHullArea(hulls.concaveHull(experiment.alpha,sites));
+                                                        let convex_area = hulls.convexHullArea(hulls.convexHull(sites));
                                                         let my_area = Visual_feature_2D.area(sites);
                                                         if (convex_score >= 0.5) {
-                                                            loopLength[loopNum] = [t,tt,convex_score,concave_area,my_area];
+                                                            loopLength[loopNum] = [t,tt,convex_score,concave_area,convex_area,my_area];
                                                             loopNum += 1;
                                                         }
                                                     }
@@ -69,9 +70,10 @@ class Visual_feature_2D {
                                                         }
                                                         let convex_score = Visual_feature_2D.convex_score(instance,x_let,y_let,sites);
                                                         let concave_area = hulls.concaveHullArea(hulls.concaveHull(experiment.alpha,sites));
+                                                        let convex_area = hulls.convexHullArea(hulls.convexHull(sites));
                                                         let my_area = Visual_feature_2D.area(sites);
                                                         if (convex_score >= 0.5) {
-                                                            loopLength[loopNum] = [t,tt,convex_score,concave_area,my_area];
+                                                            loopLength[loopNum] = [t,tt,convex_score,concave_area,convex_area,my_area];
                                                             loopNum += 1;
                                                         }
                                                     }
