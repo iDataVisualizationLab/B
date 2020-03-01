@@ -35,10 +35,10 @@ let needcalculation = true;
 // VARIABLES FOR VISUALIZATION
 let displayplot = [];   // displayplot[measure index][0->numplot-1:lowest, numplot->2numplot-1: middle, 2numplot->3numplot-1: highest][sample, x-var, y-var,value,index]
 let width = 3000;
-let height = 4000;
+let height = 8000;
 let numColumn = (selectedDisplay === "1D") ? 30 : 72;
 let columnSize = width/numColumn;
-let numplot = 10;
+let numplot = 20;
 let newnumplot = 0;
 let selectedmeasure = 0;
 let choose = false;   // for selections
@@ -360,7 +360,7 @@ $( document ).ready(function() {
                         'Striated',
                         'Cross-correlation',
                         "Intersections",
-                        "Loop",
+                        "Circular pattern",
                         'Trend',
                         'Length',
                     ];
@@ -373,7 +373,7 @@ $( document ).ready(function() {
                         'Striated':2,
                         'Cross-correlation':3,
                         "Intersections":4,
-                        "Loop":5,
+                        "Circular pattern":5,
                         'Trend':6,
                         'Length':7
                     };
@@ -492,9 +492,9 @@ function analyzedata() {
     let filename2;
     switch (selecteddata) {
         case 'employment':
-            filename0 =  "data/employment.txt";
+            filename0 =  "data/US_employment.txt";
             filename1 = "data/statecode.txt";
-            filename2 = "data/Industrycode.txt";
+            filename2 = "data/Industrycode_reduced.txt";
             break;
         case 'RUL':
             filename0 = "data/RUL_data.txt";
@@ -672,6 +672,10 @@ function analyzedata() {
                         }
                     });
                 });
+                let myData = new Data_processing(files);
+                myData.read();
+                let compute = new Visual_feature_2D(false);
+                compute.Loop();
                 break;
             case "death_rate":
                 // WRITE DATA TO DATA[]
@@ -1320,7 +1324,7 @@ function analyzedata() {
                             var countcrossing = 0;  // count #intersections
                             var sumcos = 0;   // sum of cosine of angles
                             // var looparr = [];
-                            var looplength = Infinity;
+                            // var looplength = Infinity;
                             var countcosine = 0;
                             xdata.forEach(function (x, xi) {
                                 for (var i = xi + 1; i < xdata.length; i++) {   // for all data after x
@@ -1332,11 +1336,11 @@ function analyzedata() {
                                     if (xx < 0 && yy < 0) {dir[2] += 1;}
                                     if (xx > 0 && yy < 0) {dir[3] += 1;}
                                     // check intersections for INTERSECTIONS
-                                    if (i > xi + 1 && i < xSmooth.length - 1 && xi < xSmooth.length - 3) {
-                                        if (checkintersection(xSmooth[xi], ySmooth[xi], xSmooth[xi + 1], ySmooth[xi + 1], xSmooth[i], ySmooth[i], xSmooth[i + 1], ySmooth[i + 1])) {
-                                            looplength = (looplength > (i - xi)) ? i - xi : looplength;
-                                        }
-                                    }
+                                    // if (i > xi + 1 && i < xSmooth.length - 1 && xi < xSmooth.length - 3) {
+                                    //     if (checkintersection(xSmooth[xi], ySmooth[xi], xSmooth[xi + 1], ySmooth[xi + 1], xSmooth[i], ySmooth[i], xSmooth[i + 1], ySmooth[i + 1])) {
+                                    //         looplength = (looplength > (i - xi)) ? i - xi : looplength;
+                                    //     }
+                                    // }
                                     if (i > xi + 1 && i < xdata.length - 1 && xi < xdata.length - 3) {
                                         if (checkintersection(x, ydata[xi], xdata[xi + 1], ydata[xi + 1], xdata[i], ydata[i], xdata[i + 1], ydata[i + 1])) {
                                             countcrossing += 1;
@@ -1404,26 +1408,13 @@ function analyzedata() {
                             });
 
                             // LOOP
-                            // if (measures[8][p][myIndex][2] < 0.1 && measures[10][p][myIndex][2] < 0.01) {
-                            //   var windowsize = Math.floor(xdata.length*0.3);
-                            //   measures[9][p][myIndex][2] = 0;
-                            //   var dist;
-                            //   xdata.forEach(function (x,xi) {
-                            //     if (xi + windowsize < xdata.length) {
-                            //       dist = Math.sqrt(Math.pow(xdata[xi+windowsize]-x,2)+Math.pow(ydata[xi+windowsize]-ydata[xi],2));
-                            //       var windowlength = 0;
-                            //       for (var i = xi; i < xi + windowsize; i++) {
-                            //         windowlength += Math.sqrt(Math.pow(xdata[xi+i]-x,2)+Math.pow(ydata[xi+i]-ydata[xi],2));
-                            //       }
-                            //       measures[9][p][myIndex][2] = (measures[9][p][myIndex][2] < (1-dist/windowlength)) ? (1-dist/windowlength) : measures[9][p][myIndex][2];
-                            //     }
-                            //   });
-                            // }
-                            // if (measures[8][p][myIndex][2] < 0.05) {
-                            //   looparr.sort(function (b,n) {return b-n});
-                            //   measures[9][p][myIndex][2] = looparr[Math.floor(looparr.length*0.25)]/xdata.length;
-                            // }
-                            measures[5][p][myIndex][2] = (looplength === Infinity) ? 0 : looplength/xdata.length;
+                            let instance = mapsample2.get(p);
+                            let x_var = mapvar2.get(xvar);
+                            let y_var = mapvar2.get(yvar);
+                            let loop = experiment.loop[instance].find(element=>element[0]===x_var&&element[1]===y_var);
+                            if (loop[2].length === 0) measures[5][p][myIndex][2] = 0;
+                            else measures[5][p][myIndex][2] = Math.max(...loop[2].map(element=>element[2]));
+                            // measures[5][p][myIndex][2] = (looplength === Infinity) ? 0 : looplength/xdata.length;
                             // measures[9][p][myIndex][2] = (looplength > 0) ? looplength / xdata.length : 0;
 
                             // CROSS - CORRELATION
@@ -2550,6 +2541,11 @@ function draw() {
                             var value = displayplot[selectedmeasure][i+j*correctnumplot][3];
                             var mindex = displayplot[selectedmeasure][i+j*correctnumplot][4];
 
+                            let instance = mapsample2.get(sample);
+                            let x_var = mapvar2.get(xvar);
+                            let y_var = mapvar2.get(yvar);
+                            let loop = experiment.loop[instance].find(element=>element[0]===x_var&&element[1]===y_var);
+
                             // draw rectangles for CS - X(t) for 1D
                             // fill(255);
                             fill(200);  // for paper
@@ -2679,19 +2675,22 @@ function draw() {
                             // write value of measure
                             noStroke();
                             fill(255);
-                            textSize(csPlotSize/12);
+                            // textSize(csPlotSize/12);
+                            textSize(12);
                             text(measurename[selectedmeasure]+' = '+Math.round(value*100)/100,xBlank+csPlotSize+xBlank+j*groupSize,yBlank+45+i*(csPlotSize+ygBlank));
 
                             // write sample notation
                             noStroke();
                             fill(0);
-                            textSize(csPlotSize/12);
+                            // textSize(csPlotSize/12);
+                            textSize(12);
                             text(mapsample2.get(sample),xBlank+j*groupSize,yBlank+45+i*(ygBlank+csPlotSize));
 
                             // write x-variable notation
                             noStroke();
                             fill(0);
-                            textSize(csPlotSize/14);
+                            // textSize(csPlotSize/14);
+                            textSize(12);
                             if (mapvar2.get(xvar).split("").length <= 27) {
                                 text(mapvar2.get(xvar),2*xBlank+csPlotSize+j*groupSize,yBlank+50+csPlotSize*1.1+i*(ygBlank+csPlotSize));
                             } else {
@@ -2703,7 +2702,8 @@ function draw() {
                             push();
                             noStroke();
                             fill(0);
-                            textSize(csPlotSize/14);
+                            // textSize(csPlotSize/14);
+                            textSize(12);
                             translate(xBlank+j*groupSize,yBlank+50+csPlotSize+i*(csPlotSize+ygBlank));
                             rotate(-PI/2);
                             if(mapvar2.get(xvar).split("").length <= 27) {
@@ -2711,15 +2711,15 @@ function draw() {
                             } else {
                                 text(mapvar2.get(yvar).substr(0,27)+'...',0,csPlotSize+xBlank-5);
                             }
-                            if(mapvar2.get(xvar).split("").length <= 14) {
+                            if(mapvar2.get(xvar).split("").length <= 30) {
                                 text(mapvar2.get(xvar),0,-5);
                             } else {
-                                text(mapvar2.get(xvar).substr(0,11)+'...',0,-5);
+                                text(mapvar2.get(xvar).substr(0,27)+'...',0,-5);
                             }
-                            if(mapvar2.get(yvar).split("").length <= 14) {
+                            if(mapvar2.get(yvar).split("").length <= 30) {
                                 text(mapvar2.get(yvar),oPlotSize,-5);
                             } else {
-                                text(mapvar2.get(yvar).substr(0,11)+'...',oPlotSize,-5);
+                                text(mapvar2.get(yvar).substr(0,27)+'...',oPlotSize,-5);
                             }
                             pop();
 
@@ -2733,23 +2733,50 @@ function draw() {
                                         var x2 = 0.05*csPlotSize+xBlank+csPlotSize+xBlank+j*groupSize+0.9*csPlotSize*data[sample][xvar][step];
                                         var y1 = 0.05*csPlotSize+yBlank+50+i*(csPlotSize+ygBlank)+0.9*csPlotSize*(1-data[sample][yvar][step-1]);
                                         var y2 = 0.05*csPlotSize+yBlank+50+i*(csPlotSize+ygBlank)+0.9*csPlotSize*(1-data[sample][yvar][step]);
-                                        if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2)); fill(0,0,255-255*step/(timedata.length/2));}
-                                        else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0); fill((step-timedata.length/2)*255/(timedata.length/2),0,0);}
-                                        circle(x1,y1,4);
-                                        strokeWeight(0.3);
-                                        line(x1,y1,x2,y2);
-                                        strokeWeight(1);
-                                        if (LMH_mouseOver) {
-                                            if (Math.abs(mouseX-x2) < 0.9*csPlotSize/timedata.length && Math.abs(mouseY-y2) < 0.9*csPlotSize/timedata.length) {
-                                                fill(0);
-                                                triangle(x2,y2,x2+5,y2+5,x2+5,y2-5);
-                                                rect(x2+5,y2-23,40,46);
-                                                stroke(255);
-                                                text('X: '+dataRaw[sample][xvar][step],x2+6,y2-8);
-                                                text('Y: '+dataRaw[sample][yvar][step],x2+6,y2+7);
-                                                text('time: '+time,x2+6,y2+22);
+                                        if (selectedmeasure===5) {
+                                            let checkLoop = 0;
+                                            for (let n = 0; n < loop[2].length; n++) {
+                                                if (loop[2][n][0]<=step&&loop[2][n][1]+1>=step) {
+                                                    checkLoop = n+1;
+                                                    break;
+                                                }
                                             }
+                                            if (checkLoop>0) {
+                                                let color = d3.color(experiment.colorList[checkLoop-1]);
+                                                stroke(color.r,color.g,color.b);
+                                                circle(x1,y1,2);
+                                                strokeWeight(2);
+                                                line(x1,y1,x2,y2);
+                                                strokeWeight(1);
+                                            } else {
+                                                if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2)); fill(0,0,255-255*step/(timedata.length/2));}
+                                                else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0); fill((step-timedata.length/2)*255/(timedata.length/2),0,0);}
+                                                circle(x1,y1,2);
+                                                strokeWeight(0.3);
+                                                // strokeWeight(1);
+                                                line(x1,y1,x2,y2);
+                                                strokeWeight(1);
+                                            }
+                                        } else {
+                                            if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2)); fill(0,0,255-255*step/(timedata.length/2));}
+                                            else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0); fill((step-timedata.length/2)*255/(timedata.length/2),0,0);}
+                                            circle(x1,y1,2);
+                                            strokeWeight(0.3);
+                                            // strokeWeight(1);
+                                            line(x1,y1,x2,y2);
+                                            strokeWeight(1);
                                         }
+                                        // if (LMH_mouseOver) {
+                                        //     if (Math.abs(mouseX-x2) < 0.9*csPlotSize/timedata.length && Math.abs(mouseY-y2) < 0.9*csPlotSize/timedata.length) {
+                                        //         fill(0);
+                                        //         triangle(x2,y2,x2+5,y2+5,x2+5,y2-5);
+                                        //         rect(x2+5,y2-23,40,46);
+                                        //         stroke(255);
+                                        //         text('X: '+dataRaw[sample][xvar][step],x2+6,y2-8);
+                                        //         text('Y: '+dataRaw[sample][yvar][step],x2+6,y2+7);
+                                        //         text('time: '+time,x2+6,y2+22);
+                                        //     }
+                                        // }
                                     }
                                     // X-var plots
                                     if(data[sample][xvar][step]>=0 && data[sample][xvar][step-1]>=0) {
@@ -2757,28 +2784,58 @@ function draw() {
                                         var x2 = 0.05*oPlotSize+xBlank+j*groupSize+1.9*oPlotSize*step/timedata.length;
                                         var y1 = 0.05*oPlotSize+yBlank+50+oPlotSize+2+i*(csPlotSize+ygBlank)+0.9*oPlotSize*(1-data[sample][xvar][step-1]);
                                         var y2 = 0.05*oPlotSize+yBlank+50+oPlotSize+2+i*(csPlotSize+ygBlank)+0.9*oPlotSize*(1-data[sample][xvar][step]);
-                                        if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
-                                        else stroke((step-timedata.length/2)*255/(timedata.length/2),0,0);
-                                        line(x1,y1,x2,y2);
-                                        // draw x-y information
-                                        if (LMH_mouseOver) {
-                                            if ((Math.abs(mouseX - x2) < 1.9*oPlotSize/(2*timedata.length))&&(mouseY >= yBlank+50+2+i*(csPlotSize+ygBlank))&&(mouseY <= yBlank+50+2*oPlotSize+2+i*(csPlotSize+ygBlank))) {
-                                                let x22 = 0.05*oPlotSize+xBlank+j*groupSize+1.9*oPlotSize*step/timedata.length;
-                                                let y22 = 0.05*oPlotSize+yBlank+48+i*(csPlotSize+ygBlank)+0.9*oPlotSize*(1-data[sample][yvar][step]);
-                                                fill(0);
-                                                triangle(x2,y2,x2+5,y2-5,x2+5,y2+5);
-                                                triangle(x22,y22,x22+5,y22+5,x22+5,y22-5);
-                                                triangle(x2,yBlank+50+2*oPlotSize,x2+5,yBlank+55+2*oPlotSize,x2-5,yBlank+55+2*oPlotSize);
-                                                rect(x2+5,y2-10,30,20);
-                                                rect(x22+5,y22-10,30,20);
-                                                rect(x2-20,yBlank+55+2*oPlotSize,40,20);
-                                                stroke(255);
-                                                text(dataRaw[sample][xvar][step],x2+6,y2+8);
-                                                text(dataRaw[sample][yvar][step],x22+6,y22+8);
-                                                text(time,x2-18,yBlank+50+2*oPlotSize+18)
+                                        if (selectedmeasure===5) {
+                                            let checkLoop = 0;
+                                            for (let n = 0; n < loop[2].length; n++) {
+                                                if (loop[2][n][0]<=step&&loop[2][n][1]+1>=step) {
+                                                    checkLoop = n+1;
+                                                    break;
+                                                }
                                             }
-                                            LMH_mouseOver = false
+                                            if (checkLoop>0) {
+                                                let color = d3.color(experiment.colorList[checkLoop-1]);
+                                                stroke(color.r,color.g,color.b);
+                                                circle(x1,y1,2);
+                                                strokeWeight(2);
+                                                line(x1,y1,x2,y2);
+                                                strokeWeight(1);
+                                            } else {
+                                                if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2)); fill(0,0,255-255*step/(timedata.length/2));}
+                                                else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0); fill((step-timedata.length/2)*255/(timedata.length/2),0,0);}
+                                                circle(x1,y1,1);
+                                                strokeWeight(0.3);
+                                                // strokeWeight(1);
+                                                line(x1,y1,x2,y2);
+                                                strokeWeight(1);
+                                            }
+                                        } else {
+                                            if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2)); fill(0,0,255-255*step/(timedata.length/2));}
+                                            else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0); fill((step-timedata.length/2)*255/(timedata.length/2),0,0);}
+                                            circle(x1,y1,1);
+                                            strokeWeight(0.3);
+                                            // strokeWeight(1);
+                                            line(x1,y1,x2,y2);
+                                            strokeWeight(1);
                                         }
+                                        // draw x-y information
+                                        // if (LMH_mouseOver) {
+                                        //     if ((Math.abs(mouseX - x2) < 1.9*oPlotSize/(2*timedata.length))&&(mouseY >= yBlank+50+2+i*(csPlotSize+ygBlank))&&(mouseY <= yBlank+50+2*oPlotSize+2+i*(csPlotSize+ygBlank))) {
+                                        //         let x22 = 0.05*oPlotSize+xBlank+j*groupSize+1.9*oPlotSize*step/timedata.length;
+                                        //         let y22 = 0.05*oPlotSize+yBlank+48+i*(csPlotSize+ygBlank)+0.9*oPlotSize*(1-data[sample][yvar][step]);
+                                        //         fill(0);
+                                        //         triangle(x2,y2,x2+5,y2-5,x2+5,y2+5);
+                                        //         triangle(x22,y22,x22+5,y22+5,x22+5,y22-5);
+                                        //         triangle(x2,yBlank+50+2*oPlotSize,x2+5,yBlank+55+2*oPlotSize,x2-5,yBlank+55+2*oPlotSize);
+                                        //         rect(x2+5,y2-10,30,20);
+                                        //         rect(x22+5,y22-10,30,20);
+                                        //         rect(x2-20,yBlank+55+2*oPlotSize,40,20);
+                                        //         stroke(255);
+                                        //         text(dataRaw[sample][xvar][step],x2+6,y2+8);
+                                        //         text(dataRaw[sample][yvar][step],x22+6,y22+8);
+                                        //         text(time,x2-18,yBlank+50+2*oPlotSize+18)
+                                        //     }
+                                        //     LMH_mouseOver = false
+                                        // }
                                     }
                                     // Y-var plots
                                     // xBlank+j*groupSize,yBlank+48+i*(csPlotSize+ygBlank)
@@ -2787,9 +2844,39 @@ function draw() {
                                         var x2 = 0.05*oPlotSize+xBlank+j*groupSize+1.9*oPlotSize*step/timedata.length;
                                         var y1 = 0.05*oPlotSize+yBlank+48+i*(csPlotSize+ygBlank)+0.9*oPlotSize*(1-data[sample][yvar][step-1]);
                                         var y2 = 0.05*oPlotSize+yBlank+48+i*(csPlotSize+ygBlank)+0.9*oPlotSize*(1-data[sample][yvar][step]);
-                                        if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
-                                        else stroke((step-timedata.length/2)*255/(timedata.length/2),0,0);
-                                        line(x1,y1,x2,y2);
+                                        if (selectedmeasure===5) {
+                                            let checkLoop = 0;
+                                            for (let n = 0; n < loop[2].length; n++) {
+                                                if (loop[2][n][0]<=step&&loop[2][n][1]+1>=step) {
+                                                    checkLoop = n+1;
+                                                    break;
+                                                }
+                                            }
+                                            if (checkLoop>0) {
+                                                let color = d3.color(experiment.colorList[checkLoop-1]);
+                                                stroke(color.r,color.g,color.b);
+                                                circle(x1,y1,2);
+                                                strokeWeight(2);
+                                                line(x1,y1,x2,y2);
+                                                strokeWeight(1);
+                                            } else {
+                                                if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2)); fill(0,0,255-255*step/(timedata.length/2));}
+                                                else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0); fill((step-timedata.length/2)*255/(timedata.length/2),0,0);}
+                                                circle(x1,y1,1);
+                                                strokeWeight(0.3);
+                                                // strokeWeight(1);
+                                                line(x1,y1,x2,y2);
+                                                strokeWeight(1);
+                                            }
+                                        } else {
+                                            if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2)); fill(0,0,255-255*step/(timedata.length/2));}
+                                            else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0); fill((step-timedata.length/2)*255/(timedata.length/2),0,0);}
+                                            circle(x1,y1,1);
+                                            strokeWeight(0.3);
+                                            // strokeWeight(1);
+                                            line(x1,y1,x2,y2);
+                                            strokeWeight(1);
+                                        }
                                     }
                                 }
                             });
@@ -2804,7 +2891,8 @@ function draw() {
 }
 
 // Mouse Over
-function mouseMoved() {
-    LMH_mouseOver = true;
-}
+// function mouseMoved() {
+//     LMH_mouseOver = true;
+//     needupdate = true;
+// }
 

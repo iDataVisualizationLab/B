@@ -27,11 +27,13 @@ class Draw_plotly {
             // sub_y.push(experiment.dataSmooth[instance][y_var].slice(element[1][2][element[1][2].length-1][0]+element[1][2][element[1][2].length-1][1]+1));
             // prepare parameters for plotly
             let n_loop = element[1][2].length;
+            let n_timePoint = experiment.timeInfo.length;
+            let myColor = experiment.timeInfo.map((element_,index_)=>'rgb(${255*index_/n_timePoint},${0},${0})');
             let trace = [], trace1 = [], trace2_x = [], trace2_y = [];
             for (let i = 0; i < 2*n_loop+1; i++) {
                 trace[i] = {
                     type: 'scatter',
-                    mode: 'lines',
+                    mode: 'lines+markers',
                     name: '',
                     showlegend: false,
                     // xaxis: 'x',
@@ -39,7 +41,7 @@ class Draw_plotly {
                 };
                 trace1[i] = {
                     type: 'scatter',
-                    mode: 'lines',
+                    mode: 'lines+markers',
                     name: '',
                     showlegend: false,
                     // xaxis: 'x',
@@ -53,9 +55,6 @@ class Draw_plotly {
                     name: '',
                     showlegend:false,
                     hoverinfo: 'x+y',
-                    line: {
-                        color: '#fb8072',
-                    },
                     yaxis: 'y',
                 };
                 trace2_y[i] = {
@@ -66,9 +65,6 @@ class Draw_plotly {
                     name: '',
                     showlegend:false,
                     hoverinfo: 'x+y',
-                    line: {
-                        color: '#8dd3c7',
-                    },
                     yaxis: 'y2',
                 };
                 if (i%2===0) {
@@ -80,6 +76,8 @@ class Draw_plotly {
                     trace1[i].line = {
                         color: '#000000',
                     };
+                    trace2_x[i].line = {color:'#fb8072'};
+                    trace2_y[i].line = {color:'#8dd3c7'};
                     if (i===0) {
                         trace[i].x = experiment.dataSmoothRaw[instance][x_var].slice(0,element[1][2][0][0]+1);
                         trace[i].y = experiment.dataSmoothRaw[instance][y_var].slice(0,element[1][2][0][0]+1);
@@ -117,6 +115,8 @@ class Draw_plotly {
                     trace1[i].line = {
                         color: experiment.colorList[i],
                     };
+                    trace2_x[i].line = {color:experiment.colorList[i]};
+                    trace2_y[i].line = {color:experiment.colorList[i]};
                     trace[i].x = experiment.dataRaw[instance][x_var].slice(element[1][2][(i-1)/2][0],element[1][2][(i-1)/2][1]+3);
                     trace[i].y = experiment.dataRaw[instance][y_var].slice(element[1][2][(i-1)/2][0],element[1][2][(i-1)/2][1]+3);
                     trace1[i].x = experiment.dataRaw[instance][x_var].slice(element[1][2][(i-1)/2][0],element[1][2][(i-1)/2][1]+3);
