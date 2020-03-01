@@ -34,16 +34,16 @@ class Draw_plotly {
                     mode: 'lines',
                     name: '',
                     showlegend: false,
-                    xaxis: 'x',
-                    yaxis: 'y',
+                    // xaxis: 'x',
+                    // yaxis: 'y',
                 };
                 trace1[i] = {
                     type: 'scatter',
                     mode: 'lines',
                     name: '',
                     showlegend: false,
-                    xaxis: 'x',
-                    yaxis: 'y',
+                    // xaxis: 'x',
+                    // yaxis: 'y',
                 };
                 if (i%2===0) {
                     // trace[i].x = sub_x[i/2];
@@ -92,7 +92,12 @@ class Draw_plotly {
                 y: experiment.data[instance][x_var],
                 // name: x_var,
                 name: '',
+                showlegend:false,
                 hoverinfo: 'x+y',
+                line: {
+                    color: '#fb8072',
+                },
+                yaxis: 'y',
             };
             let trace2_y = {
                 type: 'scatter',
@@ -101,19 +106,32 @@ class Draw_plotly {
                 y: experiment.data[instance][y_var],
                 // name: y_var,
                 name: '',
+                showlegend:false,
                 hoverinfo: 'x+y',
+                line: {
+                    color: '#8dd3c7',
+                },
+                yaxis: 'y2',
             };
             let layout = {
                 title: instance,
                 xaxis: {
-                    title: {
-                        text: x_var,
-                    }
+                    title: x_var,
+                    titlefont: {
+                        color: '#fb8072',
+                        size: 12,
+                        family: 'Arial, sans-serif',
+                    },
+                    tickfont: {color:'#fb8072'},
                 },
                 yaxis: {
-                    title: {
-                        text: y_var
+                    title: y_var,
+                    titlefont: {
+                        color: '#8dd3c7',
+                        size: 12,
+                        family: 'Arial, sans-serif',
                     },
+                    tickfont: {color:'#8dd3c7'},
                 },
                 height: experiment.window_size[0]*0.3,
                 width: experiment.window_size[0]*0.3,
@@ -122,15 +140,27 @@ class Draw_plotly {
                 title: instance,
                 width: experiment.window_size[0]*0.3,
                 height: experiment.window_size[0]*0.2,
-                xaxis: {
-                    title: {
-                        text:''
-                    }
-                },
                 yaxis: {
-                    title: {
-                        text: 'US employment in thousands'
-                    }
+                    title: x_var,
+                    titlefont: {
+                        color:'#fb8072',
+                        size: 12,
+                        family: 'Arial, sans-serif',
+                    },
+                    tickfont: {color:'#fb8072'},
+                    // overlaying: 'y3',
+                    // side: 'left',
+                },
+                yaxis2: {
+                    title: y_var,
+                    titlefont: {
+                        color:'#8dd3c7',
+                        family: 'Arial, sans-serif',
+                        size: 12,
+                    },
+                    tickfont: {color:'#8dd3c7'},
+                    overlaying: 'y',
+                    side: 'right',
                 }
             };
             Plotly.newPlot(this.id+index.toString()+'_2',trace,layout);
