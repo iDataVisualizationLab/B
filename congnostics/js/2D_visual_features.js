@@ -41,8 +41,10 @@ class Visual_feature_2D {
                                                             let concave_area = hulls.concaveHullArea(hulls.concaveHull(experiment.alpha,sites));
                                                             let convex_area = hulls.convexHullArea(hulls.convexHull(sites));
                                                             let ratio = Visual_feature_2D.circularRatio(sites);
-                                                            loopLength[loopNum] = [t,tt,convex_score*ratio[0],convex_score,ratio[0],my_area,ratio[1],concave_area,convex_area];
-                                                            loopNum += 1;
+                                                            if (convex_score*ratio[0] >= 0.1) {
+                                                                loopLength[loopNum] = [t,tt,convex_score*ratio[0],convex_score,ratio[0],my_area,ratio[1],concave_area,convex_area];
+                                                                loopNum += 1;
+                                                            }
                                                         }
                                                         t = t+inLoop;
                                                         break;
@@ -77,8 +79,10 @@ class Visual_feature_2D {
                                                             let concave_area = hulls.concaveHullArea(hulls.concaveHull(experiment.alpha,sites));
                                                             let convex_area = hulls.convexHullArea(hulls.convexHull(sites));
                                                             let ratio = Visual_feature_2D.circularRatio(sites);
-                                                            loopLength[loopNum] = [t,tt,convex_score*ratio[0],convex_score,ratio[0],my_area,ratio[1],concave_area,convex_area];
-                                                            loopNum += 1;
+                                                            if (convex_score*ratio[0] > 0.1) {
+                                                                loopLength[loopNum] = [t,tt,convex_score*ratio[0],convex_score,ratio[0],my_area,ratio[1],concave_area,convex_area];
+                                                                loopNum += 1;
+                                                            }
                                                         }
                                                         t = t+inLoop;
                                                         break;

@@ -27,7 +27,7 @@ class Draw_plotly {
             // sub_y.push(experiment.dataSmooth[instance][y_var].slice(element[1][2][element[1][2].length-1][0]+element[1][2][element[1][2].length-1][1]+1));
             // prepare parameters for plotly
             let n_loop = element[1][2].length;
-            let trace = [], trace1 = [];
+            let trace = [], trace1 = [], trace2_x = [], trace2_y = [];
             for (let i = 0; i < 2*n_loop+1; i++) {
                 trace[i] = {
                     type: 'scatter',
@@ -45,6 +45,32 @@ class Draw_plotly {
                     // xaxis: 'x',
                     // yaxis: 'y',
                 };
+                trace2_x[i] = {
+                    type: 'scatter',
+                    mode: 'lines',
+                    // x: experiment.timeInfo,
+                    // y: experiment.data[instance][x_var],
+                    name: '',
+                    showlegend:false,
+                    hoverinfo: 'x+y',
+                    line: {
+                        color: '#fb8072',
+                    },
+                    yaxis: 'y',
+                };
+                trace2_y[i] = {
+                    type: 'scatter',
+                    mode: 'lines',
+                    // x: experiment.timeInfo,
+                    // y: experiment.data[instance][y_var],
+                    name: '',
+                    showlegend:false,
+                    hoverinfo: 'x+y',
+                    line: {
+                        color: '#8dd3c7',
+                    },
+                    yaxis: 'y2',
+                };
                 if (i%2===0) {
                     // trace[i].x = sub_x[i/2];
                     // trace[i].y = sub_y[i/2];
@@ -59,16 +85,28 @@ class Draw_plotly {
                         trace[i].y = experiment.dataSmoothRaw[instance][y_var].slice(0,element[1][2][0][0]+1);
                         trace1[i].x = experiment.dataRaw[instance][x_var].slice(0,element[1][2][0][0]+1);
                         trace1[i].y = experiment.dataRaw[instance][y_var].slice(0,element[1][2][0][0]+1);
+                        trace2_x[i].x = experiment.timeInfo.slice(0,element[1][2][0][0]+1);
+                        trace2_x[i].y = experiment.dataRaw[instance][x_var].slice(0,element[1][2][0][0]+1);
+                        trace2_y[i].x = experiment.timeInfo.slice(0,element[1][2][0][0]+1);
+                        trace2_y[i].y = experiment.dataRaw[instance][y_var].slice(0,element[1][2][0][0]+1);
                     } else if (i===2*n_loop) {
                         trace[i].x = experiment.dataSmoothRaw[instance][x_var].slice(element[1][2][i/2-1][1]+1);
                         trace[i].y = experiment.dataSmoothRaw[instance][y_var].slice(element[1][2][i/2-1][1]+1);
                         trace1[i].x = experiment.dataRaw[instance][x_var].slice(element[1][2][i/2-1][1]+1);
                         trace1[i].y = experiment.dataRaw[instance][y_var].slice(element[1][2][i/2-1][1]+1);
+                        trace2_x[i].x = experiment.timeInfo.slice(element[1][2][i/2-1][1]+1);
+                        trace2_x[i].y = experiment.dataRaw[instance][x_var].slice(element[1][2][i/2-1][1]+1);
+                        trace2_y[i].x = experiment.timeInfo.slice(element[1][2][i/2-1][1]+1);
+                        trace2_y[i].y = experiment.dataRaw[instance][y_var].slice(element[1][2][i/2-1][1]+1);
                     } else {
                         trace[i].x = experiment.dataRaw[instance][x_var].slice(element[1][2][i/2-1][1]+1,element[1][2][i/2][0]+1);
                         trace[i].y = experiment.dataRaw[instance][y_var].slice(element[1][2][i/2-1][1]+1,element[1][2][i/2][0]+1);
                         trace1[i].x = experiment.dataRaw[instance][x_var].slice(element[1][2][i/2-1][1]+1,element[1][2][i/2][0]+1);
                         trace1[i].y = experiment.dataRaw[instance][y_var].slice(element[1][2][i/2-1][1]+1,element[1][2][i/2][0]+1);
+                        trace2_x[i].x = experiment.timeInfo.slice(element[1][2][i/2-1][1]+1,element[1][2][i/2][0]+1);
+                        trace2_x[i].y = experiment.dataRaw[instance][x_var].slice(element[1][2][i/2-1][1]+1,element[1][2][i/2][0]+1);
+                        trace2_y[i].x = experiment.timeInfo.slice(element[1][2][i/2-1][1]+1,element[1][2][i/2][0]+1);
+                        trace2_y[i].y = experiment.dataRaw[instance][y_var].slice(element[1][2][i/2-1][1]+1,element[1][2][i/2][0]+1);
                     }
                 } else {
                     // trace[i].x = loop_x[(i-1)/2];
@@ -83,36 +121,15 @@ class Draw_plotly {
                     trace[i].y = experiment.dataRaw[instance][y_var].slice(element[1][2][(i-1)/2][0],element[1][2][(i-1)/2][1]+3);
                     trace1[i].x = experiment.dataRaw[instance][x_var].slice(element[1][2][(i-1)/2][0],element[1][2][(i-1)/2][1]+3);
                     trace1[i].y = experiment.dataRaw[instance][y_var].slice(element[1][2][(i-1)/2][0],element[1][2][(i-1)/2][1]+3);
+                    trace2_x[i].x = experiment.timeInfo.slice(element[1][2][(i-1)/2][0],element[1][2][(i-1)/2][1]+3);
+                    trace2_x[i].y = experiment.dataRaw[instance][x_var].slice(element[1][2][(i-1)/2][0],element[1][2][(i-1)/2][1]+3);
+                    trace2_y[i].x = experiment.timeInfo.slice(element[1][2][(i-1)/2][0],element[1][2][(i-1)/2][1]+3);
+                    trace2_y[i].y = experiment.dataRaw[instance][y_var].slice(element[1][2][(i-1)/2][0],element[1][2][(i-1)/2][1]+3);
                 }
             }
-            let trace2_x = {
-                type: 'scatter',
-                mode: 'lines',
-                x: experiment.timeInfo,
-                y: experiment.data[instance][x_var],
-                // name: x_var,
-                name: '',
-                showlegend:false,
-                hoverinfo: 'x+y',
-                line: {
-                    color: '#fb8072',
-                },
-                yaxis: 'y',
-            };
-            let trace2_y = {
-                type: 'scatter',
-                mode: 'lines',
-                x: experiment.timeInfo,
-                y: experiment.data[instance][y_var],
-                // name: y_var,
-                name: '',
-                showlegend:false,
-                hoverinfo: 'x+y',
-                line: {
-                    color: '#8dd3c7',
-                },
-                yaxis: 'y2',
-            };
+            let trace2 = [];
+            trace2_x.forEach(element_=>trace2.push(element_));
+            trace2_y.forEach(element_=>trace2.push(element_));
             let layout = {
                 title: instance,
                 xaxis: {
@@ -165,7 +182,7 @@ class Draw_plotly {
             };
             Plotly.newPlot(this.id+index.toString()+'_2',trace,layout);
             Plotly.newPlot(this.id+index.toString()+'_1',trace1,layout);
-            Plotly.newPlot(this.id+index.toString()+'_0',[trace2_x,trace2_y],layout1);
+            Plotly.newPlot(this.id+index.toString()+'_0',trace2,layout1);
             for (let i = 0; i < n_loop; i++) {
                 d3.select('#'+'myDiv'+index.toString()+'_3')
                     .append('p')
