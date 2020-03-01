@@ -137,7 +137,23 @@ class Draw_plotly {
             for (let i = 0; i < n_loop; i++) {
                 d3.select('#'+'myDiv'+index.toString()+'_3')
                     .append('p')
-                    .text('Loop length: '+(element[1][2][i][1]-element[1][2][i][0])+', Convex score:'+Math.floor(element[1][2][i][2]*100)/100+', concave area: '+Math.floor(element[1][2][i][3]*100)/100+', convex area: '+Math.floor(element[1][2][i][4]*100)/100+', my area: '+Math.floor(element[1][2][i][5]*100)/100)
+                    .text('Loop length: '+(element[1][2][i][1]-element[1][2][i][0]))
+                    .attr('style','text-align:center; color:'+experiment.colorList[2*i+1]);
+                d3.select('#'+'myDiv'+index.toString()+'_3')
+                    .append('p')
+                    .text('Convex score: '+Math.floor(element[1][2][i][2]*100)/100)
+                    .attr('style','text-align:center; color:'+experiment.colorList[2*i+1]);
+                d3.select('#'+'myDiv'+index.toString()+'_3')
+                    .append('p')
+                    .text('Concave area: '+Math.floor(element[1][2][i][3]*100)/100)
+                    .attr('style','text-align:center; color:'+experiment.colorList[2*i+1]);
+                d3.select('#'+'myDiv'+index.toString()+'_3')
+                    .append('p')
+                    .text('My area: '+Math.floor(element[1][2][i][5]*100)/100)
+                    .attr('style','text-align:center; color:'+experiment.colorList[2*i+1]);
+                d3.select('#'+'myDiv'+index.toString()+'_3')
+                    .append('p')
+                    .text('Convex area: '+Math.floor(element[1][2][i][4]*100)/100)
                     .attr('style','text-align:center; color:'+experiment.colorList[2*i+1]);
             }
         });

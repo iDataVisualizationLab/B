@@ -119,23 +119,34 @@ class Data_processing {
     }
 
     // get upper threshold for box-plot rule
-    static upperBoxPlot2D (instance,x_var,y_var) {
-        let n_timePoint = experiment.timeInfo.length;
-        if (experiment.firstDifference) {
-            let doublySeriesFirstDiff = [];
-            for (let t = 0; t < n_timePoint - 1; t++) {
-                if (experiment.firstDifference[instance][x_var][t] !== Infinity && experiment.firstDifference[instance][y_var][t] !== Infinity) {
-                    doublySeriesFirstDiff[t] = Math.sqrt(Math.pow(experiment.firstDifference[instance][x_var][t],2)+Math.pow(experiment.firstDifference[instance][y_var][t],2));
-                } else {
-                    doublySeriesFirstDiff[t] = Infinity;
-                }
-            }
-            doublySeriesFirstDiff = doublySeriesFirstDiff.filter(element=>element!==Infinity);
-            doublySeriesFirstDiff.sort((a,b)=>a-b);
-            let Q3 = doublySeriesFirstDiff[Math.floor((n_timePoint-1)*0.75)];
-            let Q1 = doublySeriesFirstDiff[Math.floor((n_timePoint-1)*0.25)];
-            return Q3+1.5*(Q3-Q1);
-        } else return 'No result';
+    // static upperBoxPlot2D (instance,x_var,y_var,sites) {
+    static upperBoxPlot2D (sites) {
+        // let n_timePoint = experiment.timeInfo.length;
+        // if (experiment.firstDifference) {
+        //     let doublySeriesFirstDiff = [];
+        //     for (let t = 0; t < n_timePoint - 1; t++) {
+        //         if (experiment.firstDifference[instance][x_var][t] !== Infinity && experiment.firstDifference[instance][y_var][t] !== Infinity) {
+        //             doublySeriesFirstDiff[t] = Math.sqrt(Math.pow(experiment.firstDifference[instance][x_var][t],2)+Math.pow(experiment.firstDifference[instance][y_var][t],2));
+        //         } else {
+        //             doublySeriesFirstDiff[t] = Infinity;
+        //         }
+        //     }
+        //     doublySeriesFirstDiff = doublySeriesFirstDiff.filter(element=>element!==Infinity);
+        //     doublySeriesFirstDiff.sort((a,b)=>a-b);
+        //     let Q3 = doublySeriesFirstDiff[Math.floor((n_timePoint-1)*0.75)];
+        //     let Q1 = doublySeriesFirstDiff[Math.floor((n_timePoint-1)*0.25)];
+        //     return Q3+1.5*(Q3-Q1);
+        // } else return 'No result';
+
+        let n_timePoint = sites.length;
+        let firstDiff = [];
+        for (let t = 0; t < n_timePoint - 1; t++) {
+            firstDiff[t] = Math.sqrt(Math.pow(sites[t+1][0]-sites[t][0],2)+Math.pow(sites[t+1][1]-sites[t][1],2));
+        }
+        firstDiff.sort((a,b)=>a-b);
+        let Q3 = firstDiff[Math.floor((n_timePoint-1)*0.75)];
+        let Q1 = firstDiff[Math.floor((n_timePoint-1)*0.25)];
+        return Q3+1.5*(Q3-Q1);
     }
 
 
