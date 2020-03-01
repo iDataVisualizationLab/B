@@ -90,7 +90,8 @@ class Draw_plotly {
                 mode: 'lines',
                 x: experiment.timeInfo,
                 y: experiment.data[instance][x_var],
-                name: x_var,
+                // name: x_var,
+                name: '',
                 hoverinfo: 'x+y',
             };
             let trace2_y = {
@@ -98,7 +99,8 @@ class Draw_plotly {
                 mode: 'lines',
                 x: experiment.timeInfo,
                 y: experiment.data[instance][y_var],
-                name: y_var,
+                // name: y_var,
+                name: '',
                 hoverinfo: 'x+y',
             };
             let layout = {
@@ -138,23 +140,35 @@ class Draw_plotly {
                 d3.select('#'+'myDiv'+index.toString()+'_3')
                     .append('p')
                     .text('Loop length: '+(element[1][2][i][1]-element[1][2][i][0]))
-                    .attr('style','text-align:center; color:'+experiment.colorList[2*i+1]);
+                    .attr('style','text-align:right; color:'+experiment.colorList[2*i+1]);
                 d3.select('#'+'myDiv'+index.toString()+'_3')
                     .append('p')
-                    .text('Convex score: '+Math.floor(element[1][2][i][2]*100)/100)
-                    .attr('style','text-align:center; color:'+experiment.colorList[2*i+1]);
+                    .text('Product: '+Math.floor(element[1][2][i][2]*100)/100)
+                    .attr('style','text-align:right; color:'+experiment.colorList[2*i+1]);
                 d3.select('#'+'myDiv'+index.toString()+'_3')
                     .append('p')
-                    .text('Concave area: '+Math.floor(element[1][2][i][3]*100)/100)
-                    .attr('style','text-align:center; color:'+experiment.colorList[2*i+1]);
+                    .text('Convex score: '+Math.floor(element[1][2][i][3]*100)/100)
+                    .attr('style','text-align:right; color:'+experiment.colorList[2*i+1]);
+                d3.select('#'+'myDiv'+index.toString()+'_3')
+                    .append('p')
+                    .text('Ratio: '+Math.floor(element[1][2][i][4]*100)/100)
+                    .attr('style','text-align:right; color:'+experiment.colorList[2*i+1]);
+                d3.select('#'+'myDiv'+index.toString()+'_3')
+                    .append('p')
+                    .text('Square area: '+Math.floor(element[1][2][i][6]*100)/100)
+                    .attr('style','text-align:right; color:'+experiment.colorList[2*i+1]);
                 d3.select('#'+'myDiv'+index.toString()+'_3')
                     .append('p')
                     .text('My area: '+Math.floor(element[1][2][i][5]*100)/100)
-                    .attr('style','text-align:center; color:'+experiment.colorList[2*i+1]);
+                    .attr('style','text-align:right; color:'+experiment.colorList[2*i+1]);
                 d3.select('#'+'myDiv'+index.toString()+'_3')
                     .append('p')
-                    .text('Convex area: '+Math.floor(element[1][2][i][4]*100)/100)
-                    .attr('style','text-align:center; color:'+experiment.colorList[2*i+1]);
+                    .text('Concave area: '+Math.floor(element[1][2][i][7]*100)/100)
+                    .attr('style','text-align:right; color:'+experiment.colorList[2*i+1]);
+                d3.select('#'+'myDiv'+index.toString()+'_3')
+                    .append('p')
+                    .text('Convex area: '+Math.floor(element[1][2][i][8]*100)/100)
+                    .attr('style','text-align:right; color:'+experiment.colorList[2*i+1]);
             }
         });
     }

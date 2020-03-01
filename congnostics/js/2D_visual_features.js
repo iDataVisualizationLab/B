@@ -12,38 +12,37 @@ class Visual_feature_2D {
             let instance = experiment.instanceInfo[i];
             experiment.loop[instance] = [];
             for (let x = 0; x < n_variable - 1; x++) {      // find loop
-                let x_let = experiment.variableInfo[x];
-                if (experiment.data[instance][x_let]) {
+                let x_var = experiment.variableInfo[x];
+                if (experiment.data[instance][x_var]) {
                     for (let y = x+1; y < n_variable; y++) {
-                        let y_let = experiment.variableInfo[y];
-                        if (experiment.data[instance][y_let]) {
+                        let y_var = experiment.variableInfo[y];
+                        if (experiment.data[instance][y_var]) {
                             if (this.smooth) {
                                 let loopLength = [];
                                 let loopNum = 0;
                                 for (let t = 0; t < n_timePoint - experiment.sliding - 3; t++) {
-                                    let x1 = experiment.dataSmooth[instance][x_let][t], y1 = experiment.dataSmooth[instance][y_let][t];
-                                    let x2 = experiment.dataSmooth[instance][x_let][t+1], y2 = experiment.dataSmooth[instance][y_let][t+1];
+                                    let x1 = experiment.dataSmooth[instance][x_var][t], y1 = experiment.dataSmooth[instance][y_var][t];
+                                    let x2 = experiment.dataSmooth[instance][x_var][t+1], y2 = experiment.dataSmooth[instance][y_var][t+1];
                                     if (x1 !== Infinity && x2 !== Infinity && y1 !== Infinity && y2 !== Infinity) {
                                         for (let tt = t+2; tt < n_timePoint - experiment.sliding-1; tt++) {
-                                            let x3 = experiment.dataSmooth[instance][x_let][tt], y3 = experiment.dataSmooth[instance][y_let][tt];
-                                            let x4 = experiment.dataSmooth[instance][x_let][tt+1], y4 = experiment.dataSmooth[instance][y_let][tt+1];
+                                            let x3 = experiment.dataSmooth[instance][x_var][tt], y3 = experiment.dataSmooth[instance][y_var][tt];
+                                            let x4 = experiment.dataSmooth[instance][x_var][tt+1], y4 = experiment.dataSmooth[instance][y_var][tt+1];
                                             if (x3 !== Infinity && y3 !== Infinity && x4 !== Infinity && y4 !== Infinity) {
                                                 if (Visual_feature_2D.checkIntersection(x1,y1,x2,y2,x3,y3,x4,y4)) {
                                                     if (tt-t>=12) {
                                                         let sites = [];
                                                         for (let j = t; j <= tt; j++) {
-                                                            sites[j-t] = [experiment.dataSmooth[instance][x_let][j],experiment.dataSmooth[instance][y_let][j]];
+                                                            sites[j-t] = [experiment.dataSmooth[instance][x_var][j],experiment.dataSmooth[instance][y_var][j]];
                                                         }
                                                         let inLoop = Visual_feature_2D.checkSmallLoop(sites);
-                                                        if (inLoop===sites.length) {
-                                                            let convex_score = Visual_feature_2D.convex_score(instance,x_let,y_let,sites);
+                                                        let my_area = Visual_feature_2D.area(sites);
+                                                        if (inLoop===sites.length && my_area >= 0.01) {
+                                                            let convex_score = Visual_feature_2D.convex_score(instance,x_var,y_var,sites);
                                                             let concave_area = hulls.concaveHullArea(hulls.concaveHull(experiment.alpha,sites));
                                                             let convex_area = hulls.convexHullArea(hulls.convexHull(sites));
-                                                            let my_area = Visual_feature_2D.area(sites);
                                                             let ratio = Visual_feature_2D.circularRatio(sites);
-                                                            loopLength[loopNum] = [t,tt,convex_score*ratio,concave_area,convex_area,my_area];
+                                                            loopLength[loopNum] = [t,tt,convex_score*ratio[0],convex_score,ratio[0],my_area,ratio[1],concave_area,convex_area];
                                                             loopNum += 1;
-
                                                         }
                                                         t = t+inLoop;
                                                         break;
@@ -53,32 +52,32 @@ class Visual_feature_2D {
                                         }
                                     }
                                 }
-                                experiment.loop[instance].push([x_let,y_let,loopLength]);
+                                experiment.loop[instance].push([x_var,y_var,loopLength]);
                             } else {
                                 let loopLength = [];
                                 let loopNum = 0;
                                 for (let t = 0; t < n_timePoint - experiment.sliding - 3; t++) {
-                                    let x1 = experiment.data[instance][x_let][t], y1 = experiment.data[instance][y_let][t];
-                                    let x2 = experiment.data[instance][x_let][t+1], y2 = experiment.data[instance][y_let][t+1];
+                                    let x1 = experiment.data[instance][x_var][t], y1 = experiment.data[instance][y_var][t];
+                                    let x2 = experiment.data[instance][x_var][t+1], y2 = experiment.data[instance][y_var][t+1];
                                     if (x1 !== Infinity && y1 !== Infinity && x2 !== Infinity && y2 !== Infinity) {
                                         for (let tt = t+2; tt < n_timePoint - 1; tt++) {
-                                            let x3 = experiment.data[instance][x_let][tt], y3 = experiment.data[instance][y_let][tt];
-                                            let x4 = experiment.data[instance][x_let][tt+1], y4 = experiment.data[instance][y_let][tt+1];
+                                            let x3 = experiment.data[instance][x_var][tt], y3 = experiment.data[instance][y_var][tt];
+                                            let x4 = experiment.data[instance][x_var][tt+1], y4 = experiment.data[instance][y_var][tt+1];
                                             if (x3 !== Infinity && y3 !== Infinity && x4 !== Infinity && y4 !== Infinity) {
                                                 if ( Visual_feature_2D.checkIntersection(x1,y1,x2,y2,x3,y3,x4,y4)) {
                                                     if (tt-t>=12) {
                                                         let sites = [];
                                                         for (let j = t; j <= tt; j++) {
-                                                            sites[j-t] = [experiment.data[instance][x_let][j],experiment.data[instance][y_let][j]];
+                                                            sites[j-t] = [experiment.data[instance][x_var][j],experiment.data[instance][y_var][j]];
                                                         }
                                                         let inLoop = Visual_feature_2D.checkSmallLoop(sites);
-                                                        if (inLoop===sites.length) {
-                                                            let convex_score = Visual_feature_2D.convex_score(instance,x_let,y_let,sites);
+                                                        let my_area = Visual_feature_2D.area(sites);
+                                                        if (inLoop===sites.length && my_area >= 0.01) {
+                                                            let convex_score = Visual_feature_2D.convex_score(instance,x_var,y_var,sites);
                                                             let concave_area = hulls.concaveHullArea(hulls.concaveHull(experiment.alpha,sites));
                                                             let convex_area = hulls.convexHullArea(hulls.convexHull(sites));
-                                                            let my_area = Visual_feature_2D.area(sites);
                                                             let ratio = Visual_feature_2D.circularRatio(sites);
-                                                            loopLength[loopNum] = [t,tt,convex_score*ratio,concave_area,convex_area,my_area];
+                                                            loopLength[loopNum] = [t,tt,convex_score*ratio[0],convex_score,ratio[0],my_area,ratio[1],concave_area,convex_area];
                                                             loopNum += 1;
                                                         }
                                                         t = t+inLoop;
@@ -89,7 +88,7 @@ class Visual_feature_2D {
                                         }
                                     }
                                 }
-                                experiment.loop[instance].push([x_let,y_let,loopLength]);
+                                experiment.loop[instance].push([x_var,y_var,loopLength]);
                             }
                         }
                     }
@@ -115,7 +114,7 @@ class Visual_feature_2D {
     }
 
     // compute convex score
-    static convex_score (instance, x_let, y_let, sites) {
+    static convex_score (instance, x_var, y_var, sites) {
         // let convex = hulls.convexHull(sites);
         // let convexArea = hulls.convexHullArea(convex);
         // let threshold = Data_processing.upperBoxPlot2D(sites);
@@ -244,19 +243,24 @@ class Visual_feature_2D {
         let yRange = yMax - yMin;
         let edge_square = (xRange > yRange) ? xRange : yRange;
         let area = Visual_feature_2D.area(sites);
-        return area/Math.pow(edge_square,2);
+        return [area/Math.pow(edge_square,2),Math.pow(edge_square,2)];
     }
 
     // check small loop inside the big loop
     static checkSmallLoop (sites) {
         let n_timePoint = sites.length;
         let result = n_timePoint;
+        let count = 0;
         for (let t = 0; t < n_timePoint - 3; t++) {
             for (let tt = t+2; tt < n_timePoint-1; tt++) {
                 if (Visual_feature_2D.checkIntersection(sites[t][0],sites[t][1],sites[t+1][0],sites[t+1][1],sites[tt][0],sites[tt][1],sites[tt+1][0],sites[tt+1][1])) {
-                    if (tt-t >= 12) result = t;
+                    count += 1;
+                    // if (count >=2) result = t;
+                    if (count >=1) result = t;
                 }
+                if (result !== n_timePoint) break;
             }
+            if (result !== n_timePoint) break;
         }
         return result;
     }
