@@ -227,7 +227,7 @@ d3.umapTimeSpace = function () {
                         else fillColor.opacity = 0.2;
                     }
                 }
-                // fillColor.opacity = 0.3;        // for paper
+                fillColor.opacity = 0.3;        // for paper
 
                 // begin draw point
                 background_ctx.beginPath();

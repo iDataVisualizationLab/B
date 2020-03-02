@@ -1,6 +1,9 @@
 class Visual_feature_2D {
     constructor (smooth) {
         this.smooth = smooth;
+
+        experiment.loop = {};
+        experiment.highLoop = [];
     }
 
     // compute loop

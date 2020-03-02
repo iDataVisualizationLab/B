@@ -358,7 +358,7 @@ $( document ).ready(function() {
                         'Clumpy',
                         // 'Sparse',
                         'Striated',
-                        'Cross-correlation',
+                        'Correlation',
                         "Intersections",
                         "Circular pattern",
                         'Trend',
@@ -371,7 +371,7 @@ $( document ).ready(function() {
                         'Clumpy':1,
                         // 'Sparse':4,
                         'Striated':2,
-                        'Cross-correlation':3,
+                        'Correlation':3,
                         "Intersections":4,
                         "Circular pattern":5,
                         'Trend':6,
@@ -642,6 +642,12 @@ function analyzedata() {
                 else return step !=='CountryName' && step !== 'CountryCode';
             });
 
+        // compute loop
+        let myData = new Data_processing(files);
+        myData.read();
+        let compute = new Visual_feature_2D(false);
+        compute.Loop();
+
         switch (selecteddata) {
             case 'employment':
                 // WRITE DATA TO DATA[]
@@ -672,10 +678,6 @@ function analyzedata() {
                         }
                     });
                 });
-                let myData = new Data_processing(files);
-                myData.read();
-                let compute = new Visual_feature_2D(false);
-                compute.Loop();
                 break;
             case "death_rate":
                 // WRITE DATA TO DATA[]
@@ -2586,20 +2588,22 @@ function draw() {
                                 var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*k/nummeasure)/2;
                                 stroke(180,180,180,100);
                                 line(xCenter,yCenter,xp1,yp1);
-                                switch (type[k]) {
-                                    case 0:
-                                        fill(18, 169, 101);
-                                        stroke(18, 169, 101);
-                                        break;
-                                    case 1:
-                                        fill(232, 101, 11);
-                                        stroke(232, 101, 11);
-                                        break;
-                                    case 2:
-                                        fill(89, 135, 222);
-                                        stroke(89, 135, 222);
-                                        break;
-                                }
+                                // switch (type[k]) {
+                                //     case 0:
+                                //         fill(18, 169, 101);
+                                //         stroke(18, 169, 101);
+                                //         break;
+                                //     case 1:
+                                //         fill(232, 101, 11);
+                                //         stroke(232, 101, 11);
+                                //         break;
+                                //     case 2:
+                                //         fill(89, 135, 222);
+                                //         stroke(89, 135, 222);
+                                //         break;
+                                // }
+                                fill(0);    // for paper
+                                stroke(0);  // for paper
 
                                 // arc(xCenter,yCenter,rPlotSize*measures[k][sample][mindex][2],rPlotSize*measures[k][sample][mindex][2],Math.PI*2*k/nummeasure-Math.PI/(2*nummeasure)-Math.PI/2,Math.PI*2*k/nummeasure+Math.PI/(nummeasure*2)-Math.PI/2);
                                 //triangle(xCenter,yCenter,xCenter-0.5*rPlotSize*measures[k][sample][mindex][2]*Math.sin(Math.PI*2*k/nummeasure+0.1),yCenter+0.5*rPlotSize*measures[k][sample][mindex][2]*Math.cos(Math.PI*2*k/nummeasure+0.1),xCenter-0.5*rPlotSize*measures[k+1][sample][mindex][2]*Math.sin(Math.PI*2*(k+1)/nummeasure-0.1),yCenter+0.5*rPlotSize*measures[k+1][sample][mindex][2]*Math.cos(Math.PI*2*(k+1)/nummeasure-0.1));
@@ -2616,20 +2620,22 @@ function draw() {
                             var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2;
                             stroke(180,180,180,100);
                             line(xCenter,yCenter,xp1,yp1);
-                            switch (type[nummeasure-1]) {
-                                case 0:
-                                    fill(18, 169, 101);
-                                    stroke(18, 169, 101);
-                                    break;
-                                case 1:
-                                    fill(232, 101, 11);
-                                    stroke(232, 101, 11);
-                                    break;
-                                case 2:
-                                    fill(89, 135, 222);
-                                    stroke(89, 135, 222);
-                                    break;
-                            }
+                            // switch (type[nummeasure-1]) {
+                            //     case 0:
+                            //         fill(18, 169, 101);
+                            //         stroke(18, 169, 101);
+                            //         break;
+                            //     case 1:
+                            //         fill(232, 101, 11);
+                            //         stroke(232, 101, 11);
+                            //         break;
+                            //     case 2:
+                            //         fill(89, 135, 222);
+                            //         stroke(89, 135, 222);
+                            //         break;
+                            // }
+                            fill(0);    // for paper
+                            stroke(0);  // for paper
                             // fill(180);
                             // stroke(180);
                             // arc(xCenter,yCenter,rPlotSize*measures[nummeasure-1][sample][mindex][2],rPlotSize*measures[nummeasure-1][sample][mindex][2],Math.PI*2*(nummeasure-1)/nummeasure-Math.PI/(2*nummeasure)-Math.PI/2,Math.PI*2*(nummeasure-1)/nummeasure+Math.PI/(2*nummeasure)-Math.PI/2);
