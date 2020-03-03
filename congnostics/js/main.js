@@ -642,12 +642,6 @@ function analyzedata() {
                 else return step !=='CountryName' && step !== 'CountryCode';
             });
 
-        // compute loop
-        let myData = new Data_processing(files);
-        myData.read();
-        let compute = new Visual_feature_2D(false);
-        compute.Loop();
-
         switch (selecteddata) {
             case 'employment':
                 // WRITE DATA TO DATA[]
@@ -678,6 +672,11 @@ function analyzedata() {
                         }
                     });
                 });
+                // compute loop
+                let myData = new Data_processing(files);
+                myData.read();
+                let compute = new Visual_feature_2D(false);
+                compute.Loop();
                 break;
             case "death_rate":
                 // WRITE DATA TO DATA[]
@@ -2554,7 +2553,7 @@ function draw() {
                             let instance = mapsample2.get(sample);
                             let x_var = mapvar2.get(xvar);
                             let y_var = mapvar2.get(yvar);
-                            let loop = experiment.loop[instance].find(element=>element[0]===x_var&&element[1]===y_var);
+                            let loop = (selecteddata==='employment') ? experiment.loop[instance].find(element=>element[0]===x_var&&element[1]===y_var) : [];
 
                             // draw rectangles for CS - X(t) for 1D
                             // fill(255);
@@ -2749,7 +2748,7 @@ function draw() {
                                         var x2 = 0.05*csPlotSize+xBlank+csPlotSize+xBlank+j*groupSize+0.9*csPlotSize*data[sample][xvar][step];
                                         var y1 = 0.05*csPlotSize+yBlank+50+i*(csPlotSize+ygBlank)+0.9*csPlotSize*(1-data[sample][yvar][step-1]);
                                         var y2 = 0.05*csPlotSize+yBlank+50+i*(csPlotSize+ygBlank)+0.9*csPlotSize*(1-data[sample][yvar][step]);
-                                        if (selectedmeasure===5) {
+                                        if (selectedmeasure===5 && selecteddata ==='employment') {
                                             let checkLoop = 0;
                                             for (let n = 0; n < loop[2].length; n++) {
                                                 if (loop[2][n][0]<=step&&loop[2][n][1]+1>=step) {
