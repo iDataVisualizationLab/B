@@ -65,7 +65,7 @@ let measurename = selectedDisplay === "1D" ?
     'Striated',
     'Correlation',
     "Intersections",
-    "Circular pattern",
+    "Circular",
     'Trend',
     'Length',
 ];
@@ -89,7 +89,7 @@ let measureObj = selectedDisplay === "1D" ?
     'Striated':2,
     'Correlation':3,
     "Intersections":4,
-    "Circular pattern":5,
+    "Circular":5,
     'Trend':6,
     'Length':7
 };
