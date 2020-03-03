@@ -360,7 +360,7 @@ $( document ).ready(function() {
                         'Striated',
                         'Correlation',
                         "Intersections",
-                        "Circular pattern",
+                        "Circular",
                         'Trend',
                         'Length',
                     ];
@@ -373,7 +373,7 @@ $( document ).ready(function() {
                         'Striated':2,
                         'Correlation':3,
                         "Intersections":4,
-                        "Circular pattern":5,
+                        "Circular":5,
                         'Trend':6,
                         'Length':7
                     };
@@ -1326,7 +1326,7 @@ function analyzedata() {
                             var countcrossing = 0;  // count #intersections
                             var sumcos = 0;   // sum of cosine of angles
                             // var looparr = [];
-                            // var looplength = Infinity;
+                            var looplength = Infinity;
                             var countcosine = 0;
                             xdata.forEach(function (x, xi) {
                                 for (var i = xi + 1; i < xdata.length; i++) {   // for all data after x
@@ -1338,11 +1338,11 @@ function analyzedata() {
                                     if (xx < 0 && yy < 0) {dir[2] += 1;}
                                     if (xx > 0 && yy < 0) {dir[3] += 1;}
                                     // check intersections for INTERSECTIONS
-                                    // if (i > xi + 1 && i < xSmooth.length - 1 && xi < xSmooth.length - 3) {
-                                    //     if (checkintersection(xSmooth[xi], ySmooth[xi], xSmooth[xi + 1], ySmooth[xi + 1], xSmooth[i], ySmooth[i], xSmooth[i + 1], ySmooth[i + 1])) {
-                                    //         looplength = (looplength > (i - xi)) ? i - xi : looplength;
-                                    //     }
-                                    // }
+                                    if (i > xi + 1 && i < xSmooth.length - 1 && xi < xSmooth.length - 3) {
+                                        if (checkintersection(xSmooth[xi], ySmooth[xi], xSmooth[xi + 1], ySmooth[xi + 1], xSmooth[i], ySmooth[i], xSmooth[i + 1], ySmooth[i + 1])) {
+                                            looplength = (looplength > (i - xi)) ? i - xi : looplength;
+                                        }
+                                    }
                                     if (i > xi + 1 && i < xdata.length - 1 && xi < xdata.length - 3) {
                                         if (checkintersection(x, ydata[xi], xdata[xi + 1], ydata[xi + 1], xdata[i], ydata[i], xdata[i + 1], ydata[i + 1])) {
                                             countcrossing += 1;
@@ -1410,12 +1410,20 @@ function analyzedata() {
                             });
 
                             // LOOP
-                            let instance = mapsample2.get(p);
-                            let x_var = mapvar2.get(xvar);
-                            let y_var = mapvar2.get(yvar);
-                            let loop = experiment.loop[instance].find(element=>element[0]===x_var&&element[1]===y_var);
-                            if (loop[2].length === 0) measures[5][p][myIndex][2] = 0;
-                            else measures[5][p][myIndex][2] = Math.max(...loop[2].map(element=>element[2]));
+                            switch (selecteddata) {
+                                case 'employment':
+                                    let instance = mapsample2.get(p);
+                                    let x_var = mapvar2.get(xvar);
+                                    let y_var = mapvar2.get(yvar);
+                                    let loop = experiment.loop[instance].find(element=>element[0]===x_var&&element[1]===y_var);
+                                    if (loop[2].length === 0) measures[5][p][myIndex][2] = 0;
+                                    else measures[5][p][myIndex][2] = Math.max(...loop[2].map(element=>element[2]))*loop[2].length;
+                                    break;
+                                default:
+                                    measures[5][p][myIndex][2] = (looplength === Infinity) ? 0 : looplength/xdata.length;
+                                    break;
+                            }
+
                             // measures[5][p][myIndex][2] = (looplength === Infinity) ? 0 : looplength/xdata.length;
                             // measures[9][p][myIndex][2] = (looplength > 0) ? looplength / xdata.length : 0;
 
@@ -2602,8 +2610,6 @@ function draw() {
                                 //         stroke(89, 135, 222);
                                 //         break;
                                 // }
-                                fill(0);    // for paper
-                                stroke(0);  // for paper
 
                                 // arc(xCenter,yCenter,rPlotSize*measures[k][sample][mindex][2],rPlotSize*measures[k][sample][mindex][2],Math.PI*2*k/nummeasure-Math.PI/(2*nummeasure)-Math.PI/2,Math.PI*2*k/nummeasure+Math.PI/(nummeasure*2)-Math.PI/2);
                                 //triangle(xCenter,yCenter,xCenter-0.5*rPlotSize*measures[k][sample][mindex][2]*Math.sin(Math.PI*2*k/nummeasure+0.1),yCenter+0.5*rPlotSize*measures[k][sample][mindex][2]*Math.cos(Math.PI*2*k/nummeasure+0.1),xCenter-0.5*rPlotSize*measures[k+1][sample][mindex][2]*Math.sin(Math.PI*2*(k+1)/nummeasure-0.1),yCenter+0.5*rPlotSize*measures[k+1][sample][mindex][2]*Math.cos(Math.PI*2*(k+1)/nummeasure-0.1));
@@ -2613,7 +2619,10 @@ function draw() {
                                 if (k>nummeasure/2-1) {
                                     textAlign(RIGHT);
                                 }
-                                text(measurename[k]+': '+Math.round(measures[k][sample][mindex][2]*100)/100,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*k/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*k/nummeasure)/2);
+                                if (k===5) {textSize(10); textStyle(BOLD)}        // for paper
+                                else {textSize(8); textStyle(NORMAL)}
+                                fill(0);
+                                text(measurename[k]+': '+Math.round(measures[k][sample][mindex][2]*10)/10,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*k/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*k/nummeasure)/2);
                                 textAlign(LEFT);
                             }
                             var xp1 = xCenter+rPlotSize*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2;
@@ -2683,6 +2692,7 @@ function draw() {
                             fill(255);
                             // textSize(csPlotSize/12);
                             textSize(12);
+                            fill(0);    // for paper
                             text(measurename[selectedmeasure]+' = '+Math.round(value*100)/100,xBlank+csPlotSize+xBlank+j*groupSize,yBlank+45+i*(csPlotSize+ygBlank));
 
                             // write sample notation

@@ -1349,8 +1349,9 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
             case "2D":
                 // x Variable notation
                 let xNotation = '';
+                let xNotationArr = [];
                 let xCountSpace = [], myXCountSpace = [], xCountLine = 0, xCountIndex = 0, xCountFalse = 0;
-                let xNotationArr = mapvar2.get(xVarIndex).split('');
+                xNotationArr = mapvar2.get(xVarIndex).split('');
                 xNotationArr.forEach((d,i)=>{
                     if (d === ' ') myXCountSpace.push(i);
                 });
@@ -1367,8 +1368,9 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
 
                 // y Variable notation
                 let yNotation = '';
+                let yNotationArr = [];
                 let yCountSpace = [], myYCountSpace = [], yCountLine = 0, yCountIndex = 0, yCountFalse = 0;
-                let yNotationArr = mapvar2.get(yVarIndex).split('');
+                yNotationArr = mapvar2.get(yVarIndex).split('');
                 yNotationArr.forEach((d,i)=>{
                     if (d === ' ') myYCountSpace.push(i);
                 });
@@ -1385,8 +1387,9 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
 
                 // Instance notation
                 let notationIns2D = '';
+                let notationArrIns2D = [];
                 let countSpaceIns2D = [], myCountSpaceIns2D = [], countLineIns2D = 0, countIndexIns2D = 0, countFalse2D = 0;
-                let notationArrIns2D = mapsample2.get(sampleIndex).split('');
+                notationArrIns2D = mapsample2.get(sampleIndex).split('');
                 notationArrIns2D.forEach((d,i)=>{
                     if (d === ' ') myCountSpaceIns2D.push(i);
                 });
