@@ -2799,7 +2799,7 @@ function draw() {
                                         var x2 = 0.05*oPlotSize+xBlank+j*groupSize+1.9*oPlotSize*step/timedata.length;
                                         var y1 = 0.05*oPlotSize+yBlank+50+oPlotSize+2+i*(csPlotSize+ygBlank)+0.9*oPlotSize*(1-data[sample][xvar][step-1]);
                                         var y2 = 0.05*oPlotSize+yBlank+50+oPlotSize+2+i*(csPlotSize+ygBlank)+0.9*oPlotSize*(1-data[sample][xvar][step]);
-                                        if (selectedmeasure===5) {
+                                        if (selectedmeasure===5 && selecteddata==='employment') {
                                             let checkLoop = 0;
                                             for (let n = 0; n < loop[2].length; n++) {
                                                 if (loop[2][n][0]<=step&&loop[2][n][1]+1>=step) {
@@ -2859,7 +2859,7 @@ function draw() {
                                         var x2 = 0.05*oPlotSize+xBlank+j*groupSize+1.9*oPlotSize*step/timedata.length;
                                         var y1 = 0.05*oPlotSize+yBlank+48+i*(csPlotSize+ygBlank)+0.9*oPlotSize*(1-data[sample][yvar][step-1]);
                                         var y2 = 0.05*oPlotSize+yBlank+48+i*(csPlotSize+ygBlank)+0.9*oPlotSize*(1-data[sample][yvar][step]);
-                                        if (selectedmeasure===5) {
+                                        if (selectedmeasure===5 && selecteddata==='employment') {
                                             let checkLoop = 0;
                                             for (let n = 0; n < loop[2].length; n++) {
                                                 if (loop[2][n][0]<=step&&loop[2][n][1]+1>=step) {
