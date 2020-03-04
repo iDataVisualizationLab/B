@@ -2618,8 +2618,8 @@ function draw() {
                                 if (k>nummeasure/2-1) {
                                     textAlign(RIGHT);
                                 }
-                                if (k===5) {textSize(10); textStyle(BOLD)}        // for paper
-                                else {textSize(8); textStyle(NORMAL)}
+                                // if (k===5) {textSize(10); textStyle(BOLD)}        // for paper
+                                // else {textSize(8); textStyle(NORMAL)}
                                 fill(0);
                                 text(measurename[k]+': '+Math.round(measures[k][sample][mindex][2]*10)/10,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*k/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*k/nummeasure)/2);
                                 textAlign(LEFT);
