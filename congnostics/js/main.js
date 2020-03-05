@@ -2229,7 +2229,7 @@ function draw() {
     }
     if (needupdate){
 
-        background(200);
+        background(255);
 
         // CHOOSE DISPLAY PLOTS
         sortmeasures();
