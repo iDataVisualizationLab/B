@@ -76,8 +76,8 @@ class Draw_plotly {
                     trace1[i].line = {
                         color: '#000000',
                     };
-                    trace2_x[i].line = {color:'#fb8072'};
-                    trace2_y[i].line = {color:'#8dd3c7'};
+                    trace2_x[i].line = {color:'#a6cee3'};
+                    trace2_y[i].line = {color:'#cab2d6'};
                     if (i===0) {
                         trace[i].x = experiment.dataSmoothRaw[instance][x_var].slice(0,element[1][2][0][0]+1);
                         trace[i].y = experiment.dataSmoothRaw[instance][y_var].slice(0,element[1][2][0][0]+1);
@@ -110,13 +110,13 @@ class Draw_plotly {
                     // trace[i].x = loop_x[(i-1)/2];
                     // trace[i].y = loop_y[(i-1)/2];
                     trace[i].line = {
-                        color: experiment.colorList[i],
+                        color: experiment.colorList[(i-1)/2],
                     };
                     trace1[i].line = {
-                        color: experiment.colorList[i],
+                        color: experiment.colorList[(i-1)/2],
                     };
-                    trace2_x[i].line = {color:experiment.colorList[i]};
-                    trace2_y[i].line = {color:experiment.colorList[i]};
+                    trace2_x[i].line = {color:experiment.colorList[(i-1)/2]};
+                    trace2_y[i].line = {color:experiment.colorList[(i-1)/2]};
                     trace[i].x = experiment.dataRaw[instance][x_var].slice(element[1][2][(i-1)/2][0],element[1][2][(i-1)/2][1]+3);
                     trace[i].y = experiment.dataRaw[instance][y_var].slice(element[1][2][(i-1)/2][0],element[1][2][(i-1)/2][1]+3);
                     trace1[i].x = experiment.dataRaw[instance][x_var].slice(element[1][2][(i-1)/2][0],element[1][2][(i-1)/2][1]+3);
@@ -135,20 +135,20 @@ class Draw_plotly {
                 xaxis: {
                     title: x_var,
                     titlefont: {
-                        color: '#fb8072',
+                        color: '#a6cee3',
                         size: 12,
                         family: 'Arial, sans-serif',
                     },
-                    tickfont: {color:'#fb8072'},
+                    tickfont: {color:'#a6cee3'},
                 },
                 yaxis: {
                     title: y_var,
                     titlefont: {
-                        color: '#8dd3c7',
+                        color: '#cab2d6',
                         size: 12,
                         family: 'Arial, sans-serif',
                     },
-                    tickfont: {color:'#8dd3c7'},
+                    tickfont: {color:'#cab2d6'},
                 },
                 height: experiment.window_size[0]*0.3,
                 width: experiment.window_size[0]*0.3,
@@ -160,22 +160,22 @@ class Draw_plotly {
                 yaxis: {
                     title: x_var,
                     titlefont: {
-                        color:'#fb8072',
+                        color:'#a6cee3',
                         size: 12,
                         family: 'Arial, sans-serif',
                     },
-                    tickfont: {color:'#fb8072'},
+                    tickfont: {color:'#a6cee3'},
                     // overlaying: 'y3',
                     // side: 'left',
                 },
                 yaxis2: {
                     title: y_var,
                     titlefont: {
-                        color:'#8dd3c7',
+                        color:'#cab2d6',
                         family: 'Arial, sans-serif',
                         size: 12,
                     },
-                    tickfont: {color:'#8dd3c7'},
+                    tickfont: {color:'#cab2d6'},
                     overlaying: 'y',
                     side: 'right',
                 }
