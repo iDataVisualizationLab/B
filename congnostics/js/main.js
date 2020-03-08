@@ -34,7 +34,7 @@ let needcalculation = true;
 
 // VARIABLES FOR VISUALIZATION
 let displayplot = [];   // displayplot[measure index][0->numplot-1:lowest, numplot->2numplot-1: middle, 2numplot->3numplot-1: highest][sample, x-var, y-var,value,index]
-let width = 3000;
+let width = 2000;
 let height = 8000;
 let numColumn = (selectedDisplay === "1D") ? 30 : 72;
 let columnSize = width/numColumn;
@@ -2552,7 +2552,7 @@ function draw() {
                     noStroke();
                     textSize(30);
                     text('Lowest values',xBlank+0.3*groupSize,yBlank);
-                    text('Middle values',xBlank+1.3*groupSize,yBlank);
+                    text('Medium values',xBlank+1.3*groupSize,yBlank);
                     text('Highest values',xBlank+2.3*groupSize,yBlank);
                     // Draw plots
                     for (var i = 0; i < correctnumplot; i++) {
@@ -2719,7 +2719,7 @@ function draw() {
                             noStroke();
                             fill(0);
                             // textSize(csPlotSize/14);
-                            textSize(12);
+                            textSize(10);
                             if (mapvar2.get(xvar).split("").length <= 27) {
                                 text(mapvar2.get(xvar),2*xBlank+csPlotSize+j*groupSize,yBlank+50+csPlotSize*1.1+i*(ygBlank+csPlotSize));
                             } else {
@@ -2732,7 +2732,7 @@ function draw() {
                             noStroke();
                             fill(0);
                             // textSize(csPlotSize/14);
-                            textSize(12);
+                            textSize(10);
                             translate(xBlank+j*groupSize,yBlank+50+csPlotSize+i*(csPlotSize+ygBlank));
                             rotate(-PI/2);
                             if(mapvar2.get(xvar).split("").length <= 27) {
