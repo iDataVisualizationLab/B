@@ -42,7 +42,7 @@ d3.tsneTimeSpace = function () {
             exaggerationDecayIter: {text: "Exaggeration DecayI ter", range: [1, 1000], type: "slider", variable: 'exaggerationDecayIter', width: '100px'},
             momentum: {text: "Momentum", range: [0.1, 2], type: "slider", variable: 'momentum', step:0.1, width: '100px'},
 
-            linkConnect: {text: "Draw link", type: "checkbox", variable: 'linkConnect', width: '100px',callback:()=>render(!isBusy)},
+            // linkConnect: {text: "Draw link", type: "checkbox", variable: 'linkConnect', width: '100px',callback:()=>render(!isBusy)},
         },
         formatTable = {
             'time': function (d) {
@@ -291,7 +291,7 @@ d3.tsneTimeSpace = function () {
         let tableData = [
             [
                 {text: "Input", type: "title"},
-                {label: '#Radars', content: datain.length, variable: 'datain'}
+                {label: '#Plots', content: datain.length, variable: 'datain'}
             ],
             [
                 {text: "Setting", type: "title"},

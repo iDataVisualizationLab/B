@@ -46,7 +46,7 @@ d3.tsneTimeSpace = function () {
                 variable: 'stopCondition',
                 width: '100px'
             },
-            linkConnect: {text: "Draw link", type: "checkbox", variable: 'linkConnect', width: '100px',callback:()=>render(!isBusy)},
+            // linkConnect: {text: "Draw link", type: "checkbox", variable: 'linkConnect', width: '100px',callback:()=>render(!isBusy)},
         },
         formatTable = {
             'time': function (d) {
@@ -555,7 +555,7 @@ d3.tsneTimeSpace = function () {
         let tableData = [
             [
                 {text: "Input", type: "title"},
-                {label: '#Radars', content: datain.length, variable: 'datain'}
+                {label: '#Plots', content: datain.length, variable: 'datain'}
             ],
             [
                 {text: "Setting", type: "title"},

@@ -34,7 +34,7 @@ d3.pcaTimeSpace = function () {
             linkConnect: true,
         },
         controlPanel = {
-            linkConnect: {text: "Draw link", type: "checkbox", variable: 'linkConnect', width: '100px',callback:()=>render(!isBusy)},
+            // linkConnect: {text: "Draw link", type: "checkbox", variable: 'linkConnect', width: '100px',callback:()=>render(!isBusy)},
         },
         formatTable = {
             'time': function(d){return millisecondsToStr(d)},
@@ -530,7 +530,7 @@ d3.pcaTimeSpace = function () {
         let tableData = [
             [
                 {text:"Input",type:"title"},
-                {label:'#Radars',content:datain.length,variable: 'datain'}
+                {label:'#Plots',content:datain.length,variable: 'datain'}
             ],
             [
                 {text:"Setting",type:"title"},

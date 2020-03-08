@@ -39,7 +39,7 @@ d3.umapTimeSpace = function () {
         controlPanel = {
             minDist:{text:"Minimum distance", range:[0,1], type:"slider", variable: 'minDist',width:'100px',step:0.1},
             nNeighbors:{text:"#Neighbors", range:[1,200], type:"slider", variable: 'nNeighbors',width:'100px'},
-            linkConnect: {text: "Draw link", type: "checkbox", variable: 'linkConnect', width: '100px',callback:()=>render(!isBusy)},
+            // linkConnect: {text: "Draw link", type: "checkbox", variable: 'linkConnect', width: '100px',callback:()=>render(!isBusy)},
         },
         formatTable = {
             'time': function(d){return millisecondsToStr(d)},
@@ -539,7 +539,7 @@ d3.umapTimeSpace = function () {
         let tableData = [
             [
                 {text:"Input",type:"title"},
-                {label:'#Radars',content:datain.length,variable: 'datain'}
+                {label:'#Plots',content:datain.length,variable: 'datain'}
             ],
             [
                 {text:"Setting",type:"title"},

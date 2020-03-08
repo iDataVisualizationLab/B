@@ -260,7 +260,7 @@ d3.tsneTimeSpace = function () {
         d3.entries(graphicopt.opt).forEach(d=>{
             tableData[0].push({id:d.key,text:d.value})
         });
-        tableData[0].push({id:'#Radars',text:datain.length});
+        tableData[0].push({id:'#Plots',text:datain.length});
 
 
         let tbodys = table_info.selectAll('tbody').data(tableData);
