@@ -2243,13 +2243,13 @@ function draw() {
             // fill(160);
             // noStroke();
             // rect(0,0,width,50+plotsize/4);
-            // Write group notation
-            fill(0);
-            noStroke();
-            textSize(30);
-            text('Lowest values',xBlank+0.3*groupSize,yBlank);
-            text('Middle values',xBlank+1.3*groupSize,yBlank);
-            text('Highest values',xBlank+2.3*groupSize,yBlank);
+            // // Write group notation
+            // fill(0);
+            // noStroke();
+            // textSize(30);
+            // text('Lowest values',xBlank+0.3*groupSize,yBlank);
+            // text('Middle values',xBlank+1.3*groupSize,yBlank);
+            // text('Highest values',xBlank+2.3*groupSize,yBlank);
 
             // draw summary chart
             // drawViolinChart();
@@ -2381,6 +2381,13 @@ function draw() {
                     // yBlank = 50;
                     ygBlank = csPlotSize*0.3;
                     groupSize = 2*csPlotSize+xBlank+2*rPlotSize+xgBlank;
+                    // Write group notation
+                    fill(0);
+                    noStroke();
+                    textSize(30);
+                    text('Lowest values',xBlank+0.3*groupSize,yBlank);
+                    text('Middle values',xBlank+1.3*groupSize,yBlank);
+                    text('Highest values',xBlank+2.3*groupSize,yBlank);
                     // Draw plots
                     for (var i = 0; i < correctnumplot; i++) {
                         for (var j = 0; j < 3; j++) {
@@ -2540,6 +2547,13 @@ function draw() {
                     // yBlank = 50;
                     ygBlank = csPlotSize*0.3;
                     groupSize = 2*(csPlotSize+xBlank)+rPlotSize+xgBlank;
+                    // Write group notation
+                    fill(0);
+                    noStroke();
+                    textSize(30);
+                    text('Lowest values',xBlank+0.3*groupSize,yBlank);
+                    text('Middle values',xBlank+1.3*groupSize,yBlank);
+                    text('Highest values',xBlank+2.3*groupSize,yBlank);
                     // Draw plots
                     for (var i = 0; i < correctnumplot; i++) {
                         for (var j = 0; j < 3; j++) {
