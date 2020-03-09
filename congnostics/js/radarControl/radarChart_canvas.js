@@ -115,7 +115,8 @@ function RadarChart_canvas(id, data, options, name) {
     minValue = range[0]-dif*(range[1]-range[0]);
     maxValue = range[1]+dif*(range[1]-range[0]);
 
-    let  radius = Math.min(cfg.w / 2, cfg.h / 2);    //Radius of the outermost circle
+    // let  radius = Math.min(cfg.w / 2, cfg.h / 2);    //Radius of the outermost circle
+    let  radius = rPlotSize/2;
     Format = d3.format('');               //Percentage formatting
 
     data = data.map(ditem=>{

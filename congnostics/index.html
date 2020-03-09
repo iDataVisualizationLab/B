@@ -1,42 +1,395 @@
-<!doctype html>
-<html class="no-js" lang="">
+<!DOCTYPE html>
+<meta charset="utf-8">
+
 
 <head>
-  <meta charset="utf-8">
-  <title>Experiments</title>
-  <meta name="description" content="">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link rel="manifest" href="site.webmanifest">
-  <link rel="apple-touch-icon" href="icon.png">
-  <!-- Place favicon.ico in the root directory -->
-
-  <!-- Add library here -->
-  <script src="lib/d3/d3.min.js"></script>
-<!--  <script src="lib/lalolib/lalolib.js"></script>-->
-  <!--  <script src="lib/plotly.min.js"></script>-->
-  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <title>Congnostics</title>
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
   <script src="lib/jquery-3.3.1.js"></script>
-  <script src="lib/lodash.min.js"></script>
-  <script src="lib/hulls.min.js"></script>
-<!--  <script src="lib/modernizr-3.8.0.min.js"></script>-->
+  <!-- Compiled and minified CSS -->
 
-  <!--  Add css files-->
-  <link rel="stylesheet" href="css/designHTML.css">
+  <link rel="stylesheet" href="css/materialize.css">
+  <link rel="stylesheet" href="css/customicon.css">
+  <link rel="stylesheet" href="css/nouislider.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+        rel="stylesheet">
+  <link href="css/theme.css" rel="stylesheet" type="text/css" />
+  <link href="css/N.css" rel="stylesheet" type="text/css" />
+  <link href="css/layout.css" rel="stylesheet" type="text/css" />
+  <link href="css/main.css" rel="stylesheet" type="text/css" />
+  <link href="css/jquery.dataTables.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
-
-  <!--  Add Java script here-->
-  <script src="js/global_variables.js"></script>
-  <script src="js/designHTML.js"></script>
-  <script src="js/data_processing.js"></script>
-  <script src="js/2D_visual_features.js"></script>
-  <script src="js/draw_plotly.js"></script>
-  <script src="js/my_main.js"></script>
 </head>
 
-<body>
-<!--Design body of the web-->
-<!--  <svg id="axis-svg" class="plot"></svg>-->
-<!--  <canvas id="plot-canvas" class="plot"></canvas>-->
+<body text="black" id="mainBody" class="light">
+<div class="cover">
+  <div class="progressDiv hidden">
+    <h6 class="progressText spinnerC center" style="top: calc(50% - 15px);" >saving data...</h6>
+    <div class="progress spinnerC center" style="width: 70%;">
+      <div class="determinate" style="width: 0%"></div>
+    </div>
+  </div>
+  <div class="spinnerC center" id="loadingSpinner" >
+    <h5 class="spinnerC center status" style="top: 60px; min-width: 300px;" >computing data...</h5>
+  </div>
+</div>
+<nav class="pushpin-demo-nav" data-target="blue">
+
+  <div class="nav-wrapper" id="header">
+    <a href="#" data-target="mobile-demo" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+    <ul id="nav-mobile" class="left hide-on-med-and-down">
+      <!--            <li ><a href="http://www.depts.ttu.edu/hpcc/" class="logoLink"><img src="https://idatavisualizationlab.github.io/HPCC/HiperView/images/TTUlogoWhite.png" alt="TTU"></a></li>-->
+      <li class="summaryText1" style="font-family: 'ITC Charter W01',Georgia,Garamond,serif;">  </li>
+      <li class ="currentDate center-align"></li>
+      <!--</div>-->
+    </ul>
+    <ul class="right">
+      <li class="tab active"><a class="active" href="#">Congnostics</a></li>
+      <li><a href="#!" value="light" id = "DarkTheme" class="btn waves-effect waves-effect waves-yellow">
+        <i class="material-icons left">brightness_6</i><span>Dark</span></a></li>
+    </ul>
+  </div>
+</nav>
+<ul class="sidenav " id="mobile-demo">
+  <h5></h5>
+  <li><a href="http://www.depts.ttu.edu/hpcc/"><img src="https://idatavisualizationlab.github.io/HPCC/HPCViz/images/TTUlogo.png" alt="Texas Tech University" class="avatar"></a></li>
+</ul>
+<div id="mySidenav" class="sidenavs">
+  <div class="row s12">
+    <ul class="collapsible expandable">
+      <li class="settingContain active no_padding">
+        <div class="collapsible-header"  style="color: #000000"><i class="material-icons">settings</i>  Setting</div>
+        <div class="collapsible-body">
+          <label for="datacom" class="col s5" style="color: #000000"> Dataset: </label>
+          <div  class="row s12">
+            <select id="datacom" class="col s7">
+              <option value="employment"> US Employment Data</option>
+              <option value="RUL">RUL data</option>
+              <option value="stock">SP500 Stock data</option>
+              <option id="ecg" value="ECG">ECG data</option>
+              <option value="EEG">EEG data</option>
+              <option id="test" value="Bao">Bao dataset</option>
+              <option value="death_rate">Death rate dataset</option>
+              <option value="ozone">Ozone level detection</option>
+              <option value="air_quality">Beijing air quality</option>
+              <option value="DowJones">Dow Jones Index</option>
+              <optgroup label="HPCC">
+                <option value="HPCC_0">Jun 2nd 2019</option>
+                <option value="HPCC_1">Jun 3rd 2019</option>
+                <option value="HPCC_2">Jun 4th 2019</option>
+                <option value="HPCC_3">Jun 5th 2019</option>
+                <option value="HPCC_4">Jun 6th 2019</option>
+                <option value="HPCC_5">Jun 7th 2019</option>
+                <option value="HPCC_6">Jun 8th 2019</option>
+              </optgroup>
+            </select>
+          </div>
+          <label for="analysis" class="col s5" style="color: #000000">Types of analysis</label>
+          <div class="row s12">
+            <select id="analysis" class="col s7">
+              <option value="1D">One dimension</option>
+              <option selected value="2D">Two dimension</option>
+              <!--                            <option value="2D">Two dimension</option>-->
+            </select>
+          </div>
+          <label for="visualizing" class="col s5" style="color: #000000">Visualizing:</label>
+          <div class="row s12">
+            <select id="visualizing" class="col s7">
+              <optgroup label="snapshot">
+                <option selected value="LMH">Low, Middle, and High</option>
+              </optgroup>
+              <optgroup label="Dimension reduction">
+                <option id='pca' value="PCA">PCA</option>
+                <option id="t_sne" value="tSNE">t-SNE</option>
+                <option id="umap" value="UMAP">UMAP</option>
+              </optgroup>
+            </select>
+          </div>
+          <!--                    <label for="displaymode" class="col s3" style="color: #000000"> Display mode: </label>-->
+          <!--                    <div  class="row s12">-->
+          <!--                    <select id="displaymode" class="col s9">-->
+          <!--                        <option value="0"> Original univariate time series </option>-->
+          <!--                        <option value="1"> Radar chart of measures </option>-->
+          <!--                    </select>-->
+          <!--                    </div>-->
+
+          <div id="metrics"  class="row s12">
+            <!--<div class="col" >-->
+            <!--&lt;!&ndash;<div id ="orderSelection"></div>&ndash;&gt;-->
+            <!--</div>-->
+            <div  class="col s12" id="measureControl">
+              <div class="row valign-wrapper">
+                <p class="col s2" style="color: #000000" style="font-size: 15px">Choose measure</p>
+                <p class="col s6" style="color: #000000" style="font-size: 15px">Measure name</p>
+                <p class="col s4" style="color: #000000" style="font-size: 15px">Filter</p>
+              </div>
+              <!--                    <div>-->
+              <!--                    <label class="col s7">-->
+              <!--                        <input type="checkbox" class="filled-in enableCheck" checked="checked" />-->
+              <!--                        <span class="col s6 measureLabel">Filled in</span>-->
+              <!--                    </label>-->
+              <!--                    <div class="col s5 measureSlider">-->
+
+              <!--                    </div>-->
+              <!--                    </div>-->
+            </div>
+            <div  class="col s12 hide" id="note1">
+              <p style="color:#12a965"> <span style="width: 10px; height: 10px; background-color: #12a965; margin: 5px"></span>Measures for extracting patterns</p>
+              <p style="color:#e8650b"> <span style="width: 10px; height: 10px; background-color: #e8650b; margin: 5px"></span>Statistics of time series</p>
+              <p style="color:#5987de"> <span style="width: 10px; height: 10px; background-color: #5987de; margin: 5px"></span>Statistics of net series</p>
+            </div>
+            <div  class="col s12" id="note2">
+              <p style="color:#12a965"> <span style="width: 10px; height: 10px; background-color: #12a965; margin: 5px"></span>Metrics that are similar to Scagnostics</p>
+              <p style="color:#e8650b"> <span style="width: 10px; height: 10px; background-color: #e8650b; margin: 5px"></span>Visual features of doubly time series</p>
+            </div>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="collapsible-header capitalize" id="interaction"><i class="material-icons icon">mouse</i><span>Interaction</span>  <i class="material-icons expand">chevron_right</i></div>
+        <div class="collapsible-body">
+          <div  class="row valign-wrapper">
+            <label for="displayType_holder" class="col s4">Display charts</label>
+            <div id="displayType_holder" class="radio-toolbar col s8">
+              <label class="toolTip" data-title="Series chart">
+                <input id="seriesChart" name="displayType" type="radio" value="series" checked/>
+                <i class="material-icons icon">timeline</i>
+              </label>
+
+              <label class="toolTip" data-title="Nightingale Rose Chart" >
+                <input id="roseChart" name="displayType" type="radio" value="rose"/>
+                <i class="icon-roseShape material-icons"></i>
+              </label>
+            </div>
+          </div>
+          <label for="dataInstances" class="col s4" style="color: #000000">Data Instances:</label>
+          <div class="row s12">
+            <div id="divDataInstances">
+              <select id="dataInstances" class="col s8">
+                <option value="noOption">--none--</option>
+              </select>
+            </div>
+          </div>
+          <label for="variable" class="col s4" style="color: #000000">Variables:</label>
+          <div class="row s12">
+            <div id="divVariable">
+              <select id="variable" class="col s8">
+                <option value="noOption">--none--</option>
+              </select>
+            </div>
+          </div>
+          <!--                    <label for="variableX" class="col s4" style="color: #000000">Variables 1:</label>-->
+          <!--                    <div class="row s12">-->
+          <!--                        <div id="divVariableX">-->
+          <!--                            <select id="variableX" class="col s8">-->
+          <!--                                <option value="noOption">&#45;&#45;none&#45;&#45;</option>-->
+          <!--                            </select>-->
+          <!--                        </div>-->
+          <!--                    </div>-->
+          <!--                    <label for="variableY" class="col s4" style="color: #000000">Variables 2:</label>-->
+          <!--                    <div class="row s12">-->
+          <!--                        <div id="divVariableY">-->
+          <!--                            <select id="variableY" class="col s8">-->
+          <!--                                <option value="noOption">&#45;&#45;none&#45;&#45;</option>-->
+          <!--                            </select>-->
+          <!--                        </div>-->
+          <!--                    </div>-->
+        </div>
+      </li>
+      <li>
+        <div class="collapsible-header capitalize" id="vizController"><i class="icon-radarShape material-icons icon"></i><span>Radar Controller</span>  <i class="material-icons expand">chevron_right</i></div>
+        <div class="collapsible-body">
+          <div  class="row valign-wrapper">
+            <label for="viztype_holder" class="col s4">Circular layout</label>
+            <div id="viztype_holder" class="radio-toolbar col s8">
+              <label class="toolTip" data-title="Star chart">
+                <input name="viztype" type="radio" value="star"/>
+                <i class="icon-starShape material-icons"></i>
+              </label>
+
+              <label class="toolTip" data-title="Radar chart" >
+                <input name="viztype" type="radio" value="radar"/>
+                <i class="icon-radarShape material-icons"></i>
+              </label>
+
+              <label class="toolTip" data-title="Nightingale Rose Chart" >
+                <input name="viztype" type="radio" checked value="rose" />
+                <i class="icon-roseShape material-icons"></i>
+              </label>
+
+              <label class="toolTip" data-title="Flower chart" >
+                <input name="viztype" type="radio" value="flower"/>
+                <i class="icon-flowerShape material-icons"></i>
+              </label>
+
+            </div >
+          </div>
+          <div id="RadarController"></div>
+          <div id="RadarController_Table">
+            <table class="display" width="100%"></table>
+          </div>
+          <div id="RadarController_Table_toolbar">
+            <button type="submit" value = false class ="menuBtn saveProfile modal-trigger btn-small" id="saveProfile" onclick="downloadProfile(this)" href="#savedialog_profile"><i class="fas fa-download"></i> Save </button>
+            <input id="profile_input_file" class="none" type="file" style="display: none;"/>
+            <button type="submit" value = false class ="menuBtn loadProfile btn-small" id="loadProfile" onclick="uploadProfile(this)"><i class="fas fa-upload"></i> Load </button>
+          </div>
+        </div>
+      </li>
+      <li class="active">
+        <div class="collapsible-header"><i class="material-icons">group_work</i> <span> Major host groups </span><span class="col right-align valign-wrapper subText" style="font-size: 12px;">(by the 10 metrics)</span><i class="material-icons expand">chevron_right</i></div>
+        <div class="collapsible-body">
+          <div style="position: relative;">
+            <div id="clusterLoading" class="loading hidden">
+              <div class="progressDiv hidden">
+                <h6 class="progressText spinnerC center" style="top: calc(50% - 15px);" >saving data...</h6>
+                <div class="progress spinnerC center" style="width: 70%;">
+                  <div class="determinate" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div  class="row valign-wrapper">
+                <label for="clusterMethod" class="col s4 radarcontroller_layout"> Grouping Method</label>
+                <select id="clusterMethod" class="col s8 radarcontroller_layout">
+                  <option value="leaderbin">Leader Bin</option>
+                  <option value="kmean" selected="selected">K-means</option>
+                </select>
+              </div>
+              <div  class="row valign-wrapper">
+                <label for="normMethod" class="col s4 radarcontroller_layout"> Distance Function </label>
+                <select id="normMethod" class="col s8 radarcontroller_layout">
+                  <option value="l1">L1 norm - Manhattan Distance</option>
+                  <option value="l2" selected="selected">L2 norm - Euclidean Distance</option>
+                </select>
+              </div>
+              <form action="#" class='clusterProfile hide row valign-wrapper' id = "leaderbinprofile" onsubmit="recalculateCluster( {clusterMethod: 'leaderbin',normMethod:$('#normMethod').val(),bin:{startBinGridSize: +$('#startBinGridSize').val(),range: [+$('#lowrange').val(),+$('#highrange').val()]}},reCalculateTsne);return false;">
+                <label for="startBinGridSize" class="col s4 radarcontroller_layout hide">Initial diameter</label>
+                <div  class="col s5 hide">
+                  <input type="number" id="startBinGridSize" class="radarcontroller_layout browser-default">
+                </div>
+                <label for="lowrange" class="col s4 radarcontroller_layout">#Groups from </label>
+                <div  class="col s5 no-pad-left valign-wrapper" >
+                  <input type="number" id="lowrange" class="col s3 radarcontroller_layout browser-default no_leftmagrin" value="6">
+                  <span class="col s2 no_leftmagrin">to</span>
+                  <input type="number" id="highrange" class="col s3 radarcontroller_layout browser-default no_leftmagrin" value="8">
+                </div>
+                <div  class="col s3 no_padding valign-wrapper center-align" >
+                  <button type="submit" class="btn-small animatIcon"><i class="material-icons">send</i><div>Submit</div></button>
+                </div>
+              </form>
+              <form action="#" class='clusterProfile row valign-wrapper' id = "kmeanprofile" onsubmit="recalculateCluster( {clusterMethod: 'kmean',normMethod:$('#normMethod').val(),bin:{k: +$('#knum').val(),iterations: +$('#kiteration').val()}},reCalculateTsne);return false;">
+                <label for="knum" class="col s4 radarcontroller_layout">#Groups</label>
+                <div  class="col s5 no-pad-left valign-wrapper">
+                  <input type="number" id="knum" class="col s3 radarcontroller_layout browser-default no_leftmagrin" value="6">
+                  <span class="col s6 no_leftmagrin"> #Iterations</span>
+                  <input type="number" id="kiteration" class="col s3 radarcontroller_layout browser-default no_leftmagrin" value="1">
+                </div>
+                <div  class="col s3 no_padding valign-wrapper center-align" >
+                  <button type="submit" class="btn-small animatIcon"><i class="material-icons">send</i><div>Submit</div></button>
+                </div>
+              </form>
+            </div>
+            <div class="row s12 valign-wrapper" style="margin-bottom: 0; padding-top: 10px; background-color: white">
+              <label class="col s8 offset-s4 left-align">
+                <input id="majorGroupDisplay_control" type="checkbox" class="filled-in">
+                <span >Display min-max</span>
+              </label>
+            </div>
+            <div class="row s12 flex_contain flex_warp white" id="clusterDisplay">
+              <button class="information waves-effect waves-light hide" style="right: 17px;position: absolute;"><i class="material-icons">priority_high</i></button>
+              <div id='clusterinformation' class="informationDetail card">
+                <table>
+                  <tbody>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <label>Group labels:</label>
+            <button type="submit" onclick="saveClusterDescription()"  class ="menuBtn modal-trigger btn-small" href="#savedialog_description">
+              <i class="fas fa-download pauseicon" ></i> Save</button>
+            <button  type="submit" class ="menuBtn btn-small" id="saveDescriptionbtn">
+              <i class="fas fa-upload pauseicon" ></i> Load</button>
+            <input id="description_input_file" class="none" type="file" style="display: none;"/>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+<div id="instructions"></div>
+<div id="Maincontent" class="row s12">
+  <a href="javascript:void(0)" class="closebtn btn-floating btn waves-effect waves-light" onclick="closeNav()"><i class="material-icons">chevron_left</i></a>
+  <div class="overlaySide">
+    <a class="openbtn btn-floating btn waves-effect waves-light" id="sideNavbtn" onclick="openNav()">
+      <i class="material-icons">chevron_right</i></a>
+  </div>
+  <div style="clear:both;"></div>
+  <div style="position: relative;">
+    <div class="row s12" style="overflow-x: auto">
+      <div id="mainCanvasHolder" class="mainsvg hide" >
+        <!--                <div id="myViolinChart" style="color:#C8C8C8;width:3000px;height:100px!important;padding:10px"></div>-->
+      </div>
+      <div id="tSNE" style="position:relative" class="hide">
+        <canvas id="tsneScreen"></canvas>
+        <canvas id="tsneScreen_fornt" style="position:absolute;top:0;left:0"></canvas>
+        <svg id="tsneScreen_svg" style="position:absolute;top:0;left:0;color: white!important;"></svg>
+        <div id="tsneInformation" style="position:absolute;top:0;left:0">
+          <table>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- load the d3.js library -->
+<script src = "lib/p5.min.js"></script>
+<script src="lib/d3/d3.min.js"></script>
+<script src="lib/d3.v4.js"></script>
+<!-- load the radar control library -->
+<script src="lib/lodash.min.js"></script>
+<script src="lib/underscore-min.js"></script>
+<script src="lib/hulls.min.js"></script>
+<!--<script src="../HiperView/js/d3.scaleAdjust.js"></script>-->
+<script src="https://d3js.org/d3-selection-multi.v1.min.js"></script>
+<script src="https://d3js.org/d3-color.v1.min.js"></script>
+<script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<script src="https://d3js.org/d3-format.v1.min.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/spin.js/2.0.1/spin.min.js'></script> <!-- Spinner when loading -->
+<script src="js/radarControl/radarChart.js"></script>
+<script src="js/radarControl/radarChart_canvas.js"></script>
+<script src="js/radarControl/roseChart.js"></script>
+<script src="js/radarControl/violinChart.js"></script>
+<script src="lib/simple-statistics.min.js"></script>
+<script src="lib/Sortable.min.js"></script>
+<script src="lib/jquery.dataTables.min.js"></script>
+<script src="lib/util.js"></script>
+<script src="js/init.js"></script>
+<script src="js/radarControl/radarController_v2.js"></script>
+<!-- Add your site or application content here -->
+<script src="js/vendor/modernizr-3.7.1.min.js"></script>
+<script src="lib/nouislider.js"></script>
+<script src="lib/kmean.js"></script>
+<script src="lib/binnerN.min.js"></script>
+<script src="lib/histChart.js"></script>
+<script src="lib/layoutscripts/setting.js"></script>
+<script src="lib/setting.js"></script>
+<script src="js/global_variables.js"></script>
+<script src="js/data_processing.js"></script>
+<script src="js/2D_visual_features.js"></script>
+<!--<script src="js/getDataWorker.js"></script>-->
+<!--<script src="js/vendor/jquery-3.4.1.min.js"></script>-->
+<script src="js/tsne.js"></script>
+<script src="js/umapTimeSpace.js"></script>
+<script src="js/tSNETimeSpace.js"></script>
+<script src="js/pcaTimeSpace.js"></script>
+<script src="js/plugins.js"></script>
+<script src="js/main.js"></script>
+
 
 </body>

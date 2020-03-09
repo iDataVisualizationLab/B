@@ -35,7 +35,7 @@ let needcalculation = true;
 // VARIABLES FOR VISUALIZATION
 let displayplot = [];   // displayplot[measure index][0->numplot-1:lowest, numplot->2numplot-1: middle, 2numplot->3numplot-1: highest][sample, x-var, y-var,value,index]
 let width = 2000;
-let height = 8000;
+let height = 6000;
 let numColumn = (selectedDisplay === "1D") ? 30 : 72;
 let columnSize = width/numColumn;
 let numplot = 20;
@@ -2719,7 +2719,7 @@ function draw() {
                             noStroke();
                             fill(0);
                             // textSize(csPlotSize/14);
-                            textSize(10);
+                            textSize(9);
                             if (mapvar2.get(xvar).split("").length <= 27) {
                                 text(mapvar2.get(xvar),2*xBlank+csPlotSize+j*groupSize,yBlank+50+csPlotSize*1.1+i*(ygBlank+csPlotSize));
                             } else {
@@ -2732,23 +2732,23 @@ function draw() {
                             noStroke();
                             fill(0);
                             // textSize(csPlotSize/14);
-                            textSize(10);
+                            textSize(9);
                             translate(xBlank+j*groupSize,yBlank+50+csPlotSize+i*(csPlotSize+ygBlank));
                             rotate(-PI/2);
-                            if(mapvar2.get(xvar).split("").length <= 27) {
+                            if(mapvar2.get(xvar).split("").length <= 17) {
                                 text(mapvar2.get(yvar),0,csPlotSize+xBlank-5);
                             } else {
-                                text(mapvar2.get(yvar).substr(0,27)+'...',0,csPlotSize+xBlank-5);
+                                text(mapvar2.get(yvar).substr(0,17)+'...',0,csPlotSize+xBlank-5);
                             }
-                            if(mapvar2.get(xvar).split("").length <= 30) {
+                            if(mapvar2.get(xvar).split("").length <= 20) {
                                 text(mapvar2.get(xvar),0,-5);
                             } else {
-                                text(mapvar2.get(xvar).substr(0,27)+'...',0,-5);
+                                text(mapvar2.get(xvar).substr(0,17)+'...',0,-5);
                             }
-                            if(mapvar2.get(yvar).split("").length <= 30) {
+                            if(mapvar2.get(yvar).split("").length <= 20) {
                                 text(mapvar2.get(yvar),oPlotSize,-5);
                             } else {
-                                text(mapvar2.get(yvar).substr(0,27)+'...',oPlotSize,-5);
+                                text(mapvar2.get(yvar).substr(0,17)+'...',oPlotSize,-5);
                             }
                             pop();
 
