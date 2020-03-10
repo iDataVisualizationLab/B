@@ -522,9 +522,9 @@ function analyzedata() {
             filename2 = "data/Bao_data_var.txt";
             break;
         case 'death_rate':
-            filename0 = "data/death_rate.csv";
-            filename2 = "data/death_rate_code.txt";
-            filename1 = "data/death_rate_var.txt";
+            filename0 = "data/birth_death_rate.csv";
+            filename1 = "data/death_rate_code.txt";
+            filename2 = "data/death_rate_var.txt";
             break;
         case 'ozone':
             filename0 = "data/ozone_onehour.txt";
@@ -695,8 +695,8 @@ function analyzedata() {
                     });
                 });
                 files[0].forEach(function (line) {
-                    var varindex = mapvar1.get(mapvar0.get(line['CountryCode']));
-                    var sampleindex = 0;
+                    var varindex = mapvar1.get(mapvar0.get(line['type']));
+                    var sampleindex = mapsample1.get(mapsample0.get(line['CountryCode']));
                     timedata.forEach(function (step, s) {
                         data[sampleindex][varindex][s] = isNaN(parseFloat(line[step])) ? -Infinity : parseFloat(line[step]);
                         dataRaw[sampleindex][varindex][s] = isNaN(parseFloat(line[step])) ? -Infinity : parseFloat(line[step]);
