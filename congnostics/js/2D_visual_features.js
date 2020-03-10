@@ -32,7 +32,7 @@ class Visual_feature_2D {
                                             let x4 = experiment.dataSmooth[instance][x_var][tt+1], y4 = experiment.dataSmooth[instance][y_var][tt+1];
                                             if (x3 !== Infinity && y3 !== Infinity && x4 !== Infinity && y4 !== Infinity) {
                                                 if (Visual_feature_2D.checkIntersection(x1,y1,x2,y2,x3,y3,x4,y4)) {
-                                                    if (tt-t>=12) {
+                                                    if (tt-t>=experiment.offset) {
                                                         let sites = [];
                                                         for (let j = t; j <= tt; j++) {
                                                             sites[j-t] = [experiment.dataSmooth[instance][x_var][j],experiment.dataSmooth[instance][y_var][j]];
@@ -70,7 +70,7 @@ class Visual_feature_2D {
                                             let x4 = experiment.data[instance][x_var][tt+1], y4 = experiment.data[instance][y_var][tt+1];
                                             if (x3 !== Infinity && y3 !== Infinity && x4 !== Infinity && y4 !== Infinity) {
                                                 if ( Visual_feature_2D.checkIntersection(x1,y1,x2,y2,x3,y3,x4,y4)) {
-                                                    if (tt-t>=12) {
+                                                    if (tt-t>=experiment.offset) {
                                                         let sites = [];
                                                         for (let j = t; j <= tt; j++) {
                                                             sites[j-t] = [experiment.data[instance][x_var][j],experiment.data[instance][y_var][j]];

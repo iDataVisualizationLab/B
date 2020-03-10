@@ -639,8 +639,14 @@ function analyzedata() {
         if (selecteddata !== 'ozone' && selecteddata !== 'air_quality' || selecteddata !== 'DowJones')
             timedata = files[0].columns.filter(function (step) {
                 if (selecteddata !== 'death_rate') return step !== "Series ID";
-                else return step !=='CountryName' && step !== 'CountryCode';
+                else return step !=='CountryName' && step !== 'CountryCode' && step !== 'Type';
             });
+
+        // for loop computation
+        let myData = new Data_processing(files);
+        myData.read();
+        let compute = new Visual_feature_2D(false);
+        compute.Loop();
 
         switch (selecteddata) {
             case 'employment':
@@ -673,10 +679,10 @@ function analyzedata() {
                     });
                 });
                 // compute loop
-                let myData = new Data_processing(files);
-                myData.read();
-                let compute = new Visual_feature_2D(false);
-                compute.Loop();
+                // let myData = new Data_processing(files);
+                // myData.read();
+                // let compute = new Visual_feature_2D(false);
+                // compute.Loop();
                 break;
             case "death_rate":
                 // WRITE DATA TO DATA[]
@@ -695,7 +701,7 @@ function analyzedata() {
                     });
                 });
                 files[0].forEach(function (line) {
-                    var varindex = mapvar1.get(mapvar0.get(line['type']));
+                    var varindex = mapvar1.get(mapvar0.get(line['Type']));
                     var sampleindex = mapsample1.get(mapsample0.get(line['CountryCode']));
                     timedata.forEach(function (step, s) {
                         data[sampleindex][varindex][s] = isNaN(parseFloat(line[step])) ? -Infinity : parseFloat(line[step]);
@@ -1409,12 +1415,21 @@ function analyzedata() {
                             });
 
                             // LOOP
+                            let instance, x_var, y_var, loop;
                             switch (selecteddata) {
                                 case 'employment':
-                                    let instance = mapsample2.get(p);
-                                    let x_var = mapvar2.get(xvar);
-                                    let y_var = mapvar2.get(yvar);
-                                    let loop = experiment.loop[instance].find(element=>element[0]===x_var&&element[1]===y_var);
+                                    instance = mapsample2.get(p);
+                                    x_var = mapvar2.get(xvar);
+                                    y_var = mapvar2.get(yvar);
+                                    loop = experiment.loop[instance].find(element=>element[0]===x_var&&element[1]===y_var);
+                                    if (loop[2].length === 0) measures[5][p][myIndex][2] = 0;
+                                    else measures[5][p][myIndex][2] = Math.max(...loop[2].map(element=>element[2]))*loop[2].length;
+                                    break;
+                                case 'death_rate':
+                                    instance = mapsample2.get(p);
+                                    x_var = mapvar2.get(xvar);
+                                    y_var = mapvar2.get(yvar);
+                                    loop = experiment.loop[instance].find(element=>element[0]===x_var&&element[1]===y_var);
                                     if (loop[2].length === 0) measures[5][p][myIndex][2] = 0;
                                     else measures[5][p][myIndex][2] = Math.max(...loop[2].map(element=>element[2]))*loop[2].length;
                                     break;

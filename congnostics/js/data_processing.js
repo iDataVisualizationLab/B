@@ -26,10 +26,23 @@ class Data_processing {
         let n_variable = this.data[2].length;
         let mapSeries = [];
         for (let i = 0; i < n_timeSeries; i++) {
-            let sampleCode = this.data[0][i]['Series ID'].substr(3,2);
-            let variableCode = this.data[0][i]['Series ID'].substr(10,8);
-            if (this.data[2].findIndex(element=>element.code===variableCode)!==-1)
-                mapSeries.push([sampleCode,variableCode,i]);
+            let sampleCode, variableCode;
+            switch (selecteddata) {
+                case "employment":
+                    sampleCode = this.data[0][i]['Series ID'].substr(3,2);
+                    variableCode = this.data[0][i]['Series ID'].substr(10,8);
+                    if (this.data[2].findIndex(element=>element.code===variableCode)!==-1) mapSeries.push([sampleCode,variableCode,i]);
+                break;
+                case "death_rate":
+                    sampleCode = this.data[0][i]['CountryCode'];
+                    variableCode = this.data[0][i]['Type'];
+                    if (this.data[2].findIndex(element=>element.code===variableCode)!==-1) mapSeries.push([sampleCode,variableCode,i]);
+                break;
+                default:
+
+                break;
+            }
+
         }
         for (let i = 0; i < n_instances; i++) {
             experiment.data[this.data[1][i].name] = {};
