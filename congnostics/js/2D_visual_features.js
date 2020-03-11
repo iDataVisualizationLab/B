@@ -35,11 +35,11 @@ class Visual_feature_2D {
                                                     if (tt-t>=experiment.offset) {
                                                         let sites = [];
                                                         for (let j = t; j <= tt; j++) {
-                                                            sites[j-t] = [experiment.dataSmooth[instance][x_var][j],experiment.dataSmooth[instance][y_var][j]];
+                                                            sites[j-t] = [experiment.dataSmooth[instance][x_var][j],experiment.dataSmooth[instance][y_var][j]];     // get coordinates of points in the loop
                                                         }
                                                         let inLoop = Visual_feature_2D.checkSmallLoop(sites);
                                                         let my_area = Visual_feature_2D.area(sites);
-                                                        if (inLoop===sites.length && my_area >= 0.01) {
+                                                        if (inLoop===sites.length && my_area >= experiment.area) {     // wrong if t=sites.length
                                                             let convex_score = Visual_feature_2D.convex_score(instance,x_var,y_var,sites);
                                                             let concave_area = hulls.concaveHullArea(hulls.concaveHull(experiment.alpha,sites));
                                                             let convex_area = hulls.convexHullArea(hulls.convexHull(sites));
@@ -77,7 +77,7 @@ class Visual_feature_2D {
                                                         }
                                                         let inLoop = Visual_feature_2D.checkSmallLoop(sites);
                                                         let my_area = Visual_feature_2D.area(sites);
-                                                        if (inLoop===sites.length && my_area >= 0.01) {
+                                                        if (inLoop===sites.length && my_area >= experiment.area) {
                                                             let convex_score = Visual_feature_2D.convex_score(instance,x_var,y_var,sites);
                                                             let concave_area = hulls.concaveHullArea(hulls.concaveHull(experiment.alpha,sites));
                                                             let convex_area = hulls.convexHullArea(hulls.convexHull(sites));
@@ -263,7 +263,7 @@ class Visual_feature_2D {
                 if (Visual_feature_2D.checkIntersection(sites[t][0],sites[t][1],sites[t+1][0],sites[t+1][1],sites[tt][0],sites[tt][1],sites[tt+1][0],sites[tt+1][1])) {
                     count += 1;
                     // if (count >=2) result = t;
-                    if (count >=1) result = t;
+                    if (count >= 1) result = t;
                 }
                 if (result !== n_timePoint) break;
             }

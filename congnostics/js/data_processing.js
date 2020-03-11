@@ -19,6 +19,7 @@ class Data_processing {
         experiment.timeInfo = this.data[0].columns.filter((element,index)=>index!==0);
         experiment.instanceInfo = this.data[1].map(element=>element.name);
         experiment.variableInfo = this.data[2].map(element=>element.name);
+        if (selecteddata==='death_rate') experiment.timeInfo.splice(0,2);
         // read data
         let n_timeSeries = this.data[0].length;
         let n_timePoint = this.data[0].columns.length-1;
@@ -32,11 +33,15 @@ class Data_processing {
                     sampleCode = this.data[0][i]['Series ID'].substr(3,2);
                     variableCode = this.data[0][i]['Series ID'].substr(10,8);
                     if (this.data[2].findIndex(element=>element.code===variableCode)!==-1) mapSeries.push([sampleCode,variableCode,i]);
+                    experiment.area = 0.01;
+                    experiment.offset = 12;
                 break;
                 case "death_rate":
                     sampleCode = this.data[0][i]['CountryCode'];
                     variableCode = this.data[0][i]['Type'];
                     if (this.data[2].findIndex(element=>element.code===variableCode)!==-1) mapSeries.push([sampleCode,variableCode,i]);
+                    experiment.area = 0.000625;
+                    experiment.offset = 2;
                 break;
                 default:
 
