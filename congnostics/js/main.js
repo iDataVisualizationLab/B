@@ -526,6 +526,11 @@ function analyzedata() {
             filename1 = "data/death_rate_code.txt";
             filename2 = "data/death_rate_var.txt";
             break;
+        case 'house_price':
+            filename0 = 'data/house_price.txt';
+            filename1 = 'data/price_code.txt';
+            filename2 = 'data/state_code.txt';
+            break;
         case 'ozone':
             filename0 = "data/ozone_onehour.txt";
             filename1 = "data/ozone_sample.txt";
@@ -789,6 +794,30 @@ function analyzedata() {
                     files[2].forEach((line_,index_)=>{
                         data[sampleIndex][index_][timedata.findIndex(t=>t===line.date)] = isNaN(parseFloat(line[line_.name])) ? -Infinity : parseFloat(line[line_.name]);
                         dataRaw[sampleIndex][index_][timedata.findIndex(t=>t===line.date)] = isNaN(parseFloat(line[line_.name])) ? -Infinity : parseFloat(line[line_.name]);
+                    });
+                });
+                break;
+            case 'house_price':
+                data.forEach(function (sample) {
+                    sample.forEach(function (variable) {
+                        timedata.forEach(function (step, s) {
+                            variable[s] = -Infinity;
+                        });
+                    });
+                });
+                dataRaw.forEach(function (sample) {
+                    sample.forEach(function (variable) {
+                        timedata.forEach(function (step, s) {
+                            variable[s] = -Infinity;
+                        });
+                    });
+                });
+                files[0].forEach((line,index)=>{
+                    let variableIndex = mapvar1.get(mapvar0.get(line.state));
+                    let sampleIndex = 0;
+                    files[2].forEach((line_,index_)=>{
+                        data[sampleIndex][variableIndex][timedata.findIndex(t=>t===line.date)] = isNaN(parseFloat(line[line_.name])) ? -Infinity : parseFloat(line[line_.name]);
+                        dataRaw[sampleIndex][variableIndex][timedata.findIndex(t=>t===line.date)] = isNaN(parseFloat(line[line_.name])) ? -Infinity : parseFloat(line[line_.name]);
                     });
                 });
                 break;

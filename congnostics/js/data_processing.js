@@ -43,6 +43,13 @@ class Data_processing {
                     experiment.area = 0.000625;
                     experiment.offset = 2;
                 break;
+                case 'house_price':
+                    sampleCode = 0;
+                    variableCode = this.data[0][i]['state'];
+                    if (this.data[2].findIndex(element=>element.code===variableCode)!==-1) mapSeries.push([sampleCode,variableCode,i]);
+                    experiment.area = 0.01;
+                    experiment.offset = 12;
+                break;
                 default:
 
                 break;
