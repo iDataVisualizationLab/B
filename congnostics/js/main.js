@@ -31,6 +31,7 @@ let peakPeri = [];
 let needupdate = false;
 // let needcalculation = true; //TO DO
 let needcalculation = true;
+let videoOnly = true;
 
 // VARIABLES FOR VISUALIZATION
 let displayplot = [];   // displayplot[measure index][0->numplot-1:lowest, numplot->2numplot-1: middle, 2numplot->3numplot-1: highest][sample, x-var, y-var,value,index]
@@ -51,7 +52,7 @@ for (var i = 0; i < nummeasure; i++) {
     valfilter[i] = [0,1];
 }
 // radar control
-var MetricController = radarController();
+let MetricController;
 let Radarplot_opt = {
     clusterMethod: 'kmean',
 };
@@ -134,282 +135,305 @@ function settingMeasureUpdate() {
 }
 
 $( document ).ready(function() {
-    try {
-        $('.collapsible.expandable').collapsible({
-            accordion: false,
-            inDuration:1000,
-            outDuration:1000,
-        });
-        $('.modal').modal();
-        $('.dropdown-trigger').dropdown();
-        $('.tabs').tabs();
-        $('.sidenav').sidenav();
-        discovery('#sideNavbtn');
-        openNav();
-        d3.select("#DarkTheme").on("click", switchTheme);
-        $('input[type=radio][name=viztype]').change(function() {
-            updateViztype(this.value);
-        });
-        d3.select('#clusterMethod').on('change',function(){
-            Radarplot_opt.clusterMethod = this.value;
-            // Radarplot.binopt(Radarplot_opt);
-            d3.selectAll('.clusterProfile').classed('hide',true);
-            d3.select(`#${this.value}profile`).classed('hide',false);
-        });
-        // generate measurement list
-        settingMeasureUpdate();
+    preloader(false);
+    // try {
 
-        // Radar control
-        MetricController.graphicopt({width:365,height:365})
-            .div(d3.select('#RadarController'))
-            .tablediv(d3.select('#RadarController_Table'))
-            .axisSchema(serviceFullList)
-            .onChangeValue(onSchemaUpdate)
-            .init();
-        // set event for viz type
-        $('input[type=radio][name=viztype]').change(function() {
-            updateViztype(this.value);
-        });
+        // $('.dropdown-trigger').dropdown();
+        $('.tabs').tabs({'onShow':function(){
+                console.log(this.$activeTablink);
+                console.log('Hello');
+                if (this.$activeTabLink.text()==='Video') {
+                    $('#videoIn')[0].play();
+                    closeNav();
+                    videoOnly = true;
+                    preloader(false);
+                }else{
+                    $('#videoIn')[0].pause();
+                    videoOnly = false;
+                    preloader(true);
 
-        d3.select('#majorGroupDisplay_control').on('change',function() {
-            radarChartclusteropt.boxplot = $(this).prop('checked');
-            cluster_map(cluster_info);
-        });
-        // data options
-        d3.select('#datacom').on('change',function(){
-            selecteddata = this.value;
-            if (selecteddata === 'ECG' || selecteddata === 'Bao') {
-                d3.select('#pca').attr('disabled',true);
-                d3.select('#t_sne').attr('disabled',true);
-                d3.select('#umap').attr('disabled',true);
-            } else {
-                d3.select('#pca').attr('disabled',null);
-                d3.select('#t_sne').attr('disabled',null);
-                d3.select('#umap').attr('disabled',null);
-            }
-            needcalculation = true;
-            d3.select('.cover').classed('hidden', false);
-            if(visualizingOption === 'LMH') {
-                d3.select('#mainCanvasHolder').classed('hide',false);
-                d3.select('#tSNE').classed('hide',true);
-                d3.select('#dataInstances').attr('disabled','');
-                d3.select('#variable').attr('disabled','');
-            }
-            if(visualizingOption === 'tSNE'||visualizingOption === 'PCA'||visualizingOption === 'UMAP') {
-                d3.select('#mainCanvasHolder').classed('hide', true);
-                d3.select('#tSNE').classed('hide', false);
-                recalculateCluster( {clusterMethod: $('#clusterMethod').val() || 'kmean',bin:{k:$('#knum').val() || 6,iterations:$('#kiteration').val() || 1}},function(){
-                    clickArr = [];
-                    plotPosition = [];
-                    reCalculateTsne();
-                });
-                d3.select('#dataInstances').attr('disabled',null);
-                d3.select('#variable').attr('disabled',null);
-            }
-            clickArr = [];      // delete clickArr after changing mode
-            interactionOption.sample = 'noOption';
-            interactionOption.variable = 'noOption';
-            $('#dataInstances').val('noOption').selected = true;
-            $('#variable').val('noOption').selected = true;
-        });
-        // visualizing option
-        d3.select('#mainCanvasHolder').classed('hide',false);
-        d3.select('#visualizing').on('change',function(){
-            visualizingOption = this.value;
-            if (visualizingOption !== 'LHM') {
-                d3.select('#ecg').attr('disabled',true);
-                d3.select('#test').attr('disabled',true);
-            } else {
-                d3.select('#ecg').attr('disabled',null);
-                d3.select('#test').attr('disabled',null);
-            }
-            // console.log(this.value);
-            if(visualizingOption === 'LMH') {
-                d3.select('#mainCanvasHolder').classed('hide',false);
-                d3.select('#tSNE').classed('hide',true);
-                d3.select('#dataInstances').attr('disabled','');
-                d3.select('#variable').attr('disabled','');
-                d3.select('#metrics').classed('hidden',false);
-            }
-            if(visualizingOption === 'PCA') {
-                d3.select('#mainCanvasHolder').classed('hide',true);
-                d3.select('#tSNE').classed('hide',false);
-                d3.select('#metrics').classed('hidden',true);
-                onchangeVizType(visualizingOption);
-                onchangeVizdata(visualizingOption);
-                d3.select('#dataInstances').attr('disabled',null);
-                d3.select('#variable').attr('disabled',null);
-                clickArr = [];
-            }
-            if(visualizingOption === 'UMAP') {
-                d3.select('#mainCanvasHolder').classed('hide',true);
-                d3.select('#tSNE').classed('hide',false);
-                d3.select('#metrics').classed('hidden',true);
-                onchangeVizType(visualizingOption);
-                onchangeVizdata(visualizingOption);
-                d3.select('#dataInstances').attr('disabled',null);
-                d3.select('#variable').attr('disabled',null);
-                clickArr = [];
-            }
-            if(visualizingOption === 'tSNE') {
-                d3.select('#mainCanvasHolder').classed('hide',true);
-                d3.select('#tSNE').classed('hide',false);
-                d3.select('#metrics').classed('hidden',true);
-                onchangeVizType(visualizingOption);
-                onchangeVizdata(visualizingOption);
-                d3.select('#dataInstances').attr('disabled',null);
-                d3.select('#variable').attr('disabled',null);
-                clickArr = [];
-            }
-        });
-        // interaction option - instances
-        d3.select('#dataInstances').on('change',function(){
-            interactionOption.sample = this.value;
-            if (interactionOption.sample !== 'noOption') {clickArr = []; currentPage = 1;}    // delete clicked charts after changing to interaction
-            switch (visualizingOption) {
-                case 'PCA':
-                    pcaTS.renderPCA();
-                    break;
-                case 'tSNE':
-                    tsneTS.renderTSNE();
-                    break;
-                case 'UMAP':
-                    umapTS.renderUMAP();
-                    break;
-            }
-        });
-        d3.select('#variable').on('change',function(){
-            interactionOption.variable = this.value;
-            if (interactionOption.variable !== 'noOption') {clickArr = []; currentPage = 1;}   // delete clicked charts after changing to interaction
-            switch (visualizingOption) {
-                case 'PCA':
-                    pcaTS.renderPCA();
-                    break;
-                case 'tSNE':
-                    tsneTS.renderTSNE();
-                    break;
-                case 'UMAP':
-                    umapTS.renderUMAP();
-                    break;
-            }
-        });
-        // display chart options
-        $('input[type=radio][name=displayType]').change(function() {
-            displayType = this.value;
-            switch (visualizingOption) {
-                case 'PCA':
-                    pcaTS.renderPCA();
-                    break;
-                case 'tSNE':
-                    tsneTS.renderTSNE();
-                    break;
-                case 'UMAP':
-                    umapTS.renderUMAP();
-                    break;
-            }
-        });
-        // zoom effect
-        // let myDRCanvas = d3.select('tsneSreen_svg'),
-        //     context = myDRCanvas.node().getContext("2d"),
-        //     width = myDRCanvas.property("width"),
-        //     height = myDRCanvas.property("height");
-        // myDRCanvas.call(d3.zoom().scaleExtent([0.5, 8]).on("zoom", zoomFunction()));
+                    $('.collapsible.expandable').collapsible({
+                        accordion: false,
+                        inDuration:1000,
+                        outDuration:1000,
+                    });
+                    $('.modal').modal();
 
-        // dimension option
-        d3.select('#analysis').on('change',function(){
-            selectedDisplay = this.value;
-            type = selectedDisplay === "1D" ? [0,0,0,1,1,1,2,2,2] : [0,0,0,0,1,1,1,1];
-            measurename = [];
-            measureObj = {};
-            switch (this.value) {
-                case "1D":
-                    nummeasure = 11;
-                    measurename = [
-                        'Trend',
-                        'Periodicity',
-                        'Randomness',
-                        'Mean',
-                        'Standard deviation',
-                        'Outlying',
-                        'Net mean',
-                        'Net standard deviation',
-                        'Net Outlying',
-                    ];
-                    measureObj = {
-                        'Trend':0,
-                        'Periodicity':1,
-                        'Randomness':2,
-                        'Mean':3,
-                        'Standard deviation':4,
-                        'Skewness':5,
-                        'Net mean':6,
-                        'Net standard deviation':7,
-                        'Net skewness':8,
-                    };
-                    d3.select('#note1').classed('hide',false);
-                    d3.select('#note2').classed('hide',true);
-                    break;
-                case "2D":
-                    nummeasure = 8;
-                    measurename = [
-                        'Outlying',
-                        // 'Skinny',
-                        // 'Skewed',
-                        'Clumpy',
-                        // 'Sparse',
-                        'Striated',
-                        'Correlation',
-                        "Intersections",
-                        "Circular",
-                        'Trend',
-                        'Length',
-                    ];
-                    measureObj = {
-                        'Outlying':0,
-                        // 'Skinny':1,
-                        // 'Skewed':2,
-                        'Clumpy':1,
-                        // 'Sparse':4,
-                        'Striated':2,
-                        'Correlation':3,
-                        "Intersections":4,
-                        "Circular":5,
-                        'Trend':6,
-                        'Length':7
-                    };
-                    d3.select('#note1').classed('hide',true);
-                    d3.select('#note2').classed('hide',false);
-                    break;
-            }
+                    // radar controller
+                    MetricController = radarController();
 
-            updateMeasureName();
-            needcalculation = true;
-            radarChartclusteropt.schema = serviceFullList;
-            // update MetricController
-            MetricController = {};
-            MetricController = radarController();
-            MetricController.graphicopt({width:365,height:365})
-                .div(d3.select('#RadarController'))
-                .tablediv(d3.select('#RadarController_Table'))
-                .axisSchema(serviceFullList)
-                .onChangeValue(onSchemaUpdate)
-                .init();
-            // update measureControl
-            settingMeasureUpdate();
+                    $('.sidenav').sidenav();
+                    discovery('#sideNavbtn');
+                    openNav();
+                    d3.select("#DarkTheme").on("click", switchTheme);
+                    $('input[type=radio][name=viztype]').change(function() {
+                        updateViztype(this.value);
+                    });
+                    d3.select('#clusterMethod').on('change',function(){
+                        Radarplot_opt.clusterMethod = this.value;
+                        // Radarplot.binopt(Radarplot_opt);
+                        d3.selectAll('.clusterProfile').classed('hide',true);
+                        d3.select(`#${this.value}profile`).classed('hide',false);
+                    });
+                    // generate measurement list
+                    settingMeasureUpdate();
 
-            d3.select('.cover').classed('hidden', false);
-        });
-        // display mode
-        // d3.select('#displaymode').on('change',function (){
-        //     choose = (+this.value !== 0);
-        //     needupdate = true;
-        //     console.log('mode = '+this.value);
-        // });
+                    // Radar control
+                    MetricController.graphicopt({width:365,height:365})
+                        .div(d3.select('#RadarController'))
+                        .tablediv(d3.select('#RadarController_Table'))
+                        .axisSchema(serviceFullList)
+                        .onChangeValue(onSchemaUpdate)
+                        .init();
+                    // set event for viz type
+                    $('input[type=radio][name=viztype]').change(function() {
+                        updateViztype(this.value);
+                    });
 
-        // change type of chart in dimension reduction techniques
-        d3.select('#tsneScreen_svg').on('click',onClickFunction).on('mousemove',mouseOverFunction);
+                    d3.select('#majorGroupDisplay_control').on('change',function() {
+                        radarChartclusteropt.boxplot = $(this).prop('checked');
+                        cluster_map(cluster_info);
+                    });
+                    // data options
+                    d3.select('#datacom').on('change',function(){
+                        selecteddata = this.value;
+                        if (selecteddata === 'ECG' || selecteddata === 'Bao') {
+                            d3.select('#pca').attr('disabled',true);
+                            d3.select('#t_sne').attr('disabled',true);
+                            d3.select('#umap').attr('disabled',true);
+                        } else {
+                            d3.select('#pca').attr('disabled',null);
+                            d3.select('#t_sne').attr('disabled',null);
+                            d3.select('#umap').attr('disabled',null);
+                        }
+                        needcalculation = true;
+                        d3.select('.cover').classed('hidden', false);
+                        if(visualizingOption === 'LMH') {
+                            d3.select('#mainCanvasHolder').classed('hide',false);
+                            d3.select('#tSNE').classed('hide',true);
+                            d3.select('#dataInstances').attr('disabled','');
+                            d3.select('#variable').attr('disabled','');
+                        }
+                        if(visualizingOption === 'tSNE'||visualizingOption === 'PCA'||visualizingOption === 'UMAP') {
+                            d3.select('#mainCanvasHolder').classed('hide', true);
+                            d3.select('#tSNE').classed('hide', false);
+                            recalculateCluster( {clusterMethod: $('#clusterMethod').val() || 'kmean',bin:{k:$('#knum').val() || 6,iterations:$('#kiteration').val() || 1}},function(){
+                                clickArr = [];
+                                plotPosition = [];
+                                reCalculateTsne();
+                            });
+                            d3.select('#dataInstances').attr('disabled',null);
+                            d3.select('#variable').attr('disabled',null);
+                        }
+                        clickArr = [];      // delete clickArr after changing mode
+                        interactionOption.sample = 'noOption';
+                        interactionOption.variable = 'noOption';
+                        $('#dataInstances').val('noOption').selected = true;
+                        $('#variable').val('noOption').selected = true;
+                    });
+                    // visualizing option
+                    d3.select('#mainCanvasHolder').classed('hide',false);
+                    d3.select('#visualizing').on('change',function(){
+                        visualizingOption = this.value;
+                        if (visualizingOption !== 'LHM') {
+                            d3.select('#ecg').attr('disabled',true);
+                            d3.select('#test').attr('disabled',true);
+                        } else {
+                            d3.select('#ecg').attr('disabled',null);
+                            d3.select('#test').attr('disabled',null);
+                        }
+                        // console.log(this.value);
+                        if(visualizingOption === 'LMH') {
+                            d3.select('#mainCanvasHolder').classed('hide',false);
+                            d3.select('#tSNE').classed('hide',true);
+                            d3.select('#dataInstances').attr('disabled','');
+                            d3.select('#variable').attr('disabled','');
+                            d3.select('#metrics').classed('hidden',false);
+                        }
+                        if(visualizingOption === 'PCA') {
+                            d3.select('#mainCanvasHolder').classed('hide',true);
+                            d3.select('#tSNE').classed('hide',false);
+                            d3.select('#metrics').classed('hidden',true);
+                            onchangeVizType(visualizingOption);
+                            onchangeVizdata(visualizingOption);
+                            d3.select('#dataInstances').attr('disabled',null);
+                            d3.select('#variable').attr('disabled',null);
+                            clickArr = [];
+                        }
+                        if(visualizingOption === 'UMAP') {
+                            d3.select('#mainCanvasHolder').classed('hide',true);
+                            d3.select('#tSNE').classed('hide',false);
+                            d3.select('#metrics').classed('hidden',true);
+                            onchangeVizType(visualizingOption);
+                            onchangeVizdata(visualizingOption);
+                            d3.select('#dataInstances').attr('disabled',null);
+                            d3.select('#variable').attr('disabled',null);
+                            clickArr = [];
+                        }
+                        if(visualizingOption === 'tSNE') {
+                            d3.select('#mainCanvasHolder').classed('hide',true);
+                            d3.select('#tSNE').classed('hide',false);
+                            d3.select('#metrics').classed('hidden',true);
+                            onchangeVizType(visualizingOption);
+                            onchangeVizdata(visualizingOption);
+                            d3.select('#dataInstances').attr('disabled',null);
+                            d3.select('#variable').attr('disabled',null);
+                            clickArr = [];
+                        }
+                    });
+                    // interaction option - instances
+                    d3.select('#dataInstances').on('change',function(){
+                        interactionOption.sample = this.value;
+                        if (interactionOption.sample !== 'noOption') {clickArr = []; currentPage = 1;}    // delete clicked charts after changing to interaction
+                        switch (visualizingOption) {
+                            case 'PCA':
+                                pcaTS.renderPCA();
+                                break;
+                            case 'tSNE':
+                                tsneTS.renderTSNE();
+                                break;
+                            case 'UMAP':
+                                umapTS.renderUMAP();
+                                break;
+                        }
+                    });
+                    d3.select('#variable').on('change',function(){
+                        interactionOption.variable = this.value;
+                        if (interactionOption.variable !== 'noOption') {clickArr = []; currentPage = 1;}   // delete clicked charts after changing to interaction
+                        switch (visualizingOption) {
+                            case 'PCA':
+                                pcaTS.renderPCA();
+                                break;
+                            case 'tSNE':
+                                tsneTS.renderTSNE();
+                                break;
+                            case 'UMAP':
+                                umapTS.renderUMAP();
+                                break;
+                        }
+                    });
+                    // display chart options
+                    $('input[type=radio][name=displayType]').change(function() {
+                        displayType = this.value;
+                        switch (visualizingOption) {
+                            case 'PCA':
+                                pcaTS.renderPCA();
+                                break;
+                            case 'tSNE':
+                                tsneTS.renderTSNE();
+                                break;
+                            case 'UMAP':
+                                umapTS.renderUMAP();
+                                break;
+                        }
+                    });
 
-    }catch{}
+
+                    // zoom effect
+                    // let myDRCanvas = d3.select('tsneSreen_svg'),
+                    //     context = myDRCanvas.node().getContext("2d"),
+                    //     width = myDRCanvas.property("width"),
+                    //     height = myDRCanvas.property("height");
+                    // myDRCanvas.call(d3.zoom().scaleExtent([0.5, 8]).on("zoom", zoomFunction()));
+
+                    // dimension option
+                    d3.select('#analysis').on('change',function(){
+                        selectedDisplay = this.value;
+                        type = selectedDisplay === "1D" ? [0,0,0,1,1,1,2,2,2] : [0,0,0,0,1,1,1,1];
+                        measurename = [];
+                        measureObj = {};
+                        switch (this.value) {
+                            case "1D":
+                                nummeasure = 11;
+                                measurename = [
+                                    'Trend',
+                                    'Periodicity',
+                                    'Randomness',
+                                    'Mean',
+                                    'Standard deviation',
+                                    'Outlying',
+                                    'Net mean',
+                                    'Net standard deviation',
+                                    'Net Outlying',
+                                ];
+                                measureObj = {
+                                    'Trend':0,
+                                    'Periodicity':1,
+                                    'Randomness':2,
+                                    'Mean':3,
+                                    'Standard deviation':4,
+                                    'Skewness':5,
+                                    'Net mean':6,
+                                    'Net standard deviation':7,
+                                    'Net skewness':8,
+                                };
+                                d3.select('#note1').classed('hide',false);
+                                d3.select('#note2').classed('hide',true);
+                                break;
+                            case "2D":
+                                nummeasure = 8;
+                                measurename = [
+                                    'Outlying',
+                                    // 'Skinny',
+                                    // 'Skewed',
+                                    'Clumpy',
+                                    // 'Sparse',
+                                    'Striated',
+                                    'Correlation',
+                                    "Intersections",
+                                    "Circular",
+                                    'Trend',
+                                    'Length',
+                                ];
+                                measureObj = {
+                                    'Outlying':0,
+                                    // 'Skinny':1,
+                                    // 'Skewed':2,
+                                    'Clumpy':1,
+                                    // 'Sparse':4,
+                                    'Striated':2,
+                                    'Correlation':3,
+                                    "Intersections":4,
+                                    "Circular":5,
+                                    'Trend':6,
+                                    'Length':7
+                                };
+                                d3.select('#note1').classed('hide',true);
+                                d3.select('#note2').classed('hide',false);
+                                break;
+                        }
+
+                        updateMeasureName();
+                        needcalculation = true;
+                        radarChartclusteropt.schema = serviceFullList;
+                        // update MetricController
+                        MetricController = {};
+                        MetricController = radarController();
+                        MetricController.graphicopt({width:365,height:365})
+                            .div(d3.select('#RadarController'))
+                            .tablediv(d3.select('#RadarController_Table'))
+                            .axisSchema(serviceFullList)
+                            .onChangeValue(onSchemaUpdate)
+                            .init();
+                        // update measureControl
+                        settingMeasureUpdate();
+
+                        d3.select('.cover').classed('hidden', false);
+                    });
+                    // display mode
+                    // d3.select('#displaymode').on('change',function (){
+                    //     choose = (+this.value !== 0);
+                    //     needupdate = true;
+                    //     console.log('mode = '+this.value);
+                    // });
+
+                    // change type of chart in dimension reduction techniques
+                    d3.select('#tsneScreen_svg').on('click',onClickFunction).on('mousemove',mouseOverFunction);
+
+                }
+            }});
+
+    // }catch(e){console.log('hello')}
 });
 function onSchemaUpdate(schema){ // update angle
     serviceFullList.forEach(ser=>{
@@ -2268,7 +2292,7 @@ function getcolor(measure) {
 }
 
 function draw() {
-    if(needcalculation) {
+    if(needcalculation && !videoOnly) {
         analyzedata();
     }
     if (needupdate){
