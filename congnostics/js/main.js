@@ -137,14 +137,20 @@ function settingMeasureUpdate() {
 function onTabChange (myTab_) {
     if (myTab_==='video') {
         preloader(false);
-        // $('#videoIn')[0].play();
+        d3.select('#videoIn').attr('autoplay','autoplay');
         closeNav();
         videoOnly = true;
-    } else {
+
+        d3.select('#video').classed('hide',false);
+        d3.select('#demo').classed('hide',true);
+
+    } else if (myTab_==='demo') {
         preloader(true);
-        // $('#videoIn')[0].pause();
         openNav();
         videoOnly = false;
+
+        d3.select('#video').classed('hide',true);
+        d3.select('#demo').classed('hide',false);
 
         $('.sidenav').sidenav();
         discovery('#sideNavbtn');
@@ -424,16 +430,8 @@ $( document ).ready(function() {
         });
         $('.modal').modal();
         $('.dropdown-trigger').dropdown();
-        // $('.tabs').tabs({'onShow':function(){
-        //     console.log('i am in tabs');
-        //     if (this.$activeTabLink.text()==='Video') {
-        //         videoOnly = true;
-        //     }else{
-        //         videoOnly = false;
-        //     }
-        //     onTabChange();
-        // }});
-        // onTabChange();
+
+        onTabChange('video');
 
     // }catch{}
 });
