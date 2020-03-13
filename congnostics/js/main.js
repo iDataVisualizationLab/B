@@ -1701,7 +1701,6 @@ function analyzedata() {
 ///////////////////////
     });
     needcalculation = false;
-    preloader(false);
 }
 
 // SORT MEASURES AND WRITE DISPLAYPLOT
@@ -1829,6 +1828,7 @@ function prepareRadarTable() {
 function recalculateCluster (option,calback) {
     // hide the main screen
     d3.select('.cover').classed('hidden', true);
+    preloader(false);
 
     Radarplot_opt.clusterMethod = option.clusterMethod;
     preloader(true,10,'Process grouping...','#clusterLoading');
