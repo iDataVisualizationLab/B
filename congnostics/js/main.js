@@ -32,6 +32,7 @@ let needupdate = false;
 // let needcalculation = true; //TO DO
 let needcalculation = true;
 let videoOnly = true;
+let isFirstTime = true;
 
 // VARIABLES FOR VISUALIZATION
 let displayplot = [];   // displayplot[measure index][0->numplot-1:lowest, numplot->2numplot-1: middle, 2numplot->3numplot-1: highest][sample, x-var, y-var,value,index]
@@ -145,9 +146,10 @@ function onTabChange (myTab_) {
         d3.select('#demo').classed('hide',true);
 
     } else if (myTab_==='demo') {
-        preloader(true);
+        if (isFirstTime) preloader(true);
         openNav();
         videoOnly = false;
+        isFirstTime = false;
 
         d3.select('#video').classed('hide',true);
         d3.select('#demo').classed('hide',false);
@@ -422,7 +424,6 @@ function onTabChange (myTab_) {
 
 $( document ).ready(function() {
     // try {
-    console.log('i am in ready!');
         $('.collapsible.expandable').collapsible({
             accordion: false,
             inDuration:1000,
@@ -1828,7 +1829,6 @@ function prepareRadarTable() {
 function recalculateCluster (option,calback) {
     // hide the main screen
     d3.select('.cover').classed('hidden', true);
-    preloader(false);
 
     Radarplot_opt.clusterMethod = option.clusterMethod;
     preloader(true,10,'Process grouping...','#clusterLoading');
