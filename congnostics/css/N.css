@@ -641,18 +641,18 @@ input.clusterlabel:hover, input.clusterlabel:focus{
     border: 1px solid rgba(0, 0, 0, 0.13);
 }
 
-.light .tabs a.active {
-    background-color: rgba(0,0,0,0.1);
-    border-bottom: 5px solid #505050;
-}
-#header .tabs .tab a{
-    opacity: 1;
-}
-.indicator {
-    display: none;
-}
+/*.light .tabs a.active {*/
+/*    background-color: rgba(0,0,0,0.1);*/
+/*    border-bottom: 5px solid #505050;*/
+/*}*/
+/*#header .tabs .tab a{*/
+/*    opacity: 1;*/
+/*}*/
+/*.indicator {*/
+/*    display: none;*/
+/*}*/
 
-.tabs a.active {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-bottom: 5px solid #ffffff;
-}
+/*.tabs a.active {*/
+/*    background-color: rgba(255, 255, 255, 0.1);*/
+/*    border-bottom: 5px solid #ffffff;*/
+/*}*/

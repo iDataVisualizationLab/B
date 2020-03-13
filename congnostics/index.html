@@ -50,12 +50,13 @@
           <!--<li><a href="https://idatavisualizationlab.github.io/HPCC/HiperView/HPCC_VR/index.html">Virtual Reality</a></li>-->
           <li class="col">
               <ul class="tabs">
-                  <li class="tab"><a class="active" href="#video">Video</a></li>
+<!--                  <li class="tab"><a class="active" href="#video">Video</a></li>-->
                   <li class="tab"><a href="#demo">Congnostics</a></li>
               </ul>
           </li>
           <li><a href="#!" value="light" id = "DarkTheme" class="btn waves-effect waves-effect waves-yellow">
-              <i class="material-icons left">brightness_6</i><span>Dark</span></a></li>
+              <i class="material-icons left">brightness_6</i><span>Dark</span></a>
+          </li>
       </ul>
 
   </div>
@@ -339,7 +340,6 @@
     <div id="video" class= "container video-container mainContain" style="position: relative;">
         <video id="videoIn" width="100%" controls>
 
-<!--            <source src="https://onedrive.live.com/download?cid=E3E6F12DA30E0D56&resid=E3E6F12DA30E0D56%211586&authkey=AN7I8sE4yODj8fA" type="video/mp4">-->
             <source src="https://onedrive.live.com/download?cid=0613A62DEDB2FA35&resid=613A62DEDB2FA35%21107&authkey=AHhrulEC4cBTAC0" type="video/mp4">
 
             Your browser does not support the video tag.
@@ -348,6 +348,7 @@
     </div>
 
   <div id="demo" style="position: relative;">
+<!--  <div style="position: relative;">-->
     <div class="row s12" style="overflow-x: auto">
       <div id="mainCanvasHolder" class="mainsvg hide" >
         <!--                <div id="myViolinChart" style="color:#C8C8C8;width:3000px;height:100px!important;padding:10px"></div>-->
@@ -389,8 +390,11 @@
 <script src="lib/simple-statistics.min.js"></script>
 <script src="lib/Sortable.min.js"></script>
 <script src="lib/jquery.dataTables.min.js"></script>
-<script src="lib/jquery-3.3.1.js"></script>
-<script src="lib/jquery-ui-1.12.1/jquery-ui.min.js"></script>
+<!--<script src="lib/jquery-3.3.1.js"></script>-->
+<!--add jquery-3.3.1.js cannot run???-->
+<script src="lib/jquery-ui-1.12.1/jquery-ui.js"></script>
+<script src="lib/jquery-dd.js"></script>
+<script src="lib/jquery.dataTables.min.js"></script>
 <script src="lib/util.js"></script>
 <script src="js/init.js"></script>
 <script src="js/radarControl/radarController_v2.js"></script>
