@@ -1701,7 +1701,7 @@ function analyzedata() {
 ///////////////////////
     });
     needcalculation = false;
-    // d3.select('.cover').classed('hide',true);
+    preloader(false);
 }
 
 // SORT MEASURES AND WRITE DISPLAYPLOT
