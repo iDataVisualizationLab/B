@@ -43,15 +43,13 @@ class Data_processing {
                     experiment.area = 0.000625;
                     experiment.offset = 2;
                 break;
-                case 'house_price':
-                    sampleCode = 0;
-                    variableCode = this.data[0][i]['state'];
-                    if (this.data[2].findIndex(element=>element.code===variableCode)!==-1) mapSeries.push([sampleCode,variableCode,i]);
-                    experiment.area = 0.01;
-                    experiment.offset = 12;
-                break;
                 default:
-
+                    sampleCode = this.data[0][i]['Series ID'].split('_')[0];
+                    let variableIndex = this.data[0][i]['Series ID'].split('_')[1];
+                    variableCode = this.data[2][variableIndex].code;
+                    if (this.data[2].find(element=>element.code===variableCode)!==-1) mapSeries.push([sampleCode,variableCode,i]);
+                    experiment.area = 0.01;
+                    experiment.offset = 4;
                 break;
             }
 

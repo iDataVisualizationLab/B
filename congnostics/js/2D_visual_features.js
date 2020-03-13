@@ -263,7 +263,7 @@ class Visual_feature_2D {
                 if (Visual_feature_2D.checkIntersection(sites[t][0],sites[t][1],sites[t+1][0],sites[t+1][1],sites[tt][0],sites[tt][1],sites[tt+1][0],sites[tt+1][1])) {
                     count += 1;
                     // if (count >=2) result = t;
-                    if (count >= 1) result = t;
+                    if (count >= 3) result = t;
                 }
                 if (result !== n_timePoint) break;
             }

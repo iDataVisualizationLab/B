@@ -8,7 +8,6 @@ let transformDR = d3.zoomIdentity;
 let multipleMouseOver = 1.5;
 let mouseOverPosition = [];
 let trueMousePosition = [];
-let LMH_mouseOver = true;
 let multipleHighlight = 1.5;
 let plotPosition = [];
 let pointSize = 3;
