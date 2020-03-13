@@ -134,15 +134,17 @@ function settingMeasureUpdate() {
         });
 }
 
-function onTabChange () {
-    if (videoOnly) {
+function onTabChange (myTab_) {
+    if (myTab_==='video') {
         preloader(false);
         // $('#videoIn')[0].play();
         closeNav();
+        videoOnly = true;
     } else {
         preloader(true);
         // $('#videoIn')[0].pause();
         openNav();
+        videoOnly = false;
 
         $('.sidenav').sidenav();
         discovery('#sideNavbtn');
@@ -422,16 +424,16 @@ $( document ).ready(function() {
         });
         $('.modal').modal();
         $('.dropdown-trigger').dropdown();
-        $('.tabs').tabs({'onShow':function(){
-            console.log('i am in tabs');
-            if (this.$activeTabLink.text()==='Video') {
-                videoOnly = true;
-            }else{
-                videoOnly = false;
-            }
-            onTabChange();
-        }});
-        onTabChange();
+        // $('.tabs').tabs({'onShow':function(){
+        //     console.log('i am in tabs');
+        //     if (this.$activeTabLink.text()==='Video') {
+        //         videoOnly = true;
+        //     }else{
+        //         videoOnly = false;
+        //     }
+        //     onTabChange();
+        // }});
+        // onTabChange();
 
     // }catch{}
 });
