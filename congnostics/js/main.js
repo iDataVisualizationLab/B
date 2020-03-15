@@ -15,7 +15,7 @@ let mapsample2 = new Map(); // index -> data sample name
 let mapvar0 = new Map();  // code -> variable name
 let mapvar1 = new Map();  // variable name -> index in data[variable]
 let mapvar2 = new Map(); // index -> variable name
-let timedata =[];
+let timedata = [];
 let newmeasures = {};
 
 // VARIABLES FOR CALCULATIONS
@@ -555,6 +555,11 @@ function analyzedata() {
             filename0 = 'data/house_price_editted.txt';
             filename1 = 'data/price_code.txt';
             filename2 = 'data/state_code.txt';
+            break;
+        case 'Life_expectancy':
+            filename0 = 'data/Life_expectancy.txt';
+            filename1 = 'data/Country_code.txt';
+            filename2 = 'data/Gender_code.txt';
             break;
         case 'ozone':
             filename0 = "data/ozone_onehour.txt";
