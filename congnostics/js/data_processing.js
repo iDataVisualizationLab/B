@@ -49,7 +49,7 @@ class Data_processing {
                     variableCode = this.data[2][variableIndex].code;
                     if (this.data[2].find(element=>element.code===variableCode)!==-1) mapSeries.push([sampleCode,variableCode,i]);
                     experiment.area = 0.01;
-                    experiment.offset = 4;
+                    experiment.offset = 0;
                 break;
             }
 

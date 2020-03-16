@@ -552,9 +552,9 @@ function analyzedata() {
             filename2 = "data/death_rate_var.txt";
             break;
         case 'house_price':
-            filename0 = 'data/house_price_editted.txt';
-            filename1 = 'data/price_code.txt';
-            filename2 = 'data/state_code.txt';
+            filename0 = 'data/housePrice_vs_Population.txt';
+            filename1 = 'data/state_code.txt';
+            filename2 = 'data/houseVSpopulation_code.txt';
             break;
         case 'Life_expectancy':
             filename0 = 'data/Life_expectancy.txt';
@@ -1501,8 +1501,10 @@ function analyzedata() {
                             x_var = mapvar2.get(xvar);
                             y_var = mapvar2.get(yvar);
                             loop = experiment.loop[instance].find(element=>element[0]===x_var&&element[1]===y_var);
-                            if (loop[2].length === 0) measures[5][p][myIndex][2] = 0;
-                            else measures[5][p][myIndex][2] = Math.max(...loop[2].map(element=>element[2]))*loop[2].length;
+                            if (!loop) measures[5][p][myIndex][2] = 0;
+                            else if (loop) if (loop[2].length === 0) measures[5][p][myIndex][2] = 0;
+                            else measures[5][p][myIndex][2] = 2*Math.max(...loop[2].map(element=>element[2]))*loop[2].length;
+                            if (measures[5][p][myIndex][2] > 1) measures[5][p][myIndex][2] = 1;
 
                             // measures[5][p][myIndex][2] = (looplength === Infinity) ? 0 : looplength/xdata.length;
                             // measures[9][p][myIndex][2] = (looplength > 0) ? looplength / xdata.length : 0;
@@ -2842,7 +2844,7 @@ function draw() {
                                         var x2 = 0.05*csPlotSize+xBlank+csPlotSize+xBlank+j*groupSize+0.9*csPlotSize*data[sample][xvar][step];
                                         var y1 = 0.05*csPlotSize+yBlank+50+i*(csPlotSize+ygBlank)+0.9*csPlotSize*(1-data[sample][yvar][step-1]);
                                         var y2 = 0.05*csPlotSize+yBlank+50+i*(csPlotSize+ygBlank)+0.9*csPlotSize*(1-data[sample][yvar][step]);
-                                        if (selectedmeasure===5) {
+                                        if (selectedmeasure===5 && loop) {
                                             let checkLoop = 0;
                                             for (let n = 0; n < loop[2].length; n++) {
                                                 if (loop[2][n][0]<=step&&loop[2][n][1]+1>=step) {
@@ -2893,7 +2895,7 @@ function draw() {
                                         var x2 = 0.05*oPlotSize+xBlank+j*groupSize+1.9*oPlotSize*step/timedata.length;
                                         var y1 = 0.05*oPlotSize+yBlank+50+oPlotSize+2+i*(csPlotSize+ygBlank)+0.9*oPlotSize*(1-data[sample][xvar][step-1]);
                                         var y2 = 0.05*oPlotSize+yBlank+50+oPlotSize+2+i*(csPlotSize+ygBlank)+0.9*oPlotSize*(1-data[sample][xvar][step]);
-                                        if (selectedmeasure===5) {
+                                        if (selectedmeasure===5 && loop) {
                                             let checkLoop = 0;
                                             for (let n = 0; n < loop[2].length; n++) {
                                                 if (loop[2][n][0]<=step&&loop[2][n][1]+1>=step) {
@@ -2953,7 +2955,7 @@ function draw() {
                                         var x2 = 0.05*oPlotSize+xBlank+j*groupSize+1.9*oPlotSize*step/timedata.length;
                                         var y1 = 0.05*oPlotSize+yBlank+48+i*(csPlotSize+ygBlank)+0.9*oPlotSize*(1-data[sample][yvar][step-1]);
                                         var y2 = 0.05*oPlotSize+yBlank+48+i*(csPlotSize+ygBlank)+0.9*oPlotSize*(1-data[sample][yvar][step]);
-                                        if (selectedmeasure===5) {
+                                        if (selectedmeasure===5 && loop) {
                                             let checkLoop = 0;
                                             for (let n = 0; n < loop[2].length; n++) {
                                                 if (loop[2][n][0]<=step&&loop[2][n][1]+1>=step) {
