@@ -552,9 +552,9 @@ function analyzedata() {
             filename2 = "data/death_rate_var.txt";
             break;
         case 'house_price':
-            filename0 = 'data/housePrice_vs_Population.txt';
+            filename0 = 'data/house_financial.txt';
             filename1 = 'data/state_code.txt';
-            filename2 = 'data/houseVSpopulation_code.txt';
+            filename2 = 'data/house_financial_code.txt';
             break;
         case 'Life_expectancy':
             filename0 = 'data/Life_expectancy.txt';

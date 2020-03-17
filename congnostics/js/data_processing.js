@@ -48,7 +48,7 @@ class Data_processing {
                     let variableIndex = this.data[0][i]['Series ID'].split('_')[1];
                     variableCode = this.data[2][variableIndex].code;
                     if (this.data[2].find(element=>element.code===variableCode)!==-1) mapSeries.push([sampleCode,variableCode,i]);
-                    experiment.area = 0.01;
+                    experiment.area = 0.001;
                     experiment.offset = 0;
                 break;
             }

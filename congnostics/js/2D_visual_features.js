@@ -117,7 +117,7 @@ class Visual_feature_2D {
         let v41y = y1_ - y4_;
         let checkV1 = (v1x * v23y - v1y * v23x) * (v1x * v24y - v1y * v24x);
         let checkV2 = (v2x * v41y - v2y * v41x) * (v2y * v24x - v2x * v24y);
-        return (checkV1 < 0) && (checkV2 < 0);
+        return (checkV1 <= 0) && (checkV2 <= 0);
     }
 
     // compute convex score
@@ -263,7 +263,7 @@ class Visual_feature_2D {
                 if (Visual_feature_2D.checkIntersection(sites[t][0],sites[t][1],sites[t+1][0],sites[t+1][1],sites[tt][0],sites[tt][1],sites[tt+1][0],sites[tt+1][1])) {
                     count += 1;
                     // if (count >=2) result = t;
-                    if (count >= 3) result = t;
+                    if (count >= 2) result = t;
                 }
                 if (result !== n_timePoint) break;
             }
