@@ -1754,13 +1754,13 @@ function sortmeasures() {
         if (sortarr.length >= 3*numplot) {
             displayplot[i] = [];
             for (let j = 0; j < numplot; j++) {  // get the lowest paths
-                displayplot[i][j] = sortarr[j];
+                displayplot[i][j] = sortarr[numplot-1-j];
             }
             for (let j = numplot; j < 2*numplot; j++) {  // get the middle paths
-                displayplot[i][j] = sortarr[Math.floor(sortarr.length*0.5)+j-numplot];
+                displayplot[i][j] = sortarr[Math.floor(sortarr.length*0.5)+2*numplot-1-j];
             }
             for (let j = 2*numplot; j < 3*numplot; j++) {  // get the highest paths
-                displayplot[i][j] = sortarr[sortarr.length+j-3*numplot];
+                displayplot[i][j] = sortarr[sortarr.length-j+2*numplot-1];
             }
             newnumplot = 0;
         } else {
