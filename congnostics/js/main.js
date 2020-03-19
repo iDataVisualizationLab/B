@@ -140,6 +140,7 @@ function onTabChange (myTab_) {
         preloader(false);
         closeNav();
         videoOnly = true;
+        $('#videoIn')[0].play();
 
         d3.select('#video').classed('hide',false);
         d3.select('#demo').classed('hide',true);
@@ -149,6 +150,7 @@ function onTabChange (myTab_) {
         openNav();
         videoOnly = false;
         isFirstTime = false;
+        $('#videoIn')[0].pause();
 
         d3.select('#video').classed('hide',true);
         d3.select('#demo').classed('hide',false);
