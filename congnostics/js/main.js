@@ -138,7 +138,6 @@ function settingMeasureUpdate() {
 function onTabChange (myTab_) {
     if (myTab_==='video') {
         preloader(false);
-        d3.select('#videoIn').attr('autoplay','autoplay');
         closeNav();
         videoOnly = true;
 
