@@ -23,7 +23,7 @@ let numcell = 40;
 let cellsize = 1/numcell;
 let cellval = [];
 let lag = 0;
-let selecteddata= 'employment';
+let selecteddata= 'Life_expectancy';
 let myPeriodogramDraw = [];
 let peakPeri = [];
 
@@ -136,10 +136,15 @@ function settingMeasureUpdate() {
 }
 
 function onTabChange (myTab_) {
+    // let myVideo = document.getElementById('videoIn');
     if (myTab_==='video') {
         preloader(false);
         closeNav();
         videoOnly = true;
+        // myVideo.muted = true;
+        // myVideo.play();
+        console.log($('#videoIn')[0]);
+        $('#videoIn')[0].play();
 
         d3.select('#video').classed('hide',false);
         d3.select('#demo').classed('hide',true);
@@ -149,6 +154,9 @@ function onTabChange (myTab_) {
         openNav();
         videoOnly = false;
         isFirstTime = false;
+        // myVideo.muted = true;
+        // myVideo.pause();
+        $('#videoIn')[0].pause();
 
         d3.select('#video').classed('hide',true);
         d3.select('#demo').classed('hide',false);
@@ -431,7 +439,7 @@ $( document ).ready(function() {
         $('.modal').modal();
         $('.dropdown-trigger').dropdown();
 
-        onTabChange('video');
+        onTabChange('demo');
 
     // }catch{}
 });

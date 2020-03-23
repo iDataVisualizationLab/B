@@ -250,7 +250,7 @@ class Visual_feature_2D {
         let yRange = yMax - yMin;
         let edge_square = (xRange > yRange) ? xRange : yRange;
         let area = Visual_feature_2D.area(sites);
-        return [area/Math.pow(edge_square,2),Math.pow(edge_square,2)];
+        return [(4/Math.PI)*area/Math.pow(edge_square,2),Math.pow(edge_square,2)];
     }
 
     // check small loop inside the big loop
