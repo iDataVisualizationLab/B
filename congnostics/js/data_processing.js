@@ -44,7 +44,8 @@ class Data_processing {
                     experiment.offset = 2;
                 break;
                 default:
-                    sampleCode = this.data[0][i]['Series ID'].split('_')[0];
+                    let sampleIndex = this.data[0][i]['Series ID'].split('_')[0];
+                    sampleCode = this.data[1][sampleIndex].code;
                     let variableIndex = this.data[0][i]['Series ID'].split('_')[1];
                     variableCode = this.data[2][variableIndex].code;
                     if (this.data[2].find(element=>element.code===variableCode)!==-1) mapSeries.push([sampleCode,variableCode,i]);
@@ -60,25 +61,21 @@ class Data_processing {
             for (let j = 0; j < n_variable; j++) {
                 let sampleCode = this.data[1][i].code;
                 let variableCode = this.data[2][j].code;
-                let variable = this.data[2][j].name;
-                let limit = experiment.limit.findIndex(element=>element===variable);
-                if (limit === -1) {
-                    let rowMatrix = mapSeries.find(element=>element[0]===sampleCode&&element[1]===variableCode);
-                    if (rowMatrix) {
-                        let row = rowMatrix[2];
-                        let timeSeries = [];
-                        for (let t = 0; t < n_timePoint; t++) {
-                            timeSeries[t] = isNaN(parseFloat(this.data[0][row][experiment.timeInfo[t]])) ? Infinity : parseFloat(this.data[0][row][experiment.timeInfo[t]]);
-                        }
-                        experiment.dataRaw[this.data[1][i].name][this.data[2][j].name] = timeSeries;
-                        let maxValue = Math.max(...timeSeries.filter(element=>element!==Infinity));
-                        let minValue = Math.min(...timeSeries.filter(element=>element!==Infinity));
-                        let rangeValue = maxValue - minValue;
-                        experiment.data[this.data[1][i].name][this.data[2][j].name] = timeSeries.map(element=>{
-                            if (maxValue !== Infinity && minValue !== Infinity) return (element-minValue)/rangeValue;
-                            else return Infinity;
-                        });
+                let rowMatrix = mapSeries.find(element=>element[0]===sampleCode&&element[1]===variableCode);
+                if (rowMatrix) {
+                    let row = rowMatrix[2];
+                    let timeSeries = [];
+                    for (let t = 0; t < n_timePoint; t++) {
+                        timeSeries[t] = isNaN(parseFloat(this.data[0][row][experiment.timeInfo[t]])) ? Infinity : parseFloat(this.data[0][row][experiment.timeInfo[t]]);
                     }
+                    experiment.dataRaw[this.data[1][i].name][this.data[2][j].name] = timeSeries;
+                    let maxValue = Math.max(...timeSeries.filter(element=>element!==Infinity));
+                    let minValue = Math.min(...timeSeries.filter(element=>element!==Infinity));
+                    let rangeValue = maxValue - minValue;
+                    experiment.data[this.data[1][i].name][this.data[2][j].name] = timeSeries.map(element=>{
+                        if (maxValue !== Infinity && minValue !== Infinity) return (element-minValue)/rangeValue;
+                        else return Infinity;
+                    });
                 }
             }
         }
