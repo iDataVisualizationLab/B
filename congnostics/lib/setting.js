@@ -1,6 +1,6 @@
 let myWidth = window.innerWidth;
 let myHeight = window.innerHeight;
-let selectedDisplay = "2D";
+let selectedDisplay = "1D";
 let currentPage = 1;
 let maxPerPage = (selectedDisplay === '1D') ? 10 : 10;
 let displayType = 'series';
@@ -49,10 +49,10 @@ let measurename = selectedDisplay === "1D" ?
     'Periodicity',
     'Randomness',
     'Mean',
-    'Standard deviation',
+    'Dispersion',
     'Outlying',
     'Net mean',
-    'Net standard deviation',
+    'Net dispersion',
     'Net Outlying',
 ] :
 [
@@ -74,10 +74,10 @@ let measureObj = selectedDisplay === "1D" ?
     'Periodicity':1,
     'Randomness':2,
     'Mean':3,
-    'Standard deviation':4,
+    'Dispersion':4,
     'Outlying':5,
     'Net mean':6,
-    'Net standard deviation':7,
+    'Net dispersion':7,
     'Net Outlying':8,
 } : {
     'Outlying':0,

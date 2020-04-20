@@ -347,10 +347,10 @@ function onTabChange (myTab_) {
                         'Periodicity',
                         'Randomness',
                         'Mean',
-                        'Standard deviation',
+                        'Dispersion',
                         'Outlying',
                         'Net mean',
-                        'Net standard deviation',
+                        'Net dispersion',
                         'Net Outlying',
                     ];
                     measureObj = {
@@ -358,10 +358,10 @@ function onTabChange (myTab_) {
                         'Periodicity':1,
                         'Randomness':2,
                         'Mean':3,
-                        'Standard deviation':4,
+                        'Dispersion':4,
                         'Skewness':5,
                         'Net mean':6,
-                        'Net standard deviation':7,
+                        'Net dispersion':7,
                         'Net skewness':8,
                     };
                     d3.select('#note1').classed('hide',false);
@@ -664,18 +664,20 @@ function analyzedata() {
 
         // for paper - remove some variables
         limitList = [];
-        if (mapvar1.get('Mining, Logging')) limitList.push(mapvar1.get('Mining, Logging'));
-        if (mapvar1.get('Wholesale Trade')) limitList.push(mapvar1.get('Wholesale Trade'));
-        if (mapvar1.get('Retail Trade')) limitList.push(mapvar1.get('Retail Trade'));
-        if (mapvar1.get('Finance and Insurance')) limitList.push(mapvar1.get('Finance and Insurance'));
-        if (mapvar1.get('Educational Services')) limitList.push(mapvar1.get('Educational Services'));
-        if (mapvar1.get('Private Service Providing')) limitList.push(mapvar1.get('Private Service Providing'));
-        if (mapvar1.get('State Government')) limitList.push(mapvar1.get('State Government'));
-        if (mapvar1.get('Local Government')) limitList.push(mapvar1.get('Local Government'));
-        if (mapvar1.get('Health Care, Social Assistance')) limitList.push(mapvar1.get('Health Care, Social Assistance'));
-        if (mapvar1.get('Durable Goods')) limitList.push(mapvar1.get('Durable Goods'));
-        if (mapvar1.get('Non-Durable Goods')) limitList.push(mapvar1.get('Non-Durable Goods'));
-        if (mapvar1.get('Administrative and Support and Waste Management and Remediation Services')) limitList.push(mapvar1.get('Administrative and Support and Waste Management and Remediation Services'));
+        if (selectedDisplay === '2D') {
+            if (mapvar1.get('Mining, Logging')) limitList.push(mapvar1.get('Mining, Logging'));
+            if (mapvar1.get('Wholesale Trade')) limitList.push(mapvar1.get('Wholesale Trade'));
+            if (mapvar1.get('Retail Trade')) limitList.push(mapvar1.get('Retail Trade'));
+            if (mapvar1.get('Finance and Insurance')) limitList.push(mapvar1.get('Finance and Insurance'));
+            if (mapvar1.get('Educational Services')) limitList.push(mapvar1.get('Educational Services'));
+            if (mapvar1.get('Private Service Providing')) limitList.push(mapvar1.get('Private Service Providing'));
+            if (mapvar1.get('State Government')) limitList.push(mapvar1.get('State Government'));
+            if (mapvar1.get('Local Government')) limitList.push(mapvar1.get('Local Government'));
+            if (mapvar1.get('Health Care, Social Assistance')) limitList.push(mapvar1.get('Health Care, Social Assistance'));
+            if (mapvar1.get('Durable Goods')) limitList.push(mapvar1.get('Durable Goods'));
+            if (mapvar1.get('Non-Durable Goods')) limitList.push(mapvar1.get('Non-Durable Goods'));
+            if (mapvar1.get('Administrative and Support and Waste Management and Remediation Services')) limitList.push(mapvar1.get('Administrative and Support and Waste Management and Remediation Services'));
+        }
 
         // TIME NAME
         if (selecteddata !== 'ozone' && selecteddata !== 'air_quality' || selecteddata !== 'DowJones')
@@ -685,10 +687,12 @@ function analyzedata() {
             });
 
         // for loop computation
-        let myData = new Data_processing(files);
-        myData.read();
-        let compute = new Visual_feature_2D(false);
-        compute.Loop();
+        if (selectedDisplay === '2D') {
+            let myData = new Data_processing(files);
+            myData.read();
+            let compute = new Visual_feature_2D(false);
+            compute.Loop();
+        }
 
         switch (selecteddata) {
             case 'employment':
@@ -2487,7 +2491,7 @@ function draw() {
                             var mindex = displayplot[selectedmeasure][i+j*correctnumplot][4];
 
                             // draw rectangles for CS - X(t) for 1D
-                            fill(255);
+                            fill(220);
                             stroke(0);
                             rect(xBlank+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize),2*csPlotSize,csPlotSize);
 
@@ -2578,7 +2582,7 @@ function draw() {
 
                             // write value of measure
                             noStroke();
-                            fill(255);
+                            fill(0);
                             textSize(csPlotSize/12);
                             text(measurename[selectedmeasure]+' = '+Math.round(value*100)/100,xBlank+j*groupSize+csPlotSize,yBlank+50+i*(ygBlank+csPlotSize)-5);
 
