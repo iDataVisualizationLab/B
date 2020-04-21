@@ -1,6 +1,6 @@
 let myWidth = window.innerWidth;
 let myHeight = window.innerHeight;
-let selectedDisplay = "1D";
+let selectedDisplay = "2D";
 let currentPage = 1;
 let maxPerPage = (selectedDisplay === '1D') ? 6 : 6;
 let displayType = 'series';
