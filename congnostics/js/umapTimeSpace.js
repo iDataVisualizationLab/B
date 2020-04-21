@@ -227,7 +227,7 @@ d3.umapTimeSpace = function () {
                         else fillColor.opacity = 0.2;
                     }
                 }
-                fillColor.opacity = 0.3;        // for paper
+                // fillColor.opacity = 0.3;        // for paper
 
                 // begin draw point
                 background_ctx.beginPath();
@@ -800,7 +800,7 @@ function drawLeaderPlot(ctx_,target_,plotPosition_,isMouseOver_) {
     } else if (displayType === "series") {
         // Draw main plots
         ctx.beginPath();
-        ctx.fillStyle = "rgb(255,255,255)";
+        ctx.fillStyle = "rgb(220,220,220)";
         let strokeColor = colorCluster(cluster_info[group].name);
         strokeColor.opacity = 0.5;      // for paper
         ctx.strokeStyle = strokeColor;
@@ -960,11 +960,11 @@ function onClickFunction() {
     // in interaction mode
     if ((interactionOption.sample !== 'noOption') || (interactionOption.variable !== 'noOption')) {
         let leftButtonPosition = [(myWidth-300)*0.7,50];
-        let rightButtonPosition = [(myWidth-300)*0.7+80,50];
+        let rightButtonPosition = [(myWidth-300)*0.7+50,50];
         let buttonSize = [20,20];
 
-        let quitButtonSize = [140,20];
-        let quitButtonPosition = [(myWidth-400)*0.85,50];
+        let quitButtonSize = [120,20];
+        let quitButtonPosition = [(myWidth-300)*0.7+80,50];
 
         let checkChangePage1 = (mouse[0]>=leftButtonPosition[0]) && (mouse[0]<=leftButtonPosition[0]+buttonSize[0]) && (mouse[1]>=leftButtonPosition[1]) && (mouse[1]<=leftButtonPosition[1]+buttonSize[1]);
         let checkChangePage2 = (mouse[0]>=rightButtonPosition[0]) && (mouse[0]<=rightButtonPosition[0]+buttonSize[0]) && (mouse[1]>=rightButtonPosition[1]) && (mouse[1]<=rightButtonPosition[1]+buttonSize[1]);
@@ -1005,10 +1005,12 @@ function onClickFunction() {
         // click turn off button of time series
         let buttonPosition = [];
         let buttonSize = [12,12];
-        let plotSize = (selectedDisplay === '1D') ? [(myWidth-400)*0.25,(myHeight-200)/maxPerPage] : [(myHeight-300)/maxPerPage,(myHeight-300)/maxPerPage];
+        // let plotSize = (selectedDisplay === '1D') ? [(myWidth-400)*0.25,(myHeight-200)/maxPerPage] : [(myHeight-300)/maxPerPage,(myHeight-300)/maxPerPage];
+        let plotSize = (selectedDisplay === '1D') ? [2*(myHeight-200)/maxPerPage,(myHeight-200)/maxPerPage] : [(myHeight-300)/maxPerPage,(myHeight-300)/maxPerPage];
         let checkClickPoint = true;
         clickArr.forEach((d,i)=>{
-            let plotPosition = (selectedDisplay === '1D') ? [(myWidth-300)*0.7,100+(clickArr.length-1-i)*plotSize[1]+5] : [(myWidth-300)*0.7,80+(clickArr.length-1-i)*(plotSize[1]+40)];
+            // let plotPosition = (selectedDisplay === '1D') ? [(myWidth-300)*0.7,100+(clickArr.length-1-i)*plotSize[1]+5] : [(myWidth-300)*0.7,80+(clickArr.length-1-i)*(plotSize[1]+40)];
+            let plotPosition = (selectedDisplay === '1D') ? [(myWidth-300)*0.7,100+position_*(plotSize[1]+5)] : [(myWidth-300)*0.7,80+position_*(plotSize[1]+40)];
             buttonPosition[i] = [plotPosition[0]+plotSize[0]+3,plotPosition[1]];
         });
         buttonPosition.forEach((d,i)=>{
@@ -1087,7 +1089,8 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
     let varIndex = +plot_.split('-')[1];
     let xVarIndex = measures[0][sampleIndex][varIndex][0];
     let yVarIndex = measures[0][sampleIndex][varIndex][1];
-    let plotSize = (selectedDisplay === '1D') ? [(myWidth-400)*0.25,(myHeight-200)/maxPerPage] : [(myHeight-300)/maxPerPage,(myHeight-300)/maxPerPage];
+    // let plotSize = (selectedDisplay === '1D') ? [(myWidth-400)*0.25,(myHeight-200)/maxPerPage] : [(myHeight-300)/maxPerPage,(myHeight-300)/maxPerPage];
+    let plotSize = (selectedDisplay === '1D') ? [2*(myHeight-200)/maxPerPage,(myHeight-200)/maxPerPage] : [(myHeight-300)/maxPerPage,(myHeight-300)/maxPerPage];
     let plotPosition = (selectedDisplay === '1D') ? [(myWidth-300)*0.7,100+position_*(plotSize[1]+5)] : [(myWidth-300)*0.7,80+position_*(plotSize[1]+40)];
     let ctx = ctx_;
     let plotIndex = dataRadar2.findIndex(d=>{
@@ -1102,7 +1105,7 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
 
     // draw rectangles of time series
     ctx.beginPath();
-    ctx.fillStyle = "rgb(255,255,255)";
+    ctx.fillStyle = "rgb(220,220,220)";
     ctx.strokeStyle = colorCluster(cluster_info[group].name);
     ctx.lineWidth = 3;
     ctx.fill();
@@ -1152,7 +1155,8 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
                 if (interactionOption.sample !== 'noOption') {      // turn on instance
                     ctx.translate(plotPosition[0]-5,plotPosition[1]+plotSize[1]);
                     ctx.rotate(-Math.PI/2);
-                    ctx.font = "12px Arial";
+                    // ctx.font = "12px Arial";
+                    ctx.font = "10px Arial";
                     ctx.fillStyle = 'rgb(0,0,0)';
                     if (notationArrVar.length > 14) {
                         if (countSpaceVar.length === 0) {
@@ -1216,7 +1220,8 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
                 } else {        // turn on variable or bot
                     ctx.translate(plotPosition[0]-5,plotPosition[1]+plotSize[1]);
                     ctx.rotate(-Math.PI/2);
-                    ctx.font = "12px Arial";
+                    // ctx.font = "12px Arial";
+                    ctx.font = "10px Arial";
                     ctx.fillStyle = 'rgb(0,0,0)';
                     if (notationArrIns.length > 14) {
                         if (countSpaceIns.length === 0) {
@@ -1281,7 +1286,8 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
             } else {    // no interaction mode
                 ctx.translate(plotPosition[0]-5,plotPosition[1]+plotSize[1]);
                 ctx.rotate(-Math.PI/2);
-                ctx.font = "12px Arial";
+                // ctx.font = "12px Arial";
+                ctx.font = "10px Arial";
                 ctx.fillStyle = 'rgb(0,0,0)';
                 if (notationArrVar.length > 14) {
                     if (countSpaceVar.length === 0) {
@@ -1342,7 +1348,8 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
                 ctx.fill();
                 ctx.rotate(Math.PI/2);
                 ctx.translate(-plotPosition[0]+5,-plotPosition[1]-plotSize[1]);
-                ctx.font = '12px Arial';
+                // ctx.font = '12px Arial';
+                ctx.font = '10px Arial';
                 ctx.fillText(mapsample2.get(sampleIndex),plotPosition[0]+2,plotPosition[1]+15);
             }
             break;
@@ -1677,11 +1684,14 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
     // clickable button
     if (interactionOption.sample !== 'noOption' || interactionOption.variable !== 'noOption') {
         let leftButtonPosition = [(myWidth-300)*0.7,50];
-        let rightButtonPosition = [(myWidth-300)*0.7+80,50];
+        // let rightButtonPosition = [(myWidth-300)*0.7+80,50];
+        let rightButtonPosition = [(myWidth-300)*0.7+50,50];
         let buttonSize = [20,20];
 
-        let quitButtonSize = [140,20];
-        let quitButtonPosition = [(myWidth-400)*0.85,50];
+        let quitButtonSize = [120,20];
+        let quitButtonPosition = [(myWidth-300)*0.7+80,50];
+        console.log(quitButtonPosition);
+        console.log(rightButtonPosition);
 
         let checkLeft = (trueMousePosition[0]>=leftButtonPosition[0]) && (trueMousePosition[0]<=leftButtonPosition[0]+buttonSize[0]) && (trueMousePosition[1]>=leftButtonPosition[1]) && (trueMousePosition[1]<=leftButtonPosition[1]+buttonSize[1]);
         let checkRight = (trueMousePosition[0]>=rightButtonPosition[0]) && (trueMousePosition[0]<=rightButtonPosition[0]+buttonSize[0]) && (trueMousePosition[1]>=rightButtonPosition[1]) && (trueMousePosition[1]<=rightButtonPosition[1]+buttonSize[1]);
@@ -1711,13 +1721,17 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
         ctx.lineTo(rightButtonPosition[0]+buttonSize[0]/2-5,rightButtonPosition[1]+buttonSize[1]/2-5);
         ctx.lineTo(rightButtonPosition[0]+buttonSize[0]/2+5,rightButtonPosition[1]+buttonSize[1]/2);
         ctx.fill();
-        ctx.font = '12px Arial';
+        // ctx.font = '12px Arial';
+        ctx.font = '10px Arial';
         ctx.textAlign = "center";
-        ctx.fillText('Quit interaction section',quitButtonPosition[0]+70,quitButtonPosition[1]+quitButtonSize[1]-5);
+        console.log(quitButtonPosition);
+
+        ctx.fillText('Quit interaction section',quitButtonPosition[0]+30,quitButtonPosition[1]+quitButtonSize[1]-5);
         ctx.fill();
         ctx.fillStyle = 'rgb(0,0,0)';
-        ctx.font = '16px Arial';
-        ctx.fillText(currentPage.toString(),leftButtonPosition[0]+buttonSize[0]+30,leftButtonPosition[1]+buttonSize[1]-1);
+        // ctx.font = '16px Arial';
+        ctx.font = '10px Arial';
+        ctx.fillText(currentPage.toString(),leftButtonPosition[0]+buttonSize[0]+10,leftButtonPosition[1]+buttonSize[1]-5);
         ctx.textAlign = "left";
         ctx.fill();
     } else {    // no interaction mode
@@ -1745,7 +1759,7 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
 // function Change layout when number of time series exceeds 6
 function changePage(num_) {
     let leftButtonPosition = [(myWidth-300)*0.7,50];
-    let rightButtonPosition = [(myWidth-300)*0.7+80,50];
+    let rightButtonPosition = [(myWidth-300)*0.7+50,50];
     let buttonSize = [20,20];
 
     let checkLeft = (trueMousePosition[0]>=leftButtonPosition[0]) && (trueMousePosition[0]<=leftButtonPosition[0]+buttonSize[0]) && (trueMousePosition[1]>=leftButtonPosition[1]) && (trueMousePosition[1]<=leftButtonPosition[1]+buttonSize[1]);

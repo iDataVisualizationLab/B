@@ -1,0 +1,243 @@
+code	name	
+0	Aruba
+1	Afghanistan
+2	Angola
+3	Albania
+4	Andorra
+5	Arab World	
+6	United Arab Emirates
+7	Argentina
+8	Armenia
+9	American Samoa
+10	Antigua and Barbuda
+11	Australia
+12	Austria
+13	Azerbaijan
+14	Burundi
+15	Belgium
+16	Benin
+17	Burkina Faso
+18	Bangladesh
+19	Bulgaria
+20	Bahrain
+21	Bahamas
+22	Bosnia and Herzegovina
+23	Belarus
+24	Belize
+25	Bermuda
+26	Bolivia
+27	Brazil
+28	Barbados
+29	Brunei Darussalam
+30	Bhutan
+31	Botswana
+32	Central African Republic
+33	Canada
+34	Central Europe and the Baltics
+35	Switzerland
+36	Channel Islands
+37	Chile
+38	China
+39	Côte d'Ivoire
+40	Cameroon
+41	Congo
+42	Congo
+43	Colombia
+44	Comoros
+45	Cabo Verde
+46	Costa Rica
+47	Caribbean small states
+48	Cuba
+49	Curaçao
+50	Cayman Islands
+51	Cyprus
+52	Czech Republic
+53	Germany
+54	Djibouti
+55	Dominica
+56	Denmark
+57	Dominican Republic
+58	Algeria
+59	East Asia & Pacific (excluding high income)
+60	Early-demographic dividend
+61	East Asia & Pacific
+62	Europe & Central Asia (excluding high income)
+63	Europe & Central Asia
+64	Ecuador
+65	Egypt
+66	Euro area
+67	Eritrea
+68	Spain
+69	Estonia
+70	Ethiopia
+71	European Union
+72	Finland
+73	Fiji
+74	France
+75	Faroe Islands
+76	Gabon
+77	United Kingdom
+78	Georgia
+79	Ghana
+80	Gibraltar
+81	Guinea
+82	Gambia
+83	Guinea-Bissau
+84	Equatorial Guinea
+85	Greece
+86	Grenada
+87	Greenland
+88	Guatemala
+89	Guam
+90	Guyana
+91	Hong Kong SAR
+92	Honduras
+93	Croatia
+94	Haiti
+95	Hungary
+96	Indonesia
+97	Isle of Man
+98	India
+99	Ireland
+100	Iran
+101	Iraq
+102	Iceland
+103	Israel
+104	Italy
+105	Jamaica
+106	Jordan
+107	Japan
+108	Kazakhstan
+109	Kenya
+110	Kyrgyz Republic
+111	Cambodia
+112	Kiribati
+113	St. Kitts and Nevis
+114	Korea
+115	Kuwait
+116	Latin America & Caribbean (excluding high income)
+117	Lao PDR
+118	Lebanon
+119	Liberia
+120	Libya
+121	St. Lucia
+122	Latin America & Caribbean
+123	Liechtenstein
+124	Sri Lanka
+125	Lesotho
+126	Lithuania
+127	Luxembourg
+128	Latvia
+129	Macao SAR
+130	St. Martin (French part)
+131	Morocco
+132	Monaco
+133	Moldova
+134	Madagascar
+135	Maldives
+136	Middle East & North Africa
+137	Mexico
+138	Marshall Islands
+139	North Macedonia
+140	Mali
+141	Malta
+142	Myanmar
+143	Middle East & North Africa (excluding high income)
+144	Montenegro
+145	Mongolia
+146	Northern Mariana Islands
+147	Mozambique
+148	Mauritania
+149	Mauritius
+150	Malawi
+151	Malaysia
+152	North America
+153	Namibia
+154	New Caledonia
+155	Niger
+156	Nigeria
+157	Nicaragua
+158	Netherlands
+159	Norway
+160	Nepal
+161	Nauru
+162	New Zealand
+163	Oman
+164	Pakistan
+165	Panama
+166	Peru
+167	Philippines
+168	Palau
+169	Papua New Guinea
+170	Poland
+171	Puerto Rico
+172	Korea
+173	Portugal
+174	Paraguay
+175	West Bank and Gaza
+176	Pacific island small states
+177	French Polynesia
+178	Qatar
+179	Romania
+180	Russian Federation
+181	Rwanda
+182	South Asia
+183	Saudi Arabia
+184	Sudan
+185	Senegal
+186	Singapore
+187	Solomon Islands
+188	Sierra Leone
+189	El Salvador
+190	San Marino
+191	Somalia
+192	Serbia
+193	Sub-Saharan Africa (excluding high income)
+194	South Sudan
+195	Sub-Saharan Africa
+196	São Tomé and Principe
+197	Suriname
+198	Slovak Republic
+199	Slovenia
+200	Sweden
+201	Eswatini
+202	Sint Maarten (Dutch part)
+203	Seychelles
+204	Syrian Arab Republic
+205	Turks and Caicos Islands
+206	Chad
+207	East Asia & Pacific (IDA & IBRD)
+208	Europe & Central Asia (IDA & IBRD)
+209	Togo
+210	Thailand
+211	Tajikistan
+212	Turkmenistan
+213	Latin America & Caribbean (IDA & IBRD)
+214	Timor-Leste
+215	Middle East & North Africa (IDA & IBRD)
+216	Tonga
+217	South Asia (IDA & IBRD)
+218	Sub-Saharan Africa (IDA & IBRD)
+219	Trinidad and Tobago
+220	Tunisia
+221	Turkey
+222	Tuvalu
+223	Tanzania
+224	Uganda
+225	Ukraine
+226	Uruguay
+227	United States
+228	Uzbekistan
+229	St. Vincent and the Grenadines
+230	Venezuela
+231	British Virgin Islands
+232	Virgin Islands (U.S.)
+233	Vietnam
+234	Vanuatu
+235	World
+236	Samoa
+237	Kosovo
+238	Yemen
+239	South Africa
+240	Zambia
+241	Zimbabwe

@@ -1,0 +1,14 @@
+name	code
+open	0
+high	1
+low	2
+close	3
+volume	4
+percent_change_price	5
+percent_chagne_volume_over_last_week	6
+previous_weeks_volume	7
+next_weeks_open	8
+next_weeks_close	9
+percent_change_next_weeks_price	10
+days_to_next_dividend	11
+percent_return_next_dividend	12
