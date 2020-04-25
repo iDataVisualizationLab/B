@@ -2489,7 +2489,7 @@ function draw() {
                     noStroke();
                     textSize(30);
                     text('Lowest values',xBlank+0.3*groupSize,yBlank);
-                    text('Middle values',xBlank+1.3*groupSize,yBlank);
+                    text('Medium values',xBlank+1.3*groupSize,yBlank);
                     text('Highest values',xBlank+2.3*groupSize,yBlank);
                     // Draw plots
                     for (var i = 0; i < correctnumplot; i++) {
