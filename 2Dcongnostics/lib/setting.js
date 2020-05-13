@@ -1,6 +1,6 @@
 let myWidth = window.innerWidth;
 let myHeight = window.innerHeight;
-let selectedDisplay = "1D";
+let selectedDisplay = "2D";
 let currentPage = 1;
 let maxPerPage = (selectedDisplay === '1D') ? 6 : 6;
 let displayType = 'series';
@@ -45,15 +45,15 @@ let limitList = [];     // for paper
 // };
 let measurename = selectedDisplay === "1D" ?
     [
+    'Trend',
+    'Periodicity',
+    'Randomness',
     'Mean',
     'Dispersion',
     'Outlying',
     'Net mean',
     'Net dispersion',
     'Net Outlying',
-    'Trend',
-    'Periodicity',
-    'Randomness',
 ] :
 [
     'Outlying',
@@ -70,15 +70,15 @@ let measurename = selectedDisplay === "1D" ?
 ];
 let measureObj = selectedDisplay === "1D" ?
     {
-    'Mean':0,
-    'Dispersion':1,
-    'Outlying':2,
-    'Net mean':3,
-    'Net dispersion':4,
-    'Net Outlying':5,
-    'Trend':6,
-    'Periodicity':7,
-    'Randomness':8,
+    'Trend':0,
+    'Periodicity':1,
+    'Randomness':2,
+    'Mean':3,
+    'Dispersion':4,
+    'Outlying':5,
+    'Net mean':6,
+    'Net dispersion':7,
+    'Net Outlying':8,
 } : {
     'Outlying':0,
     // 'Skinny':1,
