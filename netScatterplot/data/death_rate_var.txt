@@ -1,0 +1,3 @@
+code	name
+death	Death rate
+birth	Birth rate

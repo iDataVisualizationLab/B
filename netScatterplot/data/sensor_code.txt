@@ -1,0 +1,16 @@
+code	name
+0	sensor2
+1	sensor3
+2	sensor4
+3	sensor6
+4	sensor7
+5	sensor8
+6	sensor9
+7	sensor11
+8	sensor12
+9	sensor13
+10	sensor14
+11	sensor15
+12	sensor17
+13	sensor20
+14	sensor21

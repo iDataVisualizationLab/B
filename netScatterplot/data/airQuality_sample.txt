@@ -1,0 +1,13 @@
+code	name
+0	Aotizhongxin
+1	Changping
+2	Dingling
+3	Dongsi
+4	Guanyuan
+5	Gucheng
+6	Huairou
+7	Nongzhanguan
+8	Shunyi
+9	Tiantan
+10	Wanliu
+11	Wanshouxigong

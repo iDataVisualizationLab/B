@@ -1,0 +1,3 @@
+code	name
+0	Variable 0
+1	Variable 1
