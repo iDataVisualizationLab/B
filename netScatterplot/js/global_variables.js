@@ -38,7 +38,7 @@ let controlVariable = {
         variable: 'noOption',
     },
     displayType: 'series',
-}
+};
 
 // let measureObj = selectedDisplay === "1D" ?
 //     {

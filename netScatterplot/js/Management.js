@@ -73,7 +73,7 @@ class Management {
             // Filtering
             let filteredPlots = Interaction.Filtering(netSP.plots,netSP.filter);
             // Sorting
-            let sortedPlots = Interaction.Sorting(netSP.plots,filteredPlots,'outlying_angle');
+            let sortedPlots = Interaction.Sorting(netSP.plots,filteredPlots,controlVariable.selectedMetric);
             // Pick plots to display
             let displayPlots = {
                 high: [],
