@@ -19,9 +19,14 @@ class DesignApplication {
     static ControlPanel(parentDiv,ID) {
         d3.select('#'+parentDiv).append('div')
             .attr('id',ID);
-        // d3.select('#'+parentDiv).append('p')
-        //     .text('Hello');
-        DesignApplication.CreateSlider(ID,'test',2,0,1);
+        d3.select('#'+ID).append('div')
+            .attr('id','Setting')
+            .attr('class','collapsible-header');
+        d3.select('#Setting').append('i')
+            .attr('class','fas fa-cog');
+            d3.select('#Setting').append('text')
+                .text('Setting');
+        // DesignApplication.CreateSlider(ID,'test',2,0,1);
     }
 
     // Create canvas

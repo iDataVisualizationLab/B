@@ -26,12 +26,12 @@ class Management {
                         angle: [],
                     },
                     metrics: {
-                        mean_length: 0,
-                        mean_angle: 0,
-                        sd_length: 0,
-                        sd_angle: 0,
-                        outlying_length: {},
-                        outlying_angle: {},
+                        'Mean length': 0,
+                        'Mean angle': 0,
+                        'Standard deviation length': 0,
+                        'Standard deviation angle': 0,
+                        'Outlying length': {},
+                        'Outlying angle': {},
                     },
                     data: [],
                 }
@@ -42,14 +42,28 @@ class Management {
             netSP.plots.forEach((e,i)=>{
                 e.quantities.edgeLength = ComputeQuantities.EdgeLength(e.data);
                 e.quantities.angle = ComputeQuantities.Angle(e.data);
-                e.metrics.mean_length = ComputeMetrics.MeanValue(e.quantities.edgeLength);
-                e.metrics.mean_angle = ComputeMetrics.MeanValue(e.quantities.angle);
-                e.metrics.sd_length = ComputeMetrics.StandardDeviation(e.quantities.edgeLength);
-                e.metrics.sd_angle = ComputeMetrics.StandardDeviation(e.quantities.angle);
-                e.metrics.outlying_length = ComputeMetrics.Outlying(e.quantities.edgeLength,true);
-                e.metrics.outlying_angle = ComputeMetrics.Outlying(e.quantities.angle,false);
+                e.metrics['Mean length'] = ComputeMetrics.MeanValue(e.quantities.edgeLength);
+                e.metrics['Mean angle'] = ComputeMetrics.MeanValue(e.quantities.angle);
+                e.metrics['Standard deviation length'] = ComputeMetrics.StandardDeviation(e.quantities.edgeLength);
+                e.metrics['Standard deviation angle'] = ComputeMetrics.StandardDeviation(e.quantities.angle);
+                e.metrics['Outlying length'] = ComputeMetrics.Outlying(e.quantities.edgeLength,true);
+                e.metrics['Outlying angle'] = ComputeMetrics.Outlying(e.quantities.angle,false);
             });
+
+            initClusterObj();
+            let kMeanGroup = $('#knum').val() || 6;
+            let kMeanIterations = $('#kiteration').val() || 1;
+            recalculateCluster( {clusterMethod: 'kmean',bin:{k:kMeanGroup,iterations:kMeanIterations}},function(){
+                clickArr = [];
+                plotPosition = [];
+                reCalculateTsne();
+                prepareRadarTable();
+            });
+
             codeManager.isComputing = false;
+            codeManager.needComputation = false;
+            codeManager.needUpdate = true;
+            d3.select('.cover').classed('hidden', true);
         });
     }
 
@@ -73,7 +87,7 @@ class Management {
                 displayPlots.low.push(sortedPlots[sortedPlots.length-nDisplay+p]);
             }
             // Create canvas
-            DesignApplication.CreateCanvas('rightSide','HMLCanvas','myCanvas',1000,1800,'#ffffff');
+            DesignApplication.CreateCanvas('mainCanvasHolder','HMLCanvas','myCanvas',1000,1800,'#ffffff');
             // Draw plots
             let headerInfo = {
                 font: 'Arial',
@@ -95,7 +109,7 @@ class Management {
             }
             let blankSize = [100,100];
             DesignApplication.HMLView('HMLCanvas',headerInfo,plotInfo,blankSize,nDisplay,displayPlots);
-            clearInterval(codeManager.needRepeat);
+            // clearInterval(codeManager.needRepeat);
         } else {
             d3.select('body').append('p').text('Computing ...');
         }
