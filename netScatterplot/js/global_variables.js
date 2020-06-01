@@ -19,7 +19,7 @@ let netSP = {
         'Standard deviation angle',
         'Outlying length',
         'Outlying angle',
-    ]
+    ],
 };
 
 let codeManager = {
@@ -39,28 +39,3 @@ let controlVariable = {
     },
     displayType: 'series',
 };
-
-// let measureObj = selectedDisplay === "1D" ?
-//     {
-//         'Trend':0,
-//         'Periodicity':1,
-//         'Randomness':2,
-//         'Mean':3,
-//         'Dispersion':4,
-//         'Outlying':5,
-//         'Net mean':6,
-//         'Net dispersion':7,
-//         'Net Outlying':8,
-//     } : {
-//         'Outlying':0,
-//         'Skinny':1,
-//         'Skewed':2,
-//         'Clumpy':1,
-        // 'Sparse':4,
-        // 'Striated':2,
-        // 'Correlation':3,
-        // "Intersections":4,
-        // "Circular":5,
-        // 'Trend':6,
-        // 'Length':7
-    // };

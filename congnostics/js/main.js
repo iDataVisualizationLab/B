@@ -334,16 +334,6 @@ function onTabChange (myTab_) {
         // myDRCanvas.call(d3.zoom().scaleExtent([0.5, 8]).on("zoom", zoomFunction()));
 
         // dimension option
-        switch (selectedDisplay) {
-            case '1D':
-                d3.select('#note1').classed('hide',false);
-                d3.select('#note2').classed('hide',true);
-                break;
-            case '2D':
-                d3.select('#note1').classed('hide',true);
-                d3.select('#note2').classed('hide',false);
-                break;
-        }
         d3.select('#analysis').on('change',function(){
             selectedDisplay = this.value;
             type = selectedDisplay === "1D" ? [0,0,0,1,1,1,2,2,2] : [0,0,0,0,1,1,1,1];
@@ -364,15 +354,15 @@ function onTabChange (myTab_) {
                         'Net Outlying',
                     ];
                     measureObj = {
-                        'Mean':0,
-                        'Dispersion':1,
-                        'Skewness':2,
-                        'Net mean':3,
-                        'Net dispersion':4,
-                        'Net skewness':5,
-                        'Trend':6,
-                        'Periodicity':7,
-                        'Randomness':8,
+                        'Trend':0,
+                        'Periodicity':1,
+                        'Randomness':2,
+                        'Mean':3,
+                        'Dispersion':4,
+                        'Skewness':5,
+                        'Net mean':6,
+                        'Net dispersion':7,
+                        'Net skewness':8,
                     };
                     d3.select('#note1').classed('hide',false);
                     d3.select('#note2').classed('hide',true);
@@ -449,7 +439,7 @@ $( document ).ready(function() {
         $('.modal').modal();
         $('.dropdown-trigger').dropdown();
 
-        onTabChange('video');
+        onTabChange('demo');
 
     // }catch{}
 });
@@ -1054,7 +1044,7 @@ function analyzedata() {
                         firstLagDiff.forEach(d=>{adTotalLength += Math.abs(d-q2)});
                         let adOutlierLength = 0;
                         outlierArr.forEach(d=>{adOutlierLength += Math.abs(d-q2)});
-                        measures[5][p][myIndex][2] = (adTotalLength !== 0) ? adOutlierLength/adTotalLength : 0;
+                        measures[8][p][myIndex][2] = (adTotalLength !== 0) ? adOutlierLength/adTotalLength : 0;
                         let adjustXData = xData.filter((x,index)=>{
                             if (index) {
                                 if ((firstLagDiff[index-1]>q3+1.5*(q3-q1)||firstLagDiff[index-1]<q1-1.5*(q3-q1))&&(firstLagDiff[index]>q3+1.5*(q3-q1)||firstLagDiff[index]<q1-1.5*(q3-q1))) return false;
@@ -1080,7 +1070,7 @@ function analyzedata() {
                         xOutlierArr.forEach(d=>adOutlier+=Math.abs(d-xq2));
                         let adTotal = 0;
                         xData.forEach(d=>adTotal+=Math.abs(d-xq2));
-                        measures[2][p][myIndex][2] = (adTotal !== 0) ? adOutlier/adTotal : 0;
+                        measures[5][p][myIndex][2] = (adTotal !== 0) ? adOutlier/adTotal : 0;
 
 
                         // TREND
@@ -1094,7 +1084,7 @@ function analyzedata() {
                                 }
                             }
                         });
-                        measures[6][p][myIndex][2] = Math.abs(Sign)/(xData.length*(xData.length-1)/2);
+                        measures[0][p][myIndex][2] = Math.abs(Sign)/(xData.length*(xData.length-1)/2);
 
                         // FIRST AUTOCORRELATION
                         let covX = 0, meanX = 0, deviationX = 0, skewX = 0;
@@ -1107,11 +1097,11 @@ function analyzedata() {
                                 covX += (x-meanX)*(xData[xi+1]-meanX);
                             }
                         });
-                        measures[8][p][myIndex][2] = 1-Math.pow(covX/deviationX,2);
+                        measures[2][p][myIndex][2] = 1-Math.pow(covX/deviationX,2);
 
                         // MEAN & STANDARD DEVIATION & SKEWNESS
-                        measures[0][p][myIndex][2] = meanX;
-                        measures[1][p][myIndex][2] = (2*Math.sqrt(deviationX/xData.length)>1)?1:2*Math.sqrt(deviationX/xData.length);
+                        measures[3][p][myIndex][2] = meanX;
+                        measures[4][p][myIndex][2] = (2*Math.sqrt(deviationX/xData.length)>1)?1:2*Math.sqrt(deviationX/xData.length);
                         // measures[7][p][myIndex][2] = (xq3!==xq1)?Math.abs((xq1+xq3-2*xq2)/(xq3-xq1)):0;
 
                         // FIRST LAG DIFFERENCE STANDARD DEVIATION
@@ -1123,8 +1113,8 @@ function analyzedata() {
                             skewDiff += (Math.abs(d)-meanDiff)*(Math.abs(d)-meanDiff)*(Math.abs(d)-meanDiff);
                         });
                         // measures[8][p][myIndex][2] = (2*meanDiff>1)?1:2*meanDiff;
-                        measures[3][p][myIndex][2] = meanDiff;
-                        measures[4][p][myIndex][2] = (4*Math.sqrt(devDiff/firstLagDiff.length)>1)?1:4*Math.sqrt(devDiff/firstLagDiff.length);
+                        measures[6][p][myIndex][2] = meanDiff;
+                        measures[7][p][myIndex][2] = (4*Math.sqrt(devDiff/firstLagDiff.length)>1)?1:4*Math.sqrt(devDiff/firstLagDiff.length);
                         // measures[10][p][myIndex][2] = (q3!==q1)?Math.abs((q1+q3-2*q2)/(q3-q1)):0;
                         // measures[10][p][myIndex][2] = 1-Math.exp(-skewDiff/(firstLagDiff.length*Math.pow(measures[9][p][myIndex][2],3)));
 
@@ -1200,7 +1190,7 @@ function analyzedata() {
                         // myPeriodogram.forEach((d,i)=>{if(i>=cutLimit) sumPower+=d});
                         myPeriodogram.forEach(d=>sumPower+=d);
                         if(peak.length>0) peak.map(d=>d[0]).forEach(dd=>sumPeak+=dd);
-                        measures[7][p][myIndex][2] = (sumPower !== 0) ? 2*sumPeak/sumPower : 0;
+                        measures[1][p][myIndex][2] = (sumPower !== 0) ? 2*sumPeak/sumPower : 0;
                         // let meanPower = 0;
                         // sortPeriodogram.forEach((d,index)=>{
                         //     // if(index!==(sortPeriodogram.length-1)) meanPower += d[0];
@@ -2489,7 +2479,7 @@ function draw() {
                     noStroke();
                     textSize(30);
                     text('Lowest values',xBlank+0.3*groupSize,yBlank);
-                    text('Medium values',xBlank+1.3*groupSize,yBlank);
+                    text('Middle values',xBlank+1.3*groupSize,yBlank);
                     text('Highest values',xBlank+2.3*groupSize,yBlank);
                     // Draw plots
                     for (var i = 0; i < correctnumplot; i++) {

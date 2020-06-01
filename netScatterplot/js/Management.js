@@ -11,6 +11,9 @@ class Management {
             d3.csv(instanceFile),
             d3.csv(variableFile),
         ]).then(files=>{
+            // reset variables
+            netSP.plots = [];
+            netSP.encode = [];
             // store data in format: instance -> variable -> time series
             let data;
             if (type === 'BLS') data = ReadFile.BLSType(files);
@@ -30,8 +33,12 @@ class Management {
                         'Mean angle': 0,
                         'Standard deviation length': 0,
                         'Standard deviation angle': 0,
-                        'Outlying length': {},
-                        'Outlying angle': {},
+                        'Outlying length': 0,
+                        'Outlying angle': 0,
+                    },
+                    outliers: {
+                        length: [],
+                        angle: [],
                     },
                     data: [],
                 }
@@ -46,20 +53,22 @@ class Management {
                 e.metrics['Mean angle'] = ComputeMetrics.MeanValue(e.quantities.angle);
                 e.metrics['Standard deviation length'] = ComputeMetrics.StandardDeviation(e.quantities.edgeLength);
                 e.metrics['Standard deviation angle'] = ComputeMetrics.StandardDeviation(e.quantities.angle);
-                e.metrics['Outlying length'] = ComputeMetrics.Outlying(e.quantities.edgeLength,true);
-                e.metrics['Outlying angle'] = ComputeMetrics.Outlying(e.quantities.angle,false);
+                e.metrics['Outlying length'] = ComputeMetrics.Outlying(e.quantities.edgeLength,true).score;
+                e.metrics['Outlying angle'] = ComputeMetrics.Outlying(e.quantities.angle,false).score;
+                e.outliers.length = ComputeMetrics.Outlying(e.quantities.edgeLength,true).outliers;
+                e.outliers.angle = ComputeMetrics.Outlying(e.quantities.angle,false).outliers;
             });
 
-            initClusterObj();
-            let kMeanGroup = $('#knum').val() || 6;
-            let kMeanIterations = $('#kiteration').val() || 1;
-            recalculateCluster( {clusterMethod: 'kmean',bin:{k:kMeanGroup,iterations:kMeanIterations}},function(){
-                clickArr = [];
-                plotPosition = [];
-                reCalculateTsne();
-                prepareRadarTable();
-            });
-
+            // initClusterObj();
+            // let kMeanGroup = $('#knum').val() || 6;
+            // let kMeanIterations = $('#kiteration').val() || 1;
+            // recalculateCluster( {clusterMethod: 'kmean',bin:{k:kMeanGroup,iterations:kMeanIterations}},function(){
+            //     clickArr = [];
+            //     plotPosition = [];
+            //     reCalculateTsne();
+            //     prepareRadarTable();
+            // });
+            //
             codeManager.isComputing = false;
             codeManager.needComputation = false;
             codeManager.needUpdate = true;
@@ -69,50 +78,45 @@ class Management {
 
     // Visualization
     static Visualization() {
-        if (!codeManager.isComputing) {
-            // Filtering
-            let filteredPlots = Interaction.Filtering(netSP.plots,netSP.filter);
-            // Sorting
-            let sortedPlots = Interaction.Sorting(netSP.plots,filteredPlots,controlVariable.selectedMetric);
-            // Pick plots to display
-            let displayPlots = {
-                high: [],
-                median: [],
-                low: [],
-            }
-            let nDisplay = 5;
-            for (let p = 0; p < nDisplay; p++) {
-                displayPlots.high.push(sortedPlots[p]);
-                displayPlots.median.push(sortedPlots[Math.floor(sortedPlots.length*0.5)+p]);
-                displayPlots.low.push(sortedPlots[sortedPlots.length-nDisplay+p]);
-            }
-            // Create canvas
-            DesignApplication.CreateCanvas('mainCanvasHolder','HMLCanvas','myCanvas',1000,1800,'#ffffff');
-            // Draw plots
-            let headerInfo = {
-                font: 'Arial',
-                size: 30,
-                position: {
-                    high: [100,100],
-                    median: [400,100],
-                    low: [700,100],
-                }
-            };
-            let plotInfo = {
-                size: [200,200],
-                position: [100,200],
-                notations: {
-                    font: 'Arial',
-                    size: 13,
-                    color: '#000000',
-                }
-            }
-            let blankSize = [100,100];
-            DesignApplication.HMLView('HMLCanvas',headerInfo,plotInfo,blankSize,nDisplay,displayPlots);
-            // clearInterval(codeManager.needRepeat);
-        } else {
-            d3.select('body').append('p').text('Computing ...');
+        // Filtering
+        let filteredPlots = Interaction.Filtering(netSP.plots,netSP.filter);
+        // Sorting
+        let sortedPlots = Interaction.Sorting(netSP.plots,filteredPlots,controlVariable.selectedMetric);
+        // Pick plots to display
+        let displayPlots = {
+            high: [],
+            median: [],
+            low: [],
         }
-
+        let nDisplay = 5;
+        for (let p = 0; p < nDisplay; p++) {
+            displayPlots.high.push(sortedPlots[p]);
+            displayPlots.median.push(sortedPlots[Math.floor(sortedPlots.length*0.5)+p]);
+            displayPlots.low.push(sortedPlots[sortedPlots.length-nDisplay+p]);
+        }
+        // Create canvas
+        DesignApplication.CreateCanvas('mainCanvasHolder','HMLCanvas','myCanvas',1000,1800,'#ffffff');
+        // Draw plots
+        let headerInfo = {
+            font: 'Arial',
+            size: 30,
+            position: {
+                high: [100,100],
+                median: [400,100],
+                low: [700,100],
+            }
+        };
+        let plotInfo = {
+            size: [200,200],
+            position: [100,200],
+            notations: {
+                font: 'Arial',
+                size: 13,
+                color: '#000000',
+            }
+        }
+        let blankSize = [100,100];
+        DesignApplication.HMLView('HMLCanvas',headerInfo,plotInfo,blankSize,nDisplay,displayPlots);
+        // clearInterval(codeManager.needRepeat);
     }
 }

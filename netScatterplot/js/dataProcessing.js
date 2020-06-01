@@ -55,7 +55,7 @@ class DataProcessing {
     // Normalization values in every net scatter plot
     // plotData is array of every instance data in the plot
     // each element/instance is an object: {name, x0: value at t0, y0: value at t0, x1: value at t1, y1: value at t1}
-    static NormalizationNetScatterPlot (plotData) {
+    static NormalizationNetScatterPlot (plotData,time) {
         let myData = plotData.map(e=>{
             return {
                 name: e.name,
@@ -65,15 +65,28 @@ class DataProcessing {
                 y1: e.y1,
             }
         });
-        let data = plotData.map(e=>[e.x0,e.y0,e.x1,e.y1]).flat();
-        let maxValue = Math.max(...data);
-        let minValue = Math.min(...data);
-        let range = maxValue - minValue;
+        let dataX = [], dataY = [];
+        //data = plotData.map(e=>[e.x0,e.y0,e.x1,e.y1]).flat();
+        dataX = plotData.map(e=>[e.x0,e.x1]).flat();
+        let maxValueX = Math.max(...dataX);
+        let minValueX = Math.min(...dataX);
+        let rangeX = maxValueX - minValueX;
+        dataY = plotData.map(e=>[e.y0,e.y1]).flat();
+        let maxValueY = Math.max(...dataY);
+        let minValueY = Math.min(...dataY);
+        let rangeY = maxValueY - minValueY;
         myData.forEach(e=>{
-            e.x0 = range !== 0 ? (e.x0-minValue)/range : 0.5;
-            e.y0 = range !== 0 ? (e.y0-minValue)/range : 0.5;
-            e.x1 = range !== 0 ? (e.x1-minValue)/range : 0.5;
-            e.y1 = range !== 0 ? (e.y1-minValue)/range : 0.5;
+            if (rangeX >= rangeY) {
+                e.x0 = rangeX !== 0 ? (e.x0-minValueX)/rangeX : 0.5;
+                e.y0 = rangeX !== 0 ? e.y0/rangeX+(rangeX-rangeY-2*minValueY)/(2*rangeX) : 0.5;
+                e.x1 = rangeX !== 0 ? (e.x1-minValueX)/rangeX : 0.5;
+                e.y1 = rangeX !== 0 ? e.y1/rangeX+(rangeX-rangeY-2*minValueY)/(2*rangeX) : 0.5;
+            } else {
+                e.x0 = rangeY !== 0 ? e.x0/rangeY+(rangeY-rangeX-2*minValueX)/(2*rangeY) : 0.5;
+                e.y0 = rangeY !== 0 ? (e.y0-minValueY)/rangeY : 0.5;
+                e.x1 = rangeY !== 0 ? e.x1/rangeY+(rangeY-rangeX-2*minValueX)/(2*rangeY) : 0.5;
+                e.y1 = rangeY !== 0 ? (e.y1-minValueY)/rangeY : 0.5;
+            }
         });
         return myData;
     }

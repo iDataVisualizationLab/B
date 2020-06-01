@@ -1,5 +1,5 @@
 window =self;
-importScripts("d3/d3.js","layoutscripts/setting.js","lodash.min.js","setting.js","kmean.js","binnerN.min.js","simple-statistics.min.js");
+importScripts('../js/global_variables.js',"d3/d3.js","layoutscripts/setting.js","lodash.min.js","setting.js","kmean.js","binnerN.min.js","simple-statistics.min.js");
 
 addEventListener('message',function ({data}) {
     let binopt = data.binopt, sampleS = data.sampleS,hosts = data.hosts;

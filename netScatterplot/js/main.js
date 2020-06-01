@@ -370,13 +370,6 @@ function switchTheme(){
 ///////////////////////////////
 //////////////////////////////
 function ComputingData() {
-    // reset variables
-    netSP.timeInfo = [];
-    netSP.instanceInfo = [];
-    netSP.variableInfo = [];
-    netSP.plots = [];
-    netSP.encode = [];
-
     let filename0;
     let filename1;
     let filename2;

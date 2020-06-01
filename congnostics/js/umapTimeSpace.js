@@ -1009,8 +1009,8 @@ function onClickFunction() {
         let plotSize = (selectedDisplay === '1D') ? [2*(myHeight-200)/maxPerPage,(myHeight-200)/maxPerPage] : [(myHeight-300)/maxPerPage,(myHeight-300)/maxPerPage];
         let checkClickPoint = true;
         clickArr.forEach((d,i)=>{
-            let plotPosition = (selectedDisplay === '1D') ? [(myWidth-300)*0.7,100+(clickArr.length-1-i)*plotSize[1]+5] : [(myWidth-300)*0.7,80+(clickArr.length-1-i)*(plotSize[1]+40)];
-            // let plotPosition = (selectedDisplay === '1D') ? [(myWidth-300)*0.7,100+position_*(plotSize[1]+5)] : [(myWidth-300)*0.7,80+position_*(plotSize[1]+40)];
+            // let plotPosition = (selectedDisplay === '1D') ? [(myWidth-300)*0.7,100+(clickArr.length-1-i)*plotSize[1]+5] : [(myWidth-300)*0.7,80+(clickArr.length-1-i)*(plotSize[1]+40)];
+            let plotPosition = (selectedDisplay === '1D') ? [(myWidth-300)*0.7,100+position_*(plotSize[1]+5)] : [(myWidth-300)*0.7,80+position_*(plotSize[1]+40)];
             buttonPosition[i] = [plotPosition[0]+plotSize[0]+3,plotPosition[1]];
         });
         buttonPosition.forEach((d,i)=>{
@@ -1690,6 +1690,8 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
 
         let quitButtonSize = [120,20];
         let quitButtonPosition = [(myWidth-300)*0.7+80,50];
+        console.log(quitButtonPosition);
+        console.log(rightButtonPosition);
 
         let checkLeft = (trueMousePosition[0]>=leftButtonPosition[0]) && (trueMousePosition[0]<=leftButtonPosition[0]+buttonSize[0]) && (trueMousePosition[1]>=leftButtonPosition[1]) && (trueMousePosition[1]<=leftButtonPosition[1]+buttonSize[1]);
         let checkRight = (trueMousePosition[0]>=rightButtonPosition[0]) && (trueMousePosition[0]<=rightButtonPosition[0]+buttonSize[0]) && (trueMousePosition[1]>=rightButtonPosition[1]) && (trueMousePosition[1]<=rightButtonPosition[1]+buttonSize[1]);
@@ -1722,13 +1724,14 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
         // ctx.font = '12px Arial';
         ctx.font = '10px Arial';
         ctx.textAlign = "center";
+        console.log(quitButtonPosition);
 
-        ctx.fillText('Quit interaction section',quitButtonPosition[0]+60,quitButtonPosition[1]+quitButtonSize[1]-5);
+        ctx.fillText('Quit interaction section',quitButtonPosition[0]+30,quitButtonPosition[1]+quitButtonSize[1]-5);
         ctx.fill();
         ctx.fillStyle = 'rgb(0,0,0)';
         // ctx.font = '16px Arial';
-        ctx.font = '12px Arial';
-        ctx.fillText(currentPage.toString(),leftButtonPosition[0]+buttonSize[0]+15,leftButtonPosition[1]+buttonSize[1]-5);
+        ctx.font = '10px Arial';
+        ctx.fillText(currentPage.toString(),leftButtonPosition[0]+buttonSize[0]+10,leftButtonPosition[1]+buttonSize[1]-5);
         ctx.textAlign = "left";
         ctx.fill();
     } else {    // no interaction mode

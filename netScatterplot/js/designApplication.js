@@ -83,7 +83,8 @@ class DesignApplication {
                 xVar = netSP.encode[index][0];
                 yVar = netSP.encode[index][1];
                 time = netSP.encode[index][2];
-                data = DataProcessing.NormalizationNetScatterPlot(netSP.plots[index].data);
+                let score = netSP.plots[index].metrics
+                data = DataProcessing.NormalizationNetScatterPlot(netSP.plots[index].data,time);
                 ctx.font = plotInfo.notations.size + 'px ' + plotInfo.notations.font;
                 ctx.fillStyle = plotInfo.notations.color;
                 ctx.fillText(xVar,plotPosition[0],plotPosition[1]+plotInfo.size[1]+plotInfo.notations.size+5);

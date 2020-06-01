@@ -495,9 +495,9 @@ div.selection div,span {
     /*background:  #f3f3f3;  !* fallback for old browsers *!*/
     /*background: -webkit-linear-gradient(to right, #f3f3f3, #ececec);  !* Chrome 10-25, Safari 5.1-6 *!*/
     /*background: linear-gradient(to right, #f3f3f3, #ececec); !* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ *!*/
-    background:  #8E0E00;  /* fallback for old browsers */
-    background: -webkit-linear-gradient(to left, #8E0E00, #a1a1a1 70%);  /* Chrome 10-25, Safari 5.1-6 */
-    background: linear-gradient(to left, #8E0E00, #a1a1a1 70%) /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    background:  #FFFF00;  /* fallback for old browsers */
+    background: -webkit-linear-gradient(to left, #FFFF00, #a1a1a1 70%);  /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(to left, #FFFF00, #a1a1a1 70%) /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
 }
 
 #header, #header a, #header .brand-logo{
