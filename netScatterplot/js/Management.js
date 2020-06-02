@@ -15,8 +15,7 @@ class Management {
             netSP.plots = [];
             netSP.encode = [];
             // store data in format: instance -> variable -> time series
-            let data;
-            if (type === 'BLS') data = ReadFile.BLSType(files);
+            let data = ReadFile.IVTFormat(files,type);
             // normalize data
             DataProcessing.NormalizationType1(data);
             // encode the plots

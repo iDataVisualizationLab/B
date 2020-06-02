@@ -31,7 +31,7 @@ let codeManager = {
 
 let controlVariable = {
     selectedMetric: 'Mean length',
-    selectedData: 'employment',
+    selectedData: 'death_rate',
     visualizing: 'LMH',
     interaction: {
         instance: 'noOption',

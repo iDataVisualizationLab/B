@@ -145,7 +145,7 @@ function onTabChange (myTab_) {
         // data options
         d3.select('#datacom').on('change',function(){
             controlVariable.selectedData = this.value;
-            if (controlVariable.selectedData === 'ECG' || selecteddata === 'Bao') {
+            if (controlVariable.selectedData === 'ECG' || controlVariable.selectedData === 'Bao') {
                 d3.select('#pca').attr('disabled',true);
                 d3.select('#t_sne').attr('disabled',true);
                 d3.select('#umap').attr('disabled',true);
@@ -373,104 +373,121 @@ function ComputingData() {
     let filename0;
     let filename1;
     let filename2;
+    let type = '';
     switch (controlVariable.selectedData) {
         case 'employment':
             filename0 = "data/US_employment_new.txt";
             filename1 = "data/stateCode.txt";
             filename2 = "data/Industrycode_reduced.txt";
+            type = 'BLS';
             break;
         case 'RUL':
             filename0 = "data/RUL_data.txt";
             filename1 = "data/engine_code.txt";
             filename2 = "data/sensor_code.txt";
+            type = 'normal';
             break;
         case 'stock':
             filename0 = "data/stock_data.txt";
             filename1 = "data/year_code.txt";
             filename2 = "data/var_code.txt";
+            type = 'normal';
             break;
         case 'ECG':
             filename0 = "data/ECG_dog.txt";
             filename1 = "data/ECG_sample_code.txt";
             filename2 = "data/ECG_varCode.txt";
+            type = 'normal';
             break;
         case 'EEG':
             filename0 = "data/eeg_data.txt";
             filename1 = "data/eeg_code.txt";
             filename2 = "data/eeg_v_code.txt";
+            type = 'normal';
             break;
         case 'Bao':
             filename0 = "data/Bao_dataset.txt";
             filename1 = "data/Bao_data_sample.txt";
             filename2 = "data/Bao_data_var.txt";
+            type = 'normal';
             break;
         case 'death_rate':
             filename0 = "data/birth_death_rate.csv";
             filename1 = "data/death_rate_code.txt";
             filename2 = "data/death_rate_var.txt";
+            type = 'death-birth';
             break;
         case 'house_price':
             filename0 = 'data/house_financial.txt';
             filename1 = 'data/state_code.txt';
             filename2 = 'data/house_financial_code.txt';
+            type = 'normal';
             break;
         case 'Life_expectancy':
             filename0 = 'data/Life_expectancy.txt';
             filename1 = 'data/Country_code.txt';
             filename2 = 'data/Gender_code.txt';
+            type = 'normal';
             break;
-        case 'ozone':
-            filename0 = "data/ozone_onehour.txt";
-            filename1 = "data/ozone_sample.txt";
-            filename2 = "data/ozone_variable.txt";
-            break;
-        case 'air_quality':
-            filename0 = "data/airQuality_reduced.txt";
-            filename1 = "data/airQuality_sample.txt";
-            filename2 = "data/airQuality_variable.txt";
-            break;
-        case 'DowJones':
-            filename0 = "data/DowJonesIndex.txt";
-            filename1 = "data/DJIndex_sample.txt";
-            filename2 = "data/DJIndex_variable.txt";
-            break;
+        // case 'ozone':
+        //     filename0 = "data/ozone_onehour.txt";
+        //     filename1 = "data/ozone_sample.txt";
+        //     filename2 = "data/ozone_variable.txt";
+        //     break;
+        // case 'air_quality':
+        //     filename0 = "data/airQuality_reduced.txt";
+        //     filename1 = "data/airQuality_sample.txt";
+        //     filename2 = "data/airQuality_variable.txt";
+        //     break;
+        // case 'DowJones':
+        //     filename0 = "data/DowJonesIndex.txt";
+        //     filename1 = "data/DJIndex_sample.txt";
+        //     filename2 = "data/DJIndex_variable.txt";
+        //     break;
         case 'HPCC_0':
             filename0 = "data/HPCC_02Jun2019.csv";
             filename1 = "data/HPCC_host.tsv";
             filename2 = "data/HPCC_service_2.tsv";
+            type = 'normal';
             break;
         case 'HPCC_1':
             filename0 = "data/HPCC_03Jun2019.csv";
             filename1 = "data/HPCC_host.tsv";
             filename2 = "data/HPCC_service_2.tsv";
+            type = 'normal';
             break;
         case 'HPCC_2':
             filename0 = "data/HPCC_04Jun2019.csv";
             filename1 = "data/HPCC_host.tsv";
             filename2 = "data/HPCC_service_2.tsv";
+            type = 'normal';
             break;
         case 'HPCC_3':
             filename0 = "data/HPCC_05Jun2019.csv";
             filename1 = "data/HPCC_host.tsv";
             filename2 = "data/HPCC_service_2.tsv";
+            type = 'normal';
             break;
         case 'HPCC_4':
             filename0 = "data/HPCC_06Jun2019.csv";
             filename1 = "data/HPCC_host.tsv";
             filename2 = "data/HPCC_service_2.tsv";
+            type = 'normal';
             break;
         case 'HPCC_5':
             filename0 = "data/HPCC_07Jun2019.csv";
             filename1 = "data/HPCC_host.tsv";
             filename2 = "data/HPCC_service_2.tsv";
+            type = 'normal';
             break;
         case 'HPCC_6':
             filename0 = "data/HPCC_08Jun2019.csv";
             filename1 = "data/HPCC_host.tsv";
             filename2 = "data/HPCC_service_2.tsv";
+            type = 'normal';
             break;
     }
-    Management.LoadAndComputation(filename0,filename1,filename2,'BLS');
+    Management.LoadAndComputation(filename0,filename1,filename2,type);
 }
 
     // Prepare data for RadarController_table

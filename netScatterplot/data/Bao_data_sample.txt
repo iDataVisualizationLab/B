@@ -1,2 +1,2 @@
-code	name
-0	Example
+code,name
+0,Example

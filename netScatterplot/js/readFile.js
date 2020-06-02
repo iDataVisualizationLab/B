@@ -4,16 +4,11 @@ class ReadFile {
     constructor() {
     }
 
-    // bls structure of time series data
-    // main data
-    // Series ID, value at t1, value at t2, value at t3, ...
-    // Series ID is defined in bls.gov
-    // instance information
-    // code,name
-    // variable information
-    // code,name
-    // return data in format: data = {instance -> variable -> time series}
-    static BLSType(files) {
+    // Series ID: instanceCode_variableCode (type = 'normal')
+    // Series ID: defined on bls.gov (type = 'BLS')
+    // Series ID, value at t1, value at t2, ...
+    // return data in format: {instance -> variable -> time series}
+    static IVTFormat(files,type) {
         let data = {};
         // store time information to global variable
         netSP.timeInfo = [];
@@ -34,8 +29,21 @@ class ReadFile {
         });
         files[0].forEach(e=>{
             let seriesID = e['Series ID'];
-            let instanceCode = seriesID.substr(3,2);
-            let variableCode = seriesID.substr(10,8);
+            let instanceCode = '', variableCode = '';
+            switch (type) {
+                case 'BLS':
+                    instanceCode = seriesID.substr(3,2);
+                    variableCode = seriesID.substr(10,8);
+                    break;
+                case 'normal':
+                    instanceCode = seriesID.split('_')[0];
+                    variableCode = seriesID.split('_')[1];
+                    break;
+                case 'death-birth':
+                    instanceCode = e['CountryCode'];
+                    variableCode = e['Type'];
+                    break;
+            }
             let instance = netSP.instanceInfo.find(e_=>e_[0]===instanceCode)[1];
             let variable = netSP.variableInfo.find(e_=>e_[0]===variableCode)[1];
             netSP.timeInfo.forEach((e_,i_)=>{

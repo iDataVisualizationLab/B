@@ -83,7 +83,12 @@ class DesignApplication {
                 xVar = netSP.encode[index][0];
                 yVar = netSP.encode[index][1];
                 time = netSP.encode[index][2];
-                let score = netSP.plots[index].metrics
+                let score = netSP.plots[index].metrics[controlVariable.selectedMetric];
+                score = Math.floor(score*100)/100;
+                let outliers = [];
+                if (controlVariable.selectedMetric === 'Outlying angle') {
+                    outliers = netSP.plots[index].outliers.angle;
+                }
                 data = DataProcessing.NormalizationNetScatterPlot(netSP.plots[index].data,time);
                 ctx.font = plotInfo.notations.size + 'px ' + plotInfo.notations.font;
                 ctx.fillStyle = plotInfo.notations.color;
@@ -94,21 +99,26 @@ class DesignApplication {
                 ctx.rotate(Math.PI/2);
                 ctx.translate(-plotPosition[0],-plotPosition[1]-plotInfo.size[1]);
                 ctx.fillText(time,plotPosition[0],plotPosition[1]-5);
+                ctx.textAlign = 'right';
+                ctx.fillText(score.toString(),plotPosition[0]+plotInfo.size[0],plotPosition[1]-5);
+                ctx.textAlign = 'left';
                 data.forEach(e=>{
                     let x0 = plotPosition[0] + plotInfo.size[0]*e.x0;
                     let y0 = plotPosition[1] + plotInfo.size[1]*(1-e.y0);
                     let x1 = plotPosition[0] + plotInfo.size[0]*e.x1;
                     let y1 = plotPosition[1] + plotInfo.size[1]*(1-e.y1);
-                    ctx.beginPath();
-                    ctx.strokeStyle = 'rgb(255,0,0)';
-                    ctx.fillStyle = 'rgb(255,0,0)';
-                    ctx.arc(x0,y0,3,0,Math.PI*2);
-                    ctx.stroke();
-                    ctx.fill();
+                    let isOutlier = outliers.findIndex(e_=>e_===e.name) !== -1;
+                    let r = isOutlier ? 4 : 2;
                     ctx.beginPath();
                     ctx.strokeStyle = 'rgb(0,0,255)';
                     ctx.fillStyle = 'rgb(0,0,255)';
-                    ctx.arc(x1,y1,3,0,2*Math.PI);
+                    ctx.arc(x0,y0,r,0,Math.PI*2);
+                    ctx.stroke();
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.strokeStyle = 'rgb(255,0,0)';
+                    ctx.fillStyle = 'rgb(255,0,0)';
+                    ctx.arc(x1,y1,r,0,2*Math.PI);
                     ctx.stroke();
                     ctx.fill();
                     ctx.beginPath();

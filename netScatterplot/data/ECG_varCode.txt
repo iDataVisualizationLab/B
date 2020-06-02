@@ -1,2 +1,2 @@
-code	name
-0	ECG
+code,name
+0,ECG
