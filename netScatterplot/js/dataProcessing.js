@@ -9,7 +9,7 @@ class DataProcessing {
         // format of data: object
         // data -> instance -> variable -> time series
         for (let i in dataRef) {
-            for (let t = 0; t < netSP.timeInfo.length; t++) {
+            for (let t = 1; t < netSP.timeInfo.length; t++) {
                 let sum = 0;
                 for (let v in dataRef[i]) {
                     if (dataRef[i][v].length > 0 && typeof(dataRef[i][v][t]) === 'number') sum += dataRef[i][v][t];
