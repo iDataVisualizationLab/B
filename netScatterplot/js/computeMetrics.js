@@ -29,7 +29,7 @@ class ComputeMetrics {
         return sd;
     }
 
-    // Outlying
+    // Outlying for a list of numbers
     // Use box-plot rule to determine outliers
     // score = absolute deviation from q2 for outliers/ absolute deviation from q2 for all
     // plotData is array of data point
@@ -74,5 +74,108 @@ class ComputeMetrics {
             outlying.score = (totalAD !== 0) ? outlierAD/totalAD : 0;
         }
         return outlying;
+    }
+
+    // Crossing score
+    // plotData is an array of data points
+    // Each element is an object: {name, x0, y0, x1, y1}
+    static Intersection (plotData) {
+        let score = 0;
+        let count = 0;
+        for (let i = 0; i < plotData.length - 1; i++) {
+            for (let j = i + 1; j < plotData.length; j++) {
+                count += Geometry.CheckLineSegmentCrossing(plotData[i].x0,plotData[i].y0,plotData[i].x1,plotData[i].y1,plotData[j].x0,plotData[j].y0,plotData[j].x1,plotData[j].y1) ? 1 : 0;
+            }
+        }
+        score = 1 - Math.exp(-count/plotData.length);
+        return score;
+    }
+
+    // Translation score
+    // plotData is an array of data points
+    // Each element is an object: {name, x0, y0, x1, y1}
+    static Translation (plotData) {
+        let score;
+        // Find and delete outliers
+        let outliers1 = [], outliers2 = [];
+        let group1 = plotData.map(e=>{
+            return {name: e.name, x: e.x0, y: e.y0}
+        });
+        outliers1 = Graph.Outliers(group1);
+        let group2 = plotData.map(e=>{
+            return {name: e.name, x: e.x1, y: e.y1}
+        });
+        outliers2 = Graph.Outliers(group2);
+        // compute translation
+        let CoM1 = [0,0], CoM2 = [0,0];
+        for (let i = 0; i < plotData.length; i++) {
+            if (outliers1.length === 0) {
+                CoM1[0] += plotData[i].x0/plotData.length;
+                CoM1[1] += plotData[i].y0/plotData.length;
+            } else {
+                let check = outliers1.findIndex(e=>e===plotData[i].name) === -1;
+                if (check) {
+                    CoM1[0] += plotData[i].x0/plotData.length;
+                    CoM1[1] += plotData[i].y0/plotData.length;
+                }
+            }
+            if (outliers2.length === 0) {
+                CoM2[0] += plotData[i].x1/plotData.length;
+                CoM2[1] += plotData[i].y1/plotData.length;
+            } else {
+                let check = outliers2.findIndex(e=>e===plotData[i].name) === -1;
+                if (check) {
+                    CoM2[0] += plotData[i].x1/plotData.length;
+                    CoM2[1] += plotData[i].y1/plotData.length;
+                }
+            }
+        }
+        let translation = Math.sqrt((CoM2[0]-CoM1[0])*(CoM2[0]-CoM1[0])+(CoM2[1]-CoM1[1])*(CoM2[1]-CoM1[1]));
+        // compute radius
+        let radius = 0;
+        for (let i = 0; i < plotData.length; i++) {
+            if (outliers1.length === 0) {
+                let d = Math.sqrt((plotData[i].x0-CoM1[0])*(plotData[i].x0-CoM1[0])+(plotData[i].y0-CoM1[1])*(plotData[i].y0-CoM1[1]));
+                radius = (radius < d) ? d : radius;
+            } else {
+                let check = outliers1.findIndex(e=>e===plotData[i].name) === -1;
+                if (check) {
+                    let d = Math.sqrt((plotData[i].x0-CoM1[0])*(plotData[i].x0-CoM1[0])+(plotData[i].y0-CoM1[1])*(plotData[i].y0-CoM1[1]));
+                    radius = (radius < d) ? d : radius;
+                }
+            }
+        }
+        // compute score
+        score = (radius > 0) ? translation/radius : 0;
+        return score;
+    }
+
+    // Complexity of directions
+    // need collection of angles
+    // angleData is array of
+    // objects in format: {name, value}
+    // value: angle from -pi to pi
+    static Complexity (angleData) {
+        let score = 0;
+        let quadRant = [0,0,0,0];
+        angleData.forEach(e=>{
+            if (e.value <= Math.PI && e.value > Math.PI/2) {
+                quadRant[1] += 1;
+            } else if (e.value <= Math.PI/2 && e.value > 0) {
+                quadRant[0] += 1;
+            } else if (e.value <= 0 && e.value > -Math.PI/2) {
+                quadRant[3] += 1;
+            } else if (e.value <= -Math.PI/2 && e.value >= -Math.PI) {
+                quadRant[2] += 1;
+            }
+        });
+        let sum = quadRant[0] + quadRant[1] + quadRant[2] + quadRant[3];
+        if (sum !== 0) {
+            quadRant.forEach(e=>{
+                score += -(e/sum)*Math.log2(e/sum);
+            });
+            score /= 2;
+        }
+        return score;
     }
 }

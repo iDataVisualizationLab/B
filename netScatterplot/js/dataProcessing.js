@@ -2,14 +2,13 @@ class DataProcessing {
     constructor() {
     }
 
-    // normalization type 1
     // get percentage of data for each instance
     // i.e. the sum of values of all variables of every instance is 1 at a time point
-    static NormalizationType1 (dataRef) {
+    static Percentages (dataRef) {
         // format of data: object
         // data -> instance -> variable -> time series
         for (let i in dataRef) {
-            for (let t = 1; t < netSP.timeInfo.length; t++) {
+            for (let t = 0; t < netSP.timeInfo.length; t++) {
                 let sum = 0;
                 for (let v in dataRef[i]) {
                     if (dataRef[i][v].length > 0 && typeof(dataRef[i][v][t]) === 'number') sum += dataRef[i][v][t];
@@ -89,6 +88,55 @@ class DataProcessing {
             }
         });
         return myData;
+    }
+
+    // Get z-score of data
+    // z-score of variables for an instance at a time point
+    // format of dataRef: object
+    // data -> instance -> variable -> time series
+    static GetZScore (dataRef) {
+        for (let i in dataRef) {
+            for (let t = 0; t < netSP.timeInfo.length; t++) {
+                let mean = 0;
+                let sd = 0;
+                let count = 0;
+                for (let v in dataRef[i]) {
+                    if (dataRef[i][v].length > 0 && typeof(dataRef[i][v][t]) === 'number') {
+                        mean += dataRef[i][v][t];
+                        count += 1;
+                    }
+                }
+                mean /= count;
+                for (let v in dataRef[i]) {
+                    if (dataRef[i][v].length > 0 && typeof (dataRef[i][v][t]) === 'number')
+                        sd += (dataRef[i][v][t]-mean)*(dataRef[i][v][t]-mean);
+                }
+                sd /= count;
+                sd = Math.sqrt(sd);
+                for (let v in dataRef[i]) {
+                    if (dataRef[i][v].length > 0 && typeof(dataRef[i][v][t]) === 'number')
+                        dataRef[i][v][t] = (dataRef[i][v][t]-mean)/sd;
+                }
+            }
+        }
+    }
+
+    // Get z-score series
+
+
+    // Get relative change
+    // Standardize the initial value of all time series to 1
+    // format of dataRef: object of instance -> variable -> time series
+    static GetRelativeChange (dataRef) {
+        for (let i in dataRef) {
+            for (let v in dataRef[i]) {
+                let baseIndex = dataRef[i][v].findIndex(e=>e!==0);
+                let base = dataRef[i][v][baseIndex];
+                for (let t = baseIndex; t < netSP.timeInfo.length; t++) {
+                    dataRef[i][v][t] /= base;
+                }
+            }
+        }
     }
 
 

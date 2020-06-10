@@ -5,20 +5,26 @@ let netSP = {
     plots: [],
     encode: [],
     filter: {
-        'Mean length': [0,1],
-        'Mean angle': [-Math.PI,Math.PI],
-        'Standard deviation length': [0,1],
-        'Standard deviation angle': [0,2*Math.PI],
+        // 'Mean length': [0,1],
+        // 'Mean angle': [-Math.PI,Math.PI],
+        // 'Standard deviation length': [0,1],
+        // 'Standard deviation angle': [0,2*Math.PI],
         'Outlying length': [0,1],
         'Outlying angle': [0,1],
+        'Intersection': [0,1],
+        'Translation': [-1,1],
+        'Complexity': [0,1],
     },
     metricName: [
-        'Mean length',
-        'Mean angle',
-        'Standard deviation length',
-        'Standard deviation angle',
+        // 'Mean length',
+        // 'Mean angle',
+        // 'Standard deviation length',
+        // 'Standard deviation angle',
         'Outlying length',
         'Outlying angle',
+        'Intersection',
+        'Translation',
+        'Complexity',
     ],
 };
 
@@ -27,15 +33,17 @@ let codeManager = {
     needRepeat: {},
     needComputation: true,
     needUpdate: false,
+    check: true,
 };
 
 let controlVariable = {
     selectedMetric: 'Mean length',
-    selectedData: 'death_rate',
+    selectedData: 'employment',
     visualizing: 'LMH',
     interaction: {
         instance: 'noOption',
         variable: 'noOption',
     },
     displayType: 'series',
+    scalingType: 'z-score',     //'z-score' or 'multiplier'
 };

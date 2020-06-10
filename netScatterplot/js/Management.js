@@ -16,8 +16,12 @@ class Management {
             netSP.encode = [];
             // store data in format: instance -> variable -> time series
             let data = ReadFile.IVTFormat(files,type);
-            // normalize data
-            DataProcessing.NormalizationType1(data);
+            // get percentages
+            // DataProcessing.Percentages(data);
+            // get z-score
+            // DataProcessing.GetZScore(data);
+            // get relative change
+            DataProcessing.GetRelativeChange(data);
             // encode the plots
             netSP.encode = EncodePlots.NetScatterPlot(files[2]);
             // attributes for every plot
@@ -28,12 +32,15 @@ class Management {
                         angle: [],
                     },
                     metrics: {
-                        'Mean length': 0,
-                        'Mean angle': 0,
-                        'Standard deviation length': 0,
-                        'Standard deviation angle': 0,
+                        // 'Mean length': 0,
+                        // 'Mean angle': 0,
+                        // 'Standard deviation length': 0,
+                        // 'Standard deviation angle': 0,
                         'Outlying length': 0,
                         'Outlying angle': 0,
+                        'Intersection': 0,
+                        'Translation': 0,
+                        'Complexity': 0,
                     },
                     outliers: {
                         length: [],
@@ -48,14 +55,17 @@ class Management {
             netSP.plots.forEach((e,i)=>{
                 e.quantities.edgeLength = ComputeQuantities.EdgeLength(e.data);
                 e.quantities.angle = ComputeQuantities.Angle(e.data);
-                e.metrics['Mean length'] = ComputeMetrics.MeanValue(e.quantities.edgeLength);
-                e.metrics['Mean angle'] = ComputeMetrics.MeanValue(e.quantities.angle);
-                e.metrics['Standard deviation length'] = ComputeMetrics.StandardDeviation(e.quantities.edgeLength);
-                e.metrics['Standard deviation angle'] = ComputeMetrics.StandardDeviation(e.quantities.angle);
+                // e.metrics['Mean length'] = ComputeMetrics.MeanValue(e.quantities.edgeLength);
+                // e.metrics['Mean angle'] = ComputeMetrics.MeanValue(e.quantities.angle);
+                // e.metrics['Standard deviation length'] = ComputeMetrics.StandardDeviation(e.quantities.edgeLength);
+                // e.metrics['Standard deviation angle'] = ComputeMetrics.StandardDeviation(e.quantities.angle);
                 e.metrics['Outlying length'] = ComputeMetrics.Outlying(e.quantities.edgeLength,true).score;
                 e.metrics['Outlying angle'] = ComputeMetrics.Outlying(e.quantities.angle,false).score;
                 e.outliers.length = ComputeMetrics.Outlying(e.quantities.edgeLength,true).outliers;
                 e.outliers.angle = ComputeMetrics.Outlying(e.quantities.angle,false).outliers;
+                e.metrics['Intersection'] = ComputeMetrics.Intersection(e.data);
+                e.metrics['Translation'] = ComputeMetrics.Translation(e.data);
+                e.metrics['Complexity'] = ComputeMetrics.Complexity(e.quantities.angle);
             });
 
             // initClusterObj();
@@ -88,10 +98,12 @@ class Management {
             low: [],
         }
         let nDisplay = 5;
-        for (let p = 0; p < nDisplay; p++) {
-            displayPlots.high.push(sortedPlots[p]);
-            displayPlots.median.push(sortedPlots[Math.floor(sortedPlots.length*0.5)+p]);
-            displayPlots.low.push(sortedPlots[sortedPlots.length-nDisplay+p]);
+        if (sortedPlots.length >= nDisplay) {
+            for (let p = 0; p < nDisplay; p++) {
+                displayPlots.high.push(sortedPlots[p]);
+                displayPlots.median.push(sortedPlots[Math.floor(sortedPlots.length * 0.5) - Math.floor(nDisplay*0.5) + p]);
+                displayPlots.low.push(sortedPlots[sortedPlots.length - nDisplay + p]);
+            }
         }
         // Create canvas
         DesignApplication.CreateCanvas('mainCanvasHolder','HMLCanvas','myCanvas',1000,1800,'#ffffff');
@@ -115,7 +127,7 @@ class Management {
             }
         }
         let blankSize = [100,100];
-        DesignApplication.HMLView('HMLCanvas',headerInfo,plotInfo,blankSize,nDisplay,displayPlots);
+        DesignApplication.HMLView('HMLCanvas',headerInfo,plotInfo,blankSize,displayPlots);
         // clearInterval(codeManager.needRepeat);
     }
 }
