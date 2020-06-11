@@ -37,7 +37,7 @@ let codeManager = {
 };
 
 let controlVariable = {
-    selectedMetric: 'Mean length',
+    selectedMetric: 'Translation',
     selectedData: 'employment',
     visualizing: 'LMH',
     interaction: {
