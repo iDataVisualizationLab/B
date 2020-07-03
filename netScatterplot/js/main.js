@@ -65,7 +65,8 @@ function settingMeasureUpdate() {
             // change filter values
             netSP.filter[d3.select(this.target).datum()][0] = +(values[0]);
             netSP.filter[d3.select(this.target).datum()][1] = +(values[1]);
-            codeManager.needUpdate = true; // need check
+            // codeManager.needUpdate = true;
+            Management.Visualization();
         });
     });
 
@@ -75,7 +76,8 @@ function settingMeasureUpdate() {
         .on('change', function (d) {
             // select metrics
             controlVariable.selectedMetric = d;
-            codeManager.needUpdate = true;
+            // codeManager.needUpdate = true;
+            Management.Visualization();
         });
     mc.select('label.measureFilter').select('span')
         // .style('color', d => 'rgb(' + getcolor(measureObj[d]).join(',') + ')').style('font-family', 'Arial')
@@ -160,7 +162,9 @@ function onTabChange (myTab_) {
                 d3.select('#mainCanvasHolder').classed('hide',false);
                 d3.select('#tSNE').classed('hide',true);
                 d3.select('#dataInstances').attr('disabled','');
-                d3.select('#variable').attr('disabled','');
+                d3.select('#variable1').attr('disabled',null);
+                d3.select('#variable2').attr('disabled',null);
+                d3.select('#time').attr('disabled',null);
             }
             if(controlVariable.visualizing === 'tSNE'||controlVariable.visualizing === 'PCA'||controlVariable.visualizing === 'UMAP') {
                 d3.select('#mainCanvasHolder').classed('hide', true);
@@ -170,14 +174,23 @@ function onTabChange (myTab_) {
                     plotPosition = [];
                     reCalculateTsne();
                 });
-                d3.select('#dataInstances').attr('disabled',null);
-                d3.select('#variable').attr('disabled',null);
+                d3.select('#dataInstances').attr('disabled','');
+                d3.select('#variable1').attr('disabled','');
+                d3.select('#variable2').attr('disabled','');
+                d3.select('#time').attr('disabled','');
             }
             clickArr = [];      // delete clickArr after changing mode
             controlVariable.interaction.instance = 'noOption';
-            controlVariable.interaction.variable = 'noOption';
+            controlVariable.interaction.variable1 = 'noOption';
+            controlVariable.interaction.variable2 = 'noOption';
+            controlVariable.interaction.time = 'noOption';
+            controlVariable.displaySeries = false;
             $('#dataInstances').val('noOption').selected = true;
-            $('#variable').val('noOption').selected = true;
+            $('#variable1').val('noOption').selected = true;
+            $('#variable2').val('noOption').selected = true;
+            $('#time').val('noOption').selected = true;
+
+            ComputingData();
         });
         // visualizing option
         d3.select('#mainCanvasHolder').classed('hide',false);
@@ -228,35 +241,114 @@ function onTabChange (myTab_) {
                 clickArr = [];
             }
         });
-        // interaction option - instances
+        // interaction option - instance
         d3.select('#dataInstances').on('change',function(){
+            // new chosen value
             controlVariable.interaction.instance = this.value;
-            if (controlVariable.interaction.instance !== 'noOption') {clickArr = []; currentPage = 1;}    // delete clicked charts after changing to interaction
-            switch (controlVariable.visualizing) {
-                case 'PCA':
-                    pcaTS.renderPCA();
-                    break;
-                case 'tSNE':
-                    tsneTS.renderTSNE();
-                    break;
-                case 'UMAP':
-                    umapTS.renderUMAP();
-                    break;
+            // redraw
+            controlVariable.displaySeries = true;
+            Management.Visualization();
+        });
+        // interaction option - variable1
+        d3.select('#variable1').on('change',function(){
+            controlVariable.interaction.variable1 = this.value;
+            if (controlVariable.interaction.variable1 === 'noOption' || controlVariable.interaction.variable2 === 'noOption' || controlVariable.interaction.time === 'noOption') {
+                d3.select('#dataInstances').attr('disabled','');
+                controlVariable.displaySeries = false;
+                Management.Visualization();
+            } else {
+                d3.select('#dataInstances').attr('disabled',null);
+                // create instance list
+                let index = netSP.encode.findIndex(e=>{
+                   let check1 = controlVariable.interaction.variable1 === e[0] && controlVariable.interaction.variable2 === e[1] && controlVariable.interaction.time === e[2];
+                   let check2 = controlVariable.interaction.variable1 === e[1] && controlVariable.interaction.variable2 === e[0] && controlVariable.interaction.time === e[2];
+                   return check1 || check2;
+                });
+                d3.selectAll('.dataInstances').remove();
+                let list = [];
+                if (netSP.plots[index].outliers.angle.length > 0) {
+                    netSP.plots[index].outliers.angle.forEach(e=>list.push(e));
+                }
+                if (netSP.plots[index].outliers['length'].length > 0) {
+                    netSP.plots[index].outliers['length'].forEach(e=>{
+                        if (list.findIndex(e_=>e_===e) === -1) list.push(e);
+                    });
+                }
+                if (list.length > 0) {
+                    list.forEach(d=>{
+                        d3.select('#dataInstances').append('option').attr('class','dataInstances').attr('value',d).text(d);
+                    });
+                }
+                controlVariable.displaySeries = true;
+                Management.Visualization();
             }
         });
-        d3.select('#variable').on('change',function(){
-            controlVariable.interaction.variable = this.value;
-            if (controlVariable.interaction.variable !== 'noOption') {clickArr = []; currentPage = 1;}   // delete clicked charts after changing to interaction
-            switch (controlVariable.visualizing) {
-                case 'PCA':
-                    pcaTS.renderPCA();
-                    break;
-                case 'tSNE':
-                    tsneTS.renderTSNE();
-                    break;
-                case 'UMAP':
-                    umapTS.renderUMAP();
-                    break;
+        // interaction option - variable2
+        d3.select('#variable2').on('change',function(){
+            controlVariable.interaction.variable2 = this.value;
+            if (controlVariable.interaction.variable1 === 'noOption' || controlVariable.interaction.variable2 === 'noOption' || controlVariable.interaction.time === 'noOption') {
+                d3.select('#dataInstances').attr('disabled','');
+                controlVariable.displaySeries = false;
+                Management.Visualization();
+            } else {
+                d3.select('#dataInstances').attr('disabled',null);
+                // create instance list
+                let index = netSP.encode.findIndex(e=>{
+                    let check1 = controlVariable.interaction.variable1 === e[0] && controlVariable.interaction.variable2 === e[1] && controlVariable.interaction.time === e[2];
+                    let check2 = controlVariable.interaction.variable1 === e[1] && controlVariable.interaction.variable2 === e[0] && controlVariable.interaction.time === e[2];
+                    return check1 || check2;
+                });
+                d3.selectAll('.dataInstances').remove();
+                let list = [];
+                if (netSP.plots[index].outliers.angle.length > 0) {
+                    netSP.plots[index].outliers.angle.forEach(e=>list.push(e));
+                }
+                if (netSP.plots[index].outliers['length'].length > 0) {
+                    netSP.plots[index].outliers['length'].forEach(e=>{
+                        if (list.findIndex(e_=>e_===e) === -1) list.push(e);
+                    });
+                }
+                if (list.length > 0) {
+                    list.forEach(d=>{
+                        d3.select('#dataInstances').append('option').attr('class','dataInstances').attr('value',d).text(d);
+                    });
+                }
+                controlVariable.displaySeries = true;
+                Management.Visualization();
+            }
+        });
+        // interaction option - time
+        d3.select('#time').on('change',function(){
+            controlVariable.interaction.time = this.value;
+            if (controlVariable.interaction.variable1 === 'noOption' || controlVariable.interaction.variable2 === 'noOption' || controlVariable.interaction.time === 'noOption') {
+                d3.select('#dataInstances').attr('disabled','');
+                controlVariable.displaySeries = false;
+                Management.Visualization();
+            } else {
+                d3.select('#dataInstances').attr('disabled',null);
+                // create instance list
+                let index = netSP.encode.findIndex(e=>{
+                    let check1 = controlVariable.interaction.variable1 === e[0] && controlVariable.interaction.variable2 === e[1] && controlVariable.interaction.time === e[2];
+                    let check2 = controlVariable.interaction.variable1 === e[1] && controlVariable.interaction.variable2 === e[0] && controlVariable.interaction.time === e[2];
+                    return check1 || check2;
+                });
+                d3.selectAll('.dataInstances').remove();
+                let list = [];
+                if (netSP.plots[index].outliers.angle.length > 0) {
+                    netSP.plots[index].outliers.angle.forEach(e=>list.push(e));
+                }
+                if (netSP.plots[index].outliers['length'].length > 0) {
+                    netSP.plots[index].outliers['length'].forEach(e=>{
+                        if (list.findIndex(e_=>e_===e) === -1) list.push(e);
+                    });
+                }
+                if (list.length > 0) {
+                    list.forEach(d=>{
+                        d3.select('#dataInstances').append('option').attr('class','dataInstances').attr('value',d).text(d);
+                    });
+                }
+                controlVariable.displaySeries = true;
+                Management.Visualization();
             }
         });
         // display chart options
@@ -444,46 +536,10 @@ function ComputingData() {
         //     filename1 = "data/DJIndex_sample.txt";
         //     filename2 = "data/DJIndex_variable.txt";
         //     break;
-        case 'HPCC_0':
-            filename0 = "data/HPCC_02Jun2019.csv";
-            filename1 = "data/HPCC_host.tsv";
-            filename2 = "data/HPCC_service_2.tsv";
-            type = 'normal';
-            break;
-        case 'HPCC_1':
-            filename0 = "data/HPCC_03Jun2019.csv";
-            filename1 = "data/HPCC_host.tsv";
-            filename2 = "data/HPCC_service_2.tsv";
-            type = 'normal';
-            break;
-        case 'HPCC_2':
-            filename0 = "data/HPCC_04Jun2019.csv";
-            filename1 = "data/HPCC_host.tsv";
-            filename2 = "data/HPCC_service_2.tsv";
-            type = 'normal';
-            break;
-        case 'HPCC_3':
-            filename0 = "data/HPCC_05Jun2019.csv";
-            filename1 = "data/HPCC_host.tsv";
-            filename2 = "data/HPCC_service_2.tsv";
-            type = 'normal';
-            break;
-        case 'HPCC_4':
-            filename0 = "data/HPCC_06Jun2019.csv";
-            filename1 = "data/HPCC_host.tsv";
-            filename2 = "data/HPCC_service_2.tsv";
-            type = 'normal';
-            break;
-        case 'HPCC_5':
-            filename0 = "data/HPCC_07Jun2019.csv";
-            filename1 = "data/HPCC_host.tsv";
-            filename2 = "data/HPCC_service_2.tsv";
-            type = 'normal';
-            break;
-        case 'HPCC_6':
-            filename0 = "data/HPCC_08Jun2019.csv";
-            filename1 = "data/HPCC_host.tsv";
-            filename2 = "data/HPCC_service_2.tsv";
+        case 'HPCC':
+            filename0 = 'data/chillwater_value.txt';
+            filename1 = 'data/chillwater_host.txt';
+            filename2 = 'data/chillwater_services.txt';
             type = 'normal';
             break;
     }
@@ -1009,9 +1065,9 @@ function onchangeVizdata(vizMode){
 ///////////////////
 // SET UP FUNCTION
 //////////////////
-function setup() {
-    frameRate(30);
-}
+// function setup() {
+//     frameRate(30);
+// }
 
 // function windowResized() {
 //   if (windowWidth<1000)
@@ -1046,13 +1102,16 @@ function getcolor(measure) {
     }
 }
 
-function draw() {
-    if (codeManager.needComputation && !videoOnly) {
-        ComputingData();
-    } else {
-        if (codeManager.needUpdate) {
-            Management.Visualization();
-            codeManager.needUpdate = false;
-        }
-    }
-}
+// function draw() {
+//     if (codeManager.needComputation && !videoOnly) {
+//         ComputingData();
+//     } else {
+//         if (codeManager.needUpdate) {
+//             Management.Visualization();
+//             codeManager.needUpdate = false;
+//         }
+//     }
+// }
+
+// do the functions
+ComputingData();

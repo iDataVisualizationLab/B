@@ -14,8 +14,9 @@ class Geometry {
     }
 
     // compute line equation
-    // y = ax + b
-    // return [a,b] or 'parallel to Oy'
+    // ax + by + c = 0
+    // return [a,b,c]
+    // condition: (x1,y1) and (x2,y2) are two different points
     static LineEquation (x1,y1,x2,y2) {
         let result = [];
         if (x1 !== x2) {

@@ -97,57 +97,58 @@ class ComputeMetrics {
     static Translation (plotData) {
         let score;
         // Find and delete outliers
-        let outliers1 = [], outliers2 = [];
-        let group1 = plotData.map(e=>{
-            return {name: e.name, x: e.x0, y: e.y0}
-        });
-        outliers1 = Graph.Outliers(group1);
-        let group2 = plotData.map(e=>{
-            return {name: e.name, x: e.x1, y: e.y1}
-        });
-        outliers2 = Graph.Outliers(group2);
+        // let outliers1 = [], outliers2 = [];
+        // let group1 = plotData.map(e=>{
+        //     return {name: e.name, x: e.x0, y: e.y0}
+        // });
+        // outliers1 = Graph.Outliers(group1);
+        // let group2 = plotData.map(e=>{
+        //     return {name: e.name, x: e.x1, y: e.y1}
+        // });
+        // outliers2 = Graph.Outliers(group2);
         // compute translation
         let CoM1 = [0,0], CoM2 = [0,0];
         for (let i = 0; i < plotData.length; i++) {
-            if (outliers1.length === 0) {
+            // if (outliers1.length === 0) {
                 CoM1[0] += plotData[i].x0/plotData.length;
                 CoM1[1] += plotData[i].y0/plotData.length;
-            } else {
-                let check = outliers1.findIndex(e=>e===plotData[i].name) === -1;
-                if (check) {
-                    CoM1[0] += plotData[i].x0/plotData.length;
-                    CoM1[1] += plotData[i].y0/plotData.length;
-                }
-            }
-            if (outliers2.length === 0) {
+            // } else {
+            //     let check = outliers1.findIndex(e=>e===plotData[i].name) === -1;
+            //     if (check) {
+            //         CoM1[0] += plotData[i].x0/plotData.length;
+            //         CoM1[1] += plotData[i].y0/plotData.length;
+            //     }
+            // }
+            // if (outliers2.length === 0) {
                 CoM2[0] += plotData[i].x1/plotData.length;
                 CoM2[1] += plotData[i].y1/plotData.length;
-            } else {
-                let check = outliers2.findIndex(e=>e===plotData[i].name) === -1;
-                if (check) {
-                    CoM2[0] += plotData[i].x1/plotData.length;
-                    CoM2[1] += plotData[i].y1/plotData.length;
-                }
-            }
+            // } else {
+            //     let check = outliers2.findIndex(e=>e===plotData[i].name) === -1;
+            //     if (check) {
+            //         CoM2[0] += plotData[i].x1/plotData.length;
+            //         CoM2[1] += plotData[i].y1/plotData.length;
+            //     }
+            // }
         }
-        let translation = Math.sqrt((CoM2[0]-CoM1[0])*(CoM2[0]-CoM1[0])+(CoM2[1]-CoM1[1])*(CoM2[1]-CoM1[1]));
+        // let translation = Math.sqrt((CoM2[0]-CoM1[0])*(CoM2[0]-CoM1[0])+(CoM2[1]-CoM1[1])*(CoM2[1]-CoM1[1]));
         // compute radius
-        let radius = 0;
-        for (let i = 0; i < plotData.length; i++) {
-            if (outliers1.length === 0) {
-                let d = Math.sqrt((plotData[i].x0-CoM1[0])*(plotData[i].x0-CoM1[0])+(plotData[i].y0-CoM1[1])*(plotData[i].y0-CoM1[1]));
-                radius = (radius < d) ? d : radius;
-            } else {
-                let check = outliers1.findIndex(e=>e===plotData[i].name) === -1;
-                if (check) {
-                    let d = Math.sqrt((plotData[i].x0-CoM1[0])*(plotData[i].x0-CoM1[0])+(plotData[i].y0-CoM1[1])*(plotData[i].y0-CoM1[1]));
-                    radius = (radius < d) ? d : radius;
-                }
-            }
-        }
+        // let radius = 0;
+        // for (let i = 0; i < plotData.length; i++) {
+        //     if (outliers1.length === 0) {
+        //         let d = Math.sqrt((plotData[i].x0-CoM1[0])*(plotData[i].x0-CoM1[0])+(plotData[i].y0-CoM1[1])*(plotData[i].y0-CoM1[1]));
+        //         radius = (radius < d) ? d : radius;
+        //     } else {
+        //         let check = outliers1.findIndex(e=>e===plotData[i].name) === -1;
+        //         if (check) {
+        //             let d = Math.sqrt((plotData[i].x0-CoM1[0])*(plotData[i].x0-CoM1[0])+(plotData[i].y0-CoM1[1])*(plotData[i].y0-CoM1[1]));
+        //             radius = (radius < d) ? d : radius;
+        //         }
+        //     }
+        // }
         // compute score
-        score = (radius > 0) ? translation/radius : 0;
-        return score;
+        // score = (radius > 0) ? translation/radius : 0;
+        // return score;
+        return Math.sqrt((CoM2[0]-CoM1[0])*(CoM2[0]-CoM1[0])+(CoM2[1]-CoM1[1])*(CoM2[1]-CoM1[1]));
     }
 
     // Complexity of directions

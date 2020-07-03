@@ -79,7 +79,7 @@
             <label for="datacom" class="col s5" style="color: #000000"> Dataset: </label>
             <div  class="row s12">
               <select id="datacom" class="col s7">
-                <option selected value="employment"> US Employment Data</option>
+                <option value="employment"> US Employment Data</option>
                 <option value="RUL">RUL data</option>
                 <option value="stock">SP500 Stock data</option>
                 <option id="ecg" value="ECG">ECG data</option>
@@ -92,13 +92,7 @@
                 <option value="air_quality">Beijing air quality</option>
                 <option value="DowJones">Dow Jones Index</option>
                 <optgroup label="HPCC">
-                  <option value="HPCC_0">Jun 2nd 2019</option>
-                  <option value="HPCC_1">Jun 3rd 2019</option>
-                  <option value="HPCC_2">Jun 4th 2019</option>
-                  <option value="HPCC_3">Jun 5th 2019</option>
-                  <option value="HPCC_4">Jun 6th 2019</option>
-                  <option value="HPCC_5">Jun 7th 2019</option>
-                  <option value="HPCC_6">Jun 8th 2019</option>
+                  <option selected value="HPCC">March 21 2019</option>
                 </optgroup>
               </select>
             </div>
@@ -130,32 +124,48 @@
         <li>
           <div class="collapsible-header capitalize" id="interaction"><i class="material-icons icon">mouse</i><span>Interaction</span>  <i class="material-icons expand">chevron_right</i></div>
           <div class="collapsible-body">
-            <div  class="row valign-wrapper">
-              <label for="displayType_holder" class="col s4">Display charts</label>
-              <div id="displayType_holder" class="radio-toolbar col s8">
-                <label class="toolTip" data-title="Series chart">
-                  <input id="seriesChart" name="displayType" type="radio" value="series" checked/>
-                  <i class="material-icons icon">timeline</i>
-                </label>
-
-                <label class="toolTip" data-title="Nightingale Rose Chart" >
-                  <input id="roseChart" name="displayType" type="radio" value="rose"/>
-                  <i class="icon-roseShape material-icons"></i>
-                </label>
+<!--            <div  class="row valign-wrapper">-->
+<!--              <label for="displayType_holder" class="col s4">Display charts</label>-->
+<!--              <div id="displayType_holder" class="radio-toolbar col s8">-->
+<!--                <label class="toolTip" data-title="Series chart">-->
+<!--                  <input id="seriesChart" name="displayType" type="radio" value="series" checked/>-->
+<!--                  <i class="material-icons icon">timeline</i>-->
+<!--                </label>-->
+<!---->
+<!--                <label class="toolTip" data-title="Nightingale Rose Chart" >-->
+<!--                  <input id="roseChart" name="displayType" type="radio" value="rose"/>-->
+<!--                  <i class="icon-roseShape material-icons"></i>-->
+<!--                </label>-->
+<!--              </div>-->
+<!--            </div>-->
+            <label for="variable1" class="col s4" style="color: #000000">Variable 1:</label>
+            <div class="row s12">
+              <div id="divVariable1">
+                <select id="variable1" class="col s8">
+                  <option value="noOption">--none--</option>
+                </select>
+              </div>
+            </div>
+            <label for="variable2" class="col s4" style="color: #000000">Variable 2:</label>
+            <div class="row s12">
+              <div id="divVariable2">
+                <select id="variable2" class="col s8">
+                  <option value="noOption">--none--</option>
+                </select>
+              </div>
+            </div>
+            <label for="time" class="col s4" style="color: #000000">Time:</label>
+            <div class="row s12">
+              <div id="divTime">
+                <select id="time" class="col s8">
+                  <option value="noOption">--none--</option>
+                </select>
               </div>
             </div>
             <label for="dataInstances" class="col s4" style="color: #000000">Data Instances:</label>
             <div class="row s12">
               <div id="divDataInstances">
-                <select id="dataInstances" class="col s8">
-                  <option value="noOption">--none--</option>
-                </select>
-              </div>
-            </div>
-            <label for="variable" class="col s4" style="color: #000000">Variables:</label>
-            <div class="row s12">
-              <div id="divVariable">
-                <select id="variable" class="col s8">
+                <select id="dataInstances" class="col s8" disabled>
                   <option value="noOption">--none--</option>
                 </select>
               </div>

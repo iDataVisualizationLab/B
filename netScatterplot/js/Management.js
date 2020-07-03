@@ -15,13 +15,18 @@ class Management {
             netSP.plots = [];
             netSP.encode = [];
             // store data in format: instance -> variable -> time series
-            let data = ReadFile.IVTFormat(files,type);
+            netSP.data = ReadFile.IVTFormat(files,type);
+            // add information to interaction tab
+            Interaction.dropDownMenuForInteraction();
             // get percentages
             // DataProcessing.Percentages(data);
             // get z-score
             // DataProcessing.GetZScore(data);
             // get relative change
-            DataProcessing.GetRelativeChange(data);
+            // DataProcessing.GetRelativeChange(data);
+            // Normalize the net scatter plot
+            DataProcessing.NormalizationNetScatterPlot(netSP.data);
+            // DataProcessing.Z_Normalization2D(netSP.data);
             // encode the plots
             netSP.encode = EncodePlots.NetScatterPlot(files[2]);
             // attributes for every plot
@@ -32,10 +37,10 @@ class Management {
                         angle: [],
                     },
                     metrics: {
-                        // 'Mean length': 0,
-                        // 'Mean angle': 0,
-                        // 'Standard deviation length': 0,
-                        // 'Standard deviation angle': 0,
+                        'Mean length': 0,
+                        'Mean angle': 0,
+                        'Standard deviation length': 0,
+                        'Standard deviation angle': 0,
                         'Outlying length': 0,
                         'Outlying angle': 0,
                         'Intersection': 0,
@@ -50,15 +55,15 @@ class Management {
                 }
             }
             // store data point to every net scatter plot
-            DataProcessing.NetScatterPlot(data);
+            DataProcessing.NetScatterPlot(netSP.data);
             // Compute quantities and metrics for every plot
             netSP.plots.forEach((e,i)=>{
                 e.quantities.edgeLength = ComputeQuantities.EdgeLength(e.data);
                 e.quantities.angle = ComputeQuantities.Angle(e.data);
-                // e.metrics['Mean length'] = ComputeMetrics.MeanValue(e.quantities.edgeLength);
-                // e.metrics['Mean angle'] = ComputeMetrics.MeanValue(e.quantities.angle);
-                // e.metrics['Standard deviation length'] = ComputeMetrics.StandardDeviation(e.quantities.edgeLength);
-                // e.metrics['Standard deviation angle'] = ComputeMetrics.StandardDeviation(e.quantities.angle);
+                e.metrics['Mean length'] = ComputeMetrics.MeanValue(e.quantities.edgeLength);
+                e.metrics['Mean angle'] = ComputeMetrics.MeanValue(e.quantities.angle);
+                e.metrics['Standard deviation length'] = ComputeMetrics.StandardDeviation(e.quantities.edgeLength);
+                e.metrics['Standard deviation angle'] = ComputeMetrics.StandardDeviation(e.quantities.angle);
                 e.metrics['Outlying length'] = ComputeMetrics.Outlying(e.quantities.edgeLength,true).score;
                 e.metrics['Outlying angle'] = ComputeMetrics.Outlying(e.quantities.angle,false).score;
                 e.outliers.length = ComputeMetrics.Outlying(e.quantities.edgeLength,true).outliers;
@@ -78,6 +83,9 @@ class Management {
             //     prepareRadarTable();
             // });
             //
+
+            Management.Visualization();
+
             codeManager.isComputing = false;
             codeManager.needComputation = false;
             codeManager.needUpdate = true;
@@ -112,14 +120,14 @@ class Management {
             font: 'Arial',
             size: 30,
             position: {
-                high: [100,100],
-                median: [400,100],
-                low: [700,100],
+                high: controlVariable.displaySeries ? [100,600] : [100,100],
+                median: controlVariable.displaySeries ? [400,600] : [400,100],
+                low: controlVariable.displaySeries ? [700,600] : [700,100],
             }
         };
         let plotInfo = {
             size: [200,200],
-            position: [100,200],
+            position: controlVariable.displaySeries ? [100,700] : [100,200],
             notations: {
                 font: 'Arial',
                 size: 13,
@@ -128,6 +136,6 @@ class Management {
         }
         let blankSize = [100,100];
         DesignApplication.HMLView('HMLCanvas',headerInfo,plotInfo,blankSize,displayPlots);
-        // clearInterval(codeManager.needRepeat);
+
     }
 }

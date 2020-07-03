@@ -12,7 +12,11 @@ class ReadFile {
         let data = {};
         // store time information to global variable
         netSP.timeInfo = [];
-        files[0].columns.splice(0,1);
+        if (type === 'death-birth') {
+            files[0].columns.splice(0,3);
+        } else {
+            files[0].columns.splice(0,1);
+        }
         netSP.timeInfo = files[0].columns;
         // store instance information to global variable
         // store variable information to global variable

@@ -1,0 +1,3 @@
+code,name
+0,CPU1 Temp
+1,CPU2 Temp
