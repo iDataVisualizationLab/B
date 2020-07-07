@@ -45,7 +45,7 @@ class Management {
                         'Outlying angle': 0,
                         'Intersection': 0,
                         'Translation': 0,
-                        'Complexity': 0,
+                        'Entropy': 0,
                     },
                     outliers: {
                         length: [],
@@ -70,7 +70,7 @@ class Management {
                 e.outliers.angle = ComputeMetrics.Outlying(e.quantities.angle,false).outliers;
                 e.metrics['Intersection'] = ComputeMetrics.Intersection(e.data);
                 e.metrics['Translation'] = ComputeMetrics.Translation(e.data);
-                e.metrics['Complexity'] = ComputeMetrics.Complexity(e.quantities.angle);
+                e.metrics['Entropy'] = ComputeMetrics.Complexity(e.quantities.angle);
             });
 
             // initClusterObj();
@@ -114,7 +114,8 @@ class Management {
             }
         }
         // Create canvas
-        DesignApplication.CreateCanvas('mainCanvasHolder','HMLCanvas','myCanvas',1000,1800,'#ffffff');
+        let myWindow = controlVariable.displaySeries ? [1000,2300] : [1000,1800];
+        DesignApplication.CreateCanvas('mainCanvasHolder','HMLCanvas','myCanvas',myWindow[0],myWindow[1],'#ffffff');
         // Draw plots
         let headerInfo = {
             font: 'Arial',

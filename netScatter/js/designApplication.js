@@ -104,9 +104,13 @@ class DesignApplication {
                     ctx.translate(-plotPosition[0],-plotPosition[1]-plotInfo.size[1]);
                     ctx.fillText(time,plotPosition[0],plotPosition[1]-5);
                     ctx.textAlign = 'right';
-                    ctx.fillText(score.toString(),plotPosition[0]+plotInfo.size[0],plotPosition[1]-5);
+                    ctx.fillText(controlVariable.selectedMetric+': '+score.toString(),plotPosition[0]+plotInfo.size[0],plotPosition[1]-5);
                     ctx.textAlign = 'left';
                     data.forEach(e=>{
+                        let name = e.name;
+                        let iCheck1 = name === controlVariable.interaction.instance && xVar === controlVariable.interaction.variable1 && yVar === controlVariable.interaction.variable2 && time === controlVariable.interaction.time;
+                        let iCheck2 = name === controlVariable.interaction.instance && xVar === controlVariable.interaction.variable2 && yVar === controlVariable.interaction.variable1 && time === controlVariable.interaction.time;
+                        let iCheck = iCheck1 || iCheck2;
                         let x0 = plotPosition[0] + plotInfo.size[0]*e.x0;
                         let y0 = plotPosition[1] + plotInfo.size[1]*(1-e.y0);
                         let x1 = plotPosition[0] + plotInfo.size[0]*e.x1;
@@ -114,7 +118,7 @@ class DesignApplication {
                         let L = Math.sqrt((x1-x0)*(x1-x0)+(y1-y0)*(y1-y0));
                         if (x0 !== x1 || y0 !== y1) {
                             let p = Geometry.LineEquation(x0,y0,x1,y1);
-                            let d = L/4 < 5 ? L/4 : 5;      // size of triangle in the arrow
+                            let d = L/4 < 10 ? L/4 : 10;      // size of triangle in the arrow
                             let x2 = (x0-x1 > 0) ? x1+Math.abs(p[1])*d/Math.sqrt(p[0]*p[0]+p[1]*p[1]) : x1-Math.abs(p[1])*d/Math.sqrt(p[0]*p[0]+p[1]*p[1]);
                             let y2 = (y0-y1 > 0) ? y1+Math.abs(p[0])*d/Math.sqrt(p[0]*p[0]+p[1]*p[1]) : y1-Math.abs(p[0])*d/Math.sqrt(p[0]*p[0]+p[1]*p[1]);
                             let x3 = x2 + (y1-y2)/Math.sqrt(3);
@@ -124,79 +128,52 @@ class DesignApplication {
                             let isOutlier1 = outliers1.findIndex(e_=>e_===e.name) !== -1;
                             let isOutlier2 = outliers2.findIndex(e_=>e_===e.name) !== -1;
                             ctx.beginPath();
-                            ctx.globalAlpha = 0.3;
+                            if (iCheck) {
+                                ctx.globalAlpha = 1;
+                                ctx.lineWidth = 3;
+                            } else {
+                                ctx.globalAlpha = 0.6;
+                                ctx.lineWidth = 1;
+                            }
+                            // ctx.globalAlpha = 1;        // for paper
+                            // ctx.lineWidth = 1;      // for paper
                             ctx.moveTo(x0,y0);
                             ctx.lineTo(x1,y1);
                             if (isOutlier1) ctx.strokeStyle = 'rgb(255,0,0)';
                             else if (isOutlier2) ctx.strokeStyle = 'rgb(0,0,255)';
+                            // if (isOutlier2) ctx.strokeStyle = 'rgb(0,0,255)';
                             else ctx.strokeStyle = 'rgb(0,0,0)';
+                            // ctx.strokeStyle = 'rgb(0,0,0)';     // for paper
                             ctx.stroke();
                             ctx.globalAlpha = 1;
+                            ctx.lineWidth = 1;
                             ctx.closePath();
                             ctx.beginPath();
-                            ctx.globalAlpha = 0.3;
+                            if (iCheck) {
+                                ctx.globalAlpha = 1;
+                                ctx.lineWidth = 3;
+                            } else {
+                                ctx.globalAlpha = 0.6;
+                                ctx.lineWidth = 1;
+                            }
+                            // ctx.globalAlpha = 1;        // for paper
+                            // ctx.lineWidth = 1;      // for paper
                             ctx.moveTo(x1,y1);
                             ctx.lineTo(x3,y3);
                             ctx.lineTo(x4,y4);
                             ctx.lineTo(x1,y1);
                             if (isOutlier1) ctx.fillStyle = 'rgb(255,0,0)';
                             else if (isOutlier2) ctx.fillStyle = 'rgb(0,0,255)';
+                            // if (isOutlier2) ctx.fillStyle = 'rgb(0,0,255)';
                             else ctx.fillStyle = 'rgb(0,0,0)';
+                            // ctx.fillStyle = 'rgb(0,0,0)';       // for paper
                             ctx.fill();
                             ctx.globalAlpha = 1;
+                            ctx.lineWidth = 1;
                             ctx.closePath();
                         }
                     });
                     ctx.closePath();
-                    // highlight the chosen instance
-                    if (controlVariable.interaction.instance !== 'noOption') {
-                        let check1 = xVar === controlVariable.interaction.variable1 && yVar === controlVariable.interaction.variable2 && time === controlVariable.interaction.time;
-                        let check2 = xVar === controlVariable.interaction.variable2 && yVar === controlVariable.interaction.variable1 && time === controlVariable.interaction.time;
-                        let check = check1 || check2;
-                        if (check) {
-                            netSP.plots[index].data.forEach(e=>{
-                                if (e.name === controlVariable.interaction.instance) {
-                                    let x0 = plotPosition[0] + plotInfo.size[0]*e.x0;
-                                    let y0 = plotPosition[1] + plotInfo.size[1]*(1-e.y0);
-                                    let x1 = plotPosition[0] + plotInfo.size[0]*e.x1;
-                                    let y1 = plotPosition[1] + plotInfo.size[1]*(1-e.y1);
-                                    let L = Math.sqrt((x1-x0)*(x1-x0)+(y1-y0)*(y1-y0));
-                                    if (x0 !== x1 || y0 !== y1) {
-                                        let p = Geometry.LineEquation(x0,y0,x1,y1);
-                                        let d = L/4 < 5 ? L/4 : 5;      // size of triangle in the arrow
-                                        let x2 = (x0-x1 > 0) ? x1+Math.abs(p[1])*d/Math.sqrt(p[0]*p[0]+p[1]*p[1]) : x1-Math.abs(p[1])*d/Math.sqrt(p[0]*p[0]+p[1]*p[1]);
-                                        let y2 = (y0-y1 > 0) ? y1+Math.abs(p[0])*d/Math.sqrt(p[0]*p[0]+p[1]*p[1]) : y1-Math.abs(p[0])*d/Math.sqrt(p[0]*p[0]+p[1]*p[1]);
-                                        let x3 = x2 + (y1-y2)/Math.sqrt(3);
-                                        let y3 = y2 - (x1-x2)/Math.sqrt(3);
-                                        let x4 = x2 - (y1-y2)/Math.sqrt(3);
-                                        let y4 = y2 + (x1-x2)/Math.sqrt(3);
-                                        let isOutlier1 = outliers1.findIndex(e_=>e_===e.name) !== -1;
-                                        let isOutlier2 = outliers2.findIndex(e_=>e_===e.name) !== -1;
-                                        ctx.beginPath();
-                                        ctx.moveTo(x0,y0);
-                                        ctx.lineTo(x1,y1);
-                                        if (isOutlier1) ctx.strokeStyle = 'rgb(255,0,0)';
-                                        else if (isOutlier2) ctx.strokeStyle = 'rgb(0,0,255)';
-                                        else ctx.strokeStyle = 'rgb(0,0,0)';
-                                        ctx.lineWidth = 3;
-                                        ctx.stroke();
-                                        ctx.closePath();
-                                        ctx.beginPath();
-                                        ctx.moveTo(x1,y1);
-                                        ctx.lineTo(x3,y3);
-                                        ctx.lineTo(x4,y4);
-                                        ctx.lineTo(x1,y1);
-                                        if (isOutlier1) ctx.fillStyle = 'rgb(255,0,0)';
-                                        else if (isOutlier2) ctx.fillStyle = 'rgb(0,0,255)';
-                                        else ctx.fillStyle = 'rgb(0,0,0)';
-                                        ctx.fill();
-                                        ctx.closePath();
-                                        ctx.lineWidth = 1;
-                                    }
-                                }
-                            });
-                        }
-                    }
                 }
             }
             // draw original time series

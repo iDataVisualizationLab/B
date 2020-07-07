@@ -173,7 +173,7 @@ class ComputeMetrics {
         let sum = quadRant[0] + quadRant[1] + quadRant[2] + quadRant[3];
         if (sum !== 0) {
             quadRant.forEach(e=>{
-                score += -(e/sum)*Math.log2(e/sum);
+                score += (e!==0) ? -(e/sum)*Math.log2(e/sum) : 0;
             });
             score /= 2;
         }

@@ -14,7 +14,7 @@ let netSP = {
         'Outlying angle': [0,1],
         'Intersection': [0,1],
         'Translation': [0,Infinity],
-        'Complexity': [0,1],
+        'Entropy': [0,1],
     },
     metricName: [
         'Mean length',
@@ -25,7 +25,7 @@ let netSP = {
         'Outlying angle',
         'Intersection',
         'Translation',
-        'Complexity',
+        'Entropy',
     ],
 };
 
