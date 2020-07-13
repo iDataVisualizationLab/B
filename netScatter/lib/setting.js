@@ -2,21 +2,21 @@ let myWidth = window.innerWidth;
 let myHeight = window.innerHeight;
 let selectedDisplay = "2D";
 let currentPage = 1;
-let maxPerPage = (selectedDisplay === '1D') ? 6 : 6;
-let displayType = 'series';
+let maxPerPage = 5;
+// let displayType = 'series';
 let transformDR = d3.zoomIdentity;
 let multipleMouseOver = 1.5;
 let mouseOverPosition = [];
 let trueMousePosition = [];
 let multipleHighlight = 1.5;
 let plotPosition = [];
-let pointSize = 3;
+// let pointSize = 3;
 let clickArr = [];
 let dimensionReductionData;
 let xscale, yscale;
-let measures = [];  // measures[index][sample][x-var,y-var,value], value = -1 means no data
-let nummeasure = selectedDisplay === "1D" ? 9:8;
-let limitList = [];     // for paper
+// let measures = [];  // measures[index][sample][x-var,y-var,value], value = -1 means no data
+// let nummeasure = selectedDisplay === "1D" ? 9:8;
+// let limitList = [];     // for paper
 
 
 
@@ -44,7 +44,7 @@ function updateMeasureName() {
                 "id": 0,
                 "enable": true,
                 "idroot": i,
-                "angle": Math.PI * 2 * i / nummeasure,
+                "angle": Math.PI * 2 * i / netSP.metricName.length,
                 "range": [0, 1]
             }]
         }

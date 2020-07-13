@@ -64,15 +64,9 @@ class DesignApplication {
                 for (let p = 0; p < arrN[c]; p++) {
                     // draw rectangle
                     let plotPosition = [];
-                    plotPosition[0] = plotInfo.position[0] + c*(plotInfo.size[0]+blankSize[0]);
+                    plotPosition[0] = plotInfo.position[0] + 2*c*(plotInfo.size[0]+blankSize[0]);
                     plotPosition[1] = plotInfo.position[1] + p*(plotInfo.size[1]+blankSize[1]);
-                    ctx.beginPath();
-                    ctx.fillStyle = 'rgb(220,220,220)';
-                    ctx.fillRect(plotPosition[0],plotPosition[1],plotInfo.size[0],plotInfo.size[1]);
-                    ctx.strokeStyle = 'rgb(0,0,0)';
-                    ctx.strokeRect(plotPosition[0],plotPosition[1],plotInfo.size[0],plotInfo.size[1]);
-                    // draw information of the plot
-                    let xVar, yVar, time, index, data;
+                    let index, data;
                     switch (c) {
                         case 0:
                             index = plots.high[p];
@@ -84,96 +78,12 @@ class DesignApplication {
                             index = plots.low[p];
                             break;
                     }
-                    xVar = netSP.encode[index][0];
-                    yVar = netSP.encode[index][1];
-                    time = netSP.encode[index][2];
-                    let score = netSP.plots[index].metrics[controlVariable.selectedMetric];
-                    score = Math.floor(score*100)/100;
-                    let outliers1 = [];
-                    outliers1 = netSP.plots[index].outliers.length;
-                    let outliers2 = [];
-                    outliers2 = netSP.plots[index].outliers.angle;
                     data = DataProcessing.ScaleNetScatterPlot(netSP.plots[index].data);
-                    ctx.font = plotInfo.notations.size + 'px ' + plotInfo.notations.font;
-                    ctx.fillStyle = plotInfo.notations.color;
-                    ctx.fillText(xVar,plotPosition[0],plotPosition[1]+plotInfo.size[1]+plotInfo.notations.size+5);
-                    ctx.translate(plotPosition[0],plotPosition[1]+plotInfo.size[1]);
-                    ctx.rotate(-Math.PI/2);
-                    ctx.fillText(yVar,0,-5);
-                    ctx.rotate(Math.PI/2);
-                    ctx.translate(-plotPosition[0],-plotPosition[1]-plotInfo.size[1]);
-                    ctx.fillText(time,plotPosition[0],plotPosition[1]-5);
-                    ctx.textAlign = 'right';
-                    ctx.fillText(controlVariable.selectedMetric+': '+score.toString(),plotPosition[0]+plotInfo.size[0],plotPosition[1]-5);
-                    ctx.textAlign = 'left';
-                    data.forEach(e=>{
-                        let name = e.name;
-                        let iCheck1 = name === controlVariable.interaction.instance && xVar === controlVariable.interaction.variable1 && yVar === controlVariable.interaction.variable2 && time === controlVariable.interaction.time;
-                        let iCheck2 = name === controlVariable.interaction.instance && xVar === controlVariable.interaction.variable2 && yVar === controlVariable.interaction.variable1 && time === controlVariable.interaction.time;
-                        let iCheck = iCheck1 || iCheck2;
-                        let x0 = plotPosition[0] + plotInfo.size[0]*e.x0;
-                        let y0 = plotPosition[1] + plotInfo.size[1]*(1-e.y0);
-                        let x1 = plotPosition[0] + plotInfo.size[0]*e.x1;
-                        let y1 = plotPosition[1] + plotInfo.size[1]*(1-e.y1);
-                        let L = Math.sqrt((x1-x0)*(x1-x0)+(y1-y0)*(y1-y0));
-                        if (x0 !== x1 || y0 !== y1) {
-                            let p = Geometry.LineEquation(x0,y0,x1,y1);
-                            let d = L/4 < 10 ? L/4 : 10;      // size of triangle in the arrow
-                            let x2 = (x0-x1 > 0) ? x1+Math.abs(p[1])*d/Math.sqrt(p[0]*p[0]+p[1]*p[1]) : x1-Math.abs(p[1])*d/Math.sqrt(p[0]*p[0]+p[1]*p[1]);
-                            let y2 = (y0-y1 > 0) ? y1+Math.abs(p[0])*d/Math.sqrt(p[0]*p[0]+p[1]*p[1]) : y1-Math.abs(p[0])*d/Math.sqrt(p[0]*p[0]+p[1]*p[1]);
-                            let x3 = x2 + (y1-y2)/Math.sqrt(3);
-                            let y3 = y2 - (x1-x2)/Math.sqrt(3);
-                            let x4 = x2 - (y1-y2)/Math.sqrt(3);
-                            let y4 = y2 + (x1-x2)/Math.sqrt(3);
-                            let isOutlier1 = outliers1.findIndex(e_=>e_===e.name) !== -1;
-                            let isOutlier2 = outliers2.findIndex(e_=>e_===e.name) !== -1;
-                            ctx.beginPath();
-                            if (iCheck) {
-                                ctx.globalAlpha = 1;
-                                ctx.lineWidth = 3;
-                            } else {
-                                ctx.globalAlpha = 0.6;
-                                ctx.lineWidth = 1;
-                            }
-                            // ctx.globalAlpha = 1;        // for paper
-                            // ctx.lineWidth = 1;      // for paper
-                            ctx.moveTo(x0,y0);
-                            ctx.lineTo(x1,y1);
-                            if (isOutlier1) ctx.strokeStyle = 'rgb(255,0,0)';
-                            else if (isOutlier2) ctx.strokeStyle = 'rgb(0,0,255)';
-                            // if (isOutlier2) ctx.strokeStyle = 'rgb(0,0,255)';
-                            else ctx.strokeStyle = 'rgb(0,0,0)';
-                            // ctx.strokeStyle = 'rgb(0,0,0)';     // for paper
-                            ctx.stroke();
-                            ctx.globalAlpha = 1;
-                            ctx.lineWidth = 1;
-                            ctx.closePath();
-                            ctx.beginPath();
-                            if (iCheck) {
-                                ctx.globalAlpha = 1;
-                                ctx.lineWidth = 3;
-                            } else {
-                                ctx.globalAlpha = 0.6;
-                                ctx.lineWidth = 1;
-                            }
-                            // ctx.globalAlpha = 1;        // for paper
-                            // ctx.lineWidth = 1;      // for paper
-                            ctx.moveTo(x1,y1);
-                            ctx.lineTo(x3,y3);
-                            ctx.lineTo(x4,y4);
-                            ctx.lineTo(x1,y1);
-                            if (isOutlier1) ctx.fillStyle = 'rgb(255,0,0)';
-                            else if (isOutlier2) ctx.fillStyle = 'rgb(0,0,255)';
-                            // if (isOutlier2) ctx.fillStyle = 'rgb(0,0,255)';
-                            else ctx.fillStyle = 'rgb(0,0,0)';
-                            // ctx.fillStyle = 'rgb(0,0,0)';       // for paper
-                            ctx.fill();
-                            ctx.globalAlpha = 1;
-                            ctx.lineWidth = 1;
-                            ctx.closePath();
-                        }
-                    });
-                    ctx.closePath();
+                    DesignApplication.netScatterPlot(canvasID,plotPosition,plotInfo.size,data,index,true);
+                    let radarPosition = [];
+                    radarPosition[0] = plotPosition[0] + plotInfo.size[0] + blankSize[0] + plotInfo.size[0]/3;
+                    radarPosition[1] = plotPosition[1] + plotInfo.size[1]/2;
+                    DesignApplication.CircularBarChart(canvasID,radarPosition,plotInfo.size[0]/3,index,true);
                 }
             }
             // draw original time series
@@ -261,7 +171,7 @@ class DesignApplication {
                         let check1 = outliers1.findIndex(e__=>e__===e[1]) !== -1;
                         let check2 = outliers2.findIndex(e__=>e__===e[1]) !== -1;
                         ctx.beginPath();
-                        if (instance !== e_[1]) ctx.globalAlpha = 0.1;
+                        if (instance !== e_[1]) ctx.globalAlpha = 0.3;
                         else ctx.globalAlpha = 1;
                         ctx.moveTo(x0,y0);
                         ctx.lineTo(x1,y1);
@@ -279,7 +189,228 @@ class DesignApplication {
                     }
                 }
             });
-        })
+        });
+    }
+
+    // draw net scatter plot
+    // plotPosition, plotSize: array [x,y]
+    // index of plot from netSP.plots[index]
+    static netScatterPlot (canvasID,plotPosition,plotSize,data,index,notation) {
+        let canvas = document.getElementById(canvasID);
+        let ctx = canvas.getContext('2d');
+        // draw rectangle
+        ctx.beginPath();
+        ctx.fillStyle = 'rgb(220,220,220)';
+        ctx.fillRect(plotPosition[0],plotPosition[1],plotSize[0],plotSize[1]);
+        ctx.strokeStyle = 'rgb(0,0,0)';
+        ctx.strokeRect(plotPosition[0],plotPosition[1],plotSize[0],plotSize[1]);
+        // draw information of the plot
+        let xVar = netSP.encode[index][0];
+        let yVar = netSP.encode[index][1];
+        let time = netSP.encode[index][2];
+        let outliers1 = [];
+        outliers1 = netSP.plots[index].outliers.length;
+        let outliers2 = [];
+        outliers2 = netSP.plots[index].outliers.angle;
+        ctx.font = '10px Arial';
+        ctx.fillStyle = 'rgb(0,0,0)';
+        if (notation) {
+            ctx.fillText(xVar,plotPosition[0],plotPosition[1]+plotSize[1]+12+5);
+            ctx.translate(plotPosition[0],plotPosition[1]+plotSize[1]);
+            ctx.rotate(-Math.PI/2);
+            ctx.fillText(yVar,0,-5);
+            ctx.rotate(Math.PI/2);
+            ctx.translate(-plotPosition[0],-plotPosition[1]-plotSize[1]);
+            ctx.fillText(time,plotPosition[0],plotPosition[1]-5);
+            if (controlVariable.visualizing === 'LMH') {
+                let score = netSP.plots[index].metrics[controlVariable.selectedMetric];
+                score = Math.floor(score*100)/100;
+                ctx.textAlign = 'right';
+                ctx.fillText(controlVariable.selectedMetric+': '+score.toString(),plotPosition[0]+plotSize[0],plotPosition[1]-5);
+                ctx.textAlign = 'left';
+            }
+        }
+        data.forEach(e=>{
+            let name = e.name;
+            let iCheck1 = name === controlVariable.interaction.instance && xVar === controlVariable.interaction.variable1 && yVar === controlVariable.interaction.variable2 && time === controlVariable.interaction.time;
+            let iCheck2 = name === controlVariable.interaction.instance && xVar === controlVariable.interaction.variable2 && yVar === controlVariable.interaction.variable1 && time === controlVariable.interaction.time;
+            let iCheck = iCheck1 || iCheck2;
+            let x0 = plotPosition[0] + plotSize[0]*e.x0;
+            let y0 = plotPosition[1] + plotSize[1]*(1-e.y0);
+            let x1 = plotPosition[0] + plotSize[0]*e.x1;
+            let y1 = plotPosition[1] + plotSize[1]*(1-e.y1);
+            let L = Math.sqrt((x1-x0)*(x1-x0)+(y1-y0)*(y1-y0));
+            if (x0 !== x1 || y0 !== y1) {
+                let p = Geometry.LineEquation(x0,y0,x1,y1);
+                let d = L/4 < 10 ? L/4 : 10;      // size of triangle in the arrow
+                let x2 = (x0-x1 > 0) ? x1+Math.abs(p[1])*d/Math.sqrt(p[0]*p[0]+p[1]*p[1]) : x1-Math.abs(p[1])*d/Math.sqrt(p[0]*p[0]+p[1]*p[1]);
+                let y2 = (y0-y1 > 0) ? y1+Math.abs(p[0])*d/Math.sqrt(p[0]*p[0]+p[1]*p[1]) : y1-Math.abs(p[0])*d/Math.sqrt(p[0]*p[0]+p[1]*p[1]);
+                let x3 = x2 + (y1-y2)/Math.sqrt(3);
+                let y3 = y2 - (x1-x2)/Math.sqrt(3);
+                let x4 = x2 - (y1-y2)/Math.sqrt(3);
+                let y4 = y2 + (x1-x2)/Math.sqrt(3);
+                let isOutlier1 = outliers1.findIndex(e_=>e_===e.name) !== -1;
+                let isOutlier2 = outliers2.findIndex(e_=>e_===e.name) !== -1;
+                ctx.beginPath();
+                if (iCheck) {
+                    ctx.globalAlpha = 1;
+                    ctx.lineWidth = 3;
+                } else {
+                    ctx.globalAlpha = 0.6;
+                    ctx.lineWidth = 1;
+                }
+                ctx.moveTo(x0,y0);
+                ctx.lineTo(x1,y1);
+                if (isOutlier1) ctx.strokeStyle = 'rgb(255,0,0)';
+                else if (isOutlier2) ctx.strokeStyle = 'rgb(0,0,255)';
+                else ctx.strokeStyle = 'rgb(0,0,0)';
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+                ctx.lineWidth = 1;
+                ctx.closePath();
+                ctx.beginPath();
+                if (iCheck) {
+                    ctx.globalAlpha = 1;
+                    ctx.lineWidth = 3;
+                } else {
+                    ctx.globalAlpha = 0.6;
+                    ctx.lineWidth = 1;
+                }
+                ctx.moveTo(x1,y1);
+                ctx.lineTo(x3,y3);
+                ctx.lineTo(x4,y4);
+                ctx.lineTo(x1,y1);
+                if (isOutlier1) ctx.fillStyle = 'rgb(255,0,0)';
+                else if (isOutlier2) ctx.fillStyle = 'rgb(0,0,255)';
+                else ctx.fillStyle = 'rgb(0,0,0)';
+                ctx.fill();
+                ctx.globalAlpha = 1;
+                ctx.lineWidth = 1;
+                ctx.closePath();
+            }
+        });
+        ctx.closePath();
+    }
+
+    // draw radar chart
+    // plotPosition: [x,y]
+    static RadarChart(canvasID,plotPosition,radius,index,notation) {
+        let canvas = document.getElementById(canvasID);
+        let ctx = canvas.getContext('2d');
+        ctx.beginPath();
+        // draw circles at 0.2, 0.4, 0.6, 0.8, 1.0
+        for (let i = 1; i < 6; i++) {
+            ctx.beginPath();
+            ctx.globalAlpha = 0.5;
+            ctx.strokeStyle = 'rgb(0,0,0)';
+            ctx.arc(plotPosition[0],plotPosition[1],i*0.2*radius,0,2*Math.PI);
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+            ctx.closePath();
+        }
+        // draw radar chart
+        let alpha = Math.PI*2/netSP.metricName.length;
+        netSP.metricName.forEach((e,i)=>{
+            let r = radius*netSP.plots[index].metrics[e];
+            let next = (i !== netSP.metricName.length-1) ? netSP.metricName[i+1] : netSP.metricName[0];
+            let rN = radius*netSP.plots[index].metrics[next];
+            ctx.beginPath();
+            ctx.fillStyle = 'rgb(200,200,200)';
+            ctx.moveTo(plotPosition[0],plotPosition[1]);
+            ctx.lineTo(plotPosition[0]+r*Math.sin(i*alpha),plotPosition[1]-r*Math.cos(i*alpha));
+            ctx.lineTo(plotPosition[0]+rN*Math.sin((i+1)*alpha),plotPosition[1]-rN*Math.cos((i+1)*alpha));
+            ctx.lineTo(plotPosition[0],plotPosition[1]);
+            ctx.fill();
+            ctx.closePath();
+        });
+        // draw notations
+        if (notation) {
+            ctx.font = '9px Arial';
+            netSP.metricName.forEach((e,i)=>{
+                ctx.beginPath();
+                ctx.globalAlpha = 1;
+                ctx.fillStyle = 'rgb(0,0,0)';
+                if (i < netSP.metricName.length/2) {
+                    ctx.textAlign = 'left';
+                } else ctx.textAlign = 'right';
+                ctx.fillText(netSP.metricName[i],plotPosition[0]+(radius+5)*Math.sin(i*alpha),plotPosition[1]-(radius+5)*Math.cos(i*alpha));
+                ctx.textAlign = 'left';
+                ctx.closePath();
+            });
+        }
+        ctx.closePath();
+    }
+
+    // draw circular bar chart
+    static CircularBarChart(canvasID,plotPosition,radius,index,notation) {
+        let canvas = document.getElementById(canvasID);
+        let ctx = canvas.getContext('2d');
+        ctx.beginPath();
+        // draw circles at 0.2, 0.4, 0.6, 0.8, 1.0
+        for (let i = 1; i < 6; i++) {
+            ctx.beginPath();
+            ctx.globalAlpha = 0.5;
+            ctx.strokeStyle = 'rgb(0,0,0)';
+            ctx.arc(plotPosition[0],plotPosition[1],i*0.2*radius,0,2*Math.PI);
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+            ctx.closePath();
+        }
+        // draw radar chart
+        let alpha = Math.PI*2/netSP.metricName.length;
+        netSP.metricName.forEach((e,i)=>{
+            let r = radius*netSP.plots[index].metrics[e];
+            ctx.beginPath();
+            ctx.fillStyle = 'rgb(200,200,200)';
+            ctx.moveTo(plotPosition[0],plotPosition[1]);
+            ctx.lineTo(plotPosition[0]+r*Math.sin(i*alpha-alpha/4),plotPosition[1]-r*Math.cos(i*alpha-alpha/4));
+            ctx.lineTo(plotPosition[0]+r*Math.sin(i*alpha+alpha/4),plotPosition[1]-r*Math.cos(i*alpha+alpha/4));
+            ctx.lineTo(plotPosition[0],plotPosition[1]);
+            ctx.fill();
+            ctx.closePath();
+        });
+        // draw notations
+        if (notation) {
+            ctx.font = '9px Arial';
+            netSP.metricName.forEach((e,i)=>{
+                ctx.beginPath();
+                ctx.globalAlpha = 1;
+                ctx.fillStyle = 'rgb(0,0,0)';
+                if (i < netSP.metricName.length/2) {
+                    ctx.textAlign = 'left';
+                } else ctx.textAlign = 'right';
+                ctx.fillText(netSP.metricName[i],plotPosition[0]+(radius+5)*Math.sin(i*alpha),plotPosition[1]-(radius+5)*Math.cos(i*alpha));
+                ctx.textAlign = 'left';
+                ctx.closePath();
+            });
+        }
+        ctx.closePath();
+    }
+
+    // draw quit sign
+    // x in rectangle
+    // position, size: [x,y]
+    // xColor, bColor: 'rgb(*,*,*)'
+    static QuitSign (canvasID,position,size,xColor,bColor) {
+        let canvas = document.getElementById(canvasID);
+        let ctx = canvas.getContext('2d');
+        ctx.beginPath();
+        // draw rectangle
+        ctx.fillStyle = bColor;
+        ctx.fillRect(position[0],position[1],size[0],size[1]);
+        ctx.fill();
+        // draw x
+        ctx.lineWidth = 3;
+        ctx.moveTo(position[0]+1,position[1]+1);
+        ctx.lineTo(position[0]+size[0]-1,position[1]+size[1]-1);
+        ctx.strokeStyle = xColor;
+        ctx.fill();
+        ctx.moveTo(position[0]+1,position[1]+size[1]-1);
+        ctx.lineTo(position[0]+size[0]-1,position[1]+1);
+        ctx.strokeStyle = xColor;
+        ctx.stroke();
+        ctx.lineWidth = 1;
+        ctx.closePath();
     }
 
 }

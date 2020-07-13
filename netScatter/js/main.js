@@ -255,7 +255,6 @@ function onTabChange (myTab_) {
             if (controlVariable.interaction.variable1 === 'noOption' || controlVariable.interaction.variable2 === 'noOption' || controlVariable.interaction.time === 'noOption') {
                 d3.select('#dataInstances').attr('disabled','');
                 controlVariable.displaySeries = false;
-                Management.Visualization();
             } else {
                 d3.select('#dataInstances').attr('disabled',null);
                 // create instance list
@@ -274,14 +273,18 @@ function onTabChange (myTab_) {
                         if (list.findIndex(e_=>e_===e) === -1) list.push(e);
                     });
                 }
+                // list = netSP.instanceInfo.map(e=>e[1]);     // for paper
                 if (list.length > 0) {
                     list.forEach(d=>{
                         d3.select('#dataInstances').append('option').attr('class','dataInstances').attr('value',d).text(d);
                     });
                 }
                 controlVariable.displaySeries = true;
-                Management.Visualization();
             }
+            if (controlVariable.visualizing === 'LMH') Management.Visualization();
+            else if (controlVariable.visualizing === 'UMAP') umapTS.renderUMAP();
+            else if (controlVariable.visualizing === 'PCA') pcaTS.renderPCA();
+            else if (controlVariable.visualizing === 'tSNE') tsneTS.renderTSNE();
         });
         // interaction option - variable2
         d3.select('#variable2').on('change',function(){
@@ -289,7 +292,6 @@ function onTabChange (myTab_) {
             if (controlVariable.interaction.variable1 === 'noOption' || controlVariable.interaction.variable2 === 'noOption' || controlVariable.interaction.time === 'noOption') {
                 d3.select('#dataInstances').attr('disabled','');
                 controlVariable.displaySeries = false;
-                Management.Visualization();
             } else {
                 d3.select('#dataInstances').attr('disabled',null);
                 // create instance list
@@ -308,14 +310,18 @@ function onTabChange (myTab_) {
                         if (list.findIndex(e_=>e_===e) === -1) list.push(e);
                     });
                 }
+                // list = netSP.instanceInfo.map(e=>e[1]);     // for paper
                 if (list.length > 0) {
                     list.forEach(d=>{
                         d3.select('#dataInstances').append('option').attr('class','dataInstances').attr('value',d).text(d);
                     });
                 }
                 controlVariable.displaySeries = true;
-                Management.Visualization();
             }
+            if (controlVariable.visualizing === 'LMH') Management.Visualization();
+            else if (controlVariable.visualizing === 'UMAP') umapTS.renderUMAP();
+            else if (controlVariable.visualizing === 'PCA') pcaTS.renderPCA();
+            else if (controlVariable.visualizing === 'tSNE') tsneTS.renderTSNE();
         });
         // interaction option - time
         d3.select('#time').on('change',function(){
@@ -323,7 +329,6 @@ function onTabChange (myTab_) {
             if (controlVariable.interaction.variable1 === 'noOption' || controlVariable.interaction.variable2 === 'noOption' || controlVariable.interaction.time === 'noOption') {
                 d3.select('#dataInstances').attr('disabled','');
                 controlVariable.displaySeries = false;
-                Management.Visualization();
             } else {
                 d3.select('#dataInstances').attr('disabled',null);
                 // create instance list
@@ -342,14 +347,18 @@ function onTabChange (myTab_) {
                         if (list.findIndex(e_=>e_===e) === -1) list.push(e);
                     });
                 }
+                // list = netSP.instanceInfo.map(e=>e[1]);     // for paper
                 if (list.length > 0) {
                     list.forEach(d=>{
                         d3.select('#dataInstances').append('option').attr('class','dataInstances').attr('value',d).text(d);
                     });
                 }
                 controlVariable.displaySeries = true;
-                Management.Visualization();
             }
+            if (controlVariable.visualizing === 'LMH') Management.Visualization();
+            else if (controlVariable.visualizing === 'UMAP') umapTS.renderUMAP();
+            else if (controlVariable.visualizing === 'PCA') pcaTS.renderPCA();
+            else if (controlVariable.visualizing === 'tSNE') tsneTS.renderTSNE();
         });
         // display chart options
         // need check
@@ -369,7 +378,7 @@ function onTabChange (myTab_) {
         });
 
         // change type of chart in dimension reduction techniques
-        d3.select('#tsneScreen_svg').on('click',onClickFunction).on('mousemove',mouseOverFunction);
+        d3.select('#tsneScreen_svg').on('click',Interaction.MouseClickFunction).on('mousemove',Interaction.mouseOverFunction);
     }
 }
 
@@ -468,7 +477,7 @@ function ComputingData() {
     let type = '';
     switch (controlVariable.selectedData) {
         case 'employment':
-            filename0 = "data/US_employment_new.txt";
+            filename0 = "data/US_employment_July.txt";
             filename1 = "data/stateCode.txt";
             filename2 = "data/Industrycode_reduced.txt";
             type = 'BLS';
@@ -552,52 +561,26 @@ function prepareRadarTable() {
     dataRadar2 = [];    // [all plot][measures for each plot]
     dataRadar1 = [];    // [measure][all values]
     dataRadar = {};
-
-    netSP.plots.forEach((e,i)=>{
-        dataRadar2[i] = [];
-        for (let m in e.metrics) {
-            dataRadar2[i].push(e.metrics[m]);
-        }
-        dataRadar2[i].plot = i.toString();
-        dataRadar2[i].cluster = cluster_info.findIndex(e_=>e_.arr[0].find(e__=>e__===i.toString()));
-        dataRadar2[i].xVar = netSP.encode[i][0];
-        dataRadar2[i].yVar = netSP.encode[i][1];
-        dataRadar2[i].time = netSP.encode[i][2];
-    });
-
-    for (let m = 0; m < netSP.metricName.length; m++) {
-        dataRadar1[m] = [];
+    // compute dataRadar1
+    for (let i = 0; i < netSP.metricName.length; i++) {
+        dataRadar1[i] = [];
+        netSP.plots.forEach(e=>{
+            dataRadar1[i].push(e.metrics[netSP.metricName[i]]);
+        });
     }
 
-    dataRadar2.forEach((e,i)=>{
-        e.forEach((e_,i_)=>{
-            dataRadar1[i_][i] = e_;
+    // compute dataRadar2
+    netSP.plots.forEach((e,i)=>{
+        dataRadar2[i] = [];
+        netSP.metricName.forEach(e_=>{
+            dataRadar2[i].push(e.metrics[e_]);
         });
+        dataRadar2[i].cluster = cluster_info.findIndex(e_=>e_.arr[0].find(e__=>e__===`${0}-${i}`));
+        dataRadar2[i].plot = i;
+        dataRadar2[i].name = `${netSP.encode[i][0]}-${netSP.encode[i][1]}-${netSP.encode[i][2]}`;
+        dataRadar2[i].timestep = netSP.encode[i][2];
     });
 
-    // for (let i = 0; i < netSP.metricName.length; i++) {
-    //     dataRadar1[i] =[];
-    //     let count = 0;
-    //     measures[i].forEach(function (s,si) {
-    //         s.forEach(function (d,index) {
-    //             let limitCondition = limitList.findIndex(element=>element === d[0] || element === d[1]);
-    //             if (d[2] >= 0 && limitCondition === -1) {
-    //                 dataRadar1[i][count] = d[2];
-    //                 dataRadar2[count] = [];
-    //                 dataRadar2[count].name = mapsample2.get(si);
-    //                 dataRadar2[count].timestep = index;
-    //                 dataRadar2[count].cluster = cluster_info.findIndex(c=>c.arr[0].find(d=>d===`${si}-${index}`));
-    //                 dataRadar2[count].plot = `${si}-${index}`;
-    //                 count += 1;
-    //             }
-    //         });
-    //     });
-    // }
-    // dataRadar1.forEach(function (m,mi) {
-    //     m.forEach(function (d,i) {
-    //         dataRadar2[i][mi] = d;
-    //     });
-    // });
     dataRadar = getsummaryservice(dataRadar1);
     leaderList = [];
     cluster_info.forEach(function (c) {
@@ -625,6 +608,7 @@ function prepareRadarTable() {
             leaderList.push(minObj);
         }
     });
+
     d3.select('.cover').classed('hidden', true);
     firstTime = false;
 }
@@ -632,18 +616,17 @@ function prepareRadarTable() {
 function initClusterObj(){
     hosts = [];
     sampleS = {};
-    netSP.encode.forEach((e,i)=>{
-        let hName = i.toString();
-        let temp = {};
+    netSP.plots.forEach((e,i)=>{
+        let hName = `${0}-${i}`;
+        sampleS[hName] = {};
         netSP.metricName.forEach(e_=>{
-            temp[e_] = [netSP.plots[i].metrics[e_]];
+            sampleS[hName][e_] = [[e.metrics[e_]]];
         });
         hosts.push({
             name: hName,
-            sample: e[2],
+            sample: 0,
             mindex: i,
         });
-        sampleS[hName] = temp;
     });
     sampleS.timespan = [new Date()];
 }
@@ -917,7 +900,7 @@ function getsummaryservice(dataf_){
             dataf[mi][i] = d;
         });
     });
-    let outlierMultiply = Infinity;
+    let outlierMultiply = 1.5;
     let ob = {};
     dataf.forEach((d,i)=>{
         d=d.filter(e=>e!==undefined).sort((a,b)=>a-b);

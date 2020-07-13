@@ -29,6 +29,27 @@ class ComputeMetrics {
         return sd;
     }
 
+    // compute quartiles
+    // plotData is array of data point
+    // each data point is an object {name: ..., value: ...}
+    static ComputeQuartile (plotData,ratio) {
+        let arr = plotData.map(e=>e.value);
+        let array = arr.filter(e=>typeof (e) === 'number');
+        array.sort((a,b)=>a-b);
+        let result = array[Math.floor(array.length*ratio)];
+        return (result <= 1) ? result : 1;
+    }
+
+    // compute IQR
+    // plotData is array of data point
+    // each data point is an object {name: ..., value: ...}
+    static ComputeIQR (plotData) {
+        let arr = plotData.map(e=>e.value);
+        let array = arr.filter(e=>typeof (e) === 'number');
+        array.sort((a,b)=>a-b);
+        return array[Math.floor(0.75*array.length)]-array[Math.floor(0.25*array.length)];
+    }
+
     // Outlying for a list of numbers
     // Use box-plot rule to determine outliers
     // score = absolute deviation from q2 for outliers/ absolute deviation from q2 for all
@@ -88,6 +109,7 @@ class ComputeMetrics {
             }
         }
         score = 1 - Math.exp(-count/plotData.length);
+        // score = count/(plotData.length*(plotData.length-1)/2);
         return score;
     }
 
@@ -179,4 +201,39 @@ class ComputeMetrics {
         }
         return score;
     }
+
+    // Compute positive correlation
+    // angleData is array of
+    // objects in format: {name, value}
+    // value: angle from -pi to pi
+    static PositiveCorrelation (angleData) {
+        let score = 0;
+        let N = angleData.length;
+        angleData.forEach(e=>{
+            let check1 = e.value >= 0 && e.value <= Math.PI/2;
+            let check2 = e.value >= -Math.PI && e.value <= -Math.PI/2;
+            let check = check1 || check2;
+            score += check ? 1 : 0;
+        });
+        score /= N;
+        return score;
+    }
+
+    // Compute nagative correlation
+    // angleData is array of
+    // objects in format: {name, value}
+    // value: angle from -pi to pi
+    static NegativeCorrelation (angleData) {
+        let score = 0;
+        let N = angleData.length;
+        angleData.forEach(e=>{
+            let check1 = e.value <= Math.PI && e.value >= Math.PI/2;
+            let check2 = e.value >= -Math.PI/2 && e.value <= 0;
+            let check = check1 || check2;
+            score += check ? 1 : 0;
+        });
+        score /= N;
+        return score;
+    }
+
 }
