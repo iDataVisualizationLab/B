@@ -141,14 +141,19 @@ class DesignApplication {
         // write variable name
         ctx.translate(pos[0],pos[1]+size[1]);
         ctx.rotate(-Math.PI/2);
-        ctx.fillText(variable,0,-5);
+        ctx.fillText(variable,size[1]/4,-5);
         ctx.rotate(Math.PI/2);
         ctx.translate(-pos[0],-pos[1]-size[1]);
+        ctx.fillText('0',pos[0]-10,pos[1]+size[1]);
+        ctx.fillText('1',pos[0]-10,pos[1]+13);
         // write instance name
-        ctx.fillText(instance,pos[0],pos[1]-5);
+        if (instance !== 'noOption') ctx.fillText(instance,pos[0],pos[1]-5);
         // write time
-        ctx.fillText(netSP.timeInfo[0],pos[0],pos[1]+size[1]+15);
-        ctx.fillText(netSP.timeInfo[netSP.timeInfo.length-1],pos[0]+size[0],pos[1]+size[1]+15);
+        for (let t = 0; t < 5; t++) {
+            ctx.textAlign = 'center';
+            ctx.fillText(netSP.timeInfo[Math.floor((netSP.timeInfo.length-1)*t/4)],pos[0]+5+(size[0]-10)*Math.floor((netSP.timeInfo.length-1)*t/4)/netSP.timeInfo.length,pos[1]+size[1]+15);
+            ctx.textAlign = 'left';
+        }
         ctx.closePath();
         // draw rectangle
         ctx.beginPath();
@@ -230,15 +235,16 @@ class DesignApplication {
                 ctx.textAlign = 'left';
             }
         }
+
         data.forEach(e=>{
             let name = e.name;
             let iCheck1 = name === controlVariable.interaction.instance && xVar === controlVariable.interaction.variable1 && yVar === controlVariable.interaction.variable2 && time === controlVariable.interaction.time;
             let iCheck2 = name === controlVariable.interaction.instance && xVar === controlVariable.interaction.variable2 && yVar === controlVariable.interaction.variable1 && time === controlVariable.interaction.time;
             let iCheck = iCheck1 || iCheck2;
-            let x0 = plotPosition[0] + plotSize[0]*e.x0;
-            let y0 = plotPosition[1] + plotSize[1]*(1-e.y0);
-            let x1 = plotPosition[0] + plotSize[0]*e.x1;
-            let y1 = plotPosition[1] + plotSize[1]*(1-e.y1);
+            let x0 = plotPosition[0] + 5 + (plotSize[0]-10)*e.x0;      // padding = 5
+            let y0 = plotPosition[1] + 5 + (plotSize[1]-10)*(1-e.y0);
+            let x1 = plotPosition[0] + 5 + (plotSize[0]-10)*e.x1;
+            let y1 = plotPosition[1] + 5 + (plotSize[1]-10)*(1-e.y1);
             let L = Math.sqrt((x1-x0)*(x1-x0)+(y1-y0)*(y1-y0));
             if (x0 !== x1 || y0 !== y1) {
                 let p = Geometry.LineEquation(x0,y0,x1,y1);
@@ -261,8 +267,8 @@ class DesignApplication {
                 }
                 ctx.moveTo(x0,y0);
                 ctx.lineTo(x1,y1);
-                if (isOutlier1) ctx.strokeStyle = 'rgb(255,0,0)';
-                else if (isOutlier2) ctx.strokeStyle = 'rgb(0,0,255)';
+                if (isOutlier2) ctx.strokeStyle = 'rgb(0,0,255)';
+                else if (isOutlier1) ctx.strokeStyle = 'rgb(255,0,0)';
                 else ctx.strokeStyle = 'rgb(0,0,0)';
                 ctx.stroke();
                 ctx.globalAlpha = 1;
@@ -280,8 +286,8 @@ class DesignApplication {
                 ctx.lineTo(x3,y3);
                 ctx.lineTo(x4,y4);
                 ctx.lineTo(x1,y1);
-                if (isOutlier1) ctx.fillStyle = 'rgb(255,0,0)';
-                else if (isOutlier2) ctx.fillStyle = 'rgb(0,0,255)';
+                if (isOutlier2) ctx.fillStyle = 'rgb(0,0,255)';
+                else if (isOutlier1) ctx.fillStyle = 'rgb(255,0,0)';
                 else ctx.fillStyle = 'rgb(0,0,0)';
                 ctx.fill();
                 ctx.globalAlpha = 1;
@@ -361,12 +367,17 @@ class DesignApplication {
         netSP.metricName.forEach((e,i)=>{
             let r = radius*netSP.plots[index].metrics[e];
             ctx.beginPath();
-            ctx.fillStyle = 'rgb(200,200,200)';
+            if (dataRadar2.length>0) {
+                let cluster = dataRadar2[index].cluster;
+                ctx.fillStyle = colorCluster(cluster_info[cluster].name);
+            } else ctx.fillStyle = 'rgb(200,200,200)';
+            ctx.globalAlpha = 0.5;
             ctx.moveTo(plotPosition[0],plotPosition[1]);
             ctx.lineTo(plotPosition[0]+r*Math.sin(i*alpha-alpha/4),plotPosition[1]-r*Math.cos(i*alpha-alpha/4));
             ctx.lineTo(plotPosition[0]+r*Math.sin(i*alpha+alpha/4),plotPosition[1]-r*Math.cos(i*alpha+alpha/4));
             ctx.lineTo(plotPosition[0],plotPosition[1]);
             ctx.fill();
+            ctx.globalAlpha = 1;
             ctx.closePath();
         });
         // draw notations
@@ -411,6 +422,72 @@ class DesignApplication {
         ctx.stroke();
         ctx.lineWidth = 1;
         ctx.closePath();
+    }
+
+    // draw time series of metrics
+    static drawMetricSeries(canvasID) {
+        let canvas = document.getElementById(canvasID);
+        let ctx = canvas.getContext('2d');
+        let size = [1000,200];
+        let blank = 50;
+        let variable1 = controlVariable.interaction.variable1;
+        let variable2 = controlVariable.interaction.variable2;
+        if (variable1 !== 'noOption' && variable2 !== 'noOption') {
+            netSP.metricName.forEach((e,i)=>{
+                let pos = [50,100+i*(size[1]+blank)];
+                ctx.beginPath();
+                ctx.globalAlpha = 1;
+                ctx.lineWidth = 1;
+                ctx.font = '13px Arial';
+                ctx.fillStyle = '#000000';
+                // write variable name
+                // ctx.translate(pos[0],pos[1]+size[1]);
+                // ctx.rotate(-Math.PI/2);
+                ctx.fillText(e,pos[0],pos[1]-5);
+                ctx.fillText('0',pos[0]-10,pos[1]+size[1]);
+                ctx.fillText('1',pos[0]-10,pos[1]+13);
+                // ctx.rotate(Math.PI/2);
+                // ctx.translate(-pos[0],-pos[1]-size[1]);
+                // write time
+                for (let t = 0; t < 5; t++) {
+                    ctx.textAlign = 'center';
+                    ctx.fillText(netSP.timeInfo[Math.floor((netSP.timeInfo.length-1)*t/4)],pos[0]+5+(size[0]-10)*Math.floor((netSP.timeInfo.length-1)*t/4)/netSP.timeInfo.length,pos[1]+size[1]+15);
+                    ctx.textAlign = 'left';
+                }
+                // draw rectangle
+                ctx.fillStyle = 'rgb(255,255,255)';
+                ctx.fillRect(pos[0],pos[1],size[0],size[1]);
+                ctx.strokeStyle = 'rgb(0,0,0)';
+                ctx.strokeRect(pos[0],pos[1],size[0],size[1]);
+                ctx.closePath();
+                // draw time series
+                netSP.timeInfo.forEach((e_,i_)=>{
+                    if (i_>1) {
+                        let index1 = netSP.encode.findIndex(e__=>{
+                            let check1 = e__[0] === variable1 && e__[1] === variable2 && e__[2] === e_;
+                            let check2 = e__[0] === variable2 && e__[1] === variable1 && e__[2] === e_;
+                            return check1 || check2;
+                        });
+                        let index0 = netSP.encode.findIndex(e__=>{
+                            let check1 = e__[0] === variable1 && e__[1] === variable2 && e__[2] === netSP.timeInfo[i_-1];
+                            let check2 = e__[0] === variable2 && e__[1] === variable1 && e__[2] === netSP.timeInfo[i_-1];
+                            return check1 || check2;
+                        });
+                        let x0 = pos[0] + 5 + (i_-1)*(size[0]-10)/netSP.timeInfo.length;
+                        let x1 = pos[0] + 5 + i_*(size[0]-10)/netSP.timeInfo.length;
+                        let y0 = pos[1] + size[1] - 5 - netSP.plots[index0].metrics[e]*(size[1]-10);
+                        let y1 = pos[1] + size[1] - 5 - netSP.plots[index1].metrics[e]*(size[1]-10);
+                        ctx.beginPath();
+                        ctx.moveTo(x0,y0);
+                        ctx.lineTo(x1,y1);
+                        if (e_ === controlVariable.interaction.time) ctx.strokeStyle = 'rgb(255,0,0)';
+                        else ctx.strokeStyle = 'rgb(0,0,0)';
+                        ctx.stroke();
+                        ctx.closePath();
+                    }
+                });
+            });
+        }
     }
 
 }

@@ -32,12 +32,14 @@ class ComputeMetrics {
     // compute quartiles
     // plotData is array of data point
     // each data point is an object {name: ..., value: ...}
-    static ComputeQuartile (plotData,ratio) {
+    static Skewed (plotData) {
         let arr = plotData.map(e=>e.value);
         let array = arr.filter(e=>typeof (e) === 'number');
         array.sort((a,b)=>a-b);
-        let result = array[Math.floor(array.length*ratio)];
-        return (result <= 1) ? result : 1;
+        let q90 = array[Math.floor(array.length*0.9)];
+        let q50 = array[Math.floor(array.length*0.5)];
+        let q10 = array[Math.floor(array.length*0.1)];
+        return (q90-q50)/(q90-q10);
     }
 
     // compute IQR
@@ -116,18 +118,14 @@ class ComputeMetrics {
     // Translation score
     // plotData is an array of data points
     // Each element is an object: {name, x0, y0, x1, y1}
-    static Translation (plotData) {
+    static Translation (plotData,index) {
         let score;
         // Find and delete outliers
-        // let outliers1 = [], outliers2 = [];
-        // let group1 = plotData.map(e=>{
-        //     return {name: e.name, x: e.x0, y: e.y0}
-        // });
-        // outliers1 = Graph.Outliers(group1);
-        // let group2 = plotData.map(e=>{
-        //     return {name: e.name, x: e.x1, y: e.y1}
-        // });
-        // outliers2 = Graph.Outliers(group2);
+        let outliers = [];
+        let group = plotData.map(e=>{
+            return {name: e.name, x: e.x0, y: e.y0}
+        });
+        outliers = Graph.Outliers(group);
         // compute translation
         let CoM1 = [0,0], CoM2 = [0,0];
         for (let i = 0; i < plotData.length; i++) {
@@ -152,25 +150,25 @@ class ComputeMetrics {
             //     }
             // }
         }
-        // let translation = Math.sqrt((CoM2[0]-CoM1[0])*(CoM2[0]-CoM1[0])+(CoM2[1]-CoM1[1])*(CoM2[1]-CoM1[1]));
+        let translation = Math.sqrt((CoM2[0]-CoM1[0])*(CoM2[0]-CoM1[0])+(CoM2[1]-CoM1[1])*(CoM2[1]-CoM1[1]));
         // compute radius
-        // let radius = 0;
-        // for (let i = 0; i < plotData.length; i++) {
-        //     if (outliers1.length === 0) {
-        //         let d = Math.sqrt((plotData[i].x0-CoM1[0])*(plotData[i].x0-CoM1[0])+(plotData[i].y0-CoM1[1])*(plotData[i].y0-CoM1[1]));
-        //         radius = (radius < d) ? d : radius;
-        //     } else {
-        //         let check = outliers1.findIndex(e=>e===plotData[i].name) === -1;
-        //         if (check) {
-        //             let d = Math.sqrt((plotData[i].x0-CoM1[0])*(plotData[i].x0-CoM1[0])+(plotData[i].y0-CoM1[1])*(plotData[i].y0-CoM1[1]));
-        //             radius = (radius < d) ? d : radius;
-        //         }
-        //     }
-        // }
+        let radius = 0;
+        for (let i = 0; i < plotData.length; i++) {
+            if (outliers.length === 0) {
+                let d = Math.sqrt((plotData[i].x0-CoM1[0])*(plotData[i].x0-CoM1[0])+(plotData[i].y0-CoM1[1])*(plotData[i].y0-CoM1[1]));
+                radius = (radius < d) ? d : radius;
+            } else {
+                let check = outliers.findIndex(e=>e===plotData[i].name) === -1;
+                if (check) {
+                    let d = Math.sqrt((plotData[i].x0-CoM1[0])*(plotData[i].x0-CoM1[0])+(plotData[i].y0-CoM1[1])*(plotData[i].y0-CoM1[1]));
+                    radius = (radius < d) ? d : radius;
+                }
+            }
+        }
         // compute score
-        // score = (radius > 0) ? translation/radius : 0;
-        // return score;
-        return Math.sqrt((CoM2[0]-CoM1[0])*(CoM2[0]-CoM1[0])+(CoM2[1]-CoM1[1])*(CoM2[1]-CoM1[1]));
+        score = (radius > 0) ? translation/radius : 0;
+        return score <= 1 ? score : 1;
+        // return Math.sqrt((CoM2[0]-CoM1[0])*(CoM2[0]-CoM1[0])+(CoM2[1]-CoM1[1])*(CoM2[1]-CoM1[1]));
     }
 
     // Complexity of directions
@@ -216,7 +214,8 @@ class ComputeMetrics {
             score += check ? 1 : 0;
         });
         score /= N;
-        return score;
+        score = 2*(score-0.5);
+        return score > 0 ? score : 0;
     }
 
     // Compute nagative correlation
@@ -233,7 +232,8 @@ class ComputeMetrics {
             score += check ? 1 : 0;
         });
         score /= N;
-        return score;
+        score = 2*(score-0.5);
+        return score > 0? score: 0;
     }
 
 }

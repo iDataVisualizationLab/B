@@ -273,7 +273,6 @@ function onTabChange (myTab_) {
                         if (list.findIndex(e_=>e_===e) === -1) list.push(e);
                     });
                 }
-                // list = netSP.instanceInfo.map(e=>e[1]);     // for paper
                 if (list.length > 0) {
                     list.forEach(d=>{
                         d3.select('#dataInstances').append('option').attr('class','dataInstances').attr('value',d).text(d);
@@ -310,7 +309,6 @@ function onTabChange (myTab_) {
                         if (list.findIndex(e_=>e_===e) === -1) list.push(e);
                     });
                 }
-                // list = netSP.instanceInfo.map(e=>e[1]);     // for paper
                 if (list.length > 0) {
                     list.forEach(d=>{
                         d3.select('#dataInstances').append('option').attr('class','dataInstances').attr('value',d).text(d);
@@ -347,7 +345,6 @@ function onTabChange (myTab_) {
                         if (list.findIndex(e_=>e_===e) === -1) list.push(e);
                     });
                 }
-                // list = netSP.instanceInfo.map(e=>e[1]);     // for paper
                 if (list.length > 0) {
                     list.forEach(d=>{
                         d3.select('#dataInstances').append('option').attr('class','dataInstances').attr('value',d).text(d);
@@ -920,8 +917,8 @@ function getsummaryservice(dataf_){
                 axis: serviceFullList[i].text,
                 q1: ss.quantileSorted(d,0.25) ,
                 q3: ss.quantileSorted(d,0.75),
-                median: ss.medianSorted(d) ,
-                // median: d3.mean(d) ,
+                // median: ss.medianSorted(d) ,
+                median: d3.mean(d) ,
                 // outlier: ,
                 arr: sumstat};
             if (d.length>4)

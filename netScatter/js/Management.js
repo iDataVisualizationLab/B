@@ -37,8 +37,10 @@ class Management {
                         angle: [],
                     },
                     metrics: {
-                        'q90': 0,
-                        'IQR': 0,
+                        // 'q90': 0,
+                        'Skewed length': 0,
+                        'Skewed angle': 0,
+                        // 'IQR': 0,
                         'Outlying length': 0,
                         'Outlying angle': 0,
                         'Pos correlation': 0,
@@ -62,9 +64,11 @@ class Management {
                 e.quantities.edgeLength = ComputeQuantities.EdgeLength(data);
                 e.quantities.angle = ComputeQuantities.Angle(data);
                 // e.metrics['Mean length'] = ComputeMetrics.MeanValue(e.quantities.edgeLength);
-                e.metrics['q90'] = ComputeMetrics.ComputeQuartile(e.quantities.edgeLength,0.9);
+                // e.metrics['q90'] = ComputeMetrics.ComputeQuartile(e.quantities.edgeLength,0.9);
+                e.metrics['Skewed length'] = ComputeMetrics.Skewed(e.quantities.edgeLength);
+                e.metrics['Skewed angle'] = ComputeMetrics.Skewed(e.quantities.angle);
                 // e.metrics['Std length'] = ComputeMetrics.StandardDeviation(e.quantities.edgeLength);
-                e.metrics['IQR'] = ComputeMetrics.ComputeIQR(e.quantities.edgeLength);
+                // e.metrics['IQR'] = ComputeMetrics.ComputeIQR(e.quantities.edgeLength);
                 e.metrics['Outlying length'] = ComputeMetrics.Outlying(e.quantities.edgeLength,true).score;
                 e.metrics['Outlying angle'] = ComputeMetrics.Outlying(e.quantities.angle,false).score;
                 e.metrics['Pos correlation'] = ComputeMetrics.PositiveCorrelation(e.quantities.angle);
@@ -72,7 +76,7 @@ class Management {
                 e.outliers.length = ComputeMetrics.Outlying(e.quantities.edgeLength,true).outliers;
                 e.outliers.angle = ComputeMetrics.Outlying(e.quantities.angle,false).outliers;
                 e.metrics['Intersection'] = ComputeMetrics.Intersection(data);
-                e.metrics['Translation'] = ComputeMetrics.Translation(data);
+                e.metrics['Translation'] = ComputeMetrics.Translation(data,i);
                 e.metrics['Entropy'] = ComputeMetrics.Complexity(e.quantities.angle);
             });
 
@@ -83,10 +87,11 @@ class Management {
                 clickArr = [];
                 plotPosition = [];
                 reCalculateTsne();
+                Management.Visualization();
             });
 
 
-            Management.Visualization();
+            // Management.Visualization();
 
             codeManager.isComputing = false;
             codeManager.needComputation = false;
@@ -119,26 +124,42 @@ class Management {
         let myWindow = controlVariable.displaySeries ? [1300,2800] : [1300,2300];
         DesignApplication.CreateCanvas('mainCanvasHolder','HMLCanvas','myCanvas',myWindow[0],myWindow[1],'#ffffff');
         // Draw plots
-        let headerInfo = {
-            font: 'Arial',
-            size: 30,
-            position: {
-                high: controlVariable.displaySeries ? [100,600] : [100,100],
-                median: controlVariable.displaySeries ? [500,600] : [500,100],
-                low: controlVariable.displaySeries ? [900,600] : [900,100],
-            }
-        };
-        let plotInfo = {
-            size: [150,150],
-            position: controlVariable.displaySeries ? [100,700] : [100,200],
-            notations: {
+        if (controlVariable.metricSeries) {
+            DesignApplication.drawMetricSeries('HMLCanvas');
+        } else {
+            let headerInfo = {
                 font: 'Arial',
-                size: 13,
-                color: '#000000',
+                size: 30,
+                position: {
+                    high: controlVariable.displaySeries ? [100,600] : [100,100],
+                    median: controlVariable.displaySeries ? [500,600] : [500,100],
+                    low: controlVariable.displaySeries ? [900,600] : [900,100],
+                }
+            };
+            let plotInfo = {
+                size: [150,150],
+                position: controlVariable.displaySeries ? [100,700] : [100,200],
+                notations: {
+                    font: 'Arial',
+                    size: 13,
+                    color: '#000000',
+                }
             }
+            let blankSize = [50,50];
+            DesignApplication.HMLView('HMLCanvas',headerInfo,plotInfo,blankSize,displayPlots);
         }
-        let blankSize = [50,50];
-        DesignApplication.HMLView('HMLCanvas',headerInfo,plotInfo,blankSize,displayPlots);
+    }
 
+    // draw time series of metrics
+    static drawMetricSeries() {
+        if (controlVariable.metricSeries) {
+            d3.select('#metricSeries').attr('disabled',null);
+            d3.select('#netScatterPlot').attr('disabled',true);
+        } else {
+            d3.select('#metricSeries').attr('disabled',true);
+            d3.select('#netScatterPlot').attr('disabled',null);
+        }
+        controlVariable.metricSeries = !controlVariable.metricSeries;
+        Management.Visualization();
     }
 }

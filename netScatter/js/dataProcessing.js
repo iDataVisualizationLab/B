@@ -93,6 +93,14 @@ class DataProcessing {
         return myData;
     }
 
+    // min-max normalization for length
+    // plotData is array of every instance data in the plot
+    // each element/instance is an object: {name, x0: value at t0, y0: value at t0, x1: value at t1, y1: value at t1}
+    // static NormalizationArrows (plotData) {
+    //     let edge = ComputeQuantities.EdgeLength(plotData);
+    //     let max =
+    // }
+
     // Get z-score of data
     // z-score of variables for an instance at a time point
     // format of dataRef: object

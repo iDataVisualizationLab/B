@@ -6,9 +6,11 @@ let netSP = {
     plots: [],
     encode: [],
     filter: {
-        'q90': [0,1],
+        // 'q90': [0,1],
+        'Skewed length': [0,1],
+        'Skewed angle': [0,1],
         // 'Std length': [0,1],
-        'IQR': [0,1],
+        // 'IQR': [0,1],
         'Outlying length': [0,1],
         'Outlying angle': [0,1],
         'Pos correlation': [0,1],
@@ -18,9 +20,11 @@ let netSP = {
         'Entropy': [0,1],
     },
     metricName: [
-        'q90',
+        // 'q90',
+        'Skewed length',
+        'Skewed angle',
         // 'Std length',
-        'IQR',
+        // 'IQR',
         'Outlying length',
         'Outlying angle',
         'Pos correlation',
@@ -59,6 +63,7 @@ let controlVariable = {
     mouseClick: {
         index: [],
     },
+    metricSeries: false,
 };
 
 let designVariable = {
@@ -67,11 +72,11 @@ let designVariable = {
         // plot on the right side
         rd: {
             plot: {
-                position: [window.innerWidth-600,50],
+                position: [window.innerWidth-700,50],
                 size: [80,80],
             },
             quitSign: {
-                position: [window.innerWidth-510,50],
+                position: [window.innerWidth-610,50],
                 size: [10,10],
                 mouseOver: [],
                 mouseClick: [],
