@@ -389,7 +389,7 @@ $( document ).ready(function() {
     $('.modal').modal();
     $('.dropdown-trigger').dropdown();
 
-    onTabChange('demo');
+    onTabChange('video');
 
     // }catch{}
 });
