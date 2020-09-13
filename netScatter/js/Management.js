@@ -38,8 +38,8 @@ class Management {
                     },
                     metrics: {
                         // 'q90': 0,
-                        'Skewed length': 0,
-                        'Skewed angle': 0,
+                        // 'Skewed length': 0,
+                        // 'Skewed angle': 0,
                         // 'IQR': 0,
                         'Outlying length': 0,
                         'Outlying angle': 0,
@@ -58,15 +58,16 @@ class Management {
             }
             // store data point to every net scatter plot
             DataProcessing.NetScatterPlot(netSP.data);
+            // Map bin for each point in every net scatter plot and replace positions in netSP.data
+            DataProcessing.HexBinMapping();
             // Compute quantities and metrics for every plot
             netSP.plots.forEach((e,i)=>{
-                let data = DataProcessing.ScaleNetScatterPlot(e.data);
-                e.quantities.edgeLength = ComputeQuantities.EdgeLength(data);
-                e.quantities.angle = ComputeQuantities.Angle(data);
+                e.quantities.edgeLength = ComputeQuantities.EdgeLength(e.data);
+                e.quantities.angle = ComputeQuantities.Angle(e.data);
                 // e.metrics['Mean length'] = ComputeMetrics.MeanValue(e.quantities.edgeLength);
                 // e.metrics['q90'] = ComputeMetrics.ComputeQuartile(e.quantities.edgeLength,0.9);
-                e.metrics['Skewed length'] = ComputeMetrics.Skewed(e.quantities.edgeLength);
-                e.metrics['Skewed angle'] = ComputeMetrics.Skewed(e.quantities.angle);
+                // e.metrics['Skewed length'] = ComputeMetrics.Skewed(e.quantities.edgeLength);
+                // e.metrics['Skewed angle'] = ComputeMetrics.Skewed(e.quantities.angle);
                 // e.metrics['Std length'] = ComputeMetrics.StandardDeviation(e.quantities.edgeLength);
                 // e.metrics['IQR'] = ComputeMetrics.ComputeIQR(e.quantities.edgeLength);
                 e.metrics['Outlying length'] = ComputeMetrics.Outlying(e.quantities.edgeLength,true).score;
@@ -75,8 +76,8 @@ class Management {
                 e.metrics['Neg correlation'] = ComputeMetrics.NegativeCorrelation(e.quantities.angle);
                 e.outliers.length = ComputeMetrics.Outlying(e.quantities.edgeLength,true).outliers;
                 e.outliers.angle = ComputeMetrics.Outlying(e.quantities.angle,false).outliers;
-                e.metrics['Intersection'] = ComputeMetrics.Intersection(data);
-                e.metrics['Translation'] = ComputeMetrics.Translation(data,i);
+                e.metrics['Intersection'] = ComputeMetrics.Intersection(e.data);
+                e.metrics['Translation'] = ComputeMetrics.Translation(e.data,i);
                 e.metrics['Entropy'] = ComputeMetrics.Complexity(e.quantities.angle);
             });
 

@@ -78,8 +78,7 @@ class DesignApplication {
                             index = plots.low[p];
                             break;
                     }
-                    data = DataProcessing.ScaleNetScatterPlot(netSP.plots[index].data);
-                    DesignApplication.netScatterPlot(canvasID,plotPosition,plotInfo.size,data,index,true);
+                    DesignApplication.netScatterPlot(canvasID,plotPosition,plotInfo.size,netSP.plots[index].data,index,true);
                     let radarPosition = [];
                     radarPosition[0] = plotPosition[0] + plotInfo.size[0] + blankSize[0] + plotInfo.size[0]/3;
                     radarPosition[1] = plotPosition[1] + plotInfo.size[1]/2;

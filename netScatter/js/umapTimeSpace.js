@@ -241,8 +241,7 @@ d3.umapTimeSpace = function () {
                 let nPage = Math.ceil(listPlots.length/maxPerPage);
                 let sIndex = controlVariable.mouseClick.index.length>0 ? 0 : (currentPage-1)*maxPerPage;
                 listPlots.forEach((e,i)=>{
-                    let data = DataProcessing.ScaleNetScatterPlot(netSP.plots[e].data);
-                    DesignApplication.netScatterPlot('tsneScreen',[xscale(solution[e][0]), yscale(solution[e][1])],[30,30],data,e,false);
+                    DesignApplication.netScatterPlot('tsneScreen',[xscale(solution[e][0]), yscale(solution[e][1])],[30,30],netSP.plots[e].data,e,false);
                     if (i >= sIndex && i < sIndex + maxPerPage) {
                         DesignApplication.netScatterPlot('tsneScreen',[designVariable.dr.rd.plot.position[0],designVariable.dr.rd.plot.position[1]+i*130],designVariable.dr.rd.plot.size,data,e,true);
                         DesignApplication.CircularBarChart('tsneScreen',[myWidth-550,90+i*130],40,e,false);

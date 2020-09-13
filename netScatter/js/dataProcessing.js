@@ -20,8 +20,8 @@ class DataProcessing {
         }
     }
 
-    // store data points to netSP.plots in a correct format for net scatter plot
-    // format: netSP.plots[p].data = array of data points, each point is an object {name, x0, y0, x1, y1}
+    // Map data points to bin center and write to netSP.plots in a correct format for net scatter plot
+    // format: netSP.plots[p].data = array of data points, each point is an object {name, bin_x0, bin_y0, bin_x1, bin_y1}
     // dataRef: reference to data in format: data -> instance -> variable -> time series
     // dataRef: result of ReadFile class
     static NetScatterPlot (dataRef) {
@@ -49,6 +49,127 @@ class DataProcessing {
                 }
             }
         }
+    }
+
+    // Bin mapping function
+    // change position of each point in every net scatter plot to position of the bin contains it
+    // input: NetSP.plot.data => output: NetSP.plot.data
+    // Method: in research note
+    static HexBinMapping() {
+        let w = 1/(netSP.nBin-1);
+        let h = 2*w/Math.sqrt(3);
+        netSP.plots.forEach(e=>{
+            let data = DataProcessing.ScaleNetScatterPlot(e.data);
+            data.forEach((e_,i_)=>{
+                for (let i = 0; i < 2; i++) {
+                    let xP = (i===0) ? e_.x0 : e_.x1;
+                    let yP = (i===0) ? e_.y0 : e_.y1;
+                    let iA = Math.floor(xP/w);
+                    let jA = Math.floor(yP*4/(3*h));
+                    let iB = iA;
+                    let jB = jA + 1;
+                    let iC = iA + 1;
+                    let jC = jA + (1-Math.pow(-1,jA))/2;
+                    let xA = iA*w+0.25*w*(1-Math.pow(-1,jA));
+                    let yA = jA*0.75*h;
+                    let xB = iB*w+0.25*w*(1-Math.pow(-1,jB));
+                    let yB = jB*0.75*h;
+                    let xC = iC*w+0.25*w*(1-Math.pow(-1,jC));
+                    let yC = jC*0.75*h;
+                    let PA = Math.sqrt(Math.pow(xP-xA,2)+Math.pow(yP-yA,2));
+                    let PB = Math.sqrt(Math.pow(xP-xB,2)+Math.pow(yP-yB,2));
+                    let PC = Math.sqrt(Math.pow(xP-xC,2)+Math.pow(yP-yC,2));
+                    if (yB <= 1) {
+                        if (PA <= PB) {
+                            if (PA <= PC) {
+                                if (i===0) {
+                                    e.data[i_].x0 = xA;
+                                    e.data[i_].y0 = yA;
+                                } else {
+                                    e.data[i_].x1 = xA;
+                                    e.data[i_].y1 = yA;
+                                }
+                            } else {
+                                if (i===0) {
+                                    e.data[i_].x0 = xC;
+                                    e.data[i_].y0 = yC;
+                                } else {
+                                    e.data[i_].x1 = xC;
+                                    e.data[i_].y1 = yC;
+                                }
+                            }
+                        } else {
+                            if (jA%2===0) {
+                                if (PC <= PB) {
+                                    if (i===0) {
+                                        e.data[i_].x0 = xC;
+                                        e.data[i_].y0 = yC;
+                                    } else {
+                                        e.data[i_].x1 = xC;
+                                        e.data[i_].y1 = yC;
+                                    }
+                                } else {
+                                    if (i===0) {
+                                        e.data[i_].x0 = xB;
+                                        e.data[i_].y0 = yB;
+                                    } else {
+                                        e.data[i_].x1 = xB;
+                                        e.data[i_].y1 = yB;
+                                    }
+                                }
+                            } else {
+                                if (PB <= PC) {
+                                    if (i===0) {
+                                        e.data[i_].x0 = xB;
+                                        e.data[i_].y0 = yB;
+                                    } else {
+                                        e.data[i_].x1 = xB;
+                                        e.data[i_].y1 = yB;
+                                    }
+                                } else {
+                                    if (i===0) {
+                                        e.data[i_].x0 = xC;
+                                        e.data[i_].y0 = yC;
+                                    } else {
+                                        e.data[i_].x1 = xC;
+                                        e.data[i_].y1 = yC;
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        if (jA%2===0) {
+                            if (PA <= PC) {
+                                if (i===0) {
+                                    e.data[i_].x0 = xA;
+                                    e.data[i_].y0 = yA;
+                                } else {
+                                    e.data[i_].x1 = xA;
+                                    e.data[i_].y1 = yA;
+                                }
+                            } else {
+                                if (i===0) {
+                                    e.data[i_].x0 = xC;
+                                    e.data[i_].y0 = yC;
+                                } else {
+                                    e.data[i_].x1 = xC;
+                                    e.data[i_].y1 = yC;
+                                }
+                            }
+                        } else {
+                            if (i===0) {
+                                e.data[i_].x0 = xA;
+                                e.data[i_].y0 = yA;
+                            } else {
+                                e.data[i_].x1 = xA;
+                                e.data[i_].y1 = yA;
+                            }
+                        }
+                    }
+
+                }
+            });
+        });
     }
 
     // Normalization values in every net scatter plot
