@@ -54,16 +54,18 @@ class Management {
                         angle: [],
                     },
                     data: [],
+                    arrows: [],
+                    points: [],
                 }
             }
             // store data point to every net scatter plot
             DataProcessing.NetScatterPlot(netSP.data);
-            // Map bin for each point in every net scatter plot and replace positions in netSP.data
-            DataProcessing.HexBinMapping();
+            // Store bins to NetSP.plot[index].arrows and points
+            DataProcessing.D3HexBinMapping();
             // Compute quantities and metrics for every plot
             netSP.plots.forEach((e,i)=>{
-                e.quantities.edgeLength = ComputeQuantities.EdgeLength(e.data);
-                e.quantities.angle = ComputeQuantities.Angle(e.data);
+                e.quantities.edgeLength = ComputeQuantities.EdgeLengthBin(e.arrows);
+                e.quantities.angle = ComputeQuantities.AngleBin(e.arrows);
                 // e.metrics['Mean length'] = ComputeMetrics.MeanValue(e.quantities.edgeLength);
                 // e.metrics['q90'] = ComputeMetrics.ComputeQuartile(e.quantities.edgeLength,0.9);
                 // e.metrics['Skewed length'] = ComputeMetrics.Skewed(e.quantities.edgeLength);
@@ -76,8 +78,8 @@ class Management {
                 e.metrics['Neg correlation'] = ComputeMetrics.NegativeCorrelation(e.quantities.angle);
                 e.outliers.length = ComputeMetrics.Outlying(e.quantities.edgeLength,true).outliers;
                 e.outliers.angle = ComputeMetrics.Outlying(e.quantities.angle,false).outliers;
-                e.metrics['Intersection'] = ComputeMetrics.Intersection(e.data);
-                e.metrics['Translation'] = ComputeMetrics.Translation(e.data,i);
+                e.metrics['Intersection'] = ComputeMetrics.Intersection(e.arrows);
+                e.metrics['Translation'] = ComputeMetrics.Translation(e.arrows,i);
                 e.metrics['Entropy'] = ComputeMetrics.Complexity(e.quantities.angle);
             });
 

@@ -55,6 +55,7 @@ class DataProcessing {
     // change position of each point in every net scatter plot to position of the bin contains it
     // input: NetSP.plot.data => output: NetSP.plot.data
     // Method: in research note
+    // return bin center for each point => did not reduce duplicated bins => need update!
     static HexBinMapping() {
         let w = 1/(netSP.nBin-1);
         let h = 2*w/Math.sqrt(3);
@@ -167,6 +168,42 @@ class DataProcessing {
                         }
                     }
 
+                }
+            });
+        });
+    }
+
+    // Hexagon bin from d3
+    // return list of bin centers' coordinates in NetSP.plot[index].bins
+    static D3HexBinMapping() {
+        let hexBins = d3.hexbin();
+        let radius = 1/((netSP.nBin-1)*Math.sqrt(3));
+        hexBins.extent([[0,0],[1,1]]);
+        hexBins.radius(radius);
+        netSP.plots.forEach(e=>{
+            let data = DataProcessing.ScaleNetScatterPlot(e.data);
+            let myMap = new Map();
+            data.forEach(e_=>{
+                let sb = hexBins([[e_.x0,e_.y0]]);
+                let sc = [sb[0].x,sb[0].y];
+                let eb = hexBins([[e_.x1,e_.y1]]);
+                let ec = [eb[0].x,eb[0].y];
+                if (sc[0]!==ec[0]||sc[1]!==ec[1]) {
+                    if (!myMap.has(sc)) {
+                        myMap.set(sc,[ec]);
+                        e.arrows.push({start: sc, end: ec});
+                    } else {
+                        let arr = myMap.get(sc);
+                        let check = arr.findIndex(e__=>e__[0]===ec[0]&&e__[1]===ec[1]) === -1;
+                        if (check) {
+                            arr.push(ec);
+                            e.arrows.push({start: sc, end: [ec]});
+                            myMap.delete(sc);
+                            myMap.set(sc,arr);
+                        }
+                    }
+                } else {
+                    e.points.push(sc);
                 }
             });
         });

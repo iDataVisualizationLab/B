@@ -78,7 +78,7 @@ class DesignApplication {
                             index = plots.low[p];
                             break;
                     }
-                    DesignApplication.netScatterPlot(canvasID,plotPosition,plotInfo.size,netSP.plots[index].data,index,true);
+                    DesignApplication.netScatterPlot(canvasID,plotPosition,plotInfo.size,netSP.plots[index].arrows,index,true);
                     let radarPosition = [];
                     radarPosition[0] = plotPosition[0] + plotInfo.size[0] + blankSize[0] + plotInfo.size[0]/3;
                     radarPosition[1] = plotPosition[1] + plotInfo.size[1]/2;
@@ -235,15 +235,15 @@ class DesignApplication {
             }
         }
 
-        data.forEach(e=>{
-            let name = e.name;
-            let iCheck1 = name === controlVariable.interaction.instance && xVar === controlVariable.interaction.variable1 && yVar === controlVariable.interaction.variable2 && time === controlVariable.interaction.time;
-            let iCheck2 = name === controlVariable.interaction.instance && xVar === controlVariable.interaction.variable2 && yVar === controlVariable.interaction.variable1 && time === controlVariable.interaction.time;
-            let iCheck = iCheck1 || iCheck2;
-            let x0 = plotPosition[0] + 5 + (plotSize[0]-10)*e.x0;      // padding = 5
-            let y0 = plotPosition[1] + 5 + (plotSize[1]-10)*(1-e.y0);
-            let x1 = plotPosition[0] + 5 + (plotSize[0]-10)*e.x1;
-            let y1 = plotPosition[1] + 5 + (plotSize[1]-10)*(1-e.y1);
+        data.forEach((e,index)=>{
+            let name = index;
+            // let iCheck1 = name === controlVariable.interaction.instance && xVar === controlVariable.interaction.variable1 && yVar === controlVariable.interaction.variable2 && time === controlVariable.interaction.time;
+            // let iCheck2 = name === controlVariable.interaction.instance && xVar === controlVariable.interaction.variable2 && yVar === controlVariable.interaction.variable1 && time === controlVariable.interaction.time;
+            // let iCheck = iCheck1 || iCheck2;
+            let x0 = plotPosition[0] + 5 + (plotSize[0]-10)*e.start[0];      // padding = 5
+            let y0 = plotPosition[1] + 5 + (plotSize[1]-10)*(1-e.start[1]);
+            let x1 = plotPosition[0] + 5 + (plotSize[0]-10)*e.end[0];
+            let y1 = plotPosition[1] + 5 + (plotSize[1]-10)*(1-e.end[1]);
             let L = Math.sqrt((x1-x0)*(x1-x0)+(y1-y0)*(y1-y0));
             if (x0 !== x1 || y0 !== y1) {
                 let p = Geometry.LineEquation(x0,y0,x1,y1);
@@ -257,13 +257,13 @@ class DesignApplication {
                 let isOutlier1 = outliers1.findIndex(e_=>e_===e.name) !== -1;
                 let isOutlier2 = outliers2.findIndex(e_=>e_===e.name) !== -1;
                 ctx.beginPath();
-                if (iCheck) {
-                    ctx.globalAlpha = 1;
-                    ctx.lineWidth = 3;
-                } else {
-                    ctx.globalAlpha = 0.6;
-                    ctx.lineWidth = 1;
-                }
+                // if (iCheck) {
+                //     ctx.globalAlpha = 1;
+                //     ctx.lineWidth = 3;
+                // } else {
+                //     ctx.globalAlpha = 0.6;
+                //     ctx.lineWidth = 1;
+                // }
                 ctx.moveTo(x0,y0);
                 ctx.lineTo(x1,y1);
                 if (isOutlier2) ctx.strokeStyle = 'rgb(0,0,255)';
@@ -274,13 +274,13 @@ class DesignApplication {
                 ctx.lineWidth = 1;
                 ctx.closePath();
                 ctx.beginPath();
-                if (iCheck) {
-                    ctx.globalAlpha = 1;
-                    ctx.lineWidth = 3;
-                } else {
-                    ctx.globalAlpha = 0.6;
-                    ctx.lineWidth = 1;
-                }
+                // if (iCheck) {
+                //     ctx.globalAlpha = 1;
+                //     ctx.lineWidth = 3;
+                // } else {
+                //     ctx.globalAlpha = 0.6;
+                //     ctx.lineWidth = 1;
+                // }
                 ctx.moveTo(x1,y1);
                 ctx.lineTo(x3,y3);
                 ctx.lineTo(x4,y4);

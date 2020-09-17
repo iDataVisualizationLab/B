@@ -17,6 +17,20 @@ class ComputeQuantities {
         return edgeLength;
     }
 
+    // edge length bin computation
+    // binData: array of bin centers in a plot
+    // format: [{start:[x,y],end:[x,y]},...]
+    // return array of edges' length
+    static EdgeLengthBin (binData) {
+        let edgeLength = [];
+        for (let i = 0; i < binData.length; i++) {
+            let dX = binData[i].end[0] - binData[i].start[0];
+            let dY = binData[i].end[1] - binData[i].start[1];
+            edgeLength[i] = Math.sqrt(dX*dX+dY*dY);
+        }
+        return edgeLength;
+    }
+
     // angle computation
     // plotData: array of data point in a plot
     // data point is an object of {name: point name, x0: at t0, y0: at t0, x1: at t1, y1: at t1}
@@ -33,6 +47,30 @@ class ComputeQuantities {
                 angle[i].value = (dY > 0) ? Math.atan(Infinity) : Math.atan(-Infinity);
             } else if (dX < 0) {
                 angle[i].value = (dY > 0) ? Math.atan(dY/dX) + Math.PI : Math.atan(dY/dX) - Math.PI;
+            }
+        }
+        return angle;
+    }
+
+    // angle bin computation
+    // binData: array of bin centers in a plot
+    // format: [{start:[x,y],end:[x,y]},...]
+    // return array of angle
+    static AngleBin (binData) {
+        let angle = [];
+        for (let i = 0; i < binData.length; i++) {
+            let dX = binData[i].end[0] - binData[i].start[0];
+            let dY = binData[i].end[1] - binData[i].start[1];
+            if (dX !== 0 || dY !== 0) {
+                if (dX > 0) {
+                    angle[i] = Math.atan(dY/dX);
+                } else if (dX === 0) {
+                    angle[i] = (dY > 0) ? Math.atan(Infinity) : Math.atan(-Infinity);
+                } else if (dX < 0) {
+                    angle[i] = (dY > 0) ? Math.atan(dY/dX) + Math.PI : Math.atan(dY/dX) - Math.PI;
+                }
+            } else {
+                angle[i] = 'point';
             }
         }
         return angle;

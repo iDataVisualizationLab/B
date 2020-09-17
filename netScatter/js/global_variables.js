@@ -46,7 +46,7 @@ let codeManager = {
 
 let controlVariable = {
     selectedMetric: 'Translation',
-    selectedData: 'employment',
+    selectedData: 'HPCC',
     visualizing: 'LMH',
     interaction: {
         instance: 'noOption',
