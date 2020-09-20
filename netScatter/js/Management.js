@@ -12,8 +12,8 @@ class Management {
             d3.csv(variableFile),
         ]).then(files=>{
             // reset variables
-            netSP.plots = [];
-            netSP.encode = [];
+            netSP.plots.length = 0;
+            netSP.encode.length = 0;
             // store data in format: instance -> variable -> time series
             netSP.data = ReadFile.IVTFormat(files,type);
             // add information to interaction tab
@@ -28,78 +28,23 @@ class Management {
             DataProcessing.NormalizationNetScatterPlot(netSP.data);
             // DataProcessing.Z_Normalization2D(netSP.data);
             // encode the plots
-            netSP.encode = EncodePlots.NetScatterPlot(files[2]);
+            EncodePlots.NetScatterPlot();
             // attributes for every plot
-            for (let p = 0; p < netSP.encode.length; p++) {
-                netSP.plots[p] = {
-                    quantities: {
-                        edgeLength: [],
-                        angle: [],
-                    },
-                    metrics: {
-                        // 'q90': 0,
-                        // 'Skewed length': 0,
-                        // 'Skewed angle': 0,
-                        // 'IQR': 0,
-                        'Outlying length': 0,
-                        'Outlying angle': 0,
-                        'Pos correlation': 0,
-                        'Neg correlation': 0,
-                        'Intersection': 0,
-                        'Translation': 0,
-                        'Entropy': 0,
-                    },
-                    outliers: {
-                        length: [],
-                        angle: [],
-                    },
-                    data: [],
-                    arrows: [],
-                    points: [],
-                }
-            }
+            Management.FormPlots();
             // store data point to every net scatter plot
             DataProcessing.NetScatterPlot(netSP.data);
             // Store bins to NetSP.plot[index].arrows and points
-            DataProcessing.D3HexBinMapping();
+            DataProcessing.AdaptiveBinning();
             // Compute quantities and metrics for every plot
-            netSP.plots.forEach((e,i)=>{
-                e.quantities.edgeLength = ComputeQuantities.EdgeLengthBin(e.arrows);
-                e.quantities.angle = ComputeQuantities.AngleBin(e.arrows);
-                // e.metrics['Mean length'] = ComputeMetrics.MeanValue(e.quantities.edgeLength);
-                // e.metrics['q90'] = ComputeMetrics.ComputeQuartile(e.quantities.edgeLength,0.9);
-                // e.metrics['Skewed length'] = ComputeMetrics.Skewed(e.quantities.edgeLength);
-                // e.metrics['Skewed angle'] = ComputeMetrics.Skewed(e.quantities.angle);
-                // e.metrics['Std length'] = ComputeMetrics.StandardDeviation(e.quantities.edgeLength);
-                // e.metrics['IQR'] = ComputeMetrics.ComputeIQR(e.quantities.edgeLength);
-                e.metrics['Outlying length'] = ComputeMetrics.Outlying(e.quantities.edgeLength,true).score;
-                e.metrics['Outlying angle'] = ComputeMetrics.Outlying(e.quantities.angle,false).score;
-                e.metrics['Pos correlation'] = ComputeMetrics.PositiveCorrelation(e.quantities.angle);
-                e.metrics['Neg correlation'] = ComputeMetrics.NegativeCorrelation(e.quantities.angle);
-                e.outliers.length = ComputeMetrics.Outlying(e.quantities.edgeLength,true).outliers;
-                e.outliers.angle = ComputeMetrics.Outlying(e.quantities.angle,false).outliers;
-                e.metrics['Intersection'] = ComputeMetrics.Intersection(e.arrows);
-                e.metrics['Translation'] = ComputeMetrics.Translation(e.arrows,i);
-                e.metrics['Entropy'] = ComputeMetrics.Complexity(e.quantities.angle);
-            });
-
-            initClusterObj();
-            let kMeanGroup = $('#knum').val() || 6;
-            let kMeanIterations = $('#kiteration').val() || 1;
-            recalculateCluster( {clusterMethod: 'kmean',bin:{k:kMeanGroup,iterations:kMeanIterations}},function(){
-                clickArr = [];
-                plotPosition = [];
-                reCalculateTsne();
-                Management.Visualization();
-            });
-
+            Management.ComputeMetrics();
+            // clustering and draw
+            Management.ClusterAndDraw();
 
             // Management.Visualization();
 
             codeManager.isComputing = false;
             codeManager.needComputation = false;
             codeManager.needUpdate = true;
-            d3.select('.cover').classed('hidden', true);
         });
     }
 
@@ -164,5 +109,75 @@ class Management {
         }
         controlVariable.metricSeries = !controlVariable.metricSeries;
         Management.Visualization();
+    }
+
+    // computing metrics
+    static ComputeMetrics() {
+        netSP.plots.forEach((e,i)=>{
+            e.quantities.edgeLength = ComputeQuantities.EdgeLengthBin(e.arrows);
+            e.quantities.angle = ComputeQuantities.AngleBin(e.arrows);
+            // e.metrics['Mean length'] = ComputeMetrics.MeanValue(e.quantities.edgeLength);
+            // e.metrics['q90'] = ComputeMetrics.ComputeQuartile(e.quantities.edgeLength,0.9);
+            // e.metrics['Skewed length'] = ComputeMetrics.Skewed(e.quantities.edgeLength);
+            // e.metrics['Skewed angle'] = ComputeMetrics.Skewed(e.quantities.angle);
+            // e.metrics['Std length'] = ComputeMetrics.StandardDeviation(e.quantities.edgeLength);
+            // e.metrics['IQR'] = ComputeMetrics.ComputeIQR(e.quantities.edgeLength);
+            e.metrics['Outlying length'] = ComputeMetrics.Outlying(e.quantities.edgeLength,true).score;
+            e.metrics['Outlying angle'] = ComputeMetrics.Outlying(e.quantities.angle,false).score;
+            e.metrics['Pos correlation'] = ComputeMetrics.PositiveCorrelation(e.quantities.angle);
+            e.metrics['Neg correlation'] = ComputeMetrics.NegativeCorrelation(e.quantities.angle);
+            e.outliers.length = ComputeMetrics.Outlying(e.quantities.edgeLength,true).outliers;
+            e.outliers.angle = ComputeMetrics.Outlying(e.quantities.angle,false).outliers;
+            e.metrics['Intersection'] = ComputeMetrics.Intersection(e.arrows);
+            e.metrics['Translation'] = ComputeMetrics.Translation(e.arrows,e.points);
+            e.metrics['Entropy'] = ComputeMetrics.Complexity(e.quantities.angle);
+        });
+    }
+
+    // cluster and draw
+    static ClusterAndDraw() {
+        initClusterObj();
+        let kMeanGroup = $('#knum').val() || 6;
+        let kMeanIterations = $('#kiteration').val() || 1;
+        recalculateCluster( {clusterMethod: 'kmean',bin:{k:kMeanGroup,iterations:kMeanIterations}},function(){
+            clickArr = [];
+            plotPosition = [];
+            reCalculateTsne();
+            Management.Visualization();
+        });
+        d3.select('.cover').classed('hidden', true);
+    }
+
+    // form plots in netSP
+    static FormPlots() {
+        netSP.plots.length = 0;
+        for (let p = 0; p < netSP.encode.length; p++) {
+            netSP.plots[p] = {
+                quantities: {
+                    edgeLength: [],
+                    angle: [],
+                },
+                metrics: {
+                    // 'q90': 0,
+                    // 'Skewed length': 0,
+                    // 'Skewed angle': 0,
+                    // 'IQR': 0,
+                    'Outlying length': 0,
+                    'Outlying angle': 0,
+                    'Pos correlation': 0,
+                    'Neg correlation': 0,
+                    'Intersection': 0,
+                    'Translation': 0,
+                    'Entropy': 0,
+                },
+                outliers: {
+                    length: [],
+                    angle: [],
+                },
+                data: [],
+                arrows: [],
+                points: [],
+            }
+        }
     }
 }

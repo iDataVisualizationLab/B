@@ -170,8 +170,8 @@ function onTabChange (myTab_) {
                 d3.select('#mainCanvasHolder').classed('hide', true);
                 d3.select('#tSNE').classed('hide', false);
                 recalculateCluster( {clusterMethod: $('#clusterMethod').val() || 'kmean',bin:{k:$('#knum').val() || 6,iterations:$('#kiteration').val() || 1}},function(){
-                    clickArr = [];
-                    plotPosition = [];
+                    clickArr.length = 0;
+                    plotPosition.length = 0;
                     reCalculateTsne();
                 });
                 d3.select('#dataInstances').attr('disabled','');
@@ -179,7 +179,7 @@ function onTabChange (myTab_) {
                 d3.select('#variable2').attr('disabled','');
                 d3.select('#time').attr('disabled','');
             }
-            clickArr = [];      // delete clickArr after changing mode
+            clickArr.length = 0;      // delete clickArr after changing mode
             controlVariable.interaction.instance = 'noOption';
             controlVariable.interaction.variable1 = 'noOption';
             controlVariable.interaction.variable2 = 'noOption';
@@ -218,7 +218,7 @@ function onTabChange (myTab_) {
                 onchangeVizdata(controlVariable.visualizing);
                 d3.select('#dataInstances').attr('disabled',null);
                 d3.select('#variable').attr('disabled',null);
-                clickArr = [];
+                clickArr.length = 0;
             }
             if(controlVariable.visualizing === 'UMAP') {
                 d3.select('#mainCanvasHolder').classed('hide',true);
@@ -228,7 +228,7 @@ function onTabChange (myTab_) {
                 onchangeVizdata(controlVariable.visualizing);
                 d3.select('#dataInstances').attr('disabled',null);
                 d3.select('#variable').attr('disabled',null);
-                clickArr = [];
+                clickArr.length = 0;
             }
             if(controlVariable.visualizing === 'tSNE') {
                 d3.select('#mainCanvasHolder').classed('hide',true);
@@ -238,7 +238,7 @@ function onTabChange (myTab_) {
                 onchangeVizdata(controlVariable.visualizing);
                 d3.select('#dataInstances').attr('disabled',null);
                 d3.select('#variable').attr('disabled',null);
-                clickArr = [];
+                clickArr.length = 0;
             }
         });
         // interaction option - instance
@@ -356,6 +356,45 @@ function onTabChange (myTab_) {
             else if (controlVariable.visualizing === 'UMAP') umapTS.renderUMAP();
             else if (controlVariable.visualizing === 'PCA') pcaTS.renderPCA();
             else if (controlVariable.visualizing === 'tSNE') tsneTS.renderTSNE();
+        });
+        // Bin Type
+        d3.select('#binType').on('change',function () {
+            netSP.binType = this.value;
+            if (this.value === 'noBin') {
+                d3.select('#minNum').attr('disabled','');
+                d3.select('#maxNum').attr('disabled','');
+            } else {
+                d3.select('#minNum').attr('disabled',null);
+                d3.select('#maxNum').attr('disabled',null);
+            }
+            d3.select('.cover').classed('hidden', false);
+            DataProcessing.AdaptiveBinning();
+            Management.ComputeMetrics();
+            Management.ClusterAndDraw();
+        });
+        d3.select('#minNum').on('input',function () {
+            netSP.minNumberArrows = +this.value;
+            d3.select('.cover').classed('hidden', false);
+            DataProcessing.AdaptiveBinning();
+            Management.ComputeMetrics();
+            Management.ClusterAndDraw();
+        });
+        d3.select('#maxNum').on('input',function () {
+            netSP.maxNumberArrows = +this.value;
+            d3.select('.cover').classed('hidden', false);
+            DataProcessing.AdaptiveBinning();
+            Management.ComputeMetrics();
+            Management.ClusterAndDraw();
+        });
+        // Choose step for multi-revolution
+        d3.select('#timeStep').on('input',function () {
+            netSP.step = +this.value;
+            EncodePlots.NetScatterPlot();
+            Management.FormPlots();
+            DataProcessing.NetScatterPlot(netSP.data);
+            DataProcessing.AdaptiveBinning();
+            Management.ComputeMetrics();
+            Management.ClusterAndDraw();
         });
         // display chart options
         // need check
@@ -555,9 +594,9 @@ function ComputingData() {
     // Prepare data for RadarController_table
 
 function prepareRadarTable() {
-    dataRadar2 = [];    // [all plot][measures for each plot]
-    dataRadar1 = [];    // [measure][all values]
-    dataRadar = {};
+    if (dataRadar2) dataRadar2.length = 0;    // [all plot][measures for each plot]
+    if (dataRadar1) dataRadar1.length = 0;    // [measure][all values]
+    if (dataRadar) dataRadar.length = 0;
     // compute dataRadar1
     for (let i = 0; i < netSP.metricName.length; i++) {
         dataRadar1[i] = [];

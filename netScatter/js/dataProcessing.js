@@ -26,6 +26,7 @@ class DataProcessing {
     // dataRef: result of ReadFile class
     static NetScatterPlot (dataRef) {
         let numPlot = netSP.encode.length;
+        let step = netSP.step;
         for (let p = 0; p < numPlot; p++) {
             netSP.plots[p].data = [];
             let xVar = netSP.encode[p][0];
@@ -36,8 +37,8 @@ class DataProcessing {
                 if (dataRef[i][xVar].length > 0 && dataRef[i][yVar].length > 0) {
                     let x1 = dataRef[i][xVar][timeIndex];
                     let y1 = dataRef[i][yVar][timeIndex];
-                    let x0 = dataRef[i][xVar][timeIndex-1];
-                    let y0 = dataRef[i][yVar][timeIndex-1];
+                    let x0 = dataRef[i][xVar][timeIndex-step];
+                    let y0 = dataRef[i][yVar][timeIndex-step];
                     let check = typeof(x0) === 'number' && typeof(y0) === 'number' && typeof(x1) === 'number' && typeof(y1) === 'number';
                     if (check) netSP.plots[p].data.push({
                         name: i,
@@ -175,38 +176,106 @@ class DataProcessing {
 
     // Hexagon bin from d3
     // return list of bin centers' coordinates in NetSP.plot[index].bins
-    static D3HexBinMapping() {
+    static D3HexBinMapping(plotIndex,nBin) {
         let hexBins = d3.hexbin();
-        let radius = 1/((netSP.nBin-1)*Math.sqrt(3));
+        let radius = 1/((nBin-1)*Math.sqrt(3));
         hexBins.extent([[0,0],[1,1]]);
         hexBins.radius(radius);
-        netSP.plots.forEach(e=>{
-            let data = DataProcessing.ScaleNetScatterPlot(e.data);
-            let myMap = new Map();
-            data.forEach(e_=>{
-                let sb = hexBins([[e_.x0,e_.y0]]);
-                let sc = [sb[0].x,sb[0].y];
-                let eb = hexBins([[e_.x1,e_.y1]]);
-                let ec = [eb[0].x,eb[0].y];
-                if (sc[0]!==ec[0]||sc[1]!==ec[1]) {
-                    if (!myMap.has(sc)) {
-                        myMap.set(sc,[ec]);
-                        e.arrows.push({start: sc, end: ec});
-                    } else {
-                        let arr = myMap.get(sc);
-                        let check = arr.findIndex(e__=>e__[0]===ec[0]&&e__[1]===ec[1]) === -1;
-                        if (check) {
-                            arr.push(ec);
-                            e.arrows.push({start: sc, end: [ec]});
-                            myMap.delete(sc);
-                            myMap.set(sc,arr);
-                        }
-                    }
-                } else {
-                    e.points.push(sc);
-                }
+        let data = DataProcessing.ScaleNetScatterPlot(netSP.plots[plotIndex].data);
+        let sArr = data.map(e_=>[e_.x0,e_.y0]);
+        sArr.forEach((e_,i_)=>{e_.index=i_});
+        let sBins = hexBins(sArr);
+        let eArr = data.map(e_=>[e_.x1,e_.y1]);
+        eArr.forEach((e_,i_)=>{e_.index=i_});
+        let eBins = hexBins(eArr);
+        let sCenters = [];
+        let sPoints = new Map();
+        sBins.forEach((e_,i_)=>{
+            sCenters[i_] = [e_.x,e_.y];
+            e_.forEach(e__=>{
+                sPoints.set(e__.index,i_);
             });
         });
+        let eCenters = [];
+        let ePoints = new Map();
+        eBins.forEach((e_,i_)=>{
+            eCenters[i_] = [e_.x,e_.y];
+            e_.forEach(e__=>{
+                ePoints.set(e__.index,i_);
+            });
+        });
+        let binArrow = [];
+        data.forEach((e_,i_)=>{
+            let bin1 = sPoints.get(i_);
+            let bin2 = ePoints.get(i_);
+            binArrow.push([bin1,bin2]);
+        });
+        let myMap = new Map();
+        let arrow = [];
+        binArrow.forEach(e_=>{
+            let key = e_[0].toString()+'-'+e_[1].toString();
+            if (!myMap.has(key)) {
+                myMap.set(key,e_);
+                arrow.push(e_);
+            }
+        });
+        arrow.forEach(e_=>{
+            if (sCenters[e_[0]][0] !== eCenters[e_[1]][0] || sCenters[e_[0]][1] !== eCenters[e_[1]][1]) {
+                netSP.plots[plotIndex].arrows.push({start:sCenters[e_[0]],end:eCenters[e_[1]]});
+            } else {
+                netSP.plots[plotIndex].points.push(sCenters[e_[0]]);
+            }
+        });
+    }
+
+    // Leader bins
+    static LeaderBinMapping (plotIndex,threshold) {
+        let L = [];
+        let data = DataProcessing.ScaleNetScatterPlot(netSP.plots[plotIndex].data);
+        let currentLeader = [];
+        data.forEach((e_,i_)=>{
+            let theLeader = DataProcessing.FindLeader(data,L,i_,threshold);
+            if (theLeader === 'leader') {
+                L.push([i_]);
+                currentLeader[i_] = 'leader';
+            } else {
+                L[theLeader].push(i_);
+                currentLeader[i_] = theLeader;
+            }
+        });
+        data.forEach((e_,i_)=>{
+            if (currentLeader[i_] !== 'leader') {
+                let theLeader = DataProcessing.FindLeader(data,L,i_,threshold);
+                if (theLeader !== currentLeader[i_]) {
+                    let index = L[currentLeader[i_]].findIndex(e__=>e__===i_);
+                    L[currentLeader[i_]].splice(index,1);
+                    L[theLeader].push(i_);
+                }
+            }
+        });
+        L.forEach(e_=>{
+            netSP.plots[plotIndex].arrows.push({start:[data[e_[0]].x0,data[e_[0]].y0],end:[data[e_[0]].x1,data[e_[0]].y1]});
+        });
+    }
+
+    // Find nearest leader
+    static FindLeader(data,Leader,arrow,threshold) {
+        let length = Leader.length;
+        let minDis = Infinity;
+        let theLeader = 'leader';
+        for (let i = 0; i < length; i++) {
+            let d1 = data[Leader[i][0]].x0 - data[arrow].x0;
+            let d2 = data[Leader[i][0]].y0 - data[arrow].y0;
+            let d3 = data[Leader[i][0]].x1 - data[arrow].x1;
+            let d4 = data[Leader[i][0]].y1 - data[arrow].y1;
+            let d = Math.sqrt(d1*d1+d2*d2+d3*d3+d4*d4);
+            if (d <= threshold) {
+                if (d < minDis) {
+                    theLeader = i;
+                }
+            }
+        }
+        return theLeader;
     }
 
     // Normalization values in every net scatter plot
@@ -232,17 +301,6 @@ class DataProcessing {
         let minValueY = Math.min(...dataY);
         let rangeY = maxValueY - minValueY;
         myData.forEach(e=>{
-            // if (rangeX >= rangeY) {
-            //     e.x0 = rangeX !== 0 ? (e.x0-minValueX)/rangeX : 0.5;
-            //     e.y0 = rangeX !== 0 ? e.y0/rangeX+(rangeX-rangeY-2*minValueY)/(2*rangeX) : 0.5;
-            //     e.x1 = rangeX !== 0 ? (e.x1-minValueX)/rangeX : 0.5;
-            //     e.y1 = rangeX !== 0 ? e.y1/rangeX+(rangeX-rangeY-2*minValueY)/(2*rangeX) : 0.5;
-            // } else {
-            //     e.x0 = rangeY !== 0 ? e.x0/rangeY+(rangeY-rangeX-2*minValueX)/(2*rangeY) : 0.5;
-            //     e.y0 = rangeY !== 0 ? (e.y0-minValueY)/rangeY : 0.5;
-            //     e.x1 = rangeY !== 0 ? e.x1/rangeY+(rangeY-rangeX-2*minValueX)/(2*rangeY) : 0.5;
-            //     e.y1 = rangeY !== 0 ? (e.y1-minValueY)/rangeY : 0.5;
-            // }
             e.x0 = rangeX !== 0 ? (e.x0-minValueX)/rangeX : 0.5;
             e.y0 = rangeY !== 0 ? (e.y0-minValueY)/rangeY : 0.5;
             e.x1 = rangeX !== 0 ? (e.x1-minValueX)/rangeX : 0.5;
@@ -382,6 +440,78 @@ class DataProcessing {
                 dataRef[i][v].forEach((e,index)=>{
                     if (typeof (e) === 'number') dataRef[i][v][index] = (e-data[v].mean)/data[v].sd;
                 })
+            }
+        }
+    }
+
+    // Adaptive binning
+    static AdaptiveBinning() {
+        let startBinSize = 40;
+        let minNum = netSP.minNumberArrows;
+        let maxNum = netSP.maxNumberArrows;
+        let startThreshold = 0.0296;
+
+        if (netSP.instanceInfo.length <= minNum) {      // no greater 50 instances => no binning
+            netSP.plots.forEach(e=>{
+                e.arrows = [];
+                e.points = [];
+                let data = DataProcessing.ScaleNetScatterPlot(e.data);
+                data.forEach((e_,i_)=> {
+                    e.arrows[i_] = {start:[e_.x0,e_.y0],end:[e_.x1,e_.y1]};
+                });
+            });
+        } else {    // greater than 50 instances => need binning
+            if (netSP.binType === 'hexagon') {
+                netSP.plots.forEach((e,i)=>{
+                    e.arrows = [];
+                    e.points = [];
+                    let nBin = startBinSize;
+                    let count = 0;
+                    DataProcessing.D3HexBinMapping(i,nBin);
+                    while ((e.arrows.length < minNum || e.arrows.length > maxNum) && count < 10) {
+                        if (e.arrows.length > maxNum) {
+                            nBin = Math.round(nBin/2);
+                            e.arrows = [];
+                            e.points = [];
+                            DataProcessing.D3HexBinMapping(i,nBin);
+                        } else {
+                            nBin = Math.round(nBin*1.5);
+                            e.arrows = [];
+                            e.points = [];
+                            DataProcessing.D3HexBinMapping(i,nBin);
+                        }
+                        count = count + 1;
+                    }
+                });
+            } else if (netSP.binType === 'leader') {
+                netSP.plots.forEach((e,i)=>{
+                    let threshold = startThreshold;
+                    let count = 0;
+                    DataProcessing.LeaderBinMapping(i,threshold);
+                    while ((e.arrows.length < minNum || e.arrows.length > maxNum) && count < 10) {
+                        if (e.arrows.length > maxNum) {
+                            threshold = threshold*1.5;
+                            e.arrows = [];
+                            e.points = [];
+                            DataProcessing.LeaderBinMapping(i,threshold);
+                        } else {
+                            threshold = threshold/2;
+                            e.arrows = [];
+                            e.points = [];
+                            DataProcessing.LeaderBinMapping(i,threshold);
+                        }
+                        count = count + 1;
+                    }
+                });
+            } else if (netSP.binType === 'noBin') {
+                netSP.plots.forEach(e=>{
+                    e.arrows = [];
+                    e.points = [];
+                    let data = DataProcessing.ScaleNetScatterPlot(e.data);
+                    data.forEach((e_,i_)=> {
+                        e.arrows[i_] = {start:[e_.x0,e_.y0],end:[e_.x1,e_.y1]};
+                    });
+                });
             }
         }
     }

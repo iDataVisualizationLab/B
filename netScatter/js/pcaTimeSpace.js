@@ -232,9 +232,9 @@ d3.pcaTimeSpace = function () {
                 let nPage = Math.ceil(listPlots.length/maxPerPage);
                 let sIndex = controlVariable.mouseClick.index.length>0 ? 0 : (currentPage-1)*maxPerPage;
                 listPlots.forEach((e,i)=>{
-                    DesignApplication.netScatterPlot('tsneScreen',[xscale(solution[e][0]), yscale(solution[e][1])],[30,30],netSP.plots[e].data,e,false);
+                    DesignApplication.netScatterPlot('tsneScreen',[xscale(solution[e][0]), yscale(solution[e][1])],[30,30],netSP.plots[e].arrows,netSP.plots[e].points,e,false);
                     if (i >= sIndex && i < sIndex + maxPerPage) {
-                        DesignApplication.netScatterPlot('tsneScreen',[designVariable.dr.rd.plot.position[0],designVariable.dr.rd.plot.position[1]+i*130],designVariable.dr.rd.plot.size,data,e,true);
+                        DesignApplication.netScatterPlot('tsneScreen',[designVariable.dr.rd.plot.position[0],designVariable.dr.rd.plot.position[1]+i*130],designVariable.dr.rd.plot.size,data,[],e,true);
                         DesignApplication.CircularBarChart('tsneScreen',[myWidth-550,90+i*130],40,e,false);
                         if (designVariable.dr.rd.quitSign.mouseOver[i])
                             DesignApplication.QuitSign('tsneScreen',[designVariable.dr.rd.quitSign.position[0],designVariable.dr.rd.quitSign.position[1]+i*130],designVariable.dr.rd.quitSign.size,'rgb(255,255,255)','rgb(255,0,0)');

@@ -11,7 +11,7 @@ class ReadFile {
     static IVTFormat(files,type) {
         let data = {};
         // store time information to global variable
-        netSP.timeInfo = [];
+        netSP.timeInfo.length = 0;
         if (type === 'death-birth') {
             files[0].columns.splice(0,3);
         } else {
@@ -21,8 +21,8 @@ class ReadFile {
         // store instance information to global variable
         // store variable information to global variable
         // store data in structure data -> instance -> variable -> time series
-        netSP.instanceInfo = [];
-        netSP.variableInfo = [];
+        netSP.instanceInfo.length = 0;
+        netSP.variableInfo.length = 0;
         files[1].forEach((e,i)=>{
             netSP.instanceInfo.push([e.code,e.name]);
             data[e.name] = {};

@@ -33,7 +33,10 @@ let netSP = {
         'Translation',
         'Entropy',
     ],
-    nBin: 10,   // # horizontal bins
+    binType: 'leader',
+    minNumberArrows: 50,
+    maxNumberArrows: 150,
+    step: 1,
 };
 
 let codeManager = {

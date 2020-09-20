@@ -172,22 +172,34 @@
             </div>
             <button id="metricSeries" type="button" onclick="Management.drawMetricSeries()">Show time series of metrics</button>
             <button id="netScatterPlot" type="button" onclick="Management.drawMetricSeries()" disabled>Show net scatterplots</button>
-            <!--                    <label for="variableX" class="col s4" style="color: #000000">Variables 1:</label>-->
-            <!--                    <div class="row s12">-->
-            <!--                        <div id="divVariableX">-->
-            <!--                            <select id="variableX" class="col s8">-->
-            <!--                                <option value="noOption">&#45;&#45;none&#45;&#45;</option>-->
-            <!--                            </select>-->
-            <!--                        </div>-->
-            <!--                    </div>-->
-            <!--                    <label for="variableY" class="col s4" style="color: #000000">Variables 2:</label>-->
-            <!--                    <div class="row s12">-->
-            <!--                        <div id="divVariableY">-->
-            <!--                            <select id="variableY" class="col s8">-->
-            <!--                                <option value="noOption">&#45;&#45;none&#45;&#45;</option>-->
-            <!--                            </select>-->
-            <!--                        </div>-->
-            <!--                    </div>-->
+              <label for="binType" class="col s4" style="color: #000000">Bin type:</label>
+              <div class="row s12">
+                  <div id="divBinType">
+                      <select id="binType" class="col s8">
+                          <option value="noBin">Original data</option>
+                          <option value="hexagon">Hexagon</option>
+                          <option selected value="leader">Leader bins</option>
+                      </select>
+                  </div>
+              </div>
+            <div class="row s12">
+              <label for="minNum" class="col s4 radarcontroller_layout">Min arrows </label>
+              <div  class="col s8 no-pad-left valign-wrapper" >
+                <input type="number" id="minNum" class="col s8 radarcontroller_layout browser-default no_leftmagrin" min="30" max="50" step="5" value="50">
+              </div>
+            </div>
+            <div class="row s12">
+              <label for="maxNum" class="col s4 radarcontroller_layout">Max arrows </label>
+              <div  class="col s8 no-pad-left valign-wrapper" >
+                <input type="number" id="maxNum" class="col s8 radarcontroller_layout browser-default no_leftmagrin" min="100" max="200" step="10" value="150">
+              </div>
+            </div>
+            <div class="row s12">
+              <label for="timeStep" class="col s4 radarcontroller_layout">Time steps</label>
+              <div class="col s8 no-pad-left valign-wrapper">
+                <input type="number" id="timeStep" class="col s8 radarcontroller_layout browser-default no_leftmagrin" min="1" max="100" step="any" value="1">
+              </div>
+            </div>
           </div>
         </li>
         <li>

@@ -93,7 +93,7 @@ class ComputeMetrics {
             } else {
                 totalAD = 0;
                 outlierAD = 0;
-                plotData.forEach(e=>{
+                plotData.forEach((e,i)=>{
                     if (e > 0) {
                         // totalAD += Math.abs(e.value-q2);
                         totalAD += Math.abs(e-q2);
@@ -131,14 +131,16 @@ class ComputeMetrics {
     // binData: [{start: [x,y], end: [x,y]}, ...]
     static Intersection (binData) {
         let count = 0;
-        for (let i = 0; i < binData.length - 1; i++) {
-            for (let j = i + 1; j < binData.length; j++) {
-                let x1 = binData[i].start[0], y1 = binData[i].start[1], x2 = binData[i].end[0], y2 = binData[i].end[1];
-                let x3 = binData[j].start[0], y3 = binData[j].start[1], x4 = binData[j].end[0], y4 = binData[j].end[1];
-                let check1 = x1 !== x2 || y1 !== y2;
-                let check2 = x3 !== x4 || y3 !== y4;
-                let check = check1 && check2;
-                if (check)  count += Geometry.CheckLineSegmentCrossing(x1,y1,x2,y2,x3,y3,x4,y4);
+        if (binData.length>0) {
+            for (let i = 0; i < binData.length - 1; i++) {
+                for (let j = i + 1; j < binData.length; j++) {
+                    let x1 = binData[i].start[0], y1 = binData[i].start[1], x2 = binData[i].end[0], y2 = binData[i].end[1];
+                    let x3 = binData[j].start[0], y3 = binData[j].start[1], x4 = binData[j].end[0], y4 = binData[j].end[1];
+                    let check1 = x1 !== x2 || y1 !== y2;
+                    let check2 = x3 !== x4 || y3 !== y4;
+                    let check = check1 && check2;
+                    if (check)  count += Geometry.CheckLineSegmentCrossing(x1,y1,x2,y2,x3,y3,x4,y4);
+                }
             }
         }
         return 1 - Math.exp(-count/binData.length);
@@ -202,47 +204,70 @@ class ComputeMetrics {
 
     // Translation score for bins
     // binData: [{start: [x,y], end: [x,y]},...]
-    static Translation (binData,index) {
+    static Translation (binData,points) {
         let score;
-        // Find and delete outliers
-        let group1 = binData.map((e,i)=>{return {name:i, x:e.start[0], y:e.start[1]}});
-        let group = [];
-        group1.forEach(e=>{
-            let check = true;
-            if (group.length > 0) {
-                check = group.findIndex(e_=>e_.x === e.x && e_.y === e.y) === -1;
-            }
-            if (check) {
-                group.push({name: e.name, x: e.x, y: e.y});
-            }
-        });
-        let outliers = Graph.Outliers(group);
-        // compute translation
-        let CoM1 = [0,0], CoM2 = [0,0];
-        let N = binData.length;
-        for (let i = 0; i < N; i++) {
-            CoM1[0] += binData[i].start[0]/N;
-            CoM1[1] += binData[i].start[1]/N;
-            CoM2[0] += binData[i].end[0]/N;
-            CoM2[1] += binData[i].end[1]/N;
-        }
-        let translation = Math.sqrt((CoM2[0]-CoM1[0])*(CoM2[0]-CoM1[0])+(CoM2[1]-CoM1[1])*(CoM2[1]-CoM1[1]));
-        // compute radius
-        let radius = 0;
-        for (let i = 0; i < N; i++) {
-            if (outliers.length === 0) {
-                let d = Math.sqrt((binData[i].start[0]-CoM1[0])*(binData[i].start[0]-CoM1[0])+(binData[i].start[1]-CoM1[1])*(binData[i].start[1]-CoM1[1]));
-                radius = (radius < d) ? d : radius;
-            } else {
-                let check = outliers.findIndex(e=>e===i) === -1;
+        if (binData.length > 0) {
+            // Find and delete outliers
+            let group1 = binData.map((e,i)=>{return {name:'a'+i.toString(), x:e.start[0], y:e.start[1]}});
+            let group = [];
+            group1.forEach(e=>{
+                let check = true;
+                if (group.length > 0) {
+                    check = group.findIndex(e_=>e_.x === e.x && e_.y === e.y) === -1;
+                }
                 if (check) {
+                    group.push({name: e.name, x: e.x, y: e.y});
+                }
+            });
+            points.forEach((e,i)=>{
+                group.push({name: 'p'+i.toString(), x:e[0], y: e[1]});
+            });
+            let outliers = Graph.Outliers(group);
+            // compute translation
+            let CoM1 = [0,0], CoM2 = [0,0];
+            let N = binData.length + points.length;
+            for (let i = 0; i < binData.length; i++) {
+                CoM1[0] += binData[i].start[0]/N;
+                CoM1[1] += binData[i].start[1]/N;
+                CoM2[0] += binData[i].end[0]/N;
+                CoM2[1] += binData[i].end[1]/N;
+            }
+            for (let i = 0; i < points.length; i++) {
+                CoM1[0] += points[i][0]/N;
+                CoM1[1] += points[i][1]/N;
+                CoM2[0] += points[i][0]/N;
+                CoM2[1] += points[i][1]/N;
+            }
+            let translation = Math.sqrt((CoM2[0]-CoM1[0])*(CoM2[0]-CoM1[0])+(CoM2[1]-CoM1[1])*(CoM2[1]-CoM1[1]));
+            // compute radius
+            let radius = 0;
+            for (let i = 0; i < binData.length; i++) {
+                if (outliers.length === 0) {
                     let d = Math.sqrt((binData[i].start[0]-CoM1[0])*(binData[i].start[0]-CoM1[0])+(binData[i].start[1]-CoM1[1])*(binData[i].start[1]-CoM1[1]));
                     radius = (radius < d) ? d : radius;
+                } else {
+                    let check = outliers.findIndex(e=>e===i) === -1;
+                    if (check) {
+                        let d = Math.sqrt((binData[i].start[0]-CoM1[0])*(binData[i].start[0]-CoM1[0])+(binData[i].start[1]-CoM1[1])*(binData[i].start[1]-CoM1[1]));
+                        radius = (radius < d) ? d : radius;
+                    }
                 }
             }
-        }
-        // compute score
-        score = (radius > 0) ? translation/radius : 0;
+            for (let i = 0; i < points.length; i++) {
+                if (outliers.length === 0) {
+                    let d = Math.sqrt((points[i][0]-CoM1[0])*(points[i][0]-CoM1[0])+(points[i][1]-CoM1[1])*(points[i][1]-CoM1[1]));
+                    radius = (radius < d) ? d : radius;
+                } else {
+                    let check = outliers.findIndex(e=>e===i) === -1;
+                    if (check) {
+                        let d = Math.sqrt((points[i][0]-CoM1[0])*(points[i][0]-CoM1[0])+(points[i][1]-CoM1[1])*(points[i][1]-CoM1[1]));
+                        radius = (radius < d) ? d : radius;
+                    }
+                }
+            }
+            // compute score
+            score = (radius > 0) ? translation/radius : 0;
+        } else score = 0;
         return score <= 1 ? score : 1;
     }
 
@@ -254,30 +279,32 @@ class ComputeMetrics {
     // value: angle from -pi to pi
     static Complexity (angleData) {
         let score = 0;
-        let quadRant = [0,0,0,0];
-        angleData.forEach(e=>{
-            if (typeof (e) === 'number') {
-                // if (e.value <= Math.PI && e.value > Math.PI/2) {
-                if (e <= Math.PI && e > Math.PI/2) {
-                    quadRant[1] += 1;
-                    // } else if (e.value <= Math.PI/2 && e.value > 0) {
-                } else if (e <= Math.PI/2 && e > 0) {
-                    quadRant[0] += 1;
-                    // } else if (e.value <= 0 && e.value > -Math.PI/2) {
-                } else if (e <= 0 && e > -Math.PI/2) {
-                    quadRant[3] += 1;
-                    // } else if (e.value <= -Math.PI/2 && e.value >= -Math.PI) {
-                } else if (e <= -Math.PI/2 && e >= -Math.PI) {
-                    quadRant[2] += 1;
+        if (angleData.length > 0) {
+            let quadRant = [0,0,0,0];
+            angleData.forEach(e=>{
+                if (typeof (e) === 'number') {
+                    // if (e.value <= Math.PI && e.value > Math.PI/2) {
+                    if (e <= Math.PI && e > Math.PI/2) {
+                        quadRant[1] += 1;
+                        // } else if (e.value <= Math.PI/2 && e.value > 0) {
+                    } else if (e <= Math.PI/2 && e > 0) {
+                        quadRant[0] += 1;
+                        // } else if (e.value <= 0 && e.value > -Math.PI/2) {
+                    } else if (e <= 0 && e > -Math.PI/2) {
+                        quadRant[3] += 1;
+                        // } else if (e.value <= -Math.PI/2 && e.value >= -Math.PI) {
+                    } else if (e <= -Math.PI/2 && e >= -Math.PI) {
+                        quadRant[2] += 1;
+                    }
                 }
-            }
-        });
-        let sum = quadRant[0] + quadRant[1] + quadRant[2] + quadRant[3];
-        if (sum !== 0) {
-            quadRant.forEach(e=>{
-                score += (e!==0) ? -(e/sum)*Math.log2(e/sum) : 0;
             });
-            score /= 2;
+            let sum = quadRant[0] + quadRant[1] + quadRant[2] + quadRant[3];
+            if (sum !== 0) {
+                quadRant.forEach(e=>{
+                    score += (e!==0) ? -(e/sum)*Math.log2(e/sum) : 0;
+                });
+                score /= 2;
+            }
         }
         return score;
     }
@@ -290,18 +317,20 @@ class ComputeMetrics {
     static PositiveCorrelation (angleData) {
         let score = 0;
         let N = angleData.length;
-        angleData.forEach(e=>{
-            if (typeof (e) === 'number') {
-                // let check1 = e.value >= 0 && e.value <= Math.PI/2;
-                let check1 = e >= 0 && e <= Math.PI/2;
-                // let check2 = e.value >= -Math.PI && e.value <= -Math.PI/2;
-                let check2 = e >= -Math.PI && e <= -Math.PI/2;
-                let check = check1 || check2;
-                score += check ? 1 : 0;
-            }
-        });
-        score /= N;
-        score = 2*(score-0.5);
+        if (N) {
+            angleData.forEach(e=>{
+                if (typeof (e) === 'number') {
+                    // let check1 = e.value >= 0 && e.value <= Math.PI/2;
+                    let check1 = e >= 0 && e <= Math.PI/2;
+                    // let check2 = e.value >= -Math.PI && e.value <= -Math.PI/2;
+                    let check2 = e >= -Math.PI && e <= -Math.PI/2;
+                    let check = check1 || check2;
+                    score += check ? 1 : 0;
+                }
+            });
+            score /= N;
+            score = 2*(score-0.5);
+        }
         return score > 0 ? score : 0;
     }
 
@@ -313,18 +342,20 @@ class ComputeMetrics {
     static NegativeCorrelation (angleData) {
         let score = 0;
         let N = angleData.length;
-        angleData.forEach(e=>{
-            if (typeof (e) === 'number') {
-                // let check1 = e.value <= Math.PI && e.value >= Math.PI/2;
-                let check1 = e <= Math.PI && e >= Math.PI/2;
-                // let check2 = e.value >= -Math.PI/2 && e.value <= 0;
-                let check2 = e >= -Math.PI/2 && e <= 0;
-                let check = check1 || check2;
-                score += check ? 1 : 0;
-            }
-        });
-        score /= N;
-        score = 2*(score-0.5);
+        if (N) {
+            angleData.forEach(e=>{
+                if (typeof (e) === 'number') {
+                    // let check1 = e.value <= Math.PI && e.value >= Math.PI/2;
+                    let check1 = e <= Math.PI && e >= Math.PI/2;
+                    // let check2 = e.value >= -Math.PI/2 && e.value <= 0;
+                    let check2 = e >= -Math.PI/2 && e <= 0;
+                    let check = check1 || check2;
+                    score += check ? 1 : 0;
+                }
+            });
+            score /= N;
+            score = 2*(score-0.5);
+        }
         return score > 0? score: 0;
     }
 

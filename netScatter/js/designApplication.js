@@ -78,7 +78,7 @@ class DesignApplication {
                             index = plots.low[p];
                             break;
                     }
-                    DesignApplication.netScatterPlot(canvasID,plotPosition,plotInfo.size,netSP.plots[index].arrows,index,true);
+                    DesignApplication.netScatterPlot(canvasID,plotPosition,plotInfo.size,netSP.plots[index].arrows,netSP.plots[index].points,index,true);
                     let radarPosition = [];
                     radarPosition[0] = plotPosition[0] + plotInfo.size[0] + blankSize[0] + plotInfo.size[0]/3;
                     radarPosition[1] = plotPosition[1] + plotInfo.size[1]/2;
@@ -199,7 +199,7 @@ class DesignApplication {
     // draw net scatter plot
     // plotPosition, plotSize: array [x,y]
     // index of plot from netSP.plots[index]
-    static netScatterPlot (canvasID,plotPosition,plotSize,data,index,notation) {
+    static netScatterPlot (canvasID,plotPosition,plotSize,data,points,index,notation) {
         let canvas = document.getElementById(canvasID);
         let ctx = canvas.getContext('2d');
         // draw rectangle
@@ -234,9 +234,8 @@ class DesignApplication {
                 ctx.textAlign = 'left';
             }
         }
-
-        data.forEach((e,index)=>{
-            let name = index;
+        // draw arrows
+        data.forEach(e=>{
             // let iCheck1 = name === controlVariable.interaction.instance && xVar === controlVariable.interaction.variable1 && yVar === controlVariable.interaction.variable2 && time === controlVariable.interaction.time;
             // let iCheck2 = name === controlVariable.interaction.instance && xVar === controlVariable.interaction.variable2 && yVar === controlVariable.interaction.variable1 && time === controlVariable.interaction.time;
             // let iCheck = iCheck1 || iCheck2;
@@ -247,7 +246,7 @@ class DesignApplication {
             let L = Math.sqrt((x1-x0)*(x1-x0)+(y1-y0)*(y1-y0));
             if (x0 !== x1 || y0 !== y1) {
                 let p = Geometry.LineEquation(x0,y0,x1,y1);
-                let d = L/4 < 10 ? L/4 : 10;      // size of triangle in the arrow
+                let d = L/4 < 5 ? L/4 : 5;      // size of triangle in the arrow
                 let x2 = (x0-x1 > 0) ? x1+Math.abs(p[1])*d/Math.sqrt(p[0]*p[0]+p[1]*p[1]) : x1-Math.abs(p[1])*d/Math.sqrt(p[0]*p[0]+p[1]*p[1]);
                 let y2 = (y0-y1 > 0) ? y1+Math.abs(p[0])*d/Math.sqrt(p[0]*p[0]+p[1]*p[1]) : y1-Math.abs(p[0])*d/Math.sqrt(p[0]*p[0]+p[1]*p[1]);
                 let x3 = x2 + (y1-y2)/Math.sqrt(3);
@@ -294,6 +293,18 @@ class DesignApplication {
                 ctx.closePath();
             }
         });
+        // draw points
+        if (points.length > 0) {
+            points.forEach(e=>{
+                let x = plotPosition[0] + 5 + (plotSize[0]-10)*e[0];
+                let y = plotPosition[1] + 5 + (plotSize[1]-10)*(1-e[1]);
+                ctx.beginPath();
+                ctx.fillStyle = 'rgb(0,0,0)';
+                ctx.arc(x,y,1,0,Math.PI*2);
+                ctx.fill();
+                ctx.closePath();
+            });
+        }
         ctx.closePath();
     }
 
