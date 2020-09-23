@@ -317,11 +317,15 @@ class DesignApplication {
         // draw circles at 0.2, 0.4, 0.6, 0.8, 1.0
         for (let i = 1; i < 6; i++) {
             ctx.beginPath();
-            ctx.globalAlpha = 0.5;
+            ctx.globalAlpha = 0.2;
+            ctx.fillStyle = 'rgb(205,205,205)';
             ctx.strokeStyle = 'rgb(0,0,0)';
+            ctx.lineWidth = 0.15;
             ctx.arc(plotPosition[0],plotPosition[1],i*0.2*radius,0,2*Math.PI);
+            ctx.fill();
             ctx.stroke();
             ctx.globalAlpha = 1;
+            ctx.lineWidth = 1;
             ctx.closePath();
         }
         // draw radar chart
@@ -361,33 +365,47 @@ class DesignApplication {
     static CircularBarChart(canvasID,plotPosition,radius,index,notation) {
         let canvas = document.getElementById(canvasID);
         let ctx = canvas.getContext('2d');
+        let alpha = Math.PI*2/netSP.metricName.length;
         ctx.beginPath();
         // draw circles at 0.2, 0.4, 0.6, 0.8, 1.0
         for (let i = 1; i < 6; i++) {
             ctx.beginPath();
-            ctx.globalAlpha = 0.5;
+            ctx.globalAlpha = 0.1;
             ctx.strokeStyle = 'rgb(0,0,0)';
+            ctx.fillStyle = 'rgb(205,205,205)';
             ctx.arc(plotPosition[0],plotPosition[1],i*0.2*radius,0,2*Math.PI);
             ctx.stroke();
+            ctx.fill();
             ctx.globalAlpha = 1;
             ctx.closePath();
         }
         // draw radar chart
-        let alpha = Math.PI*2/netSP.metricName.length;
         netSP.metricName.forEach((e,i)=>{
             let r = radius*netSP.plots[index].metrics[e];
             ctx.beginPath();
             if (dataRadar2.length>0) {
                 let cluster = dataRadar2[index].cluster;
                 ctx.fillStyle = colorCluster(cluster_info[cluster].name);
-            } else ctx.fillStyle = 'rgb(200,200,200)';
+                ctx.strokeStyle = colorCluster(cluster_info[cluster].name);
+            } else {
+                ctx.fillStyle = 'rgb(200,200,200)';
+                ctx.strokeStyle = 'rgb(200,200,200)';
+            }
             ctx.globalAlpha = 0.5;
             ctx.moveTo(plotPosition[0],plotPosition[1]);
             ctx.lineTo(plotPosition[0]+r*Math.sin(i*alpha-alpha/4),plotPosition[1]-r*Math.cos(i*alpha-alpha/4));
             ctx.lineTo(plotPosition[0]+r*Math.sin(i*alpha+alpha/4),plotPosition[1]-r*Math.cos(i*alpha+alpha/4));
+            //ctx.arcTo(plotPosition[0]+r*Math.sin(i*alpha),plotPosition[1]-r*Math.cos(i*alpha),plotPosition[0]+r*Math.sin(i*alpha+alpha/4),plotPosition[1]-r*Math.cos(i*alpha+alpha/4),r);
             ctx.lineTo(plotPosition[0],plotPosition[1]);
             ctx.fill();
+            ctx.stroke();
             ctx.globalAlpha = 1;
+            ctx.closePath();
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgb(255,255,255)';
+            ctx.moveTo(plotPosition[0],plotPosition[1]);
+            ctx.lineTo(plotPosition[0]+radius*Math.sin(i*alpha),plotPosition[1]-radius*Math.cos(i*alpha));
+            ctx.stroke();
             ctx.closePath();
         });
         // draw notations
