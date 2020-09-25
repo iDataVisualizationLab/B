@@ -147,6 +147,7 @@ function onTabChange (myTab_) {
         // data options
         d3.select('#datacom').on('change',function(){
             controlVariable.selectedData = this.value;
+            d3.select('.cover').classed('hidden', false);
             if (controlVariable.selectedData === 'ECG' || controlVariable.selectedData === 'Bao') {
                 d3.select('#pca').attr('disabled',true);
                 d3.select('#t_sne').attr('disabled',true);
@@ -157,7 +158,6 @@ function onTabChange (myTab_) {
                 d3.select('#umap').attr('disabled',null);
             }
             codeManager.needComputation = true;
-            d3.select('.cover').classed('hidden', false);
             if(controlVariable.visualizing === 'LMH') {
                 d3.select('#mainCanvasHolder').classed('hide',false);
                 d3.select('#tSNE').classed('hide',true);
@@ -196,6 +196,7 @@ function onTabChange (myTab_) {
         d3.select('#mainCanvasHolder').classed('hide',false);
         d3.select('#visualizing').on('change',function(){
             controlVariable.visualizing = this.value;
+            d3.select('.cover').classed('hidden', false);
             if (controlVariable.visualizing !== 'LHM') {
                 d3.select('#ecg').attr('disabled',true);
                 d3.select('#test').attr('disabled',true);
@@ -275,7 +276,10 @@ function onTabChange (myTab_) {
                 }
                 if (list.length > 0) {
                     list.forEach(d=>{
-                        d3.select('#dataInstances').append('option').attr('class','dataInstances').attr('value',d).text(d);
+                        let instance = netSP.plots[index].arrows[d].instance.map(e=>netSP.plots[index].data[e].name);
+                        instance.forEach(e=>{
+                            d3.select('#dataInstances').append('option').attr('class','dataInstances').attr('value',d).text(e);
+                        });
                     });
                 }
                 controlVariable.displaySeries = true;
@@ -311,7 +315,10 @@ function onTabChange (myTab_) {
                 }
                 if (list.length > 0) {
                     list.forEach(d=>{
-                        d3.select('#dataInstances').append('option').attr('class','dataInstances').attr('value',d).text(d);
+                        let instance = netSP.plots[index].arrows[d].instance.map(e=>netSP.plots[index].data[e].name);
+                        instance.forEach(e=>{
+                            d3.select('#dataInstances').append('option').attr('class','dataInstances').attr('value',d).text(e);
+                        });
                     });
                 }
                 controlVariable.displaySeries = true;
@@ -347,7 +354,10 @@ function onTabChange (myTab_) {
                 }
                 if (list.length > 0) {
                     list.forEach(d=>{
-                        d3.select('#dataInstances').append('option').attr('class','dataInstances').attr('value',d).text(d);
+                        let instance = netSP.plots[index].arrows[d].instance.map(e=>netSP.plots[index].data[e].name);
+                        instance.forEach(e=>{
+                            d3.select('#dataInstances').append('option').attr('class','dataInstances').attr('value',d).text(e);
+                        });
                     });
                 }
                 controlVariable.displaySeries = true;
@@ -1046,6 +1056,7 @@ function onchangeVizType(vizMode){
         default:
             return false;
     }
+    d3.select('.cover').classed('hidden', true);
 }
 function onchangeVizdata(vizMode){
     switch (vizMode) {

@@ -7,8 +7,8 @@ let netSP = {
     encode: [],
     filter: {
         // 'q90': [0,1],
-        // 'Skewed length': [0,1],
-        // 'Skewed angle': [0,1],
+        'Skewed length': [0,1],
+        'Skewed angle': [0,1],
         // 'Std length': [0,1],
         // 'IQR': [0,1],
         'Outlying length': [0,1],
@@ -21,8 +21,8 @@ let netSP = {
     },
     metricName: [
         // 'q90',
-        // 'Skewed length',
-        // 'Skewed angle',
+        'Skewed length',
+        'Skewed angle',
         // 'Std length',
         // 'IQR',
         'Outlying length',

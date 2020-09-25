@@ -33,7 +33,7 @@ class ComputeMetrics {
     // plotData is array of data point
     // each data point is an object {name: ..., value: ...}
     static Skewed (plotData) {
-        let arr = plotData.map(e=>e.value);
+        let arr = plotData.map(e=>e);
         let array = arr.filter(e=>typeof (e) === 'number');
         array.sort((a,b)=>a-b);
         let q90 = array[Math.floor(array.length*0.9)];
@@ -63,11 +63,11 @@ class ComputeMetrics {
     static Outlying (plotData,isUpperOnly) {
         let outlying = {
           score: 0,
-          outliers: [],     // index of outliers in the netSP.plots[#].bins array
+          outliers: [],     // index of outliers in the netSP.plots[#].array
         };
         if (plotData.length > 0) {
             // let array = plotData.map(e=>e.value).sort((a,b)=>a-b);
-            let array = plotData.filter(e=>e>0).sort((a,b)=>a-b);
+            let array = plotData.filter(e=>typeof(e)==='number').sort((a,b)=>a-b);
             let L = array.length;
             let q1 = array[Math.floor(L*0.25)];
             let q2 = array[Math.floor(L*0.5)];
@@ -79,7 +79,7 @@ class ComputeMetrics {
                 totalAD = 0;
                 outlierAD = 0;
                 plotData.forEach((e,i)=>{
-                    if (e > 0) {
+                    if (typeof (e) === 'number') {
                         // totalAD += Math.abs(e.value-q2);
                         totalAD += Math.abs(e-q2);
                         // if (e.value > upperLimit) {
@@ -94,7 +94,7 @@ class ComputeMetrics {
                 totalAD = 0;
                 outlierAD = 0;
                 plotData.forEach((e,i)=>{
-                    if (e > 0) {
+                    if (typeof (e) === 'number') {
                         // totalAD += Math.abs(e.value-q2);
                         totalAD += Math.abs(e-q2);
                         // if (e.value > upperLimit || e.value < lowerLimit) {

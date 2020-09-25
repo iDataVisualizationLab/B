@@ -212,16 +212,21 @@ class DataProcessing {
         });
         let myMap = new Map();
         let arrow = [];
-        binArrow.forEach(e_=>{
+        let count = 0;
+        binArrow.forEach((e_,i_)=>{
             let key = e_[0].toString()+'-'+e_[1].toString();
             if (!myMap.has(key)) {
-                myMap.set(key,e_);
-                arrow.push(e_);
+                myMap.set(key,count);
+                arrow[count] = e_;
+                arrow[count].instance = [i_];
+                count = count + 1;
+            } else {
+                arrow[myMap.get(key)].instance.push(i_);
             }
         });
         arrow.forEach(e_=>{
             if (sCenters[e_[0]][0] !== eCenters[e_[1]][0] || sCenters[e_[0]][1] !== eCenters[e_[1]][1]) {
-                netSP.plots[plotIndex].arrows.push({start:sCenters[e_[0]],end:eCenters[e_[1]]});
+                netSP.plots[plotIndex].arrows.push({start:sCenters[e_[0]],end:eCenters[e_[1]],instance:e_.instance.map(e__=>e__)});
             } else {
                 netSP.plots[plotIndex].points.push(sCenters[e_[0]]);
             }
@@ -254,7 +259,7 @@ class DataProcessing {
             }
         });
         L.forEach(e_=>{
-            netSP.plots[plotIndex].arrows.push({start:[data[e_[0]].x0,data[e_[0]].y0],end:[data[e_[0]].x1,data[e_[0]].y1]});
+            netSP.plots[plotIndex].arrows.push({start:[data[e_[0]].x0,data[e_[0]].y0],end:[data[e_[0]].x1,data[e_[0]].y1],instance:e_.map(e__=>e__)});
         });
     }
 
@@ -457,7 +462,7 @@ class DataProcessing {
                 e.points = [];
                 let data = DataProcessing.ScaleNetScatterPlot(e.data);
                 data.forEach((e_,i_)=> {
-                    e.arrows[i_] = {start:[e_.x0,e_.y0],end:[e_.x1,e_.y1]};
+                    e.arrows[i_] = {start:[e_.x0,e_.y0],end:[e_.x1,e_.y1],instance:[i_]};
                 });
             });
         } else {    // greater than 50 instances => need binning

@@ -45,6 +45,7 @@ class Management {
             codeManager.isComputing = false;
             codeManager.needComputation = false;
             codeManager.needUpdate = true;
+            d3.select('.cover').classed('hidden', true);
         });
     }
 
@@ -70,7 +71,7 @@ class Management {
         }
         // Create canvas
         // let myWindow = controlVariable.displaySeries ? [1300,2800] : [1300,2300];
-        let myWindow = controlVariable.displaySeries ? [1300,2800] : [2600,4600];
+        let myWindow = controlVariable.displaySeries ? [2600,5600] : [2600,4600];
         DesignApplication.CreateCanvas('mainCanvasHolder','HMLCanvas','myCanvas',myWindow[0],myWindow[1],'#ffffff');
         // Draw plots
         if (controlVariable.metricSeries) {
@@ -120,8 +121,8 @@ class Management {
             e.quantities.angle = ComputeQuantities.AngleBin(e.arrows);
             // e.metrics['Mean length'] = ComputeMetrics.MeanValue(e.quantities.edgeLength);
             // e.metrics['q90'] = ComputeMetrics.ComputeQuartile(e.quantities.edgeLength,0.9);
-            // e.metrics['Skewed length'] = ComputeMetrics.Skewed(e.quantities.edgeLength);
-            // e.metrics['Skewed angle'] = ComputeMetrics.Skewed(e.quantities.angle);
+            e.metrics['Skewed length'] = ComputeMetrics.Skewed(e.quantities.edgeLength);
+            e.metrics['Skewed angle'] = ComputeMetrics.Skewed(e.quantities.angle);
             // e.metrics['Std length'] = ComputeMetrics.StandardDeviation(e.quantities.edgeLength);
             // e.metrics['IQR'] = ComputeMetrics.ComputeIQR(e.quantities.edgeLength);
             e.metrics['Outlying length'] = ComputeMetrics.Outlying(e.quantities.edgeLength,true).score;
@@ -161,8 +162,8 @@ class Management {
                 },
                 metrics: {
                     // 'q90': 0,
-                    // 'Skewed length': 0,
-                    // 'Skewed angle': 0,
+                    'Skewed length': 0,
+                    'Skewed angle': 0,
                     // 'IQR': 0,
                     'Outlying length': 0,
                     'Outlying angle': 0,
@@ -176,10 +177,15 @@ class Management {
                     length: [],
                     angle: [],
                 },
+                outliersList: {
+                    length: [],
+                    angle: [],
+                },
                 data: [],
                 arrows: [],
                 points: [],
             }
         }
     }
+
 }

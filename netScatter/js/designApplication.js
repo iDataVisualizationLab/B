@@ -211,11 +211,9 @@ class DesignApplication {
         // draw information of the plot
         let xVar = netSP.encode[index][0];
         let yVar = netSP.encode[index][1];
-        let time = netSP.encode[index][2];
-        let outliers1 = [];
-        outliers1 = netSP.plots[index].outliers.length;
-        let outliers2 = [];
-        outliers2 = netSP.plots[index].outliers.angle;
+        let time2 = netSP.encode[index][2];
+        let tIndex2 = netSP.timeInfo.findIndex(e=>e===time2);
+        let time1 = netSP.timeInfo[tIndex2-netSP.step];
         ctx.font = '10px Arial';
         ctx.fillStyle = 'rgb(0,0,0)';
         if (notation) {
@@ -225,7 +223,7 @@ class DesignApplication {
             ctx.fillText(yVar,0,-5);
             ctx.rotate(Math.PI/2);
             ctx.translate(-plotPosition[0],-plotPosition[1]-plotSize[1]);
-            ctx.fillText(time,plotPosition[0],plotPosition[1]-5);
+            ctx.fillText(time1.toString()+'-'+time2.toString(),plotPosition[0],plotPosition[1]-5);
             if (controlVariable.visualizing === 'LMH') {
                 let score = netSP.plots[index].metrics[controlVariable.selectedMetric];
                 score = Math.floor(score*100)/100;
@@ -235,10 +233,10 @@ class DesignApplication {
             }
         }
         // draw arrows
-        data.forEach(e=>{
-            // let iCheck1 = name === controlVariable.interaction.instance && xVar === controlVariable.interaction.variable1 && yVar === controlVariable.interaction.variable2 && time === controlVariable.interaction.time;
-            // let iCheck2 = name === controlVariable.interaction.instance && xVar === controlVariable.interaction.variable2 && yVar === controlVariable.interaction.variable1 && time === controlVariable.interaction.time;
-            // let iCheck = iCheck1 || iCheck2;
+        data.forEach((e,i)=>{
+            let iCheck1 = i.toString() === controlVariable.interaction.instance && xVar === controlVariable.interaction.variable1 && yVar === controlVariable.interaction.variable2 && time2 === controlVariable.interaction.time;
+            let iCheck2 = i.toString() === controlVariable.interaction.instance && xVar === controlVariable.interaction.variable2 && yVar === controlVariable.interaction.variable1 && time2 === controlVariable.interaction.time;
+            let iCheck = iCheck1 || iCheck2;
             let x0 = plotPosition[0] + 5 + (plotSize[0]-10)*e.start[0];      // padding = 5
             let y0 = plotPosition[1] + 5 + (plotSize[1]-10)*(1-e.start[1]);
             let x1 = plotPosition[0] + 5 + (plotSize[0]-10)*e.end[0];
@@ -253,43 +251,29 @@ class DesignApplication {
                 let y3 = y2 - (x1-x2)/Math.sqrt(3);
                 let x4 = x2 - (y1-y2)/Math.sqrt(3);
                 let y4 = y2 + (x1-x2)/Math.sqrt(3);
-                let isOutlier1 = outliers1.findIndex(e_=>e_===e.name) !== -1;
-                let isOutlier2 = outliers2.findIndex(e_=>e_===e.name) !== -1;
+                let isOutlierL = false;
+                if (netSP.plots[index].outliers.length.length > 0) if (netSP.plots[index].outliers.length.findIndex(e_=>e_===i) !== -1) isOutlierL = true;
+                let isOutlierA = false;
+                if (netSP.plots[index].outliers.angle.length > 0) if (netSP.plots[index].outliers.angle.findIndex(e_=>e_===i) !== -1) isOutlierA = true;
                 ctx.beginPath();
-                // if (iCheck) {
-                //     ctx.globalAlpha = 1;
-                //     ctx.lineWidth = 3;
-                // } else {
-                //     ctx.globalAlpha = 0.6;
-                //     ctx.lineWidth = 1;
-                // }
                 ctx.moveTo(x0,y0);
                 ctx.lineTo(x1,y1);
-                if (isOutlier2) ctx.strokeStyle = 'rgb(0,0,255)';
-                else if (isOutlier1) ctx.strokeStyle = 'rgb(255,0,0)';
+                if (iCheck) ctx.strokeStyle = 'rgb(255,0,0)';
+                else if (isOutlierL) ctx.strokeStyle = 'rgb(0,255,0)';
+                else if (isOutlierA) ctx.strokeStyle = 'rgb(0,0,255)';
                 else ctx.strokeStyle = 'rgb(0,0,0)';
                 ctx.stroke();
-                ctx.globalAlpha = 1;
-                ctx.lineWidth = 1;
                 ctx.closePath();
                 ctx.beginPath();
-                // if (iCheck) {
-                //     ctx.globalAlpha = 1;
-                //     ctx.lineWidth = 3;
-                // } else {
-                //     ctx.globalAlpha = 0.6;
-                //     ctx.lineWidth = 1;
-                // }
                 ctx.moveTo(x1,y1);
                 ctx.lineTo(x3,y3);
                 ctx.lineTo(x4,y4);
                 ctx.lineTo(x1,y1);
-                if (isOutlier2) ctx.fillStyle = 'rgb(0,0,255)';
-                else if (isOutlier1) ctx.fillStyle = 'rgb(255,0,0)';
+                if (iCheck) ctx.fillStyle = 'rgb(255,0,0)';
+                else if (isOutlierL) ctx.fillStyle = 'rgb(0,255,0)';
+                else if (isOutlierA) ctx.fillStyle = 'rgb(0,0,255)';
                 else ctx.fillStyle = 'rgb(0,0,0)';
                 ctx.fill();
-                ctx.globalAlpha = 1;
-                ctx.lineWidth = 1;
                 ctx.closePath();
             }
         });
@@ -395,17 +379,18 @@ class DesignApplication {
             ctx.moveTo(plotPosition[0],plotPosition[1]);
             ctx.lineTo(plotPosition[0]+r*Math.sin(i*alpha-alpha/4),plotPosition[1]-r*Math.cos(i*alpha-alpha/4));
             ctx.lineTo(plotPosition[0]+r*Math.sin(i*alpha+alpha/4),plotPosition[1]-r*Math.cos(i*alpha+alpha/4));
-            //ctx.arcTo(plotPosition[0]+r*Math.sin(i*alpha),plotPosition[1]-r*Math.cos(i*alpha),plotPosition[0]+r*Math.sin(i*alpha+alpha/4),plotPosition[1]-r*Math.cos(i*alpha+alpha/4),r);
             ctx.lineTo(plotPosition[0],plotPosition[1]);
+            ctx.arc(plotPosition[0],plotPosition[1],r,i*alpha-alpha/4-Math.PI/2,i*alpha+alpha/4-Math.PI/2)
             ctx.fill();
-            ctx.stroke();
             ctx.globalAlpha = 1;
             ctx.closePath();
             ctx.beginPath();
             ctx.strokeStyle = 'rgb(255,255,255)';
             ctx.moveTo(plotPosition[0],plotPosition[1]);
             ctx.lineTo(plotPosition[0]+radius*Math.sin(i*alpha),plotPosition[1]-radius*Math.cos(i*alpha));
+            ctx.lineWidth = 0.15;
             ctx.stroke();
+            ctx.lineWidth = 1;
             ctx.closePath();
         });
         // draw notations
