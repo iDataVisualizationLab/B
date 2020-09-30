@@ -80,6 +80,7 @@
             <div  class="row s12">
               <select id="datacom" class="col s7">
                 <option value="employment"> US Employment Data</option>
+                <option value="covid">US covid data</option>
                 <option value="RUL">RUL data</option>
                 <option value="stock">SP500 Stock data</option>
                 <option id="ecg" value="ECG">ECG data</option>
@@ -200,6 +201,7 @@
                 <input type="number" id="timeStep" class="col s5 radarcontroller_layout browser-default no_leftmagrin" min="1" max="100" step="any" value="1">
               </div>
             </div>
+            <button id="Draw" type="button" onclick="Paper.HighLowScore()">Draw my data</button>
           </div>
         </li>
         <li>
@@ -430,6 +432,7 @@
   <script src="js/Interaction.js"></script>
   <script src="js/designApplication.js"></script>
   <script src="js/Management.js"></script>
+  <script src="js/Paper.js"></script>
   <script src="js/main.js"></script>
 
 </body>

@@ -96,16 +96,18 @@ class DesignApplication {
                     let check2 = controlVariable.interaction.variable1 === e[1] && controlVariable.interaction.variable2 === e[0] && controlVariable.interaction.time === e[2];
                     return check1 || check2;
                 });
-                let outliers1 = [];
-                if (netSP.plots[index].outliers['length'].length > 0) {
-                    netSP.plots[index].outliers['length'].forEach(e=>outliers1.push(e));
-                }
-                let outliers2 = [];
-                if (netSP.plots[index].outliers.angle.length > 0) {
-                    netSP.plots[index].outliers.angle.forEach(e=>outliers2.push(e));
-                }
-                DesignApplication.timeSeries(canvasID,instance,variable1,[100,50],[800,200],time,outliers1,outliers2);
-                DesignApplication.timeSeries(canvasID,instance,variable2,[100,300],[800,200],time,outliers1,outliers2);
+                // let outliers1 = [];
+                // if (netSP.plots[index].outliers['length'].length > 0) {
+                //     netSP.plots[index].outliers['length'].forEach(e=>outliers1.push(e));
+                // }
+                // let outliers2 = [];
+                // if (netSP.plots[index].outliers.angle.length > 0) {
+                //     netSP.plots[index].outliers.angle.forEach(e=>outliers2.push(e));
+                // }
+                // DesignApplication.timeSeries(canvasID,instance,variable1,[100,50],[800,200],time,outliers1,outliers2);
+                // DesignApplication.timeSeries(canvasID,instance,variable2,[100,300],[800,200],time,outliers1,outliers2);
+                DesignApplication.scatterPlot(canvasID,instance,variable1,variable2,netSP.encode[index-netSP.step][2],[100,50],[300,300],'rgb(255,0,0)',netSP.plots[index].arrows.map(e=>e.start));
+                DesignApplication.scatterPlot(canvasID,instance,variable1,variable2,time,[500,50],[300,300],'rgb(0,0,255)',netSP.plots[index].arrows.map(e=>e.end));
             }
         } else {
             ctx.font = headerInfo.size + 'px ' + headerInfo.font;
@@ -244,7 +246,9 @@ class DesignApplication {
             let L = Math.sqrt((x1-x0)*(x1-x0)+(y1-y0)*(y1-y0));
             if (x0 !== x1 || y0 !== y1) {
                 let p = Geometry.LineEquation(x0,y0,x1,y1);
+                let arrowThickFactor = e.instance.length - 1;
                 let d = L/4 < 5 ? L/4 : 5;      // size of triangle in the arrow
+                d = d*(1+0.01*arrowThickFactor);
                 let x2 = (x0-x1 > 0) ? x1+Math.abs(p[1])*d/Math.sqrt(p[0]*p[0]+p[1]*p[1]) : x1-Math.abs(p[1])*d/Math.sqrt(p[0]*p[0]+p[1]*p[1]);
                 let y2 = (y0-y1 > 0) ? y1+Math.abs(p[0])*d/Math.sqrt(p[0]*p[0]+p[1]*p[1]) : y1-Math.abs(p[0])*d/Math.sqrt(p[0]*p[0]+p[1]*p[1]);
                 let x3 = x2 + (y1-y2)/Math.sqrt(3);
@@ -259,9 +263,10 @@ class DesignApplication {
                 ctx.moveTo(x0,y0);
                 ctx.lineTo(x1,y1);
                 if (iCheck) ctx.strokeStyle = 'rgb(255,0,0)';
-                else if (isOutlierL) ctx.strokeStyle = 'rgb(0,255,0)';
-                else if (isOutlierA) ctx.strokeStyle = 'rgb(0,0,255)';
+                // else if (isOutlierL) ctx.strokeStyle = 'rgb(0,255,0)';
+                // else if (isOutlierA) ctx.strokeStyle = 'rgb(0,0,255)';
                 else ctx.strokeStyle = 'rgb(0,0,0)';
+                ctx.lineWidth = 1 + 0.05*arrowThickFactor;
                 ctx.stroke();
                 ctx.closePath();
                 ctx.beginPath();
@@ -270,8 +275,8 @@ class DesignApplication {
                 ctx.lineTo(x4,y4);
                 ctx.lineTo(x1,y1);
                 if (iCheck) ctx.fillStyle = 'rgb(255,0,0)';
-                else if (isOutlierL) ctx.fillStyle = 'rgb(0,255,0)';
-                else if (isOutlierA) ctx.fillStyle = 'rgb(0,0,255)';
+                // else if (isOutlierL) ctx.fillStyle = 'rgb(0,255,0)';
+                // else if (isOutlierA) ctx.fillStyle = 'rgb(0,0,255)';
                 else ctx.fillStyle = 'rgb(0,0,0)';
                 ctx.fill();
                 ctx.closePath();
@@ -286,59 +291,6 @@ class DesignApplication {
                 ctx.fillStyle = 'rgb(0,0,0)';
                 ctx.arc(x,y,1,0,Math.PI*2);
                 ctx.fill();
-                ctx.closePath();
-            });
-        }
-        ctx.closePath();
-    }
-
-    // draw radar chart
-    // plotPosition: [x,y]
-    static RadarChart(canvasID,plotPosition,radius,index,notation) {
-        let canvas = document.getElementById(canvasID);
-        let ctx = canvas.getContext('2d');
-        ctx.beginPath();
-        // draw circles at 0.2, 0.4, 0.6, 0.8, 1.0
-        for (let i = 1; i < 6; i++) {
-            ctx.beginPath();
-            ctx.globalAlpha = 0.2;
-            ctx.fillStyle = 'rgb(205,205,205)';
-            ctx.strokeStyle = 'rgb(0,0,0)';
-            ctx.lineWidth = 0.15;
-            ctx.arc(plotPosition[0],plotPosition[1],i*0.2*radius,0,2*Math.PI);
-            ctx.fill();
-            ctx.stroke();
-            ctx.globalAlpha = 1;
-            ctx.lineWidth = 1;
-            ctx.closePath();
-        }
-        // draw radar chart
-        let alpha = Math.PI*2/netSP.metricName.length;
-        netSP.metricName.forEach((e,i)=>{
-            let r = radius*netSP.plots[index].metrics[e];
-            let next = (i !== netSP.metricName.length-1) ? netSP.metricName[i+1] : netSP.metricName[0];
-            let rN = radius*netSP.plots[index].metrics[next];
-            ctx.beginPath();
-            ctx.fillStyle = 'rgb(200,200,200)';
-            ctx.moveTo(plotPosition[0],plotPosition[1]);
-            ctx.lineTo(plotPosition[0]+r*Math.sin(i*alpha),plotPosition[1]-r*Math.cos(i*alpha));
-            ctx.lineTo(plotPosition[0]+rN*Math.sin((i+1)*alpha),plotPosition[1]-rN*Math.cos((i+1)*alpha));
-            ctx.lineTo(plotPosition[0],plotPosition[1]);
-            ctx.fill();
-            ctx.closePath();
-        });
-        // draw notations
-        if (notation) {
-            ctx.font = '9px Arial';
-            netSP.metricName.forEach((e,i)=>{
-                ctx.beginPath();
-                ctx.globalAlpha = 1;
-                ctx.fillStyle = 'rgb(0,0,0)';
-                if (i < netSP.metricName.length/2) {
-                    ctx.textAlign = 'left';
-                } else ctx.textAlign = 'right';
-                ctx.fillText(netSP.metricName[i],plotPosition[0]+(radius+5)*Math.sin(i*alpha),plotPosition[1]-(radius+5)*Math.cos(i*alpha));
-                ctx.textAlign = 'left';
                 ctx.closePath();
             });
         }
@@ -388,7 +340,6 @@ class DesignApplication {
             ctx.strokeStyle = 'rgb(255,255,255)';
             ctx.moveTo(plotPosition[0],plotPosition[1]);
             ctx.lineTo(plotPosition[0]+radius*Math.sin(i*alpha),plotPosition[1]-radius*Math.cos(i*alpha));
-            ctx.lineWidth = 0.15;
             ctx.stroke();
             ctx.lineWidth = 1;
             ctx.closePath();
@@ -501,6 +452,44 @@ class DesignApplication {
                 });
             });
         }
+    }
+
+    // draw scatter plot
+    // data: array of [x,y]
+    static scatterPlot (canvasID,instance,hVariable,vVariable,timeStep,position,size,pColor,data) {
+        let canvas = document.getElementById(canvasID);
+        let ctx = canvas.getContext('2d');
+        ctx.beginPath();
+        // draw rectangle
+        ctx.fillStyle = 'rgb(220,220,220)';
+        ctx.fillRect(position[0],position[1],size[0],size[1]);
+        ctx.strokeStyle = 'rgb(0,0,0)';
+        ctx.strokeRect(position[0],position[1],size[0],size[1]);
+        ctx.fill();
+        ctx.stroke();
+        ctx.closePath();
+        // draw notation
+        ctx.beginPath();
+        ctx.font = '10px Arial';
+        ctx.fillStyle = 'rgb(0,0,0)';
+        ctx.fillText(hVariable,position[0],position[1]+size[1]+12+5);
+        ctx.translate(position[0],position[1]+size[1]);
+        ctx.rotate(-Math.PI/2);
+        ctx.fillText(vVariable,0,-5);
+        ctx.rotate(Math.PI/2);
+        ctx.translate(-position[0],-position[1]-size[1]);
+        ctx.fillText(timeStep.toString(),position[0],position[1]-5);
+        ctx.closePath();
+        // draw data points
+        data.forEach(e=>{
+            let x = position[0] + 5 + (size[0]-10)*e[0];      // padding = 5
+            let y = position[1] + 5 + (size[1]-10)*(1-e[1]);
+            ctx.beginPath();
+            ctx.fillStyle = pColor;
+            ctx.arc(x,y,2,0,2*Math.PI);
+            ctx.fill();
+            ctx.closePath();
+        });
     }
 
 }

@@ -208,21 +208,23 @@ class ComputeMetrics {
         let score;
         if (binData.length > 0) {
             // Find and delete outliers
-            let group1 = binData.map((e,i)=>{return {name:'a'+i.toString(), x:e.start[0], y:e.start[1]}});
-            let group = [];
-            group1.forEach(e=>{
-                let check = true;
-                if (group.length > 0) {
-                    check = group.findIndex(e_=>e_.x === e.x && e_.y === e.y) === -1;
-                }
-                if (check) {
-                    group.push({name: e.name, x: e.x, y: e.y});
-                }
+            // let group1 = binData.map((e,i)=>{return {name:'a'+i.toString(), x:e.start[0], y:e.start[1]}});
+            let sGroup1 = binData.map(e=>e.start);
+            let myMap = new Map();
+            let sGroup = [];
+            sGroup1.forEach((e,i)=>{
+               let k = e[0].toString()+'-'+e[1].toString();
+               if (!myMap.has(k)) {
+                   myMap.set(k,i);
+                   sGroup.push(e);
+               }
             });
-            points.forEach((e,i)=>{
-                group.push({name: 'p'+i.toString(), x:e[0], y: e[1]});
-            });
-            let outliers = Graph.Outliers(group);
+            let outliers = null;
+            if (sGroup.length > 30) {
+                let MST = Graph.Prim(sGroup);
+                outliers = Graph.getOutliers(MST);
+            } else outliers = [];
+
             // compute translation
             let CoM1 = [0,0], CoM2 = [0,0];
             let N = binData.length + points.length;

@@ -241,6 +241,7 @@ function onTabChange (myTab_) {
                 d3.select('#variable').attr('disabled',null);
                 clickArr.length = 0;
             }
+            d3.select('.cover').classed('hidden', true);
         });
         // interaction option - instance
         d3.select('#dataInstances').on('change',function(){
@@ -522,6 +523,12 @@ function ComputingData() {
     let filename2;
     let type = '';
     switch (controlVariable.selectedData) {
+        case 'covid':
+            filename0 = "data/covid.csv";
+            filename1 = "data/state_code.txt";
+            filename2 = "data/covid_code.csv";
+            type = 'normal';
+            break;
         case 'employment':
             filename0 = "data/US_employment_July.txt";
             filename1 = "data/stateCode.txt";

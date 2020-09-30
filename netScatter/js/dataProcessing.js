@@ -239,22 +239,26 @@ class DataProcessing {
         let data = DataProcessing.ScaleNetScatterPlot(netSP.plots[plotIndex].data);
         let currentLeader = [];
         data.forEach((e_,i_)=>{
-            let theLeader = DataProcessing.FindLeader(data,L,i_,threshold);
-            if (theLeader === 'leader') {
-                L.push([i_]);
-                currentLeader[i_] = 'leader';
-            } else {
-                L[theLeader].push(i_);
-                currentLeader[i_] = theLeader;
+            if (e_.x0 !== e_.x1 || e_.y0 !== e_.y1){
+                let theLeader = DataProcessing.FindLeader(data,L,i_,threshold);
+                if (theLeader === 'leader') {
+                    L.push([i_]);
+                    currentLeader[i_] = 'leader';
+                } else {
+                    L[theLeader].push(i_);
+                    currentLeader[i_] = theLeader;
+                }
             }
         });
         data.forEach((e_,i_)=>{
-            if (currentLeader[i_] !== 'leader') {
-                let theLeader = DataProcessing.FindLeader(data,L,i_,threshold);
-                if (theLeader !== currentLeader[i_]) {
-                    let index = L[currentLeader[i_]].findIndex(e__=>e__===i_);
-                    L[currentLeader[i_]].splice(index,1);
-                    L[theLeader].push(i_);
+            if (e_.x0 !== e_.x1 || e_.y0 !== e_.y1) {
+                if (currentLeader[i_] !== 'leader') {
+                    let theLeader = DataProcessing.FindLeader(data,L,i_,threshold);
+                    if (theLeader !== currentLeader[i_]) {
+                        let index = L[currentLeader[i_]].findIndex(e__=>e__===i_);
+                        L[currentLeader[i_]].splice(index,1);
+                        L[theLeader].push(i_);
+                    }
                 }
             }
         });
@@ -269,8 +273,28 @@ class DataProcessing {
         let minDis = Infinity;
         let theLeader = 'leader';
         for (let i = 0; i < length; i++) {
-            let d1 = data[Leader[i][0]].x0 - data[arrow].x0;
-            let d2 = data[Leader[i][0]].y0 - data[arrow].y0;
+            let d1 = data[Leader[i][0]].x0 - data[arrow].x0;    // difference in x-position of starting point
+            let d2 = data[Leader[i][0]].y0 - data[arrow].y0;    // difference in y-position of starting point
+            // let L1 = Math.sqrt(Math.pow(data[Leader[i][0]].x1 - data[Leader[i][0]].x0,2)+Math.pow(data[Leader[i][0]].y1 - data[Leader[i][0]].y0,2));    // length of leader
+            // let L2 = Math.sqrt(Math.pow(data[arrow].x1 - data[arrow].x0,2)+Math.pow(data[arrow].y1 - data[arrow].y0,2));    // length of arrow
+            // let d3 = (L1 - L2)/Math.sqrt(2);   // difference in length of arrow
+            // let a1 = Math.atan((data[Leader[i][0]].y1 - data[Leader[i][0]].y0)/(data[Leader[i][0]].x1 - data[Leader[i][0]].x0));
+            // let a2 = Math.atan((data[arrow].y1 - data[arrow].y0)/(data[arrow].x1 - data[arrow].x0));
+            // if (data[Leader[i][0]].x1 - data[Leader[i][0]].x0 < 0) {
+            //     if (data[Leader[i][0]].y1 - data[Leader[i][0]].y0 < 0) {
+            //         a1 = a1 - Math.PI;
+            //     } else if (data[Leader[i][0]].y1 - data[Leader[i][0]].y0 > 0) {
+            //         a1 = a1 + Math.PI;
+            //     }
+            // }
+            // if (data[arrow].x1 - data[arrow].x0 < 0) {
+            //     if (data[arrow].y1 - data[arrow].y0 < 0) {
+            //         a2 = a2 - Math.PI;
+            //     } else if (data[arrow].y1 - data[arrow].y0 > 0) {
+            //         a2 = a2 + Math.PI;
+            //     }
+            // }
+            // let d4 = (a1 - a2)/(2*Math.PI);   // difference in angle
             let d3 = data[Leader[i][0]].x1 - data[arrow].x1;
             let d4 = data[Leader[i][0]].y1 - data[arrow].y1;
             let d = Math.sqrt(d1*d1+d2*d2+d3*d3+d4*d4);
@@ -454,7 +478,7 @@ class DataProcessing {
         let startBinSize = 40;
         let minNum = netSP.minNumberArrows;
         let maxNum = netSP.maxNumberArrows;
-        let startThreshold = 0.0296;
+        let startThreshold = 0.0296*2;
 
         if (netSP.instanceInfo.length <= minNum) {      // no greater 50 instances => no binning
             netSP.plots.forEach(e=>{

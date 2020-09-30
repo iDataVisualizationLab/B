@@ -121,8 +121,8 @@ class Management {
             e.quantities.angle = ComputeQuantities.AngleBin(e.arrows);
             // e.metrics['Mean length'] = ComputeMetrics.MeanValue(e.quantities.edgeLength);
             // e.metrics['q90'] = ComputeMetrics.ComputeQuartile(e.quantities.edgeLength,0.9);
-            e.metrics['Skewed length'] = ComputeMetrics.Skewed(e.quantities.edgeLength);
-            e.metrics['Skewed angle'] = ComputeMetrics.Skewed(e.quantities.angle);
+            // e.metrics['Skewed length'] = ComputeMetrics.Skewed(e.quantities.edgeLength);
+            // e.metrics['Skewed angle'] = ComputeMetrics.Skewed(e.quantities.angle);
             // e.metrics['Std length'] = ComputeMetrics.StandardDeviation(e.quantities.edgeLength);
             // e.metrics['IQR'] = ComputeMetrics.ComputeIQR(e.quantities.edgeLength);
             e.metrics['Outlying length'] = ComputeMetrics.Outlying(e.quantities.edgeLength,true).score;

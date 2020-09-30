@@ -68,4 +68,88 @@ class Graph {
         }
         return outliers;
     }
+
+    // Prim's algorithm for MST
+    // graphData: [[x,y,...],[x,y,...],...]
+    static Prim (graphData) {
+        let MST = [];
+        let Q = graphData.map((e,i)=>{
+            return {key:Infinity,pi:null,id:i};
+        });
+        Q[0].key = 0;
+        Graph.buildMinHeap(Q);
+        while (Q.heapSize > 0) {
+            let u = Graph.heapExtractMin(Q);
+            if (u.pi!==null) MST.push([u.pi,u.id,u.key]);
+            for (let i = 0; i < Q.heapSize; i++) {
+                let w = Graph.Similarity(graphData[u.id],graphData[Q[i].id]);
+                if (w!==null && w < Q[i].key) {
+                    Q[i].pi = u.id;
+                    Q[i].key = w;
+                }
+            }
+        }
+        return MST;
+    }
+
+    // build min heap
+    static buildMinHeap(array) {
+        array.heapSize = array.length;
+        let N = Math.floor(array.length/2)-1;
+        for (let i = N; i >= 0; i--) {
+            Graph.minHeapify(array,i);
+        }
+    }
+
+    static minHeapify (array,i) {
+        let l = 2*i+1;
+        let r = 2*(i+1);
+        let smallest = null;
+        if (l < array.heapSize && array[l].key < array[i].key) smallest = l;
+        else smallest = i;
+        if (r < array.heapSize && array[r].key < array[smallest].key) smallest = r;
+        if (smallest !== i) {
+            let sp = array[i];
+            array[i] = array[smallest];
+            array[smallest] = sp;
+            Graph.minHeapify(array,smallest);
+        }
+    }
+
+    static heapExtractMin (array) {
+        let m = null;
+        if (array.heapSize >= 1) {
+            m = array[0];
+            array[0] = array[array.heapSize-1];
+            array.heapSize = array.heapSize - 1;
+            Graph.minHeapify(array,0);
+        }
+        return m;
+    }
+
+    static Similarity (point1,point2) {
+        let s = null;       // return null if point1.length !== point2.length
+        let N = point1.length;
+        if (N === point2.length) {
+            let d = [];
+            for (let i = 0; i < N; i++) {
+                d[i] = point2[i] - point1[i];
+            }
+            s = 0;
+            d.forEach(e=>{
+                s = s + e*e;
+            });
+            s = Math.sqrt(s);
+        }
+        return s;
+    }
+
+    static getOutliers (MST) {
+        let arr = MST.map(e=>e[2]);
+        arr.sort((a,b)=>a-b);
+        let q1 = arr[Math.floor(arr.length*0.25)];
+        let q3 = arr[Math.floor(arr.length*0.75)];
+        let uL = q3+1.5*(q3-q1);
+        return  MST.filter(e=>e[2]>uL);
+    }
 }
