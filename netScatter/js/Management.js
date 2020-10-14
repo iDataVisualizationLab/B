@@ -132,8 +132,11 @@ class Management {
             e.outliers.length = ComputeMetrics.Outlying(e.quantities.edgeLength,true).outliers;
             e.outliers.angle = ComputeMetrics.Outlying(e.quantities.angle,false).outliers;
             e.metrics['Intersection'] = ComputeMetrics.Intersection(e.arrows);
-            e.metrics['Translation'] = ComputeMetrics.Translation(e.arrows,e.points);
-            e.metrics['Entropy'] = ComputeMetrics.Complexity(e.quantities.angle);
+            let myTranslation = ComputeMetrics.Translation(e.arrows,e.points);
+            e.metrics['Translation'] = myTranslation.score;
+            e.outliers.position = myTranslation.outliers;
+            // e.metrics['Entropy'] = ComputeMetrics.Entropy(e.quantities.angle);
+            e.metrics['Similarity'] = ComputeMetrics.Similarity(e.arrows);
         });
     }
 
@@ -171,11 +174,13 @@ class Management {
                     'Neg correlation': 0,
                     'Intersection': 0,
                     'Translation': 0,
-                    'Entropy': 0,
+                    // 'Entropy': 0,
+                    'Similarity': 0,
                 },
                 outliers: {
                     length: [],
                     angle: [],
+                    position: [],
                 },
                 outliersList: {
                     length: [],
@@ -187,5 +192,4 @@ class Management {
             }
         }
     }
-
 }

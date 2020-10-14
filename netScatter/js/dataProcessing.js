@@ -401,21 +401,34 @@ class DataProcessing {
     // Get new values of #employees of each sector at every time point
     // format of dataRef: object of instance -> variable -> time series
     static NormalizationNetScatterPlot (dataRef) {
-        // Get mean of labor force
-        for (let i in dataRef) {
-            let meanLF = 0;
-            for (let t = 0; t < netSP.timeInfo.length; t++) {
-                let LF = 0;
-                for (let v in dataRef[i]) {
-                    if (typeof (dataRef[i][v][t]) === 'number')
-                        LF += dataRef[i][v][t];
-                }
-                meanLF += LF/netSP.timeInfo.length;
-            }
-            for (let v in dataRef[i]) {
+        if (controlVariable.normalization==='similarUnit') {
+            // Get mean of labor force
+            for (let i in dataRef) {
+                let meanLF = 0;
                 for (let t = 0; t < netSP.timeInfo.length; t++) {
-                    if (typeof (dataRef[i][v][t]) === 'number') {
-                        dataRef[i][v][t] /= meanLF;
+                    let LF = 0;
+                    for (let v in dataRef[i]) {
+                        if (typeof (dataRef[i][v][t]) === 'number')
+                            LF += dataRef[i][v][t];
+                    }
+                    meanLF += LF/netSP.timeInfo.length;
+                }
+                for (let v in dataRef[i]) {
+                    for (let t = 0; t < netSP.timeInfo.length; t++) {
+                        if (typeof (dataRef[i][v][t]) === 'number') {
+                            dataRef[i][v][t] /= meanLF;
+                        }
+                    }
+                }
+            }
+        } else if (controlVariable.normalization==='individual') {
+            for (let i in dataRef) {
+                for (let v in dataRef[i]) {
+                    let tS = dataRef[i][v].filter(e=>typeof (e)==='number');
+                    let maxV = Math.max(...tS);
+                    let minV = Math.min(...tS);
+                    for (let t = 0; t < dataRef[i][v].length; t++) {
+                        if (typeof(dataRef[i][v][t])==='number') dataRef[i][v][t] = (maxV > minV) ? (dataRef[i][v][t]-minV)/(maxV-minV) : 0.5;
                     }
                 }
             }

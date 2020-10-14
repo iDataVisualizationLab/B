@@ -259,13 +259,17 @@ class DesignApplication {
                 if (netSP.plots[index].outliers.length.length > 0) if (netSP.plots[index].outliers.length.findIndex(e_=>e_===i) !== -1) isOutlierL = true;
                 let isOutlierA = false;
                 if (netSP.plots[index].outliers.angle.length > 0) if (netSP.plots[index].outliers.angle.findIndex(e_=>e_===i) !== -1) isOutlierA = true;
+                let isOutlierP = false;
+                if (netSP.plots[index].outliers.position.length > 0) if (netSP.plots[index].outliers.position.findIndex(e_=>e_===i) !== -1) isOutlierP = true;
                 ctx.beginPath();
                 ctx.moveTo(x0,y0);
                 ctx.lineTo(x1,y1);
                 if (iCheck) ctx.strokeStyle = 'rgb(255,0,0)';
+                // if (iCheck) ctx.globalAlpha = 1;
                 // else if (isOutlierL) ctx.strokeStyle = 'rgb(0,255,0)';
                 // else if (isOutlierA) ctx.strokeStyle = 'rgb(0,0,255)';
                 else ctx.strokeStyle = 'rgb(0,0,0)';
+                // else ctx.globalAlpha = 0.5;
                 ctx.lineWidth = 1 + 0.05*arrowThickFactor;
                 ctx.stroke();
                 ctx.closePath();
@@ -275,10 +279,13 @@ class DesignApplication {
                 ctx.lineTo(x4,y4);
                 ctx.lineTo(x1,y1);
                 if (iCheck) ctx.fillStyle = 'rgb(255,0,0)';
+                // if (iCheck) ctx.globalAlpha = 1;
                 // else if (isOutlierL) ctx.fillStyle = 'rgb(0,255,0)';
                 // else if (isOutlierA) ctx.fillStyle = 'rgb(0,0,255)';
                 else ctx.fillStyle = 'rgb(0,0,0)';
+                // else ctx.globalAlpha = 0.5;
                 ctx.fill();
+                ctx.globalAlpha = 1;
                 ctx.closePath();
             }
         });

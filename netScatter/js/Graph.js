@@ -145,11 +145,24 @@ class Graph {
     }
 
     static getOutliers (MST) {
+        let result = {edge:[],outliers:[]};
         let arr = MST.map(e=>e[2]);
         arr.sort((a,b)=>a-b);
         let q1 = arr[Math.floor(arr.length*0.25)];
         let q3 = arr[Math.floor(arr.length*0.75)];
         let uL = q3+1.5*(q3-q1);
-        return  MST.filter(e=>e[2]>uL);
+        result.edge = MST.filter(e=>e[2]>uL);
+        if (result.edge.length > 0) {
+            result.edge.forEach(e=>{
+                let count0 = 0, count1 = 0;
+                MST.forEach(e_=>{
+                    if (e_[0] === e[0] || e_[1] === e[0]) count0 += 1;
+                    if (e_[0] === e[1] || e_[1] === e[1]) count1 += 1;
+                });
+                if (count0 === 1) result.outliers.push(e[0]);
+                if (count1 === 1) result.outliers.push(e[1]);
+            });
+        }
+        return result;
     }
 }

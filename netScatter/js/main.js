@@ -243,6 +243,7 @@ function onTabChange (myTab_) {
             }
             d3.select('.cover').classed('hidden', true);
         });
+
         // interaction option - instance
         d3.select('#dataInstances').on('change',function(){
             // new chosen value
@@ -350,6 +351,11 @@ function onTabChange (myTab_) {
                 }
                 if (netSP.plots[index].outliers['length'].length > 0) {
                     netSP.plots[index].outliers['length'].forEach(e=>{
+                        if (list.findIndex(e_=>e_===e) === -1) list.push(e);
+                    });
+                }
+                if (netSP.plots[index].outliers['position'].length > 0) {
+                    netSP.plots[index].outliers['position'].forEach(e=>{
                         if (list.findIndex(e_=>e_===e) === -1) list.push(e);
                     });
                 }
@@ -524,8 +530,10 @@ function ComputingData() {
     let type = '';
     switch (controlVariable.selectedData) {
         case 'covid':
-            filename0 = "data/covid.csv";
-            filename1 = "data/state_code.txt";
+            // filename0 = "data/covid.csv";
+            filename0 = "data/myCovidData.csv";
+            // filename1 = "data/state_code.txt";
+            filename1 = "data/covidState.csv";
             filename2 = "data/covid_code.csv";
             type = 'normal';
             break;

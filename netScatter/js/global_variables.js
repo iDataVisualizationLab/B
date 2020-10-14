@@ -17,7 +17,8 @@ let netSP = {
         'Neg correlation': [0,1],
         'Intersection': [0,1],
         'Translation': [0,1],
-        'Entropy': [0,1],
+        // 'Entropy': [0,1],
+        'Similarity': [0,1],
     },
     metricName: [
         // 'q90',
@@ -31,7 +32,8 @@ let netSP = {
         'Neg correlation',
         'Intersection',
         'Translation',
-        'Entropy',
+        // 'Entropy',
+        'Similarity',
     ],
     binType: 'leader',
     minNumberArrows: 50,
@@ -68,6 +70,8 @@ let controlVariable = {
         index: [],
     },
     metricSeries: false,
+    // normalization: 'individual',
+    normalization: 'similarUnit',
 };
 
 let designVariable = {

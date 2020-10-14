@@ -13,7 +13,8 @@ class Paper {
         let negativeCorrelation = ComputeMetrics.NegativeCorrelation(vectorAngle);
         let intersection = ComputeMetrics.Intersection(data);
         let translation = ComputeMetrics.Translation(data,[]);
-        let complexity = ComputeMetrics.Complexity(vectorAngle);
+        let complexity = ComputeMetrics.Similarity(data);
+        // let complexity = ComputeMetrics.Entropy(vectorAngle);
         Paper.netScatterPlot('HMLCanvas',[100,4000],[300,300],data);
         console.log('Outlying length: '+outlyingLength);
         console.log('Outlying angle: '+outlyingAngle);
@@ -21,7 +22,7 @@ class Paper {
         console.log('Negative correlation: '+negativeCorrelation);
         console.log('intersection: '+intersection);
         console.log('translation: '+translation);
-        console.log('entropy: '+complexity);
+        console.log('similarity: '+complexity);
     }
 
     // draw net scatter plot
@@ -126,17 +127,17 @@ class Paper {
         // }
 
         // low outlying angle
-        for (let i = 0; i < 30; i++) {
-            let x0 = Math.random()*0.8+0.1;
-            let y0 = Math.random()*0.8+0.1;
-            let r = 0.1;
-            let dx = x0 - 0.5;
-            let dy = y0 - 0.5;
-            let a = (dx > 0) ? Math.PI*3/2 + Math.atan(dy/dx) : Math.atan(dy/dx) + Math.PI/2;
-            let x1 = x0 + r*Math.cos(a);
-            let y1 = y0 + r*Math.sign(a);
-            data[i] = {start:[x0,y0],end:[x1,y1]};
-        }
+        // for (let i = 0; i < 30; i++) {
+        //     let x0 = Math.random()*0.8+0.1;
+        //     let y0 = Math.random()*0.8+0.1;
+        //     let r = 0.1;
+        //     let dx = x0 - 0.5;
+        //     let dy = y0 - 0.5;
+        //     let a = (dx > 0) ? Math.PI*3/2 + Math.atan(dy/dx) : Math.atan(dy/dx) + Math.PI/2;
+        //     let x1 = x0 + r*Math.cos(a);
+        //     let y1 = y0 + r*Math.sign(a);
+        //     data[i] = {start:[x0,y0],end:[x1,y1]};
+        // }
 
         // high positive correlation
         // for (let i = 0; i < 6; i++) {
@@ -173,20 +174,16 @@ class Paper {
         // }
 
         // high negative correlation
-        // for (let i = 0; i < 6; i++) {
-        //     for (let j = 0; j < 5; j++) {
-        //         let x0 = j/6+1/6;
-        //         let y0 = i/8+2/8;
-        //         let a = -Math.PI/3 + Math.random()*Math.PI/12;
-        //         let r = Math.random()*1/10+(1/6-1/10);
-        //         let x1 = x0 + r*Math.cos(a);
-        //         let y1 = y0 + r*Math.sin(a);
-        //         if (x1 < 0) x1 = 0;
-        //         if (x1 > 1) x1 = 1;
-        //         if (y1 < 0) y1 = 0;
-        //         if (y1 > 1) y1 = 1;
-        //         data[j+i*5] = {start:[x0,y0],end:[x1,y1]};
-        //     }
+        // for (let i = 0; i < 30; i++) {
+        //     let l = Paper.normalDistribution()*0.9-0.1;
+        //     let d = Paper.normalDistribution()*(1-l*l)*0.7;
+        //     let x1 = 0.5+(l+d)/Math.sqrt(2);
+        //     let y1 = 0.5+(d-l)/Math.sqrt(2);
+        //     let a = -Math.PI/6-Math.random()*Math.PI/6;
+        //     let r = Math.random()*1/10+(1/6-1/10);
+        //     let x2 = x1 + r*Math.cos(a);
+        //     let y2 = y1 + r*Math.sin(a);
+        //     data[i] = {start:[x1,y1],end:[x2,y2]};
         // }
 
         // low negative correlation
@@ -241,9 +238,10 @@ class Paper {
 
         // low translation
         // for (let i = 0; i < 30; i++) {
-        //     let x0 = Math.random()*0.9;
-        //     let y0 = Math.random()*0.9;
-        //     let a = Math.PI/6;
+        //     let x0 = Math.random()*0.8+0.1;
+        //     let y0 = Math.random()*0.8+0.1;
+        //     let c = Math.random()-0.5;
+        //     let a = (c>0) ? Math.PI/6 : Math.PI/6-Math.PI;
         //     let r = 0.1;
         //     let x1 = x0 + r*Math.cos(a);
         //     let y1 = y0 + r*Math.sign(a);
@@ -281,7 +279,53 @@ class Paper {
         //     data[i] = {start:[x0,y0],end:[x1,y1]};
         // }
 
+        // high complexity
+        // for (let i = 0; i < 30; i++) {
+        //     let x0 = Math.random();
+        //     let y0 = Math.random();
+        //     let x1 = Math.random();
+        //     let y1 = Math.random();
+        //     data[i] = {start:[x0,y0],end:[x1,y1]};
+        // }
+
+        // high similarity
+        for (let i = 0; i < 30; i++) {
+            let x0, y0, x1, y1;
+            if (i < 10) {
+                x0 = 0.7+Math.random()*0.2;
+                y0 = 0.1+Math.random()*0.2;
+                x1 = x0+(0.1)*Math.cos(5*Math.PI/6);
+                y1 = y0+(0.1)*Math.sin(5*Math.PI/6);
+            } else {
+                x0 = 0.1+Math.random()*0.3;
+                y0 = 0.7+Math.random()*0.2;
+                x1 = x0+(0.1)*Math.cos(Math.PI/6);
+                y1 = y0+(0.1)*Math.sin(Math.PI/6);
+            }
+            data[i] = {start:[x0,y0],end:[x1,y1]};
+        }
+
+        // low similarity
+        // for (let i = 0; i < 30; i++) {
+        //     let x0 = Math.random()*0.8+0.1;
+        //     let y0 = Math.random()*0.8+0.1;
+        //     let r = 0.1;
+        //     let a = 2*Math.PI*Math.random();
+        //     let x1 = x0+r*Math.cos(a);
+        //     let y1 = y0+r*Math.sin(a);
+        //     data[i] = {start:[x0,y0],end:[x1,y1]};
+        // }
+
+
         return data;
+    }
+
+    static normalDistribution () {
+        let u = 2*Math.random()-1;
+        let v = 2*Math.random()-1;
+        let r = u*u + v*v;
+        if (r===0||r>=1) return Paper.normalDistribution();
+        else return 0.2*u*Math.sqrt(-2*Math.log(r)/r);
     }
 
 }

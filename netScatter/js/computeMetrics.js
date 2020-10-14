@@ -206,6 +206,7 @@ class ComputeMetrics {
     // binData: [{start: [x,y], end: [x,y]},...]
     static Translation (binData,points) {
         let score;
+        let outliers = [];
         if (binData.length > 0) {
             // Find and delete outliers
             // let group1 = binData.map((e,i)=>{return {name:'a'+i.toString(), x:e.start[0], y:e.start[1]}});
@@ -219,10 +220,9 @@ class ComputeMetrics {
                    sGroup.push(e);
                }
             });
-            let outliers = null;
             if (sGroup.length > 30) {
                 let MST = Graph.Prim(sGroup);
-                outliers = Graph.getOutliers(MST);
+                outliers = Graph.getOutliers(MST).outliers;
             } else outliers = [];
 
             // compute translation
@@ -270,8 +270,9 @@ class ComputeMetrics {
             // compute score
             score = (radius > 0) ? translation/radius : 0;
         } else score = 0;
-        return score <= 1 ? score : 1;
-    }
+        score = (score <= 1) ? score : 1;
+        return {score:score,outliers:outliers};
+    };
 
     // Complexity of directions
     // need collection of angles
@@ -279,7 +280,7 @@ class ComputeMetrics {
     // objects in format: {name, value} => odd
     // format: [x1,x2,...] => new for bins
     // value: angle from -pi to pi
-    static Complexity (angleData) {
+    static Entropy (angleData) {
         let score = 0;
         if (angleData.length > 0) {
             let quadRant = [0,0,0,0];
@@ -359,6 +360,32 @@ class ComputeMetrics {
             score = 2*(score-0.5);
         }
         return score > 0? score: 0;
+    }
+
+    // compute complexity
+    // standard deviation of Euc dis from origin of vectors in space of 4 dimensions
+    // vectors in space of 4 dimensions: 2 coordinates of starting points, 2 coordinates of ending points
+    static Similarity (binData) {
+        if (binData.length > 0) {
+            let d = [];
+            let m = 0;
+            for (let i = 0; i < binData.length; i++) {
+                let x0 = binData[i].start[0];
+                let x1 = binData[i].start[1];
+                let x2 = binData[i].end[0];
+                let x3 = binData[i].end[1];
+                d[i] = Math.sqrt(x0*x0+x1*x1+x2*x2+x3*x3);
+                m = m + d[i];
+            }
+            m = m/binData.length;
+            let s = 0;
+            for (let i = 0; i < binData.length; i++) {
+                s = s + (d[i]-m)*(d[i]-m);
+            }
+            s = s/binData.length;
+            s = 1 - 2*Math.sqrt(s);
+            return (s>0) ? s : 0;
+        } else return 0;
     }
 
 }
