@@ -92,3 +92,5 @@ let designVariable = {
         }
     }
 }
+
+let timeMeasure = [0,0,0,0,0];

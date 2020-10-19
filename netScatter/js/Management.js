@@ -11,6 +11,9 @@ class Management {
             d3.csv(instanceFile),
             d3.csv(variableFile),
         ]).then(files=>{
+            // time measure
+            timeMeasure[0] = performance.now();
+
             // reset variables
             netSP.plots.length = 0;
             netSP.encode.length = 0;
@@ -37,6 +40,8 @@ class Management {
             DataProcessing.AdaptiveBinning();
             // Compute quantities and metrics for every plot
             Management.ComputeMetrics();
+            // time measure
+            timeMeasure[3] = performance.now();
             // clustering and draw
             Management.ClusterAndDraw();
 
@@ -46,6 +51,12 @@ class Management {
             codeManager.needComputation = false;
             codeManager.needUpdate = true;
             d3.select('.cover').classed('hidden', true);
+
+            // time measure
+            timeMeasure[1] = performance.now();
+            console.log('running time without clustering and rendering: '+(timeMeasure[3]-timeMeasure[0]).toString()+'ms');
+            console.log('running time of binning: '+(timeMeasure[2]-timeMeasure[1]).toString()+'ms');
+            console.log('running time of computing metrics: '+(timeMeasure[3]-timeMeasure[2]).toString()+'ms');
         });
     }
 
@@ -150,6 +161,9 @@ class Management {
             plotPosition = [];
             reCalculateTsne();
             Management.Visualization();
+            // time measure
+            timeMeasure[4] = performance.now();
+            console.log('running time of clustering and rendering: '+(timeMeasure[4]-timeMeasure[3]).toString()+'ms');
         });
         d3.select('.cover').classed('hidden', true);
     }

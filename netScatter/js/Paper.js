@@ -12,7 +12,7 @@ class Paper {
         let positiveCorrelation = ComputeMetrics.PositiveCorrelation(vectorAngle);
         let negativeCorrelation = ComputeMetrics.NegativeCorrelation(vectorAngle);
         let intersection = ComputeMetrics.Intersection(data);
-        let translation = ComputeMetrics.Translation(data,[]);
+        let translation = ComputeMetrics.Translation(data,[]).score;
         let complexity = ComputeMetrics.Similarity(data);
         // let complexity = ComputeMetrics.Entropy(vectorAngle);
         Paper.netScatterPlot('HMLCanvas',[100,4000],[300,300],data);
@@ -289,21 +289,21 @@ class Paper {
         // }
 
         // high similarity
-        for (let i = 0; i < 30; i++) {
-            let x0, y0, x1, y1;
-            if (i < 10) {
-                x0 = 0.7+Math.random()*0.2;
-                y0 = 0.1+Math.random()*0.2;
-                x1 = x0+(0.1)*Math.cos(5*Math.PI/6);
-                y1 = y0+(0.1)*Math.sin(5*Math.PI/6);
-            } else {
-                x0 = 0.1+Math.random()*0.3;
-                y0 = 0.7+Math.random()*0.2;
-                x1 = x0+(0.1)*Math.cos(Math.PI/6);
-                y1 = y0+(0.1)*Math.sin(Math.PI/6);
-            }
-            data[i] = {start:[x0,y0],end:[x1,y1]};
-        }
+        // for (let i = 0; i < 30; i++) {
+        //     let x0, y0, x1, y1;
+        //     if (i < 10) {
+        //         x0 = 0.7+Math.random()*0.2;
+        //         y0 = 0.1+Math.random()*0.2;
+        //         x1 = x0+(0.1)*Math.cos(5*Math.PI/6);
+        //         y1 = y0+(0.1)*Math.sin(5*Math.PI/6);
+        //     } else {
+        //         x0 = 0.1+Math.random()*0.3;
+        //         y0 = 0.7+Math.random()*0.2;
+        //         x1 = x0+(0.1)*Math.cos(Math.PI/6);
+        //         y1 = y0+(0.1)*Math.sin(Math.PI/6);
+        //     }
+        //     data[i] = {start:[x0,y0],end:[x1,y1]};
+        // }
 
         // low similarity
         // for (let i = 0; i < 30; i++) {
@@ -315,6 +315,15 @@ class Paper {
         //     let y1 = y0+r*Math.sin(a);
         //     data[i] = {start:[x0,y0],end:[x1,y1]};
         // }
+
+        // get certain plot
+        let xVar = 'Total Nonfarm';
+        let yVar = 'Total Private';
+        let tVar = 'Apr 2020';
+        let index = netSP.encode.findIndex(e=>e[0]===xVar&&e[1]===yVar&&e[2]===tVar);
+        netSP.plots[index].arrows.forEach((e,i)=>{
+            data[i] = {start:[e.start[0],e.start[1]],end:[e.end[0],e.end[1]]};
+        })
 
 
         return data;

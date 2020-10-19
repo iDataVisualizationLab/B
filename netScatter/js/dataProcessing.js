@@ -401,7 +401,26 @@ class DataProcessing {
     // Get new values of #employees of each sector at every time point
     // format of dataRef: object of instance -> variable -> time series
     static NormalizationNetScatterPlot (dataRef) {
-        if (controlVariable.normalization==='similarUnit') {
+        if (controlVariable.selectedData === 'covid') {
+            for (let i in dataRef) {
+                for (let v in dataRef[i]) {
+                    // let m = (dataRef[i][v][netSP.timeInfo.length-2] - dataRef[i][v][0])/(netSP.timeInfo.length-1);
+                    let m = 1;
+                    let maxV = -Infinity, minV = Infinity;
+                    for (let t = 0; t < netSP.timeInfo.length-1; t++) {
+                       if (typeof (dataRef[i][v][t+1]) === 'number') {
+                           dataRef[i][v][t] = (dataRef[i][v][t+1] - dataRef[i][v][t])/m;
+                           maxV = (maxV < dataRef[i][v][t]) ? dataRef[i][v][t] : maxV;
+                           minV = (minV > dataRef[i][v][t]) ? dataRef[i][v][t] : minV;
+                       } else dataRef[i][v][t] = 'no value';
+                    }
+                    for (let t = 0; t < netSP.timeInfo.length; t++) {
+                        if (typeof (dataRef[i][v][t]) === 'number') dataRef[i][v][t] = (dataRef[i][v][t]-minV)/(maxV-minV);
+                    }
+                }
+            }
+        }
+        else if (controlVariable.normalization==='similarUnit') {
             // Get mean of labor force
             for (let i in dataRef) {
                 let meanLF = 0;
@@ -488,6 +507,9 @@ class DataProcessing {
 
     // Adaptive binning
     static AdaptiveBinning() {
+        // time measure
+        timeMeasure[1] = performance.now();
+
         let startBinSize = 40;
         let minNum = netSP.minNumberArrows;
         let maxNum = netSP.maxNumberArrows;
@@ -495,8 +517,8 @@ class DataProcessing {
 
         if (netSP.instanceInfo.length <= minNum) {      // no greater 50 instances => no binning
             netSP.plots.forEach(e=>{
-                e.arrows = [];
-                e.points = [];
+                e.arrows.length = 0;
+                e.points.length = 0;
                 let data = DataProcessing.ScaleNetScatterPlot(e.data);
                 data.forEach((e_,i_)=> {
                     e.arrows[i_] = {start:[e_.x0,e_.y0],end:[e_.x1,e_.y1],instance:[i_]};
@@ -505,21 +527,21 @@ class DataProcessing {
         } else {    // greater than 50 instances => need binning
             if (netSP.binType === 'hexagon') {
                 netSP.plots.forEach((e,i)=>{
-                    e.arrows = [];
-                    e.points = [];
+                    e.arrows.length = 0;
+                    e.points.length = 0;
                     let nBin = startBinSize;
                     let count = 0;
                     DataProcessing.D3HexBinMapping(i,nBin);
                     while ((e.arrows.length < minNum || e.arrows.length > maxNum) && count < 10) {
                         if (e.arrows.length > maxNum) {
                             nBin = Math.round(nBin/2);
-                            e.arrows = [];
-                            e.points = [];
+                            e.arrows.length = 0;
+                            e.points.length = 0;
                             DataProcessing.D3HexBinMapping(i,nBin);
                         } else {
                             nBin = Math.round(nBin*1.5);
-                            e.arrows = [];
-                            e.points = [];
+                            e.arrows.length = 0;
+                            e.points.length = 0;
                             DataProcessing.D3HexBinMapping(i,nBin);
                         }
                         count = count + 1;
@@ -533,13 +555,13 @@ class DataProcessing {
                     while ((e.arrows.length < minNum || e.arrows.length > maxNum) && count < 10) {
                         if (e.arrows.length > maxNum) {
                             threshold = threshold*1.5;
-                            e.arrows = [];
-                            e.points = [];
+                            e.arrows.length = 0;
+                            e.points.length = 0;
                             DataProcessing.LeaderBinMapping(i,threshold);
                         } else {
                             threshold = threshold/2;
-                            e.arrows = [];
-                            e.points = [];
+                            e.arrows.length = 0;
+                            e.points.length = 0;
                             DataProcessing.LeaderBinMapping(i,threshold);
                         }
                         count = count + 1;
@@ -547,15 +569,17 @@ class DataProcessing {
                 });
             } else if (netSP.binType === 'noBin') {
                 netSP.plots.forEach(e=>{
-                    e.arrows = [];
-                    e.points = [];
+                    e.arrows.length = 0;
+                    e.points.length = 0;
                     let data = DataProcessing.ScaleNetScatterPlot(e.data);
                     data.forEach((e_,i_)=> {
-                        e.arrows[i_] = {start:[e_.x0,e_.y0],end:[e_.x1,e_.y1]};
+                        e.arrows[i_] = {start:[e_.x0,e_.y0],end:[e_.x1,e_.y1],instance:[i_]};
                     });
                 });
             }
         }
+        // time measure
+        timeMeasure[2] = performance.now();
     }
 
 }

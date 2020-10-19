@@ -176,12 +176,12 @@ d3.pcaTimeSpace = function () {
                 // color control - opacity
                 let fillColor = d3.color(colorarr[target.cluster].value);
                 if (interaction1 && interaction2) {
-                    fillColor.opacity = (checkI1 && checkI2) ? 1 : 0.6;
+                    fillColor.opacity = (checkI1 && checkI2) ? 1 : 0.8;
                 } else if (interaction1) {
-                    fillColor.opacity = checkI1 ? 1 : 0.6;
+                    fillColor.opacity = checkI1 ? 1 : 0.8;
                 } else if (interaction2) {
-                    fillColor.opacity = checkI2 ? 1 : 0.6;
-                } else fillColor.opacity = 0.6;
+                    fillColor.opacity = checkI2 ? 1 : 0.8;
+                } else fillColor.opacity = 0.8;
 
                 // mouse over - highlight
                 if (controlVariable.mouseOver.check) {
@@ -190,7 +190,7 @@ d3.pcaTimeSpace = function () {
                         fillColor.opacity = 1;
                     } else {
                         pointSize = 3;
-                        fillColor.opacity = 0.6;
+                        fillColor.opacity = 0.8;
                     }
                 }
 
@@ -234,7 +234,7 @@ d3.pcaTimeSpace = function () {
                 listPlots.forEach((e,i)=>{
                     DesignApplication.netScatterPlot('tsneScreen',[xscale(solution[e][0]), yscale(solution[e][1])],[30,30],netSP.plots[e].arrows,netSP.plots[e].points,e,false);
                     if (i >= sIndex && i < sIndex + maxPerPage) {
-                        DesignApplication.netScatterPlot('tsneScreen',[designVariable.dr.rd.plot.position[0],designVariable.dr.rd.plot.position[1]+i*130],designVariable.dr.rd.plot.size,data,[],e,true);
+                        DesignApplication.netScatterPlot('tsneScreen',[designVariable.dr.rd.plot.position[0],designVariable.dr.rd.plot.position[1]+i*130],designVariable.dr.rd.plot.size,netSP.plots[e].arrows,netSP.plots[e].points,e,true);
                         DesignApplication.CircularBarChart('tsneScreen',[myWidth-550,90+i*130],40,e,false);
                         if (designVariable.dr.rd.quitSign.mouseOver[i])
                             DesignApplication.QuitSign('tsneScreen',[designVariable.dr.rd.quitSign.position[0],designVariable.dr.rd.quitSign.position[1]+i*130],designVariable.dr.rd.quitSign.size,'rgb(255,255,255)','rgb(255,0,0)');
