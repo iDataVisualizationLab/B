@@ -276,6 +276,16 @@ function onTabChange (myTab_) {
                         if (list.findIndex(e_=>e_===e) === -1) list.push(e);
                     });
                 }
+                if (netSP.plots[index].outliers['position'].length > 0) {
+                    netSP.plots[index].outliers['position'].forEach(e=>{
+                        if (list.findIndex(e_=>e_===e) === -1) list.push(e);
+                    });
+                }
+                if (netSP.plots[index].outliers['vector'].length > 0) {
+                    netSP.plots[index].outliers['vector'].forEach(e=>{
+                        if (list.findIndex(e_=>e_===e) === -1) list.push(e);
+                    });
+                }
                 if (list.length > 0) {
                     list.forEach(d=>{
                         let instance = netSP.plots[index].arrows[d].instance.map(e=>netSP.plots[index].data[e].name);
@@ -312,6 +322,16 @@ function onTabChange (myTab_) {
                 }
                 if (netSP.plots[index].outliers['length'].length > 0) {
                     netSP.plots[index].outliers['length'].forEach(e=>{
+                        if (list.findIndex(e_=>e_===e) === -1) list.push(e);
+                    });
+                }
+                if (netSP.plots[index].outliers['position'].length > 0) {
+                    netSP.plots[index].outliers['position'].forEach(e=>{
+                        if (list.findIndex(e_=>e_===e) === -1) list.push(e);
+                    });
+                }
+                if (netSP.plots[index].outliers['vector'].length > 0) {
+                    netSP.plots[index].outliers['vector'].forEach(e=>{
                         if (list.findIndex(e_=>e_===e) === -1) list.push(e);
                     });
                 }
@@ -359,6 +379,11 @@ function onTabChange (myTab_) {
                         if (list.findIndex(e_=>e_===e) === -1) list.push(e);
                     });
                 }
+                if (netSP.plots[index].outliers['vector'].length > 0) {
+                    netSP.plots[index].outliers['vector'].forEach(e=>{
+                        if (list.findIndex(e_=>e_===e) === -1) list.push(e);
+                    });
+                }
                 if (list.length > 0) {
                     list.forEach(d=>{
                         let instance = netSP.plots[index].arrows[d].instance.map(e=>netSP.plots[index].data[e].name);
@@ -391,13 +416,11 @@ function onTabChange (myTab_) {
         });
         d3.select('#minNum').on('input',function () {
             netSP.minNumberArrows = +this.value;
-            d3.select('.cover').classed('hidden', false);
-            DataProcessing.AdaptiveBinning();
-            Management.ComputeMetrics();
-            Management.ClusterAndDraw();
         });
         d3.select('#maxNum').on('input',function () {
             netSP.maxNumberArrows = +this.value;
+        });
+        d3.select('#submit_bin').on('click',function (){
             d3.select('.cover').classed('hidden', false);
             DataProcessing.AdaptiveBinning();
             Management.ComputeMetrics();
@@ -406,6 +429,8 @@ function onTabChange (myTab_) {
         // Choose step for multi-revolution
         d3.select('#timeStep').on('input',function () {
             netSP.step = +this.value;
+        });
+        d3.select('#submit_step').on('click',function (){
             EncodePlots.NetScatterPlot();
             Management.FormPlots();
             DataProcessing.NetScatterPlot(netSP.data);

@@ -138,16 +138,20 @@ class Management {
             // e.metrics['IQR'] = ComputeMetrics.ComputeIQR(e.quantities.edgeLength);
             e.metrics['Outlying length'] = ComputeMetrics.Outlying(e.quantities.edgeLength,true).score;
             e.metrics['Outlying angle'] = ComputeMetrics.Outlying(e.quantities.angle,false).score;
-            e.metrics['Pos correlation'] = ComputeMetrics.PositiveCorrelation(e.quantities.angle);
-            e.metrics['Neg correlation'] = ComputeMetrics.NegativeCorrelation(e.quantities.angle);
+            let myO = ComputeMetrics.OutlyingPattern(e.arrows);
+            e.metrics['Outlying vector'] = myO.score;
+            // e.metrics['Pos correlation'] = ComputeMetrics.PositiveCorrelation(e.quantities.angle);
+            // e.metrics['Neg correlation'] = ComputeMetrics.NegativeCorrelation(e.quantities.angle);
+            e.metrics['Correlation'] = ComputeMetrics.Correlation(e.quantities.angle);
             e.outliers.length = ComputeMetrics.Outlying(e.quantities.edgeLength,true).outliers;
             e.outliers.angle = ComputeMetrics.Outlying(e.quantities.angle,false).outliers;
+            e.outliers.vector = myO.outliers;
             e.metrics['Intersection'] = ComputeMetrics.Intersection(e.arrows);
             let myTranslation = ComputeMetrics.Translation(e.arrows,e.points);
             e.metrics['Translation'] = myTranslation.score;
             e.outliers.position = myTranslation.outliers;
-            // e.metrics['Entropy'] = ComputeMetrics.Entropy(e.quantities.angle);
-            e.metrics['Similarity'] = ComputeMetrics.Similarity(e.arrows);
+            e.metrics['Entropy'] = ComputeMetrics.Entropy(e.quantities.angle);
+            e.metrics['Homogeneous'] = ComputeMetrics.Similarity(e.arrows);
         });
     }
 
@@ -179,22 +183,24 @@ class Management {
                 },
                 metrics: {
                     // 'q90': 0,
-                    'Skewed length': 0,
-                    'Skewed angle': 0,
+                    // 'Skewed length': 0,
+                    // 'Skewed angle': 0,
                     // 'IQR': 0,
+                    'Outlying vector':0,
                     'Outlying length': 0,
                     'Outlying angle': 0,
-                    'Pos correlation': 0,
-                    'Neg correlation': 0,
+                    'Correlation': 0,
+                    // 'Neg correlation': 0,
+                    'Entropy': 0,
                     'Intersection': 0,
                     'Translation': 0,
-                    // 'Entropy': 0,
-                    'Similarity': 0,
+                    'Homogeneous': 0,
                 },
                 outliers: {
                     length: [],
                     angle: [],
                     position: [],
+                    vector: [],
                 },
                 outliersList: {
                     length: [],

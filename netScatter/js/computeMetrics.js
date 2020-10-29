@@ -287,16 +287,16 @@ class ComputeMetrics {
             angleData.forEach(e=>{
                 if (typeof (e) === 'number') {
                     // if (e.value <= Math.PI && e.value > Math.PI/2) {
-                    if (e <= Math.PI && e > Math.PI/2) {
+                    if (e < Math.PI && e >= Math.PI/2) {
                         quadRant[1] += 1;
                         // } else if (e.value <= Math.PI/2 && e.value > 0) {
-                    } else if (e <= Math.PI/2 && e > 0) {
+                    } else if (e < Math.PI/2 && e >= 0) {
                         quadRant[0] += 1;
                         // } else if (e.value <= 0 && e.value > -Math.PI/2) {
-                    } else if (e <= 0 && e > -Math.PI/2) {
+                    } else if (e < 0 && e >= -Math.PI/2) {
                         quadRant[3] += 1;
                         // } else if (e.value <= -Math.PI/2 && e.value >= -Math.PI) {
-                    } else if (e <= -Math.PI/2 && e >= -Math.PI) {
+                    } else if (e < -Math.PI/2 && e >= -Math.PI) {
                         quadRant[2] += 1;
                     }
                 }
@@ -362,6 +362,31 @@ class ComputeMetrics {
         return score > 0? score: 0;
     }
 
+    // Compute correlation
+    // angleData is array of => odd
+    // objects in format: {name, value} => odd
+    // angleData is array of angle [x1,x2,...]
+    // value: angle from -pi to pi
+    static Correlation (angleData) {
+        let score = 0;
+        let N = angleData.length;
+        if (N) {
+            angleData.forEach(e=>{
+                if (typeof (e) === 'number') {
+                    // let check1 = e.value >= 0 && e.value <= Math.PI/2;
+                    let check1 = e >= 0 && e < Math.PI/2;
+                    // let check2 = e.value >= -Math.PI && e.value <= -Math.PI/2;
+                    let check2 = e >= -Math.PI && e < -Math.PI/2;
+                    let check = check1 || check2;
+                    score += check ? 1 : 0;
+                }
+            });
+            score /= N;
+            score = 2*Math.abs(score-0.5);
+        }
+        return score;
+    }
+
     // compute complexity
     // standard deviation of Euc dis from origin of vectors in space of 4 dimensions
     // vectors in space of 4 dimensions: 2 coordinates of starting points, 2 coordinates of ending points
@@ -386,6 +411,30 @@ class ComputeMetrics {
             s = 1 - 2*Math.sqrt(s);
             return (s>0) ? s : 0;
         } else return 0;
+    }
+
+    // compute outlying pattern
+    static OutlyingPattern(binData) {
+        let score = 0;
+        let outliers = [];
+        if (binData.length > 0) {
+            let data = binData.map(e=>[e.start[0],e.start[1],e.end[0],e.end[1]]);
+            let MST = Graph.Prim(data);
+            outliers = Graph.getOutliers(MST).outliers;
+            let edge = MST.map(e=>e[2]);
+            edge.sort((a,b)=>a-b);
+            let q1 = edge[Math.floor(edge.length*0.25)];
+            let q2 = edge[Math.floor(edge.length*0.5)];
+            let q3 = edge[Math.floor(edge.length*0.75)];
+            let index = edge.findIndex(e=>e>q3+1.5*(q3-q1));
+            let t = 0, o = 0;
+            for (let i = 0; i < edge.length; i++) {
+                if (i >= index) o+=Math.abs(edge[i]-q2);
+                t += Math.abs(edge[i]-q2);
+            }
+            score = o/t;
+        }
+        return {score:score,outliers:outliers};
     }
 
 }

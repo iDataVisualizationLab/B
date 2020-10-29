@@ -4,7 +4,15 @@ class Paper {
 
     // draw high low scores
     static HighLowScore () {
-        let data = Paper.MyData();
+        // let data = Paper.MyData();
+        let data = [];
+        let xVar = 'Total Nonfarm';
+        let yVar = 'Total Private';
+        let tVar = 'Jul 2009';
+        let index = netSP.encode.findIndex(e=>e[0]===xVar&&e[1]===yVar&&e[2]===tVar);
+        netSP.plots[index].arrows.forEach((e,i)=>{
+            data[i] = {start:[e.start[0],e.start[1]],end:[e.end[0],e.end[1]]};
+        })
         let vectorLength = ComputeQuantities.EdgeLengthBin(data);
         let vectorAngle = ComputeQuantities.AngleBin(data);
         let outlyingLength = ComputeMetrics.Outlying(vectorLength,true).score;
@@ -14,8 +22,11 @@ class Paper {
         let intersection = ComputeMetrics.Intersection(data);
         let translation = ComputeMetrics.Translation(data,[]).score;
         let complexity = ComputeMetrics.Similarity(data);
+        let outlyingVector = ComputeMetrics.OutlyingPattern(data).score;
         // let complexity = ComputeMetrics.Entropy(vectorAngle);
         Paper.netScatterPlot('HMLCanvas',[100,4000],[300,300],data);
+        DesignApplication.CircularBarChart('HMLCanvas',[600,4150],150,index,false);
+        console.log('Outlying vector: '+outlyingVector);
         console.log('Outlying length: '+outlyingLength);
         console.log('Outlying angle: '+outlyingAngle);
         console.log('Positive correlation: '+positiveCorrelation);
@@ -291,17 +302,17 @@ class Paper {
         // high similarity
         // for (let i = 0; i < 30; i++) {
         //     let x0, y0, x1, y1;
-        //     if (i < 10) {
-        //         x0 = 0.7+Math.random()*0.2;
-        //         y0 = 0.1+Math.random()*0.2;
-        //         x1 = x0+(0.1)*Math.cos(5*Math.PI/6);
-        //         y1 = y0+(0.1)*Math.sin(5*Math.PI/6);
-        //     } else {
+        //     // if (i < 10) {
+        //     //     x0 = 0.7+Math.random()*0.2;
+        //     //     y0 = 0.1+Math.random()*0.2;
+        //     //     x1 = x0+(0.1)*Math.cos(5*Math.PI/6);
+        //     //     y1 = y0+(0.1)*Math.sin(5*Math.PI/6);
+        //     // } else {
         //         x0 = 0.1+Math.random()*0.3;
         //         y0 = 0.7+Math.random()*0.2;
         //         x1 = x0+(0.1)*Math.cos(Math.PI/6);
         //         y1 = y0+(0.1)*Math.sin(Math.PI/6);
-        //     }
+        //     // }
         //     data[i] = {start:[x0,y0],end:[x1,y1]};
         // }
 
@@ -316,14 +327,70 @@ class Paper {
         //     data[i] = {start:[x0,y0],end:[x1,y1]};
         // }
 
+        // high outlying vector
+        // for (let i = 0; i < 30; i++) {
+        //     let x0, y0, x1, y1, r, a;
+        //     if (i < 25) {
+        //         x0 = Math.random()*0.1+0.8;
+        //         y0 = Math.random()*0.1+0.1;
+        //         r = 0.1;
+        //         a = Math.PI*3/4;
+        //         x1 = x0+r*Math.cos(a);
+        //         y1 = y0+r*Math.sin(a);
+        //         data[i] = {start:[x0,y0],end:[x1,y1]};
+        //     } else {
+        //         let c = Math.floor(Math.random()*3);
+        //         switch (c) {
+        //             case 0:
+        //                 x0 = Math.random()*0.1;
+        //                 y0 = Math.random()*0.1;
+        //                 r = 0.1;
+        //                 a = Math.PI/4;
+        //                 x1 = x0+r*Math.cos(a);
+        //                 y1 = y0+r*Math.sin(a);
+        //                 break;
+        //             case 1:
+        //                 x0 = Math.random()*0.1;
+        //                 y0 = Math.random()*0.1+0.9;
+        //                 r = 0.1;
+        //                 a = -Math.PI/4;
+        //                 x1 = x0+r*Math.cos(a);
+        //                 y1 = y0+r*Math.sin(a);
+        //                 break;
+        //             case 2:
+        //                 x0 = Math.random()*0.1+0.9;
+        //                 y0 = Math.random()*0.1+0.9;
+        //                 r = 0.1;
+        //                 a = -Math.PI*3/4;
+        //                 x1 = x0+r*Math.cos(a);
+        //                 y1 = y0+r*Math.sin(a);
+        //                 break;
+        //         }
+        //         data[i] = {start:[x0,y0],end:[x1,y1]};
+        //     }
+        // }
+
+        // low outlying vector
+        // for (let i = 0; i < 30; i++) {
+        //     let l = Paper.normalDistribution()*0.9-0.1;
+        //     let d = Paper.normalDistribution()*(1-l*l)*0.7;
+        //     let x1 = 0.5+(l-d)/Math.sqrt(2);
+        //     let y1 = 0.5+(d+l)/Math.sqrt(2);
+        //     let a = -Math.PI/6-Math.random()*Math.PI/6;
+        //     let r = Math.random()*1/10+(1/6-1/10);
+        //     let x2 = x1 + r*Math.cos(a);
+        //     let y2 = y1 + r*Math.sin(a);
+        //     data[i] = {start:[x1,y1],end:[x2,y2]};
+        // }
+
         // get certain plot
-        let xVar = 'Total Nonfarm';
-        let yVar = 'Total Private';
-        let tVar = 'Apr 2020';
-        let index = netSP.encode.findIndex(e=>e[0]===xVar&&e[1]===yVar&&e[2]===tVar);
-        netSP.plots[index].arrows.forEach((e,i)=>{
-            data[i] = {start:[e.start[0],e.start[1]],end:[e.end[0],e.end[1]]};
-        })
+        // let xVar = 'Total Nonfarm';
+        // let yVar = 'Total Private';
+        // let tVar = 'Apr 2020';
+        // let index = netSP.encode.findIndex(e=>e[0]===xVar&&e[1]===yVar&&e[2]===tVar);
+        // netSP.plots[index].arrows.forEach((e,i)=>{
+        //     data[i] = {start:[e.start[0],e.start[1]],end:[e.end[0],e.end[1]]};
+        // })
 
 
         return data;
