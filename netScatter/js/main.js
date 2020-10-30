@@ -768,6 +768,7 @@ function reCalculateTsne() {
     cluster_map(cluster_info);
     onchangeVizType(controlVariable.visualizing);
     onchangeVizdata(controlVariable.visualizing);
+    if (controlVariable.visualizing === 'LMH') Management.Visualization();
 }
 
 function cluster_map (dataRaw) {

@@ -82,7 +82,8 @@ class Management {
         }
         // Create canvas
         // let myWindow = controlVariable.displaySeries ? [1300,2800] : [1300,2300];
-        let myWindow = controlVariable.displaySeries ? [2600,5600] : [2600,4600];
+        // let myWindow = controlVariable.displaySeries ? [2600,5600] : [2600,4600];
+        let myWindow = [2600,4600];
         DesignApplication.CreateCanvas('mainCanvasHolder','HMLCanvas','myCanvas',myWindow[0],myWindow[1],'#ffffff');
         // Draw plots
         if (controlVariable.metricSeries) {
@@ -92,15 +93,19 @@ class Management {
                 font: 'Arial',
                 size: 30,
                 position: {
-                    high: controlVariable.displaySeries ? [100,600] : [100,100],
-                    median: controlVariable.displaySeries ? [500,600] : [500,100],
-                    low: controlVariable.displaySeries ? [900,600] : [900,100],
+                    // high: controlVariable.displaySeries ? [200,600] : [200,100],
+                    high: [200,100],
+                    // median: controlVariable.displaySeries ? [900,600] : [900,100],
+                    median: [900,100],
+                    // low: controlVariable.displaySeries ? [1600,600] : [1600,100],
+                    low: [1600,100],
                 }
             };
             let plotInfo = {
                 // size: [150,150],
                 size: [300,300],
-                position: controlVariable.displaySeries ? [100,700] : [100,200],
+                // position: controlVariable.displaySeries ? [100,700] : [100,200],
+                position: [100,200],
                 notations: {
                     font: 'Arial',
                     size: 13,

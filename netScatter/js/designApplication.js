@@ -86,29 +86,29 @@ class DesignApplication {
                 }
             }
             // draw original time series
-            if (controlVariable.displaySeries) {
-                let instance = controlVariable.interaction.instance;
-                let variable1 = controlVariable.interaction.variable1;
-                let variable2 = controlVariable.interaction.variable2;
-                let time = controlVariable.interaction.time;
-                let index = netSP.encode.findIndex(e=>{
-                    let check1 = controlVariable.interaction.variable1 === e[0] && controlVariable.interaction.variable2 === e[1] && controlVariable.interaction.time === e[2];
-                    let check2 = controlVariable.interaction.variable1 === e[1] && controlVariable.interaction.variable2 === e[0] && controlVariable.interaction.time === e[2];
-                    return check1 || check2;
-                });
-                // let outliers1 = [];
-                // if (netSP.plots[index].outliers['length'].length > 0) {
-                //     netSP.plots[index].outliers['length'].forEach(e=>outliers1.push(e));
-                // }
-                // let outliers2 = [];
-                // if (netSP.plots[index].outliers.angle.length > 0) {
-                //     netSP.plots[index].outliers.angle.forEach(e=>outliers2.push(e));
-                // }
-                // DesignApplication.timeSeries(canvasID,instance,variable1,[100,50],[800,200],time,outliers1,outliers2);
-                // DesignApplication.timeSeries(canvasID,instance,variable2,[100,300],[800,200],time,outliers1,outliers2);
-                DesignApplication.scatterPlot(canvasID,instance,variable1,variable2,netSP.encode[index-netSP.step][2],[100,50],[300,300],'rgb(255,0,0)',netSP.plots[index].arrows.map(e=>e.start));
-                DesignApplication.scatterPlot(canvasID,instance,variable1,variable2,time,[500,50],[300,300],'rgb(0,0,255)',netSP.plots[index].arrows.map(e=>e.end));
-            }
+            // if (controlVariable.displaySeries) {
+            //     let instance = controlVariable.interaction.instance;
+            //     let variable1 = controlVariable.interaction.variable1;
+            //     let variable2 = controlVariable.interaction.variable2;
+            //     let time = controlVariable.interaction.time;
+            //     let index = netSP.encode.findIndex(e=>{
+            //         let check1 = controlVariable.interaction.variable1 === e[0] && controlVariable.interaction.variable2 === e[1] && controlVariable.interaction.time === e[2];
+            //         let check2 = controlVariable.interaction.variable1 === e[1] && controlVariable.interaction.variable2 === e[0] && controlVariable.interaction.time === e[2];
+            //         return check1 || check2;
+            //     });
+            //     // let outliers1 = [];
+            //     // if (netSP.plots[index].outliers['length'].length > 0) {
+            //     //     netSP.plots[index].outliers['length'].forEach(e=>outliers1.push(e));
+            //     // }
+            //     // let outliers2 = [];
+            //     // if (netSP.plots[index].outliers.angle.length > 0) {
+            //     //     netSP.plots[index].outliers.angle.forEach(e=>outliers2.push(e));
+            //     // }
+            //     // DesignApplication.timeSeries(canvasID,instance,variable1,[100,50],[800,200],time,outliers1,outliers2);
+            //     // DesignApplication.timeSeries(canvasID,instance,variable2,[100,300],[800,200],time,outliers1,outliers2);
+            //     DesignApplication.scatterPlot(canvasID,instance,variable1,variable2,netSP.encode[index-netSP.step][2],[100,50],[300,300],'rgb(255,0,0)',netSP.plots[index].arrows.map(e=>e.start));
+            //     DesignApplication.scatterPlot(canvasID,instance,variable1,variable2,time,[500,50],[300,300],'rgb(0,0,255)',netSP.plots[index].arrows.map(e=>e.end));
+            // }
         } else {
             ctx.font = headerInfo.size + 'px ' + headerInfo.font;
             ctx.fillText('There is no plot after filtering.',headerInfo.position.high[0],headerInfo.position.high[1]);
