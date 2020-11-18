@@ -75,34 +75,27 @@
           <div  class="row s12">
             <select id="datacom" class="col s7">
               <option value="employment"> US Employment Data</option>
-              <option value="RUL">RUL data</option>
+<!--              <option value="RUL">RUL data</option>-->
               <option value="stock">SP500 Stock data</option>
-              <option id="ecg" value="ECG">ECG data</option>
-              <option value="EEG">EEG data</option>
-              <option id="test" value="Bao">Bao dataset</option>
-              <option value="death_rate">Death rate dataset</option>
+<!--              <option id="ecg" value="ECG">ECG data</option>-->
+<!--              <option value="EEG">EEG data</option>-->
+<!--              <option id="test" value="Bao">Bao dataset</option>-->
+              <option selected value="death_rate">Death rate dataset</option>
               <option value="house_price">House price and Financial employment</option>
-              <option selected value="Life_expectancy">Life expectancy data</option>
-              <option value="ozone">Ozone level detection</option>
-              <option value="air_quality">Beijing air quality</option>
-              <option value="DowJones">Dow Jones Index</option>
-              <optgroup label="HPCC">
-                <option value="HPCC_0">Jun 2nd 2019</option>
-                <option value="HPCC_1">Jun 3rd 2019</option>
-                <option value="HPCC_2">Jun 4th 2019</option>
-                <option value="HPCC_3">Jun 5th 2019</option>
-                <option value="HPCC_4">Jun 6th 2019</option>
-                <option value="HPCC_5">Jun 7th 2019</option>
-                <option value="HPCC_6">Jun 8th 2019</option>
-              </optgroup>
-            </select>
-          </div>
-          <label for="analysis" class="col s5" style="color: #000000">Types of analysis</label>
-          <div class="row s12">
-            <select id="analysis" class="col s7">
-              <option value="1D">One dimension</option>
-              <option selected value="2D">Two dimension</option>
-              <!--<option value="2D">Two dimension</option>-->
+              <option value="Life_expectancy">Life expectancy data</option>
+              <option value="hpcc">HPCC data</option>
+<!--              <option value="ozone">Ozone level detection</option>-->
+<!--              <option value="air_quality">Beijing air quality</option>-->
+<!--              <option value="DowJones">Dow Jones Index</option>-->
+<!--              <optgroup label="HPCC">-->
+<!--                <option value="HPCC_0">Jun 2nd 2019</option>-->
+<!--                <option value="HPCC_1">Jun 3rd 2019</option>-->
+<!--                <option value="HPCC_2">Jun 4th 2019</option>-->
+<!--                <option value="HPCC_3">Jun 5th 2019</option>-->
+<!--                <option value="HPCC_4">Jun 6th 2019</option>-->
+<!--                <option value="HPCC_5">Jun 7th 2019</option>-->
+<!--                <option value="HPCC_6">Jun 8th 2019</option>-->
+<!--              </optgroup>-->
             </select>
           </div>
           <label for="visualizing" class="col s5" style="color: #000000">Visualizing:</label>
@@ -183,12 +176,41 @@
               </select>
             </div>
           </div>
-          <label for="variable" class="col s4" style="color: #000000">Variables:</label>
+          <label for="variable1" class="col s4" style="color: #000000">x-variable</label>
           <div class="row s12">
-            <div id="divVariable">
-              <select id="variable" class="col s8">
+            <div id="divVariable1">
+              <select id="variable1" class="col s8">
                 <option value="noOption">--none--</option>
               </select>
+            </div>
+          </div>
+          <label for="variable2" class="col s4" style="color: #000000">y-variable</label>
+          <div class="row s12">
+            <div id="divVariable2">
+              <select id="variable2" class="col s8">
+                <option value="noOption">--none--</option>
+              </select>
+            </div>
+          </div>
+          <label for="myTime1" class="col s4" style="color: #000000">highlight time step 1</label>
+          <div class="row s12">
+            <div>
+              <select id="myTime1" class="col s8">
+                <option value="noOption">--none--</option>
+              </select>
+            </div>
+          </div>
+          <label for="myTime2" class="col s4" style="color: #000000">highlight time step 2</label>
+          <div class="row s12">
+            <div>
+              <select id="myTime2" class="col s8">
+                <option value="noOption">--none--</option>
+              </select>
+            </div>
+          </div>
+          <div class="row s12">
+            <div>
+                <button id="submit">Submit</button>
             </div>
           </div>
           <!--                    <label for="variableX" class="col s4" style="color: #000000">Variables 1:</label>-->
@@ -221,12 +243,12 @@
               </label>
 
               <label class="toolTip" data-title="Radar chart" >
-                <input name="viztype" type="radio" value="radar"/>
+                <input name="viztype" type="radio" checked value="radar"/>
                 <i class="icon-radarShape material-icons"></i>
               </label>
 
               <label class="toolTip" data-title="Nightingale Rose Chart" >
-                <input name="viztype" type="radio" checked value="rose" />
+                <input name="viztype" type="radio" value="rose" />
                 <i class="icon-roseShape material-icons"></i>
               </label>
 

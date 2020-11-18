@@ -23,29 +23,29 @@ let numcell = 40;
 let cellsize = 1/numcell;
 let cellval = [];
 let lag = 0;
-let selecteddata= 'Life_expectancy';
+let selecteddata= 'death_rate';
 let myPeriodogramDraw = [];
 let peakPeri = [];
 
 // VARIABLES FOR CONTROLLING
 let needupdate = false;
-// let needcalculation = true; //TO DO
 let needcalculation = true;
+let doneCalculation = false;
 let videoOnly = true;
 let isFirstTime = true;
 
 // VARIABLES FOR VISUALIZATION
 let displayplot = [];   // displayplot[measure index][0->numplot-1:lowest, numplot->2numplot-1: middle, 2numplot->3numplot-1: highest][sample, x-var, y-var,value,index]
 let width = 2000;
-let height = 6000;
-let numColumn = (selectedDisplay === "1D") ? 30 : 72;
+let height = 2400;
+let numColumn = 72;
 let columnSize = width/numColumn;
-let numplot = 20;
+let numplot = 10;
 let newnumplot = 0;
 let selectedmeasure = 0;
 let choose = false;   // for selections
 let chooseType = "series";
-let type = selectedDisplay === "1D" ? [0,0,0,1,1,1,2,2,2] : [0,0,0,0,1,1,1,1];   // for type of measures in selection button
+let type = [0,0,0,1,1,1,1,1];   // for type of measures in selection button
 let checkfilter = [];
 let valfilter = [];
 for (var i = 0; i < nummeasure; i++) {
@@ -65,7 +65,10 @@ let umapTS;
 let visualizingOption = 'LMH';
 let interactionOption = {
     'sample': 'noOption',
-    'variable': 'noOption'
+    'variable1': 'noOption',
+    'variable2': 'noOption',
+    'time1':'noOption',
+    'time2':'noOption',
 };
 var TsneTSopt = {width:myWidth-300,height:myHeight};
 var PCAopt = {width:myWidth-300,height:myHeight};
@@ -211,30 +214,37 @@ function onTabChange (myTab_) {
                 d3.select('#mainCanvasHolder').classed('hide',false);
                 d3.select('#tSNE').classed('hide',true);
                 d3.select('#dataInstances').attr('disabled','');
-                d3.select('#variable').attr('disabled','');
+                d3.select('#variable1').attr('disabled','');
+                d3.select('#variable2').attr('disabled','');
             }
             if(visualizingOption === 'tSNE'||visualizingOption === 'PCA'||visualizingOption === 'UMAP') {
                 d3.select('#mainCanvasHolder').classed('hide', true);
                 d3.select('#tSNE').classed('hide', false);
                 recalculateCluster( {clusterMethod: $('#clusterMethod').val() || 'kmean',bin:{k:$('#knum').val() || 6,iterations:$('#kiteration').val() || 1}},function(){
-                    clickArr = [];
                     plotPosition = [];
                     reCalculateTsne();
                 });
                 d3.select('#dataInstances').attr('disabled',null);
-                d3.select('#variable').attr('disabled',null);
+                d3.select('#variable1').attr('disabled',null);
+                d3.select('#variable2').attr('disabled',null);
             }
-            clickArr = [];      // delete clickArr after changing mode
+            clickArr.length = 0;      // delete clickArr after changing mode
             interactionOption.sample = 'noOption';
-            interactionOption.variable = 'noOption';
+            interactionOption.variable1 = 'noOption';
+            interactionOption.variable2 = 'noOption';
+            interactionOption.time1 = 'noOption';
+            interactionOption.time2 = 'noOption';
             $('#dataInstances').val('noOption').selected = true;
-            $('#variable').val('noOption').selected = true;
+            $('#variable1').val('noOption').selected = true;
+            $('#variable2').val('noOption').selected = true;
+            $('#myTime1').val('noOption').selected = true;
+            $('#myTime2').val('noOption').selected = true;
         });
         // visualizing option
         d3.select('#mainCanvasHolder').classed('hide',false);
         d3.select('#visualizing').on('change',function(){
             visualizingOption = this.value;
-            if (visualizingOption !== 'LHM') {
+            if (visualizingOption !== 'LMH') {
                 d3.select('#ecg').attr('disabled',true);
                 d3.select('#test').attr('disabled',true);
             } else {
@@ -246,7 +256,8 @@ function onTabChange (myTab_) {
                 d3.select('#mainCanvasHolder').classed('hide',false);
                 d3.select('#tSNE').classed('hide',true);
                 d3.select('#dataInstances').attr('disabled','');
-                d3.select('#variable').attr('disabled','');
+                d3.select('#variable1').attr('disabled','');
+                d3.select('#variable2').attr('disabled','');
                 d3.select('#metrics').classed('hidden',false);
             }
             if(visualizingOption === 'PCA') {
@@ -256,8 +267,9 @@ function onTabChange (myTab_) {
                 onchangeVizType(visualizingOption);
                 onchangeVizdata(visualizingOption);
                 d3.select('#dataInstances').attr('disabled',null);
-                d3.select('#variable').attr('disabled',null);
-                clickArr = [];
+                d3.select('#variable1').attr('disabled',null);
+                d3.select('#variable2').attr('disabled',null);
+                clickArr.length = 0;
             }
             if(visualizingOption === 'UMAP') {
                 d3.select('#mainCanvasHolder').classed('hide',true);
@@ -266,8 +278,9 @@ function onTabChange (myTab_) {
                 onchangeVizType(visualizingOption);
                 onchangeVizdata(visualizingOption);
                 d3.select('#dataInstances').attr('disabled',null);
-                d3.select('#variable').attr('disabled',null);
-                clickArr = [];
+                d3.select('#variable1').attr('disabled',null);
+                d3.select('#variable2').attr('disabled',null);
+                clickArr.length = 0;
             }
             if(visualizingOption === 'tSNE') {
                 d3.select('#mainCanvasHolder').classed('hide',true);
@@ -276,14 +289,41 @@ function onTabChange (myTab_) {
                 onchangeVizType(visualizingOption);
                 onchangeVizdata(visualizingOption);
                 d3.select('#dataInstances').attr('disabled',null);
-                d3.select('#variable').attr('disabled',null);
-                clickArr = [];
+                d3.select('#variable1').attr('disabled',null);
+                d3.select('#variable2').attr('disabled',null);
+                clickArr.length = 0;
             }
+            interactionOption.sample = 'noOption';
+            interactionOption.variable1 = 'noOption';
+            interactionOption.variable2 = 'noOption';
+            interactionOption.time1 = 'noOption';
+            interactionOption.time2 = 'noOption';
+            $('#dataInstances').val('noOption').selected = true;
+            $('#variable1').val('noOption').selected = true;
+            $('#variable2').val('noOption').selected = true;
+            $('#myTime1').val('noOption').selected = true;
+            $('#myTime2').val('noOption').selected = true;
         });
-        // interaction option - instances
+        // interaction option
         d3.select('#dataInstances').on('change',function(){
             interactionOption.sample = this.value;
-            if (interactionOption.sample !== 'noOption') {clickArr = []; currentPage = 1;}    // delete clicked charts after changing to interaction
+            if (interactionOption.sample !== 'noOption') {clickArr.length = 0; currentPage = 1;}    // delete clicked charts after changing to interaction
+        });
+        d3.select('#variable1').on('change',function(){
+            interactionOption.variable1 = this.value;
+            if (interactionOption.variable1 !== 'noOption') {clickArr.length = 0; currentPage = 1;}   // delete clicked charts after changing to interaction
+        });
+        d3.select('#variable2').on('change',function(){
+            interactionOption.variable2 = this.value;
+            if (interactionOption.variable2 !== 'noOption') {clickArr.length = 0; currentPage = 1;}   // delete clicked charts after changing to interaction
+        });
+        d3.select('#myTime1').on('change',function(){
+            interactionOption.time1 = +this.value;
+        });
+        d3.select('#myTime2').on('change',function(){
+            interactionOption.time2 = +this.value;
+        });
+        d3.select('#submit').on('click',function(){
             switch (visualizingOption) {
                 case 'PCA':
                     pcaTS.renderPCA();
@@ -294,23 +334,13 @@ function onTabChange (myTab_) {
                 case 'UMAP':
                     umapTS.renderUMAP();
                     break;
-            }
-        });
-        d3.select('#variable').on('change',function(){
-            interactionOption.variable = this.value;
-            if (interactionOption.variable !== 'noOption') {clickArr = []; currentPage = 1;}   // delete clicked charts after changing to interaction
-            switch (visualizingOption) {
-                case 'PCA':
-                    pcaTS.renderPCA();
-                    break;
-                case 'tSNE':
-                    tsneTS.renderTSNE();
-                    break;
-                case 'UMAP':
-                    umapTS.renderUMAP();
+                case 'LMH':
+                    needupdate = true;
+                    draw();
                     break;
             }
         });
+
         // display chart options
         $('input[type=radio][name=displayType]').change(function() {
             displayType = this.value;
@@ -334,89 +364,7 @@ function onTabChange (myTab_) {
         // myDRCanvas.call(d3.zoom().scaleExtent([0.5, 8]).on("zoom", zoomFunction()));
 
         // dimension option
-        d3.select('#analysis').on('change',function(){
-            selectedDisplay = this.value;
-            type = selectedDisplay === "1D" ? [0,0,0,1,1,1,2,2,2] : [0,0,0,0,1,1,1,1];
-            measurename = [];
-            measureObj = {};
-            switch (this.value) {
-                case "1D":
-                    nummeasure = 11;
-                    measurename = [
-                        'Trend',
-                        'Periodicity',
-                        'Randomness',
-                        'Mean',
-                        'Dispersion',
-                        'Outlying',
-                        'Net mean',
-                        'Net dispersion',
-                        'Net Outlying',
-                    ];
-                    measureObj = {
-                        'Trend':0,
-                        'Periodicity':1,
-                        'Randomness':2,
-                        'Mean':3,
-                        'Dispersion':4,
-                        'Skewness':5,
-                        'Net mean':6,
-                        'Net dispersion':7,
-                        'Net skewness':8,
-                    };
-                    d3.select('#note1').classed('hide',false);
-                    d3.select('#note2').classed('hide',true);
-                    break;
-                case "2D":
-                    nummeasure = 8;
-                    measurename = [
-                        'Outlying',
-                        // 'Skinny',
-                        // 'Skewed',
-                        'Clumpy',
-                        // 'Sparse',
-                        'Striated',
-                        'Correlation',
-                        "Intersections",
-                        "Circular",
-                        'Trend',
-                        'Length',
-                    ];
-                    measureObj = {
-                        'Outlying':0,
-                        // 'Skinny':1,
-                        // 'Skewed':2,
-                        'Clumpy':1,
-                        // 'Sparse':4,
-                        'Striated':2,
-                        'Correlation':3,
-                        "Intersections":4,
-                        "Circular":5,
-                        'Trend':6,
-                        'Length':7
-                    };
-                    d3.select('#note1').classed('hide',true);
-                    d3.select('#note2').classed('hide',false);
-                    break;
-            }
 
-            updateMeasureName();
-            needcalculation = true;
-            radarChartclusteropt.schema = serviceFullList;
-            // update MetricController
-            MetricController = {};
-            MetricController = radarController();
-            MetricController.graphicopt({width:365,height:365})
-                .div(d3.select('#RadarController'))
-                .tablediv(d3.select('#RadarController_Table'))
-                .axisSchema(serviceFullList)
-                .onChangeValue(onSchemaUpdate)
-                .init();
-            // update measureControl
-            settingMeasureUpdate();
-
-            d3.select('.cover').classed('hidden', false);
-        });
         // display mode
         // d3.select('#displaymode').on('change',function (){
         //     choose = (+this.value !== 0);
@@ -518,6 +466,7 @@ function switchTheme(){
 ///////////////////////////////
 //////////////////////////////
 function analyzedata() {
+    doneCalculation = false;
     // d3.select('.cover').classed('hide',false);
     let filename0;
     let filename1;
@@ -528,31 +477,31 @@ function analyzedata() {
             filename1 = "data/statecode.txt";
             filename2 = "data/Industrycode_reduced.txt";
             break;
-        case 'RUL':
-            filename0 = "data/RUL_data.txt";
-            filename1 = "data/engine_code.txt";
-            filename2 = "data/sensor_code.txt";
-            break;
+        // case 'RUL':
+        //     filename0 = "data/RUL_data.txt";
+        //     filename1 = "data/engine_code.txt";
+        //     filename2 = "data/sensor_code.txt";
+        //     break;
         case 'stock':
             filename0 = "data/stock_data.txt";
             filename1 = "data/year_code.txt";
             filename2 = "data/var_code.txt";
             break;
-        case 'ECG':
-            filename0 = "data/ECG_dog.txt";
-            filename1 = "data/ECG_sample_code.txt";
-            filename2 = "data/ECG_varCode.txt";
-            break;
-        case 'EEG':
-            filename0 = "data/eeg_data.txt";
-            filename1 = "data/eeg_code.txt";
-            filename2 = "data/eeg_v_code.txt";
-            break;
-        case 'Bao':
-            filename0 = "data/Bao_dataset.txt";
-            filename1 = "data/Bao_data_sample.txt";
-            filename2 = "data/Bao_data_var.txt";
-            break;
+        // case 'ECG':
+        //     filename0 = "data/ECG_dog.txt";
+        //     filename1 = "data/ECG_sample_code.txt";
+        //     filename2 = "data/ECG_varCode.txt";
+        //     break;
+        // case 'EEG':
+        //     filename0 = "data/eeg_data.txt";
+        //     filename1 = "data/eeg_code.txt";
+        //     filename2 = "data/eeg_v_code.txt";
+        //     break;
+        // case 'Bao':
+        //     filename0 = "data/Bao_dataset.txt";
+        //     filename1 = "data/Bao_data_sample.txt";
+        //     filename2 = "data/Bao_data_var.txt";
+        //     break;
         case 'death_rate':
             filename0 = "data/birth_death_rate.csv";
             filename1 = "data/death_rate_code.txt";
@@ -568,56 +517,60 @@ function analyzedata() {
             filename1 = 'data/Country_code.txt';
             filename2 = 'data/Gender_code.txt';
             break;
-        case 'ozone':
-            filename0 = "data/ozone_onehour.txt";
-            filename1 = "data/ozone_sample.txt";
-            filename2 = "data/ozone_variable.txt";
-            break;
-        case 'air_quality':
-            filename0 = "data/airQuality_reduced.txt";
-            filename1 = "data/airQuality_sample.txt";
-            filename2 = "data/airQuality_variable.txt";
-            break;
-        case 'DowJones':
-            filename0 = "data/DowJonesIndex.txt";
-            filename1 = "data/DJIndex_sample.txt";
-            filename2 = "data/DJIndex_variable.txt";
-            break;
-        case 'HPCC_0':
-            filename0 = "data/HPCC_02Jun2019.csv";
-            filename1 = "data/HPCC_host.tsv";
-            filename2 = "data/HPCC_service_2.tsv";
-            break;
-        case 'HPCC_1':
-            filename0 = "data/HPCC_03Jun2019.csv";
-            filename1 = "data/HPCC_host.tsv";
-            filename2 = "data/HPCC_service_2.tsv";
-            break;
-        case 'HPCC_2':
-            filename0 = "data/HPCC_04Jun2019.csv";
-            filename1 = "data/HPCC_host.tsv";
-            filename2 = "data/HPCC_service_2.tsv";
-            break;
-        case 'HPCC_3':
-            filename0 = "data/HPCC_05Jun2019.csv";
-            filename1 = "data/HPCC_host.tsv";
-            filename2 = "data/HPCC_service_2.tsv";
-            break;
-        case 'HPCC_4':
-            filename0 = "data/HPCC_06Jun2019.csv";
-            filename1 = "data/HPCC_host.tsv";
-            filename2 = "data/HPCC_service_2.tsv";
-            break;
-        case 'HPCC_5':
-            filename0 = "data/HPCC_07Jun2019.csv";
-            filename1 = "data/HPCC_host.tsv";
-            filename2 = "data/HPCC_service_2.tsv";
-            break;
-        case 'HPCC_6':
-            filename0 = "data/HPCC_08Jun2019.csv";
-            filename1 = "data/HPCC_host.tsv";
-            filename2 = "data/HPCC_service_2.tsv";
-            break;
+        // case 'ozone':
+        //     filename0 = "data/ozone_onehour.txt";
+        //     filename1 = "data/ozone_sample.txt";
+        //     filename2 = "data/ozone_variable.txt";
+        //     break;
+        // case 'air_quality':
+        //     filename0 = "data/airQuality_reduced.txt";
+        //     filename1 = "data/airQuality_sample.txt";
+        //     filename2 = "data/airQuality_variable.txt";
+        //     break;
+        // case 'DowJones':
+        //     filename0 = "data/DowJonesIndex.txt";
+        //     filename1 = "data/DJIndex_sample.txt";
+        //     filename2 = "data/DJIndex_variable.txt";
+        //     break;
+        // case 'HPCC_0':
+        //     filename0 = "data/HPCC_02Jun2019.csv";
+        //     filename1 = "data/HPCC_host.tsv";
+        //     filename2 = "data/HPCC_service_2.tsv";
+        //     break;
+        // case 'HPCC_1':
+        //     filename0 = "data/HPCC_03Jun2019.csv";
+        //     filename1 = "data/HPCC_host.tsv";
+        //     filename2 = "data/HPCC_service_2.tsv";
+        //     break;
+        // case 'HPCC_2':
+        //     filename0 = "data/HPCC_04Jun2019.csv";
+        //     filename1 = "data/HPCC_host.tsv";
+        //     filename2 = "data/HPCC_service_2.tsv";
+        //     break;
+        // case 'HPCC_3':
+        //     filename0 = "data/HPCC_05Jun2019.csv";
+        //     filename1 = "data/HPCC_host.tsv";
+        //     filename2 = "data/HPCC_service_2.tsv";
+        //     break;
+        // case 'HPCC_4':
+        //     filename0 = "data/HPCC_06Jun2019.csv";
+        //     filename1 = "data/HPCC_host.tsv";
+        //     filename2 = "data/HPCC_service_2.tsv";
+        //     break;
+        // case 'HPCC_5':
+        //     filename0 = "data/HPCC_07Jun2019.csv";
+        //     filename1 = "data/HPCC_host.tsv";
+        //     filename2 = "data/HPCC_service_2.tsv";
+        //     break;
+        // case 'HPCC_6':
+        //     filename0 = "data/HPCC_08Jun2019.csv";
+        //     filename1 = "data/HPCC_host.tsv";
+        //     filename2 = "data/HPCC_service_2.tsv";
+        //     break;
+        case 'hpcc':
+            filename0 = 'data/hpcc_users.csv';
+            filename1 = 'data/hpcc_instance.tsv';
+            filename2 = 'data/hpcc_variables.tsv';
     }
 
     Promise.all([
@@ -626,16 +579,16 @@ function analyzedata() {
         d3.tsv(filename2),
     ]).then(function (files) {
 
-        data = []; // data[sample][variable][time step] for raw data
-        dataRaw = [];
+        data.length = 0; // data[sample][variable][time step] for raw data
+        dataRaw.length = 0;
         mapsample0.clear(); // code -> data sample name
         mapsample1.clear(); // data sample name -> index in data[data sample]
         mapsample2.clear(); // index -> data sample name
         mapvar0.clear();  // code -> variable name
         mapvar1.clear();  // variable name -> index in data[variable]
         mapvar2.clear(); // index -> variable name
-        timedata =[];
-        measures = [];
+        timedata.length = 0;
+        measures.length = 0;
 
 ///////////////////////////////////////
 // READ DATA TO RESTORING VARIABLES
@@ -664,7 +617,7 @@ function analyzedata() {
 
         // for paper - remove some variables
         limitList = [];
-        if (selectedDisplay === '2D') {
+
             if (mapvar1.get('Mining, Logging')) limitList.push(mapvar1.get('Mining, Logging'));
             if (mapvar1.get('Wholesale Trade')) limitList.push(mapvar1.get('Wholesale Trade'));
             if (mapvar1.get('Retail Trade')) limitList.push(mapvar1.get('Retail Trade'));
@@ -677,22 +630,25 @@ function analyzedata() {
             if (mapvar1.get('Durable Goods')) limitList.push(mapvar1.get('Durable Goods'));
             if (mapvar1.get('Non-Durable Goods')) limitList.push(mapvar1.get('Non-Durable Goods'));
             if (mapvar1.get('Administrative and Support and Waste Management and Remediation Services')) limitList.push(mapvar1.get('Administrative and Support and Waste Management and Remediation Services'));
-        }
+
 
         // TIME NAME
-        if (selecteddata !== 'ozone' && selecteddata !== 'air_quality' || selecteddata !== 'DowJones')
+        if (selecteddata !== 'ozone' && selecteddata !== 'air_quality' || selecteddata !== 'DowJones' || selecteddata !== 'hpcc')
             timedata = files[0].columns.filter(function (step) {
                 if (selecteddata !== 'death_rate') return step !== "Series ID";
                 else return step !=='CountryName' && step !== 'CountryCode' && step !== 'Type';
             });
+        if (selecteddata === 'hpcc') {
+            timedata = files[0].columns.filter(function (step) {
+                return step !== 'Series ID' && step !== 'User';
+            });
+        }
 
         // for loop computation
-        if (selectedDisplay === '2D') {
             let myData = new Data_processing(files);
             myData.read();
             let compute = new Visual_feature_2D(false);
             compute.Loop();
-        }
 
         switch (selecteddata) {
             case 'employment':
@@ -755,89 +711,89 @@ function analyzedata() {
                     });
                 });
                 break;
-            case 'ozone':
-                files[0].forEach((line,index)=>{
-                    timedata[index] = line.Date;
-                });
-                data.forEach(function (sample) {
-                    sample.forEach(function (variable) {
-                        timedata.forEach(function (step, s) {
-                            variable[s] = -Infinity;
-                        });
-                    });
-                });
-                dataRaw.forEach(function (sample) {
-                    sample.forEach(function (variable) {
-                        timedata.forEach(function (step, s) {
-                            variable[s] = -Infinity;
-                        });
-                    });
-                });
-                files[0].forEach((line,index) => {
-                    files[2].forEach((line_,index_)=>{
-                        data[0][index_][index] = isNaN(parseFloat(line[line_.name])) ? -Infinity : parseFloat(line[line_.name]);
-                        dataRaw[0][index_][index] = isNaN(parseFloat(line[line_.name])) ? -Infinity : parseFloat(line[line_.name]);
-                    });
-                });
-                break;
-            case 'air_quality':
-                let timeLength = files[0].length/files[1].length;
-                for (let i = 0; i < timeLength; i++) {
-                    timedata[i] = files[0][i].hour+':00,'+files[0][i].month+'/'+files[0][i].day+'/'+files[0][i].year;
-                }
-                data.forEach(function (sample) {
-                    sample.forEach(function (variable) {
-                        timedata.forEach(function (step, s) {
-                            variable[s] = -Infinity;
-                        });
-                    });
-                });
-                dataRaw.forEach(function (sample) {
-                    sample.forEach(function (variable) {
-                        timedata.forEach(function (step, s) {
-                            variable[s] = -Infinity;
-                        });
-                    });
-                });
-                files[0].forEach((line,index)=>{
-                    let sampleIndex = mapsample1.get(line.station);
-                    let index__ = index%timeLength;
-                    files[2].forEach((line_,index_)=>{
-                        data[sampleIndex][index_][index__] = isNaN(parseFloat(line[line_.name])) ? -Infinity : parseFloat(line[line_.name]);
-                        dataRaw[sampleIndex][index_][index__] = isNaN(parseFloat(line[line_.name])) ? -Infinity : parseFloat(line[line_.name]);
-                    });
-                });
-                break;
-            case 'DowJones':
-                data.forEach(function (sample) {
-                    sample.forEach(function (variable) {
-                        timedata.forEach(function (step, s) {
-                            variable[s] = -Infinity;
-                        });
-                    });
-                });
-                dataRaw.forEach(function (sample) {
-                    sample.forEach(function (variable) {
-                        timedata.forEach(function (step, s) {
-                            variable[s] = -Infinity;
-                        });
-                    });
-                });
-                let count = 0;
-                files[0].forEach(line=>{
-                    if (line.stock === 'AA') {
-                        timedata[count] = line.date;
-                        count += 1;
-                    }
-                });
-                files[0].forEach((line,index)=>{
-                    let sampleIndex = mapsample1.get(mapsample0.get(line.stock));
-                    files[2].forEach((line_,index_)=>{
-                        data[sampleIndex][index_][timedata.findIndex(t=>t===line.date)] = isNaN(parseFloat(line[line_.name])) ? -Infinity : parseFloat(line[line_.name]);
-                        dataRaw[sampleIndex][index_][timedata.findIndex(t=>t===line.date)] = isNaN(parseFloat(line[line_.name])) ? -Infinity : parseFloat(line[line_.name]);
-                    });
-                });
-                break;
+            // case 'ozone':
+            //     files[0].forEach((line,index)=>{
+            //         timedata[index] = line.Date;
+            //     });
+            //     data.forEach(function (sample) {
+            //         sample.forEach(function (variable) {
+            //             timedata.forEach(function (step, s) {
+            //                 variable[s] = -Infinity;
+            //             });
+            //         });
+            //     });
+            //     dataRaw.forEach(function (sample) {
+            //         sample.forEach(function (variable) {
+            //             timedata.forEach(function (step, s) {
+            //                 variable[s] = -Infinity;
+            //             });
+            //         });
+            //     });
+            //     files[0].forEach((line,index) => {
+            //         files[2].forEach((line_,index_)=>{
+            //             data[0][index_][index] = isNaN(parseFloat(line[line_.name])) ? -Infinity : parseFloat(line[line_.name]);
+            //             dataRaw[0][index_][index] = isNaN(parseFloat(line[line_.name])) ? -Infinity : parseFloat(line[line_.name]);
+            //         });
+            //     });
+            //     break;
+            // case 'air_quality':
+            //     let timeLength = files[0].length/files[1].length;
+            //     for (let i = 0; i < timeLength; i++) {
+            //         timedata[i] = files[0][i].hour+':00,'+files[0][i].month+'/'+files[0][i].day+'/'+files[0][i].year;
+            //     }
+            //     data.forEach(function (sample) {
+            //         sample.forEach(function (variable) {
+            //             timedata.forEach(function (step, s) {
+            //                 variable[s] = -Infinity;
+            //             });
+            //         });
+            //     });
+            //     dataRaw.forEach(function (sample) {
+            //         sample.forEach(function (variable) {
+            //             timedata.forEach(function (step, s) {
+            //                 variable[s] = -Infinity;
+            //             });
+            //         });
+            //     });
+            //     files[0].forEach((line,index)=>{
+            //         let sampleIndex = mapsample1.get(line.station);
+            //         let index__ = index%timeLength;
+            //         files[2].forEach((line_,index_)=>{
+            //             data[sampleIndex][index_][index__] = isNaN(parseFloat(line[line_.name])) ? -Infinity : parseFloat(line[line_.name]);
+            //             dataRaw[sampleIndex][index_][index__] = isNaN(parseFloat(line[line_.name])) ? -Infinity : parseFloat(line[line_.name]);
+            //         });
+            //     });
+            //     break;
+            // case 'DowJones':
+            //     data.forEach(function (sample) {
+            //         sample.forEach(function (variable) {
+            //             timedata.forEach(function (step, s) {
+            //                 variable[s] = -Infinity;
+            //             });
+            //         });
+            //     });
+            //     dataRaw.forEach(function (sample) {
+            //         sample.forEach(function (variable) {
+            //             timedata.forEach(function (step, s) {
+            //                 variable[s] = -Infinity;
+            //             });
+            //         });
+            //     });
+            //     let count = 0;
+            //     files[0].forEach(line=>{
+            //         if (line.stock === 'AA') {
+            //             timedata[count] = line.date;
+            //             count += 1;
+            //         }
+            //     });
+            //     files[0].forEach((line,index)=>{
+            //         let sampleIndex = mapsample1.get(mapsample0.get(line.stock));
+            //         files[2].forEach((line_,index_)=>{
+            //             data[sampleIndex][index_][timedata.findIndex(t=>t===line.date)] = isNaN(parseFloat(line[line_.name])) ? -Infinity : parseFloat(line[line_.name]);
+            //             dataRaw[sampleIndex][index_][timedata.findIndex(t=>t===line.date)] = isNaN(parseFloat(line[line_.name])) ? -Infinity : parseFloat(line[line_.name]);
+            //         });
+            //     });
+            //     break;
             // case 'house_price':
             //     data.forEach(function (sample) {
             //         sample.forEach(function (variable) {
@@ -862,6 +818,33 @@ function analyzedata() {
             //         });
             //     });
             //     break;
+            case 'hpcc':
+                experiment.user.length = 0;
+                // WRITE DATA TO DATA[]
+                data.forEach(function (sample) {
+                    sample.forEach(function (variable) {
+                        timedata.forEach(function (step, s) {
+                            variable[s] = -Infinity;
+                        });
+                    });
+                });
+                dataRaw.forEach(function (sample) {
+                    sample.forEach(function (variable) {
+                        timedata.forEach(function (step, s) {
+                            variable[s] = -Infinity;
+                        });
+                    });
+                });
+                files[0].forEach(function (line){
+                    let sI = mapsample1.get(mapsample0.get(line['Series ID'].split('_')[0]));
+                    let vI = parseInt(line["Series ID"].split("_")[1]);
+                    timedata.forEach(function (step, s) {
+                        data[sI][vI][s] = isNaN(parseFloat(line[step])) ? -Infinity : parseFloat(line[step]);
+                        dataRaw[sI][vI][s] = isNaN(parseFloat(line[step])) ? -Infinity : parseFloat(line[step]);
+                    });
+                    experiment.user.push([mapsample0.get(line['Series ID'].split('_')[0]),line['User']]);
+                });
+                break;
             default:
                 // WRITE DATA TO DATA[]
                 data.forEach(function (sample) {
@@ -891,26 +874,32 @@ function analyzedata() {
 
         // add variables and instances list
         d3.selectAll('.dataInstances').remove();
-        d3.selectAll('.variable').remove();
-        // d3.select('#divDataInstances').append('select').attr('id','dataInstances').attr('class','col s7');
-        // d3.select('#divVariable').append('select').attr('id','variable').attr('class','col s7');
-        // d3.select('#dataInstances').append('option').attr('value','noOption').text('--none--');
-        // d3.select('#variable').append('option').attr('value','noOption').text('--none--');
+        d3.selectAll('.variable1').remove();
+        d3.selectAll('.variable2').remove();
+        d3.selectAll('.myTime1').remove();
+        d3.selectAll('.myTime2').remove();
         data.forEach((d,i)=>{
             d3.select('#dataInstances').append('option').attr('class','dataInstances').attr('value',i.toString()).text(mapsample2.get(i));
         });
         data[0].forEach((d,i)=>{
             let limitCondition = limitList.findIndex(element => element === i);
             if (limitCondition === -1)
-                d3.select('#variable').append('option').attr('class','variable').attr('value',i.toString()).text(mapvar2.get(i));
+                d3.select('#variable1').append('option').attr('class','variable1').attr('value',i.toString()).text(mapvar2.get(i));
+                d3.select('#variable2').append('option').attr('class','variable2').attr('value',i.toString()).text(mapvar2.get(i));
+        });
+        timedata.forEach((t,i)=>{
+            d3.select('#myTime1').append('option').attr('class','myTime1').attr('value',i).text(t);
+            d3.select('#myTime2').append('option').attr('class','myTime2').attr('value',i).text(t);
         });
         if (visualizingOption === 'LMH') {
             d3.select('#dataInstances').attr('disabled','');
-            d3.select('#variable').attr('disabled','');
+            d3.select('#variable1').attr('disabled','');
+            d3.select('#variable2').attr('disabled','');
         }
         if (visualizingOption === 'tSNE'||visualizingOption === 'PCA'||visualizingOption === 'UMAP') {
             d3.select('#dataInstances').attr('disabled',null);
-            d3.select('#variable').attr('disabled',null);
+            d3.select('#variable1').attr('disabled',null);
+            d3.select('#variable2').attr('disabled',null);
         }
 
         // let sampleList = [], varList = [];
@@ -937,19 +926,13 @@ function analyzedata() {
 
         // if(selecteddata!==4) normalization();
         normalization();
-        switch(selectedDisplay) {
-            case "1D":
-                calculateMeasure1D();
-                break;
-            case "2D":
-                calculateMeasure2D();
-                break;
-        }
+        calculateMeasure2D();
+
         initClusterObj();
         let kMeanGroup = $('#knum').val() || 6;
         let kMeanIterations = $('#kiteration').val() || 1;
         recalculateCluster( {clusterMethod: 'kmean',bin:{k:kMeanGroup,iterations:kMeanIterations}},function(){
-            clickArr = [];
+            // clickArr = [];
             plotPosition = [];
             reCalculateTsne();
         });
@@ -966,289 +949,93 @@ function analyzedata() {
         // find min and max of each series -> normalize
         // local normalization
         function normalization() {
-            data.forEach(function (sample, p) {
-                sample.forEach(function (variable, v) {
-                    let numNonNegative = 0;
-                    var svariable = variable.filter(function (d) {return d !== - Infinity});
-                    var mymax = Math.max(...svariable);
-                    var mymin = Math.min(...svariable);
-                    var myrange = mymax - mymin;
-                    if (myrange !== 0) {
-                        variable.forEach(function (step, s) {
-                            data[p][v][s] = (step !== -Infinity) ? (step - mymin) / myrange : -1;
-                            if (step !== -Infinity) numNonNegative += 1;
-                        });
-                    } else {
-                        variable.forEach(function (step, s) {
-                            data[p][v][s] = -1;
-                        });
-                    }
-                    if (numNonNegative < timedata.length*0.1) {
-                        // console.log('Country: '+mapvar2.get(v)+' has only '+numNonNegative+' time points.');
-                        // console.log('data: '+data[p][v]);
-                        data[p][v].forEach((element,index)=>data[p][v][index]=-1);
-                    }
-                });
-            });
-            // WRITE DATA TO DRAWDATA[]
-            // data.forEach(function (sample,p) {
-            //   drawdata[p] = [];
-            //   sample.forEach(function (variable,v) {
-            //     drawdata[p][v] = variable.filter(function(step){return step >=0});
-            //   });
-            // });
-
-        }
-
-        // CALCULATE MEASURES FOR TIME SERIES
-        function calculateMeasure1D() {
-            for (var i=0; i<nummeasure; i++) {
-                measures[i] = [];
-            }
-            data.forEach(function (sample,p) {
-                // Declare measure structures
-                for (var i = 0; i < nummeasure; i++) {
-                    measures[i][p] = [];
-                }
-                var myIndex = 0;
-                // Peak array
-                peakPeri[p]=[];
-                myPeriodogramDraw[p]=[];
-                // Each plot
-                for (var xVar = 0; xVar < mapvar0.size; xVar++) {
-                    // Initialize measure values
-                    for (var i = 0; i < nummeasure; i++) {
-                        measures[i][p][myIndex] = [xVar,0, -1];
-                    }
-                    // create calculation data
-                    var xData = sample[xVar].map(function (x) {return x});
-                    xData = xData.filter(function (x) {return x >= 0});
-
-                    if(xData.length>0) {
-                        // NET OUTLIERS
-                        // Box plot method
-                        // Score = ratio of Mean Absolute Deviation of Outliers and Total.
-                        let firstLagDiff = [];
-                        xData.forEach(function (x,xi) {
-                            if(xi) firstLagDiff[xi-1] = x-xData[xi-1];
-                        });
-                        myPeriodogramDraw[p][myIndex] = firstLagDiff;
-                        // let sortFirstLagDiff = firstLagDiff.map(d=>d);
-                        let sortFirstLagDiff = firstLagDiff.filter(d=>d!==0);
-                        sortFirstLagDiff.sort(function (a,b) {return a-b});
-                        let q1 = sortFirstLagDiff[Math.floor(sortFirstLagDiff.length*0.25)];
-                        let q3 = sortFirstLagDiff[Math.floor(sortFirstLagDiff.length*0.75)];
-                        let q2 = sortFirstLagDiff[Math.floor(sortFirstLagDiff.length*0.5)];
-                        let outlierArr = firstLagDiff.filter(d=>(d>q3+1.5*(q3-q1)||d<q1-1.5*(q3-q1))&&(d>0.01||d<-0.01));
-                        let adTotalLength = 0;
-                        firstLagDiff.forEach(d=>{adTotalLength += Math.abs(d-q2)});
-                        let adOutlierLength = 0;
-                        outlierArr.forEach(d=>{adOutlierLength += Math.abs(d-q2)});
-                        measures[8][p][myIndex][2] = (adTotalLength !== 0) ? adOutlierLength/adTotalLength : 0;
-                        let adjustXData = xData.filter((x,index)=>{
-                            if (index) {
-                                if ((firstLagDiff[index-1]>q3+1.5*(q3-q1)||firstLagDiff[index-1]<q1-1.5*(q3-q1))&&(firstLagDiff[index]>q3+1.5*(q3-q1)||firstLagDiff[index]<q1-1.5*(q3-q1))) return false;
-                                else return true;
-                            }
-                        });
-                        let smoothXData = [];
-                        let smoothWindow = Math.floor(xData.length*0.1);
-                        for(let i=smoothWindow; i< adjustXData.length; i++){
-                            smoothXData[i-smoothWindow] = 0;
-                            for(let j=0; j<smoothWindow; j++){
-                                smoothXData[i-smoothWindow] += adjustXData[i-j];
-                            }
-                        }
-                        // OUTLIERS
-                        let sortXData = xData.map(d=>{return d});
-                        sortXData.sort((a,b)=>{return a-b});
-                        let xq1 = sortXData[Math.floor(sortXData.length*0.25)];
-                        let xq2 = sortXData[Math.floor(sortXData.length*0.5)];
-                        let xq3 = sortXData[Math.floor(sortXData.length*0.75)];
-                        let xOutlierArr = xData.filter(d=>(d>xq3+1.5*(xq3-xq1)||d<xq1-1.5*(xq3-xq1)));
-                        let adOutlier = 0;
-                        xOutlierArr.forEach(d=>adOutlier+=Math.abs(d-xq2));
-                        let adTotal = 0;
-                        xData.forEach(d=>adTotal+=Math.abs(d-xq2));
-                        measures[5][p][myIndex][2] = (adTotal !== 0) ? adOutlier/adTotal : 0;
-
-
-                        // TREND
-                        // Mann-Kendall test
-                        let Sign = 0;
-                        xData.forEach(function (x,xi) {
-                            if(xi !== xData.length-1) {
-                                for (let j = xi+1; j < xData.length; j++) {
-                                    if (xData[j] > x) Sign += 1;
-                                    if (xData[j] < x) Sign -= 1;
-                                }
-                            }
-                        });
-                        measures[0][p][myIndex][2] = Math.abs(Sign)/(xData.length*(xData.length-1)/2);
-
-                        // FIRST AUTOCORRELATION
-                        let covX = 0, meanX = 0, deviationX = 0, skewX = 0;
-                        xData.forEach(x=>{meanX += x});
-                        meanX /= xData.length;
-                        xData.forEach((x,xi)=>{
-                            deviationX += (x-meanX)*(x-meanX);
-                            skewX += (x-meanX)*(x-meanX)*(x-meanX);
-                            if(xi<xData.length-1){
-                                covX += (x-meanX)*(xData[xi+1]-meanX);
-                            }
-                        });
-                        measures[2][p][myIndex][2] = 1-Math.pow(covX/deviationX,2);
-
-                        // MEAN & STANDARD DEVIATION & SKEWNESS
-                        measures[3][p][myIndex][2] = meanX;
-                        measures[4][p][myIndex][2] = (2*Math.sqrt(deviationX/xData.length)>1)?1:2*Math.sqrt(deviationX/xData.length);
-                        // measures[7][p][myIndex][2] = (xq3!==xq1)?Math.abs((xq1+xq3-2*xq2)/(xq3-xq1)):0;
-
-                        // FIRST LAG DIFFERENCE STANDARD DEVIATION
-                        let meanDiff = 0, devDiff = 0, skewDiff = 0;
-                        firstLagDiff.forEach(d=>{meanDiff+=Math.abs(d)});
-                        meanDiff /= firstLagDiff.length;
-                        firstLagDiff.forEach(d=>{
-                            devDiff += (Math.abs(d)-meanDiff)*(Math.abs(d)-meanDiff);
-                            skewDiff += (Math.abs(d)-meanDiff)*(Math.abs(d)-meanDiff)*(Math.abs(d)-meanDiff);
-                        });
-                        // measures[8][p][myIndex][2] = (2*meanDiff>1)?1:2*meanDiff;
-                        measures[6][p][myIndex][2] = meanDiff;
-                        measures[7][p][myIndex][2] = (4*Math.sqrt(devDiff/firstLagDiff.length)>1)?1:4*Math.sqrt(devDiff/firstLagDiff.length);
-                        // measures[10][p][myIndex][2] = (q3!==q1)?Math.abs((q1+q3-2*q2)/(q3-q1)):0;
-                        // measures[10][p][myIndex][2] = 1-Math.exp(-skewDiff/(firstLagDiff.length*Math.pow(measures[9][p][myIndex][2],3)));
-
-                        // PERIODICITY
-                        // let myPeriodogram = xData.map((x,xi)=>{
-                        //     let sumr = 0;
-                        //     let sumi = 0;
-                        //     let sumx = 0;
-                        //     xData.forEach((d,sIndex)=>{
-                        //         sumr += d*Math.cos(-2*Math.PI*xi*sIndex/xData.length);
-                        //         sumi += d*Math.sin(-2*Math.PI*xi*sIndex/xData.length);
-                        //         sumx += d*d;
-                        //     });
-                        //     return (sumr*sumr+sumi*sumi)/(xData.length*sumx/2);
-                        // });
-                        // let myPeriodogram = xData.map((x,xi)=>{
-                        //     let sumr = 0;
-                        //     let sumi = 0;
-                        //     let sumx = 0;
-                        //     xData.forEach((d,sIndex)=>{
-                        //         sumr += d*Math.cos(-2*Math.PI*xi*sIndex/xData.length);
-                        //         sumi += d*Math.sin(-2*Math.PI*xi*sIndex/xData.length);
-                        //         sumx += d*d;
-                        //     });
-                        //     return (sumr*sumr+sumi*sumi)/xData.length;
-                        // });
-                        let myPeriodogram = [];
-                        let meanRaw = 0;
-                        dataRaw[p][xVar].forEach(d=>{
-                            if(d!==-Infinity) meanRaw += d;
-                        });
-                        meanRaw /= dataRaw[p][xVar].length;
-                        for (let i=0; i<xData.length; i++){
-                            let sumr=0, sumi=0, sumx=0;
-                            dataRaw[p][xVar].forEach((d,index)=>{
-                                if (d!==-Infinity){
-                                    // sumr += (d-meanRaw)*Math.cos(-2*Math.PI*index*i/xData.length);
-                                    // sumi += (d-meanRaw)*Math.sin(-2*Math.PI*index*i/xData.length);
-                                    // sumx += (d-meanRaw)*(d-meanRaw);
-                                    sumr += d*Math.cos(-2*Math.PI*index*i/xData.length);
-                                    sumi += d*Math.sin(-2*Math.PI*index*i/xData.length);
-                                    sumx += d*d;
-                                }
+            if (selecteddata !== 'hpcc') {
+                data.forEach(function (sample, p) {
+                    sample.forEach(function (variable, v) {
+                        let numNonNegative = 0;
+                        var svariable = variable.filter(function (d) {return d !== - Infinity});
+                        var mymax = Math.max(...svariable);
+                        var mymin = Math.min(...svariable);
+                        var myrange = mymax - mymin;
+                        if (myrange !== 0) {
+                            variable.forEach(function (step, s) {
+                                if (step !== -Infinity) numNonNegative += 1;
+                                data[p][v][s] = (step !== -Infinity) ? (step - mymin) / myrange : -1;
                             });
-                            myPeriodogram[i] = (sumr*sumr+sumi*sumi)/(xData.length*sumx/2);
+                        } else {
+                            variable.forEach(function (step, s) {
+                                data[p][v][s] = -1;
+                            });
                         }
-                        myPeriodogram.splice(0,2);
-                        // let cutLimit = myPeriodogram.findIndex((d,index)=>{
-                        //     if(index) {
-                        //         if (d > myPeriodogram[index-1]) return true;
-                        //         else return false;
-                        //     }
-                        // });
-                        // cutLimit = (cutLimit>0.08)?cutLimit:0.05;
-                        let sortPeriodogram = [], countSP = 0;
-                        myPeriodogram.forEach((d,index)=>{
-                            if(index <= myPeriodogram.length/2) {sortPeriodogram[countSP] = [d,index]; countSP += 1;}
-                        });
-                        // myPeriodogramDraw[p][myIndex] = sortPeriodogram.map(d=>(d[0]-Math.min(...sortPeriodogram.map(dd=>dd[0])))/(d[0]+Math.max(...sortPeriodogram.map(dd=>dd[0]))));
-                        let peak = [];
-                        for(let i=1; i<myPeriodogram.length/2-1; i++){
-                            if((myPeriodogram[i-1]<myPeriodogram[i])&&(myPeriodogram[i+1]<myPeriodogram[i])){
-                                peak.push([myPeriodogram[i],i]);
-                            }
+                        if (numNonNegative < 30) {
+                            // console.log('Country: '+mapvar2.get(v)+' has only '+numNonNegative+' time points.');
+                            // console.log('data: '+data[p][v]);
+                            data[p][v].forEach((element,index)=>data[p][v][index]=-1);
                         }
-                        peakPeri[p][myIndex] = peak.map(d=>d);
-                        // let cutLimit = myPeriodogram.findIndex((d,index)=>{
-                        //     if(myPeriodogram[index+1]>d) return true;
-                        //     else return false;
-                        // });
-                        let sumPeak = 0;
-                        let sumPower = 0;
-                        // myPeriodogram.forEach((d,i)=>{if(i>=cutLimit) sumPower+=d});
-                        myPeriodogram.forEach(d=>sumPower+=d);
-                        if(peak.length>0) peak.map(d=>d[0]).forEach(dd=>sumPeak+=dd);
-                        measures[1][p][myIndex][2] = (sumPower !== 0) ? 2*sumPeak/sumPower : 0;
-                        // let meanPower = 0;
-                        // sortPeriodogram.forEach((d,index)=>{
-                        //     // if(index!==(sortPeriodogram.length-1)) meanPower += d[0];
-                        //     meanPower += d[0];
-                        // });
-                        // meanPower /= sortPeriodogram.length;
-                        // let valey = myPeriodogram[cutLimit];
-                        // let peak, valey;
-                        // let maxratio = -Infinity;
-                        // let oSign = (myPeriodogram[1]>myPeriodogram[0]);
-                        // for(let i=0; i<myPeriodogram.length/2; i++){
-                        //     let sign = (myPeriodogram[i+1]>myPeriodogram[i]);
-                        //     if(sign!==oSign){
-                        //         if(oSign){
-                        //             peak = myPeriodogram[i];
-                        //             let ratio = (peak-valey)/(peak+valey);
-                        //             maxratio = (maxratio<ratio)?ratio:maxratio;
-                        //             oSign = sign;
-                        //         } else {
-                        //             valey = myPeriodogram[i];
-                        //         }
-                        //     }
-                        // }
-                        // sortPeriodogram.sort((a,b)=>{return a[0]-b[0]});
-                        // let p1 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.25)][0];
-                        // let p3 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.75)][0];
-                        // let p2 = sortPeriodogram[Math.floor(sortPeriodogram.length*0.5)][0];
-                        // let peakPeriodogram = (sortPeriodogram[sortPeriodogram.length-1] > p3+3*(p3-p1)) ? sortPeriodogram[sortPeriodogram.length-1] : 0;
-                        // let frequency = (sortPeriodogram.length!==0)?sortPeriodogram[sortPeriodogram.length-1][1]:0;
-                        // let maxMultiple = Math.floor(0.5/(frequency/myPeriodogram.length));
-                        // let maxMultiple = 1;
-                        // let above = 0, below = 0;
-                        // for (let i=1; i<=maxMultiple; i++){
-                        //     let pCondition = ((frequency*i+frequency*0.5)/myPeriodogram.length) < 0.5;
-                        //     if (pCondition) {
-                        //         above += myPeriodogram[frequency*i]-myPeriodogram[Math.floor(frequency*i+frequency*0.5)];
-                        //         below += myPeriodogram[frequency*i]+myPeriodogram[Math.floor(frequency*i+frequency*0.5)];
-                        //     } else {
-                        //         above += myPeriodogram[frequency*i]-myPeriodogram[Math.floor(frequency*i-frequency*0.5)];
-                        //         below += myPeriodogram[frequency*i]+myPeriodogram[Math.floor(frequency*i-frequency*0.5)];
-                        //     }
-                        // }
-                        // let maxPeak = sortPeriodogram[sortPeriodogram.length-1][0];
-                        // measures[2][p][myIndex][2] = (maxratio===-Infinity)?0:maxratio;
-                        // measures[2][p][myIndex][2] = (maxPeak-p3)/(maxPeak+p3);
-                        // measures[2][p][myIndex][2] = above/below;
-                        // if(measures[2][p][myIndex][2]<0) measures[2][p][myIndex][2]=0;
+                    });
+                });
+            } else {
+                // let xMax = -Infinity, yMax = -Infinity;
+                // let xMin = Infinity, yMin = Infinity;
+                // data.forEach((s,si)=>{
+                //     s.forEach((v,vi)=>{
+                //         if (vi === 0) {
+                //             xMax = Math.max(...v.filter(e=>e!==-Infinity&&e!==-1)) > xMax ? Math.max(...v.filter(e=>e!==-Infinity&&e!==-1)) : xMax;
+                //             xMin = Math.min(...v.filter(e=>e!==-Infinity&&e!==-1)) < xMin ? Math.min(...v.filter(e=>e!==-Infinity&&e!==-1)) : xMin;
+                //         } else if (vi === 1) {
+                //             yMax = Math.max(...v.filter(e=>e!==-Infinity&&e!==-1)) > yMax ? Math.max(...v.filter(e=>e!==-Infinity&&e!==-1)) : yMax;
+                //             yMin = Math.min(...v.filter(e=>e!==-Infinity&&e!==-1)) < yMin ? Math.min(...v.filter(e=>e!==-Infinity&&e!==-1)) : yMin;
+                //         }
+                //     });
+                // });
+                // for (let si = 0; si < data.length; si++) {
+                //     for (let vi = 0; vi < data[si].length; vi++) {
+                //         for (let t = 0; t < data[si][vi].length; t++) {
+                //             if (vi === 0) {
+                //                 if (xMin < xMax) {
+                //                     if (data[si][vi][t] !== -1 && data[si][vi][t] !== -Infinity) data[si][vi][t] = (data[si][vi][t] - xMin)/(xMax-xMin);
+                //                 } else {
+                //                     if (data[si][vi][t] !== -1 && data[si][vi][t] !== -Infinity) data[si][vi][t] = 0.5;
+                //                 }
+                //             } else if (vi === 1) {
+                //                 if (yMin < yMax) {
+                //                     if (data[si][vi][t] !== -1 && data[si][vi][t] !== -Infinity) data[si][vi][t] = (data[si][vi][t] - yMin)/(yMax-yMin);
+                //                 } else {
+                //                     if (data[si][vi][t] !== -1 && data[si][vi][t] !== -Infinity) data[si][vi][t] = 0.5;
+                //                 }
+                //             }
+                //         }
+                //     }
+                // }
+                data.forEach(function (sample, p) {
+                    sample.forEach(function (variable, v) {
+                        let numNonNegative = 0;
+                        var svariable = variable.filter(function (d) {return d !== -1});
+                        var mymax = Math.max(...svariable);
+                        var mymin = Math.min(...svariable);
+                        var myrange = mymax - mymin;
+                        if (myrange !== 0) {
+                            variable.forEach(function (step, s) {
+                                if (step !== -1) numNonNegative += 1;
+                                data[p][v][s] = (step !== -1) ? (step - mymin) / myrange : -1;
+                            });
+                        } else {
+                            variable.forEach(function (step, s) {
+                                data[p][v][s] = -1;
+                            });
+                        }
+                        if (numNonNegative < 30) {
+                            // console.log('Country: '+mapvar2.get(v)+' has only '+numNonNegative+' time points.');
+                            // console.log('data: '+data[p][v]);
+                            data[p][v].forEach((element,index)=>data[p][v][index]=-1);
+                        }
+                    });
+                });
+            }
 
-                    }
-
-
-
-
-                    // increase index
-                    myIndex += 1;
-                }
-            });
         }
+
+        // CALCULATE MEASURES FOR DOUBLY TIME SERIES
         function calculateMeasure2D() {
             for (let i=0; i<nummeasure; i++) {
                 measures[i] = [];
@@ -1279,24 +1066,27 @@ function analyzedata() {
                         if (xdata.length !== ydata.length) {
                             console.log("2 series have different length at: sample = " + p + ", x-var = " + xvar + ", y-var = " + yvar);
                         }
+                        // if (xdata.length === 0) {console.log(mapsample2.get(p)); console.log(xdata); console.log(ydata);}
 
-                        // SMOOTH
-                        let sliding = 30;
-                        let xSmooth = [], ySmooth =[];
-                        for (let i = 0; i < xdata.length - sliding; i++) {
-                            xSmooth[i] = 0;
-                            ySmooth[i] = 0;
-                            for (let j = 0; j < sliding; j++) {
-                                xSmooth[i] += xdata[i+j];
-                                ySmooth[i] += ydata[i+j];
-                            }
-                            xSmooth[i] /= sliding;
-                            ySmooth[i] /= sliding;
-                        }
+                            // SMOOTH
+                        // let sliding = 30;
+                        // let xSmooth = [], ySmooth =[];
+                        // for (let i = 0; i < xdata.length - sliding; i++) {
+                        //     xSmooth[i] = 0;
+                        //     ySmooth[i] = 0;
+                        //     for (let j = 0; j < sliding; j++) {
+                        //         xSmooth[i] += xdata[i+j];
+                        //         ySmooth[i] += ydata[i+j];
+                        //     }
+                        //     xSmooth[i] /= sliding;
+                        //     ySmooth[i] /= sliding;
+                        // }
 
                         // CALCULATIONS RELATED LENGTH
                         var edgelength = [];
                         var sumlength = 0;
+                        let meanX = 0;
+                        let meanY = 0;
                         xdata.forEach(function (x, xi) {
                             if (xi) {
                                 var xlength = x - xdata[xi - 1];
@@ -1304,7 +1094,11 @@ function analyzedata() {
                                 edgelength[xi - 1] = Math.sqrt(xlength * xlength + ylength * ylength);
                                 sumlength += edgelength[xi - 1];
                             }
+                            meanX += x;
+                            meanY += ydata[xi];
                         });
+                        meanX /= xdata.length;
+                        meanY /= ydata.length;
                         var sortlength = edgelength.filter(function (v) {return v >= 0});
                         sortlength.sort(function (b, n) {return b - n});   // ascending
 
@@ -1428,17 +1222,19 @@ function analyzedata() {
                                 if (xi > 0 && xi < xdata.length - 1) {
                                     // sumcos += Math.abs(calculatecos(xdata[xi - 1], ydata[xi - 1], x, ydata[xi], xdata[xi + 1], ydata[xi + 1]));
                                     sumcos += calculatecos(xdata[xi - 1], ydata[xi - 1], x, ydata[xi], xdata[xi + 1], ydata[xi + 1]);
-                                    if(calculatecos(xdata[xi - 1], ydata[xi - 1], x, ydata[xi], xdata[xi + 1], ydata[xi + 1]) < 0.25) countcosine += 1;
+                                    if(calculatecos(xdata[xi - 1], ydata[xi - 1], x, ydata[xi], xdata[xi + 1], ydata[xi + 1]) > 0.75) countcosine += 1;
                                 }
                             });
                             // LENGTH
-                            measures[7][p][myIndex][2] = sumlengtha / (xdata.length - 1);
-                            if (measures[7][p][myIndex][2] > 1) measures[7][p][myIndex][2] = 1;
+                            // measures[7][p][myIndex][2] = sumlengtha / (xdata.length - 1);
+                            // measures[7][p][myIndex][2] = sumlength / (xdata.length - 1);
+                            measures[6][p][myIndex][2] = 4 * sumlength / (xdata.length - 1);
+                            if (measures[6][p][myIndex][2] > 1) measures[6][p][myIndex][2] = 1;
                             // MONOTONIC TREND
-                            measures[6][p][myIndex][2] = (4/3)*Math.max(...dir) / (xdata.length*(xdata.length-1)/2)-1/3;
-                            if (measures[6][p][myIndex][2] < 0) measures[6][p][myIndex][2] = 0;
+                            measures[3][p][myIndex][2] = (4/3)*Math.max(...dir) / (xdata.length*(xdata.length-1)/2)-1/3;
+                            if (measures[3][p][myIndex][2] < 0) measures[3][p][myIndex][2] = 0;
                             // INTERSECTIONS
-                            measures[4][p][myIndex][2] = 1 - Math.exp(-countcrossing / (xdata.length - 1));
+                            measures[7][p][myIndex][2] = 1 - Math.exp(-countcrossing / (xdata.length - 1));
                             // STRIATED
                             // measures[2][p][myIndex][2] = (sumcos / (xdata.length - 2))*0.5+0.5;   //Average cosine
                             measures[2][p][myIndex][2] = countcosine/(xdata.length-1);     // Sacgnostic
@@ -1456,30 +1252,37 @@ function analyzedata() {
                             // CLUMPY
                             measures[1][p][myIndex][2] = 0;
                             let Q3 = sortlengtha[Math.floor(sortlengtha.length*0.75)];
+                            // let Q3 = sortlength[Math.floor(sortlength.length*0.75)];
                             xdata.forEach(function (x, xi) {
                                 if (edgelengtha[xi] >= Q3) {
+                                // if (edgelength[xi] >= Q3) {
                                     var countleft = 0;
                                     var countright = 0;
                                     var maxleft = 0;
                                     var maxright = 0;
                                     let stepLeft = xi-1;
                                     while (edgelengtha[stepLeft] < edgelengtha[xi] && stepLeft >= 0) {
+                                    // while (edgelength[stepLeft] < edgelength[xi] && stepLeft >= 0) {
                                         countleft += 1;
-                                        maxleft = (maxleft < edgelengtha[stepLeft]) ? edgelengtha[stepLeft] : maxleft;
+                                        // maxleft = (maxleft < edgelengtha[stepLeft]) ? edgelengtha[stepLeft] : maxleft;
+                                        maxleft = (maxleft < edgelength[stepLeft]) ? edgelength[stepLeft] : maxleft;
                                         stepLeft -= 1;
                                     }
                                     let stepRight = xi+1;
                                     while (edgelengtha[stepRight] < edgelengtha[xi] && stepRight < xdata.length) {
+                                    // while (edgelength[stepRight] < edgelength[xi] && stepRight < xdata.length) {
                                         countright += 1;
-                                        maxright = (maxright < edgelengtha[stepRight]) ? edgelengtha[stepRight] : maxright;
+                                        // maxright = (maxright < edgelengtha[stepRight]) ? edgelengtha[stepRight] : maxright;
+                                        maxright = (maxright < edgelength[stepRight]) ? edgelength[stepRight] : maxright;
                                         stepRight += 1;
                                     }
                                     if (countleft > 0 && countright > 0) {
                                         var maxxi = (countright > countleft) ? maxright : maxleft;
                                         maxxi /= edgelengtha[xi];
+                                        // maxxi /= edgelength[xi];
                                         maxxi = 1 - maxxi;
-                                        // maxxi = maxxi*edgelengtha[xi]/0.3;
-                                        // maxxi = maxxi > 1 ? 1 : maxxi;
+                                        maxxi = maxxi*edgelengtha[xi]/0.3;
+                                        maxxi = maxxi > 1 ? 1 : maxxi;
                                         measures[1][p][myIndex][2] = (measures[1][p][myIndex][2] < maxxi) ? maxxi : measures[1][p][myIndex][2];
                                     }
                                 }
@@ -1514,7 +1317,7 @@ function analyzedata() {
                             loop = experiment.loop[instance].find(element=>element[0]===x_var&&element[1]===y_var);
                             if (!loop) measures[5][p][myIndex][2] = 0;
                             else if (loop) if (loop[2].length === 0) measures[5][p][myIndex][2] = 0;
-                            else measures[5][p][myIndex][2] = 2*Math.max(...loop[2].map(element=>element[2]))*loop[2].length;
+                            else measures[5][p][myIndex][2] = Math.max(...loop[2].map(element=>element[2]))*loop[2].filter(e=>e[2]>0).length;
                             if (measures[5][p][myIndex][2] > 1) measures[5][p][myIndex][2] = 1;
 
                             // measures[5][p][myIndex][2] = (looplength === Infinity) ? 0 : looplength/xdata.length;
@@ -1552,7 +1355,7 @@ function analyzedata() {
                                 }
                                 maxr = (maxr < r) ? r : maxr;
                             }
-                            measures[3][p][myIndex][2] = maxr;
+                            measures[4][p][myIndex][2] = maxr;
 
                             // SIMILARITY
                             // measures[10][p][myIndex][2] = 1 - minsim / (xdata.length-getLag);
@@ -1604,8 +1407,8 @@ function analyzedata() {
                         myIndex += 1;
                     }
                 }
-
             });
+            doneCalculation = true;
         }
 
 
@@ -1804,6 +1607,7 @@ function prepareRadarTable() {
                  dataRadar2[count].timestep = index;
                  dataRadar2[count].cluster = cluster_info.findIndex(c=>c.arr[0].find(d=>d===`${si}-${index}`));
                  dataRadar2[count].plot = `${si}-${index}`;
+                 if (selecteddata === 'hpcc') dataRadar2[count].user = experiment.user.find(e=>e[0]===dataRadar2[count].name)[1];
                  count += 1;
              }
            });
@@ -2268,14 +2072,15 @@ function onchangeVizdata(vizMode){
 // SET UP FUNCTION
 //////////////////
 // Variables
-let csPlotSize = 2*columnSize;
-let oPlotSize;
-let rPlotSize = 1.5*columnSize;
-let xBlank = selectedDisplay === "1D" ? columnSize : 2*columnSize;
-let xgBlank = 2*columnSize;
+let csPlotSize = 6*columnSize;
+let oPlotSize = 3*columnSize;
+let rPlotSize = 4*columnSize;
+let xBlank = 2*columnSize;
+let xgBlank = 3*columnSize;
 let yBlank = 50;
 let ygBlank = csPlotSize*0.3;
-let groupSize = 2*csPlotSize+xBlank+2*rPlotSize+xgBlank;
+let groupSize = 2*(csPlotSize+xBlank)+rPlotSize+xgBlank;
+let isMouseOVer = false;
 
 function setup() {
     let canvas = createCanvas(width,height);
@@ -2320,7 +2125,7 @@ function draw() {
     if(needcalculation && !videoOnly) {
         analyzedata();
     }
-    if (needupdate){
+    if (needupdate && doneCalculation){
 
         background(255);
 
@@ -2332,679 +2137,355 @@ function draw() {
             textSize(30);
             text('There is no plot to display',xBlank,yBlank);
         } else {
-            // draw background of buttons
-            // fill(160);
-            // noStroke();
-            // rect(0,0,width,50+plotsize/4);
-            // // Write group notation
-            // fill(0);
-            // noStroke();
-            // textSize(30);
-            // text('Lowest values',xBlank+0.3*groupSize,yBlank);
-            // text('Middle values',xBlank+1.3*groupSize,yBlank);
-            // text('Highest values',xBlank+2.3*groupSize,yBlank);
-
-            // draw summary chart
-            // drawViolinChart();
-
-            // textSize(plotsize/12);
-            // text('select measure',xstartpos+plotsize+2*xblank1+0.5*splotsize,16+plotsize/10);
-            // Color explanation
-            // fill(18, 169, 101);
-            // rect(xstartpos+plotsize,20,plotsize/12,plotsize/12);
-            // fill(232, 101, 11);
-            // rect(xstartpos+plotsize,30+plotsize/12,plotsize/12,plotsize/12);
-            // fill(89, 135, 222);
-            // rect(xstartpos+plotsize,40+plotsize/6,plotsize/12,plotsize/12);
-            // fill(0);
-            // textSize(plotsize/12);
-            // text('Measures from Scagnostics of non time series data',xstartpos+plotsize+plotsize/6,16+plotsize/11);
-            // text('Measures from features of connected scatterplot',xstartpos+plotsize+plotsize/6,26+plotsize/6);
-            // text('Measures under developing',xstartpos+plotsize+plotsize/6,36+plotsize/4);
-            // Formula
-            // text('Formula for this measure:',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,16+plotsize/11);
-            // switch (selectedmeasure) {
-            //     case 0:
-            //         text(measurename[selectedmeasure]+' = '+'Q75+1.5(Q75-Q25)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-            //         text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-            //         break;
-            //     case 1:
-            //         text(measurename[selectedmeasure]+' = '+'distance(p1,pN)/(total edge length)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-            //         text('p1: first point in the series, pN: last point in the series',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-            //         break;
-            //     case 2:
-            //         text(measurename[selectedmeasure]+' = '+'(Q90-Q50)/(Q90-Q10)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-            //         text('Q90, Q50 and Q10 are correspondingly 90th, 50th and 10th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-            //         break;
-            //     case 3:
-            //         text(measurename[selectedmeasure]+' = '+'max_j[1-max_k(e_k)/e_j]',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-            //         text('e_k is edge in Runt set from e_j, e_j is edge in the graph',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-            //         break;
-            //     case 4:
-            //         text(measurename[selectedmeasure]+' = '+'Q90',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-            //         text('Q90 is 90th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-            //         break;
-            //     case 5:
-            //         text(measurename[selectedmeasure]+' = '+'mean of cosine of all angles',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-            //         // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-            //         break;
-            //     case 6:
-            //         text(measurename[selectedmeasure]+' = '+'maximum number of directions of e_ij / (N(N-1)/2)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-            //         text('e_ij is edge from i to all point j after i',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-            //         break;
-            //     case 7:
-            //         text(measurename[selectedmeasure]+' = '+'count number of edges that are parallel to x-axis or y-axis',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-            //         // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-            //         break;
-            //     case 8:
-            //         text(measurename[selectedmeasure]+' = '+'1-exp(- #intersections / #edges)',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-            //         // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-            //         break;
-            //     case 9:
-            //         text(measurename[selectedmeasure]+' = '+'under developing',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-            //         // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-            //         break;
-            //     case 10:
-            //         text(measurename[selectedmeasure]+' = '+'mean length of all edges',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,26+plotsize/6);
-            //         // text('Q75 and Q25 are correspondingly 75th and 25th percentile of edge length',xstartpos+2*plotsize+4*xblank1+4*splotsize+xblank2,36+plotsize/4);
-            //         break;
-            // }
-
-            // Create list button
-            // if (!choose) {
-            //     let colorv= getcolor(selectedmeasure);
-            //     fill(colorv[0],colorv[1],colorv[2]);
-            //     stroke(0);
-            //     rect(xstartpos+plotsize+2*xblank1+1.5*splotsize,20,130,plotsize/10);
-            //     fill(255);
-            //     noStroke();
-            //     triangle(xstartpos+plotsize+2*xblank1+1.5*splotsize+125,21+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+125-plotsize/30,21+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+125-plotsize/60,19+plotsize/10);
-            //     triangle(xstartpos+plotsize+2*xblank1+1.5*splotsize+125,19+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+125-plotsize/30,19+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+125-plotsize/60,21);
-            //     fill(0);
-            //     noStroke();
-            //     textSize(plotsize/12);
-            //     // textAlign(CENTER);
-            //     text(measurename[selectedmeasure],xstartpos+plotsize+2*xblank1+1.5*splotsize+20,16+plotsize/10);
-            //     // textAlign(LEFT);
-            // } else {
-            //     for (var i = 0; i < nummeasure; i++) {
-            //         if (mouseX > xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize && mouseX < xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize + 130 && mouseY > 20 + i * plotsize / 10 && mouseY < 20 + (i + 1) * plotsize / 10) {
-            //             fill(255);
-            //         } else
-            //             switch (type[i]) {
-            //                 case 0:
-            //                     fill(179, 226, 205);
-            //                     break;
-            //                 case 1:
-            //                     fill(253, 205, 172);
-            //                     break;
-            //                 case 2:
-            //                     fill(203, 213, 232);
-            //                     break;
-            //                 case 3:
-            //                     fill(244, 202, 228);
-            //                     break;
-            //             }
-            //         stroke(0);
-            //         rect(xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize, 20 + i * plotsize / 10, 130, plotsize / 10);
-            //         fill(0);
-            //         noStroke();
-            //         textSize(plotsize / 12);
-            //         // textAlign(CENTER);
-            //         text(measurename[i], xstartpos + plotsize + 2 * xblank1 + 1.5 * splotsize + 20, 16 + (i + 1) * plotsize / 10);
-            //         // textAlign(LEFT);
-            //         if (i === selectedmeasure) {
-            //             strokeWeight(2);
-            //             stroke(0);
-            //             line(xstartpos+plotsize+2*xblank1+1.5*splotsize+5,20+i*plotsize/10+plotsize/20,xstartpos+plotsize+2*xblank1+1.5*splotsize+5+plotsize/60,20+i*plotsize/10+2*plotsize/30);
-            //             line(xstartpos+plotsize+2*xblank1+1.5*splotsize+5+plotsize/60,20+i*plotsize/10+2*plotsize/30,xstartpos+plotsize+2*xblank1+1.5*splotsize+5+plotsize/30,20+i*plotsize/10+plotsize/30);
-            //             strokeWeight(1);
-            //         }
-            //     }
-            // }
-            numColumn = (selectedDisplay === "1D") ? 30 : 72;
+            numColumn = 72;
             columnSize = width/numColumn;
             let correctnumplot = (newnumplot === 0) ? numplot : Math.floor(newnumplot/3);
-            switch (selectedDisplay) {
-                case "1D":
-                    csPlotSize = 2*columnSize;
-                    rPlotSize = 1.5*columnSize;
-                    xBlank = columnSize;
-                    xgBlank = 2*columnSize;
-                    // yBlank = 50;
-                    ygBlank = csPlotSize*0.3;
-                    groupSize = 2*csPlotSize+xBlank+2*rPlotSize+xgBlank;
-                    // Write group notation
-                    fill(0);
+
+            // main draw
+            // Write group notation
+            fill(0);
+            noStroke();
+            textSize(30);
+            text('Lowest values',xBlank+0.3*groupSize,yBlank);
+            text('Medium values',xBlank+1.3*groupSize,yBlank);
+            text('Highest values',xBlank+2.3*groupSize,yBlank);
+            // Draw plots
+            for (var i = 0; i < correctnumplot; i++) {
+                for (var j = 0; j < 3; j++) {
+
+                    var sample = displayplot[selectedmeasure][i+j*correctnumplot][0];
+                    var xvar = displayplot[selectedmeasure][i+j*correctnumplot][1];
+                    var yvar = displayplot[selectedmeasure][i+j*correctnumplot][2];
+                    var value = displayplot[selectedmeasure][i+j*correctnumplot][3];
+                    var mindex = displayplot[selectedmeasure][i+j*correctnumplot][4];
+
+                    let instance = mapsample2.get(sample);
+                    let x_var = mapvar2.get(xvar);
+                    let y_var = mapvar2.get(yvar);
+                    let loop = experiment.loop[instance].find(element=>element[0]===x_var&&element[1]===y_var);
+
+                    // draw rectangles for CS - X(t) for 1D
+                    // fill(255);
+                    fill(200);  // for paper
+                    stroke(0);
+                    strokeWeight(2);    // for paper
+                    rect(xBlank+csPlotSize+xBlank+j*groupSize,yBlank+50+i*(csPlotSize+ygBlank),csPlotSize,csPlotSize);
+
+                    // draw rectangles for time series
+                    // fill(255);
+                    fill(200);  // for paper
                     noStroke();
-                    textSize(30);
-                    text('Lowest values',xBlank+0.3*groupSize,yBlank);
-                    text('Middle values',xBlank+1.3*groupSize,yBlank);
-                    text('Highest values',xBlank+2.3*groupSize,yBlank);
-                    // Draw plots
-                    for (var i = 0; i < correctnumplot; i++) {
-                        for (var j = 0; j < 3; j++) {
+                    rect(xBlank+j*groupSize,yBlank+50+oPlotSize+2+i*(csPlotSize+ygBlank),csPlotSize,oPlotSize); // x-data
+                    stroke(0);
+                    line(xBlank+j*groupSize,yBlank+50+oPlotSize+2+i*(csPlotSize+ygBlank),xBlank+j*groupSize,yBlank+50+2*oPlotSize+2+i*(csPlotSize+ygBlank));
+                    line(xBlank+j*groupSize,yBlank+50+2*oPlotSize+2+i*(csPlotSize+ygBlank),xBlank+csPlotSize+j*groupSize,yBlank+50+2*oPlotSize+2+i*(csPlotSize+ygBlank));
+                    noFill();
+                    bezier(xBlank+csPlotSize+j*groupSize,yBlank+50+1.5*oPlotSize+2+i*(csPlotSize+ygBlank),1.5*xBlank+csPlotSize+j*groupSize,yBlank+50+1.5*oPlotSize+2+i*(csPlotSize+ygBlank),xBlank+csPlotSize+j*groupSize,yBlank+50+oPlotSize+2+i*(csPlotSize+ygBlank),1.7*xBlank+csPlotSize+j*groupSize,yBlank+50+oPlotSize+i*(csPlotSize+ygBlank));
+                    // fill(255);
+                    fill(200);  // for paper
+                    noStroke();
+                    rect(xBlank+j*groupSize,yBlank+48+i*(csPlotSize+ygBlank),csPlotSize,oPlotSize); // y-data
+                    stroke(0);
+                    line(xBlank+j*groupSize,yBlank+48+i*(csPlotSize+ygBlank),xBlank+j*groupSize,yBlank+48+oPlotSize+i*(csPlotSize+ygBlank));
+                    line(xBlank+j*groupSize,yBlank+48+oPlotSize+i*(csPlotSize+ygBlank),xBlank+csPlotSize+j*groupSize,yBlank+48+oPlotSize+i*(csPlotSize+ygBlank));
+                    noFill();
+                    bezier(xBlank+csPlotSize+j*groupSize,yBlank+48+0.5*oPlotSize+i*(csPlotSize+ygBlank),1.5*xBlank+csPlotSize+j*groupSize,yBlank+48+0.5*oPlotSize+i*(csPlotSize+ygBlank),xBlank+csPlotSize+j*groupSize,yBlank+50+oPlotSize+i*(csPlotSize+ygBlank),1.7*xBlank+csPlotSize+j*groupSize,yBlank+50+oPlotSize+i*(csPlotSize+ygBlank));
 
-                            var sample = displayplot[selectedmeasure][i+j*correctnumplot][0];
-                            var xvar = displayplot[selectedmeasure][i+j*correctnumplot][1];
-                            var value = displayplot[selectedmeasure][i+j*correctnumplot][3];
-                            var mindex = displayplot[selectedmeasure][i+j*correctnumplot][4];
-
-                            // draw rectangles for CS - X(t) for 1D
-                            fill(220);
-                            stroke(0);
-                            rect(xBlank+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize),2*csPlotSize,csPlotSize);
-
-                            //  DRAW RADAR CHART
-                            var xCenter = 2*xBlank+2*csPlotSize+rPlotSize+j*groupSize;
-                            var yCenter = yBlank+50+csPlotSize*0.5+i*(ygBlank+csPlotSize);
-                            fill(255);
-                            stroke(180,180,180,100);
-                            for (var k = 5; k > 0; k--) {
-                                ellipse(xCenter,yCenter,rPlotSize*0.2*k,rPlotSize*0.2*k);
-                            }
-                            for (var k = 0; k < nummeasure-1; k++) {
-                                var xp1 = xCenter+rPlotSize*Math.sin(Math.PI*2*k/nummeasure)/2;
-                                var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*k/nummeasure)/2;
-                                stroke(180,180,180,100);
-                                line(xCenter,yCenter,xp1,yp1);
-                                switch (type[k]) {
-                                    case 0:
-                                        fill(18, 169, 101);
-                                        stroke(18, 169, 101);
-                                        break;
-                                    case 1:
-                                        fill(232, 101, 11);
-                                        stroke(232, 101, 11);
-                                        break;
-                                    case 2:
-                                        fill(89, 135, 222);
-                                        stroke(89, 135, 222);
-                                        break;
-                                }
-                                arc(xCenter,yCenter,rPlotSize*measures[k][sample][mindex][2],rPlotSize*measures[k][sample][mindex][2],Math.PI*2*k/nummeasure-Math.PI/(2*nummeasure)-Math.PI/2,Math.PI*2*k/nummeasure+Math.PI/(nummeasure*2)-Math.PI/2);
-                                textSize(8);
-                                noStroke();
-                                if (k>nummeasure/2) {
-                                    textAlign(RIGHT);
-                                }
-                                text(measurename[k]+': '+Math.round(measures[k][sample][mindex][2]*100)/100,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*k/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*k/nummeasure)/2);
-                                textAlign(LEFT);
-                            }
-                            var xp1 = xCenter+rPlotSize*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2;
-                            var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2;
-                            stroke(180,180,180,100);
-                            line(xCenter,yCenter,xp1,yp1);
-                            switch (type[nummeasure-1]) {
-                                case 0:
-                                    fill(18, 169, 101);
-                                    stroke(18, 169, 101);
-                                    break;
-                                case 1:
-                                    fill(232, 101, 11);
-                                    stroke(232, 101, 11);
-                                    break;
-                                case 2:
-                                    fill(89, 135, 222);
-                                    stroke(89, 135, 222);
-                                    break;
-                            }
-                            arc(xCenter,yCenter,rPlotSize*measures[nummeasure-1][sample][mindex][2],rPlotSize*measures[nummeasure-1][sample][mindex][2],Math.PI*2*(nummeasure-1)/nummeasure-Math.PI/(2*nummeasure)-Math.PI/2,Math.PI*2*(nummeasure-1)/nummeasure+Math.PI/(2*nummeasure)-Math.PI/2);
-                            textSize(8);
-                            noStroke();
+                    //  DRAW RADAR CHART
+                    var xCenter = 2*xBlank+2*csPlotSize+rPlotSize+j*groupSize;
+                    var yCenter = yBlank+50+csPlotSize*0.5+i*(ygBlank+csPlotSize);
+                    for (let k = 5; k > 0; k--) {
+                        fill(205,205,205,25);
+                        stroke(0);
+                        strokeWeight(0.15)
+                        ellipse(xCenter,yCenter,rPlotSize*0.2*k,rPlotSize*0.2*k);
+                    }
+                    for (let k = 0; k < nummeasure-1; k++) {
+                        var xp1 = xCenter+rPlotSize*Math.sin(Math.PI*2*k/nummeasure)/2;
+                        var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*k/nummeasure)/2;
+                        stroke(255,255,255);
+                        strokeWeight(1);
+                        line(xCenter,yCenter,xp1,yp1);
+                        textSize(8);
+                        noStroke();
+                        if (k>nummeasure/2-1) {
                             textAlign(RIGHT);
-                            text(measurename[k]+': '+Math.round(measures[k][sample][mindex][2]*100)/100,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2);
-                            textAlign(LEFT);
-
-                            // DRAW PERIODOGRAM
-                            // var xCenter = 2*xBlank+2*csPlotSize+rPlotSize+j*groupSize;
-                            // var yCenter = yBlank+50+csPlotSize*0.5+i*(ygBlank+csPlotSize);
-                            // fill(255);
-                            // stroke(0);
-                            // rect(xCenter-rPlotSize,yCenter-0.5*csPlotSize,2*rPlotSize,csPlotSize);
-                            // fill(0);
-                            // noStroke();
-                            // textSize(13);
-                            // if(peakPeri[mindex].length>0) text("Max peak value = "+d3.max(peakPeri[sample][mindex].map(d=>d[0])),xCenter-rPlotSize+5,yCenter-0.5*csPlotSize+20);
-                            // else text("No peak",xCenter-rPlotSize+5,yCenter-0.5*csPlotSize+20);
-                            // if(peakPeri[mindex].length>0) text("Frequency at max peak = "+0.5*d3.max(peakPeri[sample][mindex])[1]/myPeriodogramDraw[sample][mindex].length,xCenter-rPlotSize+5,yCenter-0.5*csPlotSize+40);
-                            // myPeriodogramDraw[sample][mindex].forEach((d,index)=>{
-                            //     if(index){
-                            //         let xP1 = xCenter-rPlotSize+5+(2*rPlotSize-5)*(index-1)/myPeriodogramDraw[sample][mindex].length;
-                            //         let xP2 = xCenter-rPlotSize+5+(2*rPlotSize-5)*index/myPeriodogramDraw[sample][mindex].length;
-                            //         let yP1 = yCenter-5-(csPlotSize-5)*myPeriodogramDraw[sample][mindex][index-1];
-                            //         let yP2 = yCenter-5-(csPlotSize-5)*d;
-                            //         if (index<timedata.length/2) stroke(0,0,255-255*index/(timedata.length/2));
-                            //         else stroke((index-timedata.length/2)*255/(timedata.length/2),0,0);
-                            //         line(xP1,yP1,xP2,yP2);
-                            //     }
-                            // });
-
-                            // write value of measure
-                            noStroke();
-                            fill(0);
-                            textSize(csPlotSize/12);
-                            text(measurename[selectedmeasure]+' = '+Math.round(value*100)/100,xBlank+j*groupSize+csPlotSize,yBlank+50+i*(ygBlank+csPlotSize)-5);
-
-                            // write sample notation
-                            noStroke();
-                            fill(0);
-                            textSize(csPlotSize/12);
-                            text(mapsample2.get(sample),xBlank+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize)-5);
-
-                            // write x-variable notation
-                            noStroke();
-                            fill(0);
-                            textSize(csPlotSize/14);
-                            text("time",xBlank+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*1.1);
-
-                            //write y-variable notation
-                            push();
-                            noStroke();
-                            fill(0);
-                            textSize(csPlotSize/14);
-                            translate(xBlank-5+j*groupSize,yBlank+50+i*(csPlotSize+ygBlank));
-                            rotate(-PI/2);
-                            if(mapvar2.get(xvar).split("").length <= 27) {
-                                text(mapvar2.get(xvar),-csPlotSize,-5);
-                            } else {
-                                text(mapvar2.get(xvar).substr(0,27)+'...',-csPlotSize,-5);
-                            }
-                            pop();
-
-
-                            // draw plots
-                            timedata.forEach(function (time,step) {
-                                if(step) {
-                                    // CS plots - X(t) for 1D
-                                    if(data[sample][xvar][step]>=0 && data[sample][xvar][step-1]>=0) {
-                                        var x1 = 0.05*csPlotSize+xBlank+j*groupSize+1.9*csPlotSize*(step-1)/timedata.length;
-                                        var x2 = 0.05*csPlotSize+xBlank+j*groupSize+1.9*csPlotSize*step/timedata.length;
-                                        var y1 = 0.05*csPlotSize+yBlank+50+i*(ygBlank+csPlotSize)+0.9*csPlotSize*(1-data[sample][xvar][step-1]);
-                                        var y2 = 0.05*csPlotSize+yBlank+50+i*(ygBlank+csPlotSize)+0.9*csPlotSize*(1-data[sample][xvar][step]);
-                                        if (step<timedata.length/2) stroke(0,0,255-255*step/(timedata.length/2));
-                                        else stroke((step-timedata.length/2)*255/(timedata.length/2),0,0);
+                        }
+                        fill(0);
+                        text(measurename[k]+': '+Math.round(measures[k][sample][mindex][2]*10)/10,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*k/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*k/nummeasure)/2);
+                        textAlign(LEFT);
+                    }
+                    var xp1 = xCenter+rPlotSize*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2;
+                    var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2;
+                    stroke(255,255,255);
+                    strokeWeight(1);
+                    line(xCenter,yCenter,xp1,yp1);
+                    fill(0);    // for paper
+                    stroke(0);  // for paper
+                    textSize(8);
+                    noStroke();
+                    textAlign(RIGHT);
+                    text(measurename[nummeasure-1]+': '+Math.round(measures[nummeasure-1][sample][mindex][2]*100)/100,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2);
+                    textAlign(LEFT);
+                    // draw radar, not rose
+                    myRadarChartClusterOpt.pos = {x:xCenter,y:yCenter};
+                    myRadarChartClusterOpt.w = rPlotSize;
+                    myRadarChartClusterOpt.h = rPlotSize;
+                    let datum = serviceList.map((s,si)=>{
+                        return {axis:s,value:measures[si][sample][mindex][2]}
+                    });
+                    RadarChart_c_func('#mainCanvasHolder canvas',[datum],myRadarChartClusterOpt,'');
+                    // write value of measure
+                    noStroke();
+                    fill(255);
+                    // textSize(csPlotSize/12);
+                    textSize(12);
+                    fill(0);    // for paper
+                    text(measurename[selectedmeasure]+' = '+Math.round(value*100)/100,xBlank+csPlotSize+xBlank+j*groupSize,yBlank+45+i*(csPlotSize+ygBlank));
+                    // write sample notation
+                    noStroke();
+                    fill(0);
+                    // textSize(csPlotSize/12);
+                    textSize(12);
+                    text(mapsample2.get(sample),xBlank+j*groupSize,yBlank+45+i*(ygBlank+csPlotSize));
+                    // write x-variable notation
+                    noStroke();
+                    fill(0);
+                    // textSize(csPlotSize/14);
+                    textSize(9);
+                    if (mapvar2.get(xvar).split("").length <= 27) {
+                        text(mapvar2.get(xvar),2*xBlank+csPlotSize+j*groupSize,yBlank+50+csPlotSize*1.1+i*(ygBlank+csPlotSize));
+                    } else {
+                        text(mapvar2.get(xvar).substr(0,27)+'...',2*xBlank+csPlotSize+j*groupSize,yBlank+50+csPlotSize*1.1+i*(ygBlank+csPlotSize));
+                    }
+                    text("time",xBlank+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*1.1);
+                    //write y-variable notation
+                    push();
+                    noStroke();
+                    fill(0);
+                    // textSize(csPlotSize/14);
+                    textSize(9);
+                    translate(xBlank+j*groupSize,yBlank+50+csPlotSize+i*(csPlotSize+ygBlank));
+                    rotate(-PI/2);
+                    if(mapvar2.get(xvar).split("").length <= 17) {
+                        text(mapvar2.get(yvar),0,csPlotSize+xBlank-5);
+                    } else {
+                        text(mapvar2.get(yvar).substr(0,17)+'...',0,csPlotSize+xBlank-5);
+                    }
+                    if(mapvar2.get(xvar).split("").length <= 20) {
+                        text(mapvar2.get(xvar),0,-5);
+                    } else {
+                        text(mapvar2.get(xvar).substr(0,17)+'...',0,-5);
+                    }
+                    if(mapvar2.get(yvar).split("").length <= 20) {
+                        text(mapvar2.get(yvar),oPlotSize,-5);
+                    } else {
+                        text(mapvar2.get(yvar).substr(0,17)+'...',oPlotSize,-5);
+                    }
+                    pop();
+                    timedata.forEach(function (time,step) {
+                        // for paper
+                        let bP1 = '2000', bP2 = '2005', bP3 = '2012', bP4 = '1987';
+                        let bC1 = '#542788', bC2 = '#e08214', bC3 = '#d53e4f', bC4 = '#ff0000';
+                        if(step) {
+                            let radius = interactionOption.time1 === step || interactionOption.time2 === step ? 3 : 1;
+                            // CS plots - X(t) for 1D
+                            if(data[sample][xvar][step]>=0 && data[sample][xvar][step-1]>=0 && data[sample][yvar][step]>=0 && data[sample][yvar][step-1]>=0) {
+                                let x1 = 0.05*csPlotSize+xBlank+csPlotSize+xBlank+j*groupSize+0.9*csPlotSize*data[sample][xvar][step-1];
+                                let x2 = 0.05*csPlotSize+xBlank+csPlotSize+xBlank+j*groupSize+0.9*csPlotSize*data[sample][xvar][step];
+                                let y1 = 0.05*csPlotSize+yBlank+50+i*(csPlotSize+ygBlank)+0.9*csPlotSize*(1-data[sample][yvar][step-1]);
+                                let y2 = 0.05*csPlotSize+yBlank+50+i*(csPlotSize+ygBlank)+0.9*csPlotSize*(1-data[sample][yvar][step]);
+                                if (selectedmeasure===5 && loop) {
+                                    let checkLoop = 0;
+                                    for (let n = 0; n < loop[2].length; n++) {
+                                        if (loop[2][n][0]<=step&&loop[2][n][1]+1>=step) {
+                                            checkLoop = n+1;
+                                            break;
+                                        }
+                                    }
+                                    if (checkLoop>0) {
+                                        let color = d3.color(experiment.colorList[checkLoop-1]);
+                                        fill(color.r,color.g,color.b);
+                                        stroke(color.r,color.g,color.b);
+                                        if (time === bP1) {fill(bC1); stroke(bC1);} // paper
+                                        if (time === bP2) {fill(bC2); stroke(bC2);}
+                                        if (time === bP3) {fill(bC3); stroke(bC3);}
+                                        if (time === bP4) {fill(bC4); stroke(bC4);}
+                                        circle(x1,y1,radius);
+                                        circle(x2,y2,radius);
+                                        fill(color.r,color.g,color.b);  // paper
+                                        stroke(color.r,color.g,color.b);
+                                        strokeWeight(0.3);
                                         line(x1,y1,x2,y2);
+                                        strokeWeight(1);
+                                    } else {
+                                        if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2)); fill(0,0,255-255*step/(timedata.length/2));}
+                                        else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0); fill((step-timedata.length/2)*255/(timedata.length/2),0,0);}
+                                        circle(x1,y1,radius);
+                                        circle(x2,y2,radius);
+                                        strokeWeight(0.3);
+                                        line(x1,y1,x2,y2);
+                                        strokeWeight(1);
+                                    }
+                                } else {
+                                    if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2)); fill(0,0,255-255*step/(timedata.length/2));}
+                                    else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0); fill((step-timedata.length/2)*255/(timedata.length/2),0,0);}
+                                    circle(x1,y1,radius);
+                                    circle(x2,y2,radius);
+                                    strokeWeight(0.3);
+                                    line(x1,y1,x2,y2);
+                                    strokeWeight(1);
+                                }
+                                // draw notations
+                                if (isMouseOVer) {
+                                    let myCheck = x2 <= mouseX + 3 && x2 >= mouseX - 3 && y2 <= mouseY + 3 && y2 >= mouseY - 3;
+                                    if (myCheck) {
+                                        var xV = Math.round(dataRaw[sample][xvar][step]);
+                                        var yV = Math.round(dataRaw[sample][yvar][step]);
+                                        var myL = time.split('').length + xV.toString().split('').length + yV.toString().split('').length+2;
+                                        fill(0);
+                                        noStroke();
+                                        triangle(mouseX,mouseY,mouseX+3,mouseY-3,mouseX+3,mouseY+3);
+                                        rect(mouseX+3,mouseY-8,myL*7,16);
+                                        fill(255);
+                                        textSize(12);
+                                        text(time+'; '+xV+'; '+yV.toString(),mouseX+5,mouseY+6);
+
                                     }
                                 }
-                            });
+                            }
+                            // X-var plots
+                            if(data[sample][xvar][step]>=0 && data[sample][xvar][step-1]>=0) {
+                                var x1 = 0.05*oPlotSize+xBlank+j*groupSize+1.9*oPlotSize*(step-1)/timedata.length;
+                                var x2 = 0.05*oPlotSize+xBlank+j*groupSize+1.9*oPlotSize*step/timedata.length;
+                                var y1 = 0.05*oPlotSize+yBlank+50+oPlotSize+2+i*(csPlotSize+ygBlank)+0.9*oPlotSize*(1-data[sample][xvar][step-1]);
+                                var y2 = 0.05*oPlotSize+yBlank+50+oPlotSize+2+i*(csPlotSize+ygBlank)+0.9*oPlotSize*(1-data[sample][xvar][step]);
+                                if (selectedmeasure===5 && loop) {
+                                    let checkLoop = 0;
+                                    for (let n = 0; n < loop[2].length; n++) {
+                                        if (loop[2][n][0]<=step&&loop[2][n][1]+1>=step) {
+                                            checkLoop = n+1;
+                                            break;
+                                        }
+                                    }
+                                    if (checkLoop>0) {
+                                        let color = d3.color(experiment.colorList[checkLoop-1]);
+                                        fill(color.r,color.g,color.b);
+                                        stroke(color.r,color.g,color.b);
+                                        if (time === bP1) {fill(bC1); stroke(bC1);} // paper
+                                        if (time === bP2) {fill(bC2); stroke(bC2);}
+                                        if (time === bP3) {fill(bC3); stroke(bC3);}
+                                        if (time === bP4) {fill(bC4); stroke(bC4);}
+                                        circle(x1,y1,radius);
+                                        circle(x2,y2,radius);
+                                        fill(color.r,color.g,color.b);  // paper
+                                        stroke(color.r,color.g,color.b);
+                                        strokeWeight(0.3);
+                                        line(x1,y1,x2,y2);
+                                        strokeWeight(1);
+                                    } else {
+                                        if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2)); fill(0,0,255-255*step/(timedata.length/2));}
+                                        else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0); fill((step-timedata.length/2)*255/(timedata.length/2),0,0);}
+                                        circle(x1,y1,radius);
+                                        circle(x2,y2,radius);
+                                        strokeWeight(0.3);
+                                        line(x1,y1,x2,y2);
+                                        strokeWeight(1);
+                                    }
+                                } else {
+                                    if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2)); fill(0,0,255-255*step/(timedata.length/2));}
+                                    else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0); fill((step-timedata.length/2)*255/(timedata.length/2),0,0);}
+                                    circle(x1,y1,radius);
+                                    circle(x2,y2,radius);
+                                    strokeWeight(0.3);
+                                    line(x1,y1,x2,y2);
+                                    strokeWeight(1);
+                                }
+                                // draw notations
+                                if (isMouseOVer) {
+                                    let myCheckX = x2 <= mouseX + 3 && x2 >= mouseX - 3 && y2 <= mouseY + 3 && y2 >= mouseY - 3;
+                                    if (myCheckX) {
+                                        var xV = time;
+                                        var yV = Math.round(dataRaw[sample][xvar][step]);
+                                        var myL = xV.split('').length + yV.toString().split('').length+2;
+                                        fill(0);
+                                        noStroke();
+                                        triangle(mouseX,mouseY,mouseX+3,mouseY-3,mouseX+3,mouseY+3);
+                                        rect(mouseX+3,mouseY-8,myL*7,16);
+                                        fill(255);
+                                        textSize(12);
+                                        text(xV+'; '+yV.toString(),mouseX+5,mouseY+6);
+                                    }
+                                }
+                            }
+                            // Y-var plots
+                            // xBlank+j*groupSize,yBlank+48+i*(csPlotSize+ygBlank)
+                            if(data[sample][yvar][step]>=0 && data[sample][yvar][step-1]>=0) {
+                                var x1 = 0.05*oPlotSize+xBlank+j*groupSize+1.9*oPlotSize*(step-1)/timedata.length;
+                                var x2 = 0.05*oPlotSize+xBlank+j*groupSize+1.9*oPlotSize*step/timedata.length;
+                                var y1 = 0.05*oPlotSize+yBlank+48+i*(csPlotSize+ygBlank)+0.9*oPlotSize*(1-data[sample][yvar][step-1]);
+                                var y2 = 0.05*oPlotSize+yBlank+48+i*(csPlotSize+ygBlank)+0.9*oPlotSize*(1-data[sample][yvar][step]);
+                                if (selectedmeasure===5 && loop) {
+                                    let checkLoop = 0;
+                                    for (let n = 0; n < loop[2].length; n++) {
+                                        if (loop[2][n][0]<=step&&loop[2][n][1]+1>=step) {
+                                            checkLoop = n+1;
+                                            break;
+                                        }
+                                    }
+                                    if (checkLoop>0) {
+                                        let color = d3.color(experiment.colorList[checkLoop-1]);
+                                        fill(color.r,color.g,color.b);
+                                        stroke(color.r,color.g,color.b);
+                                        if (time === bP1) {fill(bC1); stroke(bC1);} // paper
+                                        if (time === bP2) {fill(bC2); stroke(bC2);}
+                                        if (time === bP3) {fill(bC3); stroke(bC3);}
+                                        if (time === bP4) {fill(bC4); stroke(bC4);}
+                                        circle(x1,y1,radius);
+                                        circle(x2,y2,radius);
+                                        fill(color.r,color.g,color.b);  // paper
+                                        stroke(color.r,color.g,color.b);
+                                        strokeWeight(0.3);
+                                        line(x1,y1,x2,y2);
+                                        strokeWeight(1);
+                                    } else {
+                                        if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2)); fill(0,0,255-255*step/(timedata.length/2));}
+                                        else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0); fill((step-timedata.length/2)*255/(timedata.length/2),0,0);}
+                                        circle(x1,y1,radius);
+                                        circle(x2,y2,radius);
+                                        strokeWeight(0.3);
+                                        line(x1,y1,x2,y2);
+                                        strokeWeight(1);
+                                    }
+                                } else {
+                                    if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2)); fill(0,0,255-255*step/(timedata.length/2));}
+                                    else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0); fill((step-timedata.length/2)*255/(timedata.length/2),0,0);}
+                                    circle(x1,y1,radius);
+                                    circle(x2,y2,radius);
+                                    strokeWeight(0.3);
+                                    line(x1,y1,x2,y2);
+                                    strokeWeight(1);
+                                }
+                                // draw notations
+                                if (isMouseOVer) {
+                                    let myCheckY = x2 <= mouseX + 3 && x2 >= mouseX - 3 && y2 <= mouseY + 3 && y2 >= mouseY - 3;
+                                    if (myCheckY) {
+                                        var xV = time;
+                                        var yV = Math.round(dataRaw[sample][yvar][step]);
+                                        var myL = xV.split('').length + yV.toString().split('').length+2;
+                                        fill(0);
+                                        noStroke();
+                                        triangle(mouseX,mouseY,mouseX+3,mouseY-3,mouseX+3,mouseY+3);
+                                        rect(mouseX+3,mouseY-8,myL*7,16);
+                                        fill(255);
+                                        textSize(12);
+                                        text(xV+'; '+yV.toString(),mouseX+5,mouseY+6);
+                                    }
+                                }
+                            }
                         }
-                    }
-                    break;
-                case "2D":
-                    csPlotSize = 6*columnSize;
-                    oPlotSize = 3*columnSize;
-                    rPlotSize = 4*columnSize;
-                    xBlank = 2*columnSize;
-                    xgBlank = 3*columnSize;
-                    // yBlank = 50;
-                    ygBlank = csPlotSize*0.3;
-                    groupSize = 2*(csPlotSize+xBlank)+rPlotSize+xgBlank;
-                    // Write group notation
-                    fill(0);
-                    noStroke();
-                    textSize(30);
-                    text('Lowest values',xBlank+0.3*groupSize,yBlank);
-                    text('Medium values',xBlank+1.3*groupSize,yBlank);
-                    text('Highest values',xBlank+2.3*groupSize,yBlank);
-                    // Draw plots
-                    for (var i = 0; i < correctnumplot; i++) {
-                        for (var j = 0; j < 3; j++) {
-
-                            var sample = displayplot[selectedmeasure][i+j*correctnumplot][0];
-                            var xvar = displayplot[selectedmeasure][i+j*correctnumplot][1];
-                            var yvar = displayplot[selectedmeasure][i+j*correctnumplot][2];
-                            var value = displayplot[selectedmeasure][i+j*correctnumplot][3];
-                            var mindex = displayplot[selectedmeasure][i+j*correctnumplot][4];
-
-                            let instance = mapsample2.get(sample);
-                            let x_var = mapvar2.get(xvar);
-                            let y_var = mapvar2.get(yvar);
-                            let loop = experiment.loop[instance].find(element=>element[0]===x_var&&element[1]===y_var);
-
-                            // draw rectangles for CS - X(t) for 1D
-                            // fill(255);
-                            fill(200);  // for paper
-                            stroke(0);
-                            strokeWeight(2);    // for paper
-                            rect(xBlank+csPlotSize+xBlank+j*groupSize,yBlank+50+i*(csPlotSize+ygBlank),csPlotSize,csPlotSize);
-
-                            // draw rectangles for time series
-                            // fill(255);
-                            fill(200);  // for paper
-                            noStroke();
-                            rect(xBlank+j*groupSize,yBlank+50+oPlotSize+2+i*(csPlotSize+ygBlank),csPlotSize,oPlotSize); // x-data
-                            stroke(0);
-                            line(xBlank+j*groupSize,yBlank+50+oPlotSize+2+i*(csPlotSize+ygBlank),xBlank+j*groupSize,yBlank+50+2*oPlotSize+2+i*(csPlotSize+ygBlank));
-                            line(xBlank+j*groupSize,yBlank+50+2*oPlotSize+2+i*(csPlotSize+ygBlank),xBlank+csPlotSize+j*groupSize,yBlank+50+2*oPlotSize+2+i*(csPlotSize+ygBlank));
-                            noFill();
-                            bezier(xBlank+csPlotSize+j*groupSize,yBlank+50+1.5*oPlotSize+2+i*(csPlotSize+ygBlank),1.5*xBlank+csPlotSize+j*groupSize,yBlank+50+1.5*oPlotSize+2+i*(csPlotSize+ygBlank),xBlank+csPlotSize+j*groupSize,yBlank+50+oPlotSize+2+i*(csPlotSize+ygBlank),1.7*xBlank+csPlotSize+j*groupSize,yBlank+50+oPlotSize+i*(csPlotSize+ygBlank));
-                            // fill(255);
-                            fill(200);  // for paper
-                            noStroke();
-                            rect(xBlank+j*groupSize,yBlank+48+i*(csPlotSize+ygBlank),csPlotSize,oPlotSize); // y-data
-                            stroke(0);
-                            line(xBlank+j*groupSize,yBlank+48+i*(csPlotSize+ygBlank),xBlank+j*groupSize,yBlank+48+oPlotSize+i*(csPlotSize+ygBlank));
-                            line(xBlank+j*groupSize,yBlank+48+oPlotSize+i*(csPlotSize+ygBlank),xBlank+csPlotSize+j*groupSize,yBlank+48+oPlotSize+i*(csPlotSize+ygBlank));
-                            noFill();
-                            bezier(xBlank+csPlotSize+j*groupSize,yBlank+48+0.5*oPlotSize+i*(csPlotSize+ygBlank),1.5*xBlank+csPlotSize+j*groupSize,yBlank+48+0.5*oPlotSize+i*(csPlotSize+ygBlank),xBlank+csPlotSize+j*groupSize,yBlank+50+oPlotSize+i*(csPlotSize+ygBlank),1.7*xBlank+csPlotSize+j*groupSize,yBlank+50+oPlotSize+i*(csPlotSize+ygBlank));
-
-                            //  DRAW RADAR CHART
-                            var xCenter = 2*xBlank+2*csPlotSize+rPlotSize+j*groupSize;
-                            var yCenter = yBlank+50+csPlotSize*0.5+i*(ygBlank+csPlotSize);
-                            fill(255);
-                            stroke(180,180,180,100);
-                            for (var k = 5; k > 0; k--) {
-                                ellipse(xCenter,yCenter,rPlotSize*0.2*k,rPlotSize*0.2*k);
-                            }
-                            for (let k = 0; k < nummeasure-1; k++) {
-                                var xp1 = xCenter+rPlotSize*Math.sin(Math.PI*2*k/nummeasure)/2;
-                                var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*k/nummeasure)/2;
-                                stroke(180,180,180,100);
-                                line(xCenter,yCenter,xp1,yp1);
-                                // switch (type[k]) {
-                                //     case 0:
-                                //         fill(18, 169, 101);
-                                //         stroke(18, 169, 101);
-                                //         break;
-                                //     case 1:
-                                //         fill(232, 101, 11);
-                                //         stroke(232, 101, 11);
-                                //         break;
-                                //     case 2:
-                                //         fill(89, 135, 222);
-                                //         stroke(89, 135, 222);
-                                //         break;
-                                // }
-
-                                // arc(xCenter,yCenter,rPlotSize*measures[k][sample][mindex][2],rPlotSize*measures[k][sample][mindex][2],Math.PI*2*k/nummeasure-Math.PI/(2*nummeasure)-Math.PI/2,Math.PI*2*k/nummeasure+Math.PI/(nummeasure*2)-Math.PI/2);
-                                //triangle(xCenter,yCenter,xCenter-0.5*rPlotSize*measures[k][sample][mindex][2]*Math.sin(Math.PI*2*k/nummeasure+0.1),yCenter+0.5*rPlotSize*measures[k][sample][mindex][2]*Math.cos(Math.PI*2*k/nummeasure+0.1),xCenter-0.5*rPlotSize*measures[k+1][sample][mindex][2]*Math.sin(Math.PI*2*(k+1)/nummeasure-0.1),yCenter+0.5*rPlotSize*measures[k+1][sample][mindex][2]*Math.cos(Math.PI*2*(k+1)/nummeasure-0.1));
-                                // arc(xCenter,yCenter,rPlotSize*measures[k][sample][mindex][2],rPlotSize*measures[k][sample][mindex][2],Math.PI*2*k/nummeasure-Math.PI/2-0.1,Math.PI*2*k/nummeasure-Math.PI/2+0.1);
-                                textSize(8);
-                                noStroke();
-                                if (k>nummeasure/2-1) {
-                                    textAlign(RIGHT);
-                                }
-                                // if (k===5) {textSize(10); textStyle(BOLD)}        // for paper
-                                // else {textSize(8); textStyle(NORMAL)}
-                                fill(0);
-                                text(measurename[k]+': '+Math.round(measures[k][sample][mindex][2]*10)/10,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*k/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*k/nummeasure)/2);
-                                textAlign(LEFT);
-                            }
-                            var xp1 = xCenter+rPlotSize*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2;
-                            var yp1 = yCenter-rPlotSize*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2;
-                            stroke(180,180,180,100);
-                            line(xCenter,yCenter,xp1,yp1);
-                            // switch (type[nummeasure-1]) {
-                            //     case 0:
-                            //         fill(18, 169, 101);
-                            //         stroke(18, 169, 101);
-                            //         break;
-                            //     case 1:
-                            //         fill(232, 101, 11);
-                            //         stroke(232, 101, 11);
-                            //         break;
-                            //     case 2:
-                            //         fill(89, 135, 222);
-                            //         stroke(89, 135, 222);
-                            //         break;
-                            // }
-                            fill(0);    // for paper
-                            stroke(0);  // for paper
-                            // fill(180);
-                            // stroke(180);
-                            // arc(xCenter,yCenter,rPlotSize*measures[nummeasure-1][sample][mindex][2],rPlotSize*measures[nummeasure-1][sample][mindex][2],Math.PI*2*(nummeasure-1)/nummeasure-Math.PI/(2*nummeasure)-Math.PI/2,Math.PI*2*(nummeasure-1)/nummeasure+Math.PI/(2*nummeasure)-Math.PI/2);
-                            // triangle(xCenter,yCenter,xCenter-0.5*rPlotSize*measures[nummeasure-1][sample][mindex][2]*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure+0.1),yCenter+0.5*rPlotSize*measures[nummeasure-1][sample][mindex][2]*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure+0.1),xCenter-0.5*rPlotSize*measures[0][sample][mindex][2]*Math.sin(-0.1),yCenter+0.5*rPlotSize*measures[0][sample][mindex][2]*Math.cos(-0.1));
-                            // arc(xCenter,yCenter,rPlotSize*measures[k][sample][mindex][2],rPlotSize*measures[k][sample][mindex][2],Math.PI*2*k/nummeasure-Math.PI/2-0.1,Math.PI*2*k/nummeasure-Math.PI/2+0.1);
-                            textSize(8);
-                            noStroke();
-                            textAlign(RIGHT);
-                            text(measurename[nummeasure-1]+': '+Math.round(measures[nummeasure-1][sample][mindex][2]*100)/100,xCenter+(rPlotSize+10)*Math.sin(Math.PI*2*(nummeasure-1)/nummeasure)/2,yCenter-(rPlotSize+10)*Math.cos(Math.PI*2*(nummeasure-1)/nummeasure)/2);
-                            textAlign(LEFT);
-                            // draw radar, not rose
-                            radarChartclusteropt.pos = {x:xCenter,y:yCenter};
-                            let datum = serviceList.map((s,si)=>{
-                                return {axis:s,value:measures[si][sample][mindex][2]}
-                            });
-                            RadarChart_c_func('#mainCanvasHolder canvas',[datum],radarChartclusteropt,'');
-
-
-                            // DRAW PERIODOGRAM
-                            // var xCenter = 2*xBlank+2*csPlotSize+rPlotSize+j*groupSize;
-                            // var yCenter = yBlank+50+csPlotSize*0.5+i*(ygBlank+csPlotSize);
-                            // fill(255);
-                            // stroke(0);
-                            // rect(xCenter-rPlotSize,yCenter-0.5*csPlotSize,2*rPlotSize,csPlotSize);
-                            // fill(0);
-                            // noStroke();
-                            // textSize(13);
-                            // if(peakPeri[mindex].length>0) text("Max peak value = "+d3.max(peakPeri[sample][mindex].map(d=>d[0])),xCenter-rPlotSize+5,yCenter-0.5*csPlotSize+20);
-                            // else text("No peak",xCenter-rPlotSize+5,yCenter-0.5*csPlotSize+20);
-                            // if(peakPeri[mindex].length>0) text("Frequency at max peak = "+0.5*d3.max(peakPeri[sample][mindex])[1]/myPeriodogramDraw[sample][mindex].length,xCenter-rPlotSize+5,yCenter-0.5*csPlotSize+40);
-                            // myPeriodogramDraw[sample][mindex].forEach((d,index)=>{
-                            //     if(index){
-                            //         let xP1 = xCenter-rPlotSize+5+(2*rPlotSize-5)*(index-1)/myPeriodogramDraw[sample][mindex].length;
-                            //         let xP2 = xCenter-rPlotSize+5+(2*rPlotSize-5)*index/myPeriodogramDraw[sample][mindex].length;
-                            //         let yP1 = yCenter-5-(csPlotSize-5)*myPeriodogramDraw[sample][mindex][index-1];
-                            //         let yP2 = yCenter-5-(csPlotSize-5)*d;
-                            //         if (index<timedata.length/2) stroke(0,0,255-255*index/(timedata.length/2));
-                            //         else stroke((index-timedata.length/2)*255/(timedata.length/2),0,0);
-                            //         line(xP1,yP1,xP2,yP2);
-                            //     }
-                            // });
-
-                            // write value of measure
-                            noStroke();
-                            fill(255);
-                            // textSize(csPlotSize/12);
-                            textSize(12);
-                            fill(0);    // for paper
-                            text(measurename[selectedmeasure]+' = '+Math.round(value*100)/100,xBlank+csPlotSize+xBlank+j*groupSize,yBlank+45+i*(csPlotSize+ygBlank));
-
-                            // write sample notation
-                            noStroke();
-                            fill(0);
-                            // textSize(csPlotSize/12);
-                            textSize(12);
-                            text(mapsample2.get(sample),xBlank+j*groupSize,yBlank+45+i*(ygBlank+csPlotSize));
-
-                            // write x-variable notation
-                            noStroke();
-                            fill(0);
-                            // textSize(csPlotSize/14);
-                            textSize(9);
-                            if (mapvar2.get(xvar).split("").length <= 27) {
-                                text(mapvar2.get(xvar),2*xBlank+csPlotSize+j*groupSize,yBlank+50+csPlotSize*1.1+i*(ygBlank+csPlotSize));
-                            } else {
-                                text(mapvar2.get(xvar).substr(0,27)+'...',2*xBlank+csPlotSize+j*groupSize,yBlank+50+csPlotSize*1.1+i*(ygBlank+csPlotSize));
-                            }
-                            text("time",xBlank+j*groupSize,yBlank+50+i*(ygBlank+csPlotSize)+csPlotSize*1.1);
-
-                            //write y-variable notation
-                            push();
-                            noStroke();
-                            fill(0);
-                            // textSize(csPlotSize/14);
-                            textSize(9);
-                            translate(xBlank+j*groupSize,yBlank+50+csPlotSize+i*(csPlotSize+ygBlank));
-                            rotate(-PI/2);
-                            if(mapvar2.get(xvar).split("").length <= 17) {
-                                text(mapvar2.get(yvar),0,csPlotSize+xBlank-5);
-                            } else {
-                                text(mapvar2.get(yvar).substr(0,17)+'...',0,csPlotSize+xBlank-5);
-                            }
-                            if(mapvar2.get(xvar).split("").length <= 20) {
-                                text(mapvar2.get(xvar),0,-5);
-                            } else {
-                                text(mapvar2.get(xvar).substr(0,17)+'...',0,-5);
-                            }
-                            if(mapvar2.get(yvar).split("").length <= 20) {
-                                text(mapvar2.get(yvar),oPlotSize,-5);
-                            } else {
-                                text(mapvar2.get(yvar).substr(0,17)+'...',oPlotSize,-5);
-                            }
-                            pop();
-
-
-                            // draw plots
-                            timedata.forEach(function (time,step) {
-                                if(step) {
-                                    // CS plots - X(t) for 1D
-                                    if(data[sample][xvar][step]>=0 && data[sample][xvar][step-1]>=0 && data[sample][yvar][step]>=0 && data[sample][yvar][step-1]>=0) {
-                                        var x1 = 0.05*csPlotSize+xBlank+csPlotSize+xBlank+j*groupSize+0.9*csPlotSize*data[sample][xvar][step-1];
-                                        var x2 = 0.05*csPlotSize+xBlank+csPlotSize+xBlank+j*groupSize+0.9*csPlotSize*data[sample][xvar][step];
-                                        var y1 = 0.05*csPlotSize+yBlank+50+i*(csPlotSize+ygBlank)+0.9*csPlotSize*(1-data[sample][yvar][step-1]);
-                                        var y2 = 0.05*csPlotSize+yBlank+50+i*(csPlotSize+ygBlank)+0.9*csPlotSize*(1-data[sample][yvar][step]);
-                                        if (selectedmeasure===5 && loop) {
-                                            let checkLoop = 0;
-                                            for (let n = 0; n < loop[2].length; n++) {
-                                                if (loop[2][n][0]<=step&&loop[2][n][1]+1>=step) {
-                                                    checkLoop = n+1;
-                                                    break;
-                                                }
-                                            }
-                                            if (checkLoop>0) {
-                                                let color = d3.color(experiment.colorList[checkLoop-1]);
-                                                stroke(color.r,color.g,color.b);
-                                                circle(x1,y1,2);
-                                                strokeWeight(2);
-                                                line(x1,y1,x2,y2);
-                                                strokeWeight(1);
-                                            } else {
-                                                if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2)); fill(0,0,255-255*step/(timedata.length/2));}
-                                                else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0); fill((step-timedata.length/2)*255/(timedata.length/2),0,0);}
-                                                circle(x1,y1,2);
-                                                strokeWeight(0.3);
-                                                // strokeWeight(1);
-                                                line(x1,y1,x2,y2);
-                                                strokeWeight(1);
-                                            }
-                                        } else {
-                                            if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2)); fill(0,0,255-255*step/(timedata.length/2));}
-                                            else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0); fill((step-timedata.length/2)*255/(timedata.length/2),0,0);}
-                                            circle(x1,y1,2);
-                                            strokeWeight(0.3);
-                                            // strokeWeight(1);
-                                            line(x1,y1,x2,y2);
-                                            strokeWeight(1);
-                                        }
-                                        // if (LMH_mouseOver) {
-                                        //     if (Math.abs(mouseX-x2) < 0.9*csPlotSize/timedata.length && Math.abs(mouseY-y2) < 0.9*csPlotSize/timedata.length) {
-                                        //         fill(0);
-                                        //         triangle(x2,y2,x2+5,y2+5,x2+5,y2-5);
-                                        //         rect(x2+5,y2-23,40,46);
-                                        //         stroke(255);
-                                        //         text('X: '+dataRaw[sample][xvar][step],x2+6,y2-8);
-                                        //         text('Y: '+dataRaw[sample][yvar][step],x2+6,y2+7);
-                                        //         text('time: '+time,x2+6,y2+22);
-                                        //     }
-                                        // }
-                                    }
-                                    // X-var plots
-                                    if(data[sample][xvar][step]>=0 && data[sample][xvar][step-1]>=0) {
-                                        var x1 = 0.05*oPlotSize+xBlank+j*groupSize+1.9*oPlotSize*(step-1)/timedata.length;
-                                        var x2 = 0.05*oPlotSize+xBlank+j*groupSize+1.9*oPlotSize*step/timedata.length;
-                                        var y1 = 0.05*oPlotSize+yBlank+50+oPlotSize+2+i*(csPlotSize+ygBlank)+0.9*oPlotSize*(1-data[sample][xvar][step-1]);
-                                        var y2 = 0.05*oPlotSize+yBlank+50+oPlotSize+2+i*(csPlotSize+ygBlank)+0.9*oPlotSize*(1-data[sample][xvar][step]);
-                                        if (selectedmeasure===5 && loop) {
-                                            let checkLoop = 0;
-                                            for (let n = 0; n < loop[2].length; n++) {
-                                                if (loop[2][n][0]<=step&&loop[2][n][1]+1>=step) {
-                                                    checkLoop = n+1;
-                                                    break;
-                                                }
-                                            }
-                                            if (checkLoop>0) {
-                                                let color = d3.color(experiment.colorList[checkLoop-1]);
-                                                stroke(color.r,color.g,color.b);
-                                                circle(x1,y1,2);
-                                                strokeWeight(2);
-                                                line(x1,y1,x2,y2);
-                                                strokeWeight(1);
-                                            } else {
-                                                if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2)); fill(0,0,255-255*step/(timedata.length/2));}
-                                                else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0); fill((step-timedata.length/2)*255/(timedata.length/2),0,0);}
-                                                circle(x1,y1,1);
-                                                strokeWeight(0.3);
-                                                // strokeWeight(1);
-                                                line(x1,y1,x2,y2);
-                                                strokeWeight(1);
-                                            }
-                                        } else {
-                                            if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2)); fill(0,0,255-255*step/(timedata.length/2));}
-                                            else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0); fill((step-timedata.length/2)*255/(timedata.length/2),0,0);}
-                                            circle(x1,y1,1);
-                                            strokeWeight(0.3);
-                                            // strokeWeight(1);
-                                            line(x1,y1,x2,y2);
-                                            strokeWeight(1);
-                                        }
-                                        // draw x-y information
-                                        // if (LMH_mouseOver) {
-                                        //     if ((Math.abs(mouseX - x2) < 1.9*oPlotSize/(2*timedata.length))&&(mouseY >= yBlank+50+2+i*(csPlotSize+ygBlank))&&(mouseY <= yBlank+50+2*oPlotSize+2+i*(csPlotSize+ygBlank))) {
-                                        //         let x22 = 0.05*oPlotSize+xBlank+j*groupSize+1.9*oPlotSize*step/timedata.length;
-                                        //         let y22 = 0.05*oPlotSize+yBlank+48+i*(csPlotSize+ygBlank)+0.9*oPlotSize*(1-data[sample][yvar][step]);
-                                        //         fill(0);
-                                        //         triangle(x2,y2,x2+5,y2-5,x2+5,y2+5);
-                                        //         triangle(x22,y22,x22+5,y22+5,x22+5,y22-5);
-                                        //         triangle(x2,yBlank+50+2*oPlotSize,x2+5,yBlank+55+2*oPlotSize,x2-5,yBlank+55+2*oPlotSize);
-                                        //         rect(x2+5,y2-10,30,20);
-                                        //         rect(x22+5,y22-10,30,20);
-                                        //         rect(x2-20,yBlank+55+2*oPlotSize,40,20);
-                                        //         stroke(255);
-                                        //         text(dataRaw[sample][xvar][step],x2+6,y2+8);
-                                        //         text(dataRaw[sample][yvar][step],x22+6,y22+8);
-                                        //         text(time,x2-18,yBlank+50+2*oPlotSize+18)
-                                        //     }
-                                        //     LMH_mouseOver = false
-                                        // }
-                                    }
-                                    // Y-var plots
-                                    // xBlank+j*groupSize,yBlank+48+i*(csPlotSize+ygBlank)
-                                    if(data[sample][yvar][step]>=0 && data[sample][yvar][step-1]>=0) {
-                                        var x1 = 0.05*oPlotSize+xBlank+j*groupSize+1.9*oPlotSize*(step-1)/timedata.length;
-                                        var x2 = 0.05*oPlotSize+xBlank+j*groupSize+1.9*oPlotSize*step/timedata.length;
-                                        var y1 = 0.05*oPlotSize+yBlank+48+i*(csPlotSize+ygBlank)+0.9*oPlotSize*(1-data[sample][yvar][step-1]);
-                                        var y2 = 0.05*oPlotSize+yBlank+48+i*(csPlotSize+ygBlank)+0.9*oPlotSize*(1-data[sample][yvar][step]);
-                                        if (selectedmeasure===5 && loop) {
-                                            let checkLoop = 0;
-                                            for (let n = 0; n < loop[2].length; n++) {
-                                                if (loop[2][n][0]<=step&&loop[2][n][1]+1>=step) {
-                                                    checkLoop = n+1;
-                                                    break;
-                                                }
-                                            }
-                                            if (checkLoop>0) {
-                                                let color = d3.color(experiment.colorList[checkLoop-1]);
-                                                stroke(color.r,color.g,color.b);
-                                                circle(x1,y1,2);
-                                                strokeWeight(2);
-                                                line(x1,y1,x2,y2);
-                                                strokeWeight(1);
-                                            } else {
-                                                if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2)); fill(0,0,255-255*step/(timedata.length/2));}
-                                                else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0); fill((step-timedata.length/2)*255/(timedata.length/2),0,0);}
-                                                circle(x1,y1,1);
-                                                strokeWeight(0.3);
-                                                // strokeWeight(1);
-                                                line(x1,y1,x2,y2);
-                                                strokeWeight(1);
-                                            }
-                                        } else {
-                                            if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2)); fill(0,0,255-255*step/(timedata.length/2));}
-                                            else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0); fill((step-timedata.length/2)*255/(timedata.length/2),0,0);}
-                                            circle(x1,y1,1);
-                                            strokeWeight(0.3);
-                                            // strokeWeight(1);
-                                            line(x1,y1,x2,y2);
-                                            strokeWeight(1);
-                                        }
-                                    }
-                                }
-                            });
-                        }
-                    }
-                    break;
+                    });
+                }
             }
 
             needupdate = false;
@@ -3012,9 +2493,28 @@ function draw() {
     }
 }
 
-// Mouse Over
-// function mouseMoved() {
-//     LMH_mouseOver = true;
-//     needupdate = true;
-// }
-
+function mouseMoved() {
+    let x = mouseX;
+    let y = mouseY;
+    let checkX0 = x >= 0.05*oPlotSize+xBlank && x <= 1.95*oPlotSize+xBlank;
+    let checkX00 = x >= 0.05*csPlotSize+xBlank+csPlotSize+xBlank && x <= 0.95*csPlotSize+xBlank+csPlotSize+xBlank;
+    let checkX1 = x >= 0.05*oPlotSize+xBlank+groupSize && x <= 1.95*oPlotSize+xBlank+groupSize;
+    let checkX10 = x >= 0.05*csPlotSize+xBlank+csPlotSize+xBlank+groupSize && x <= 0.95*csPlotSize+xBlank+csPlotSize+xBlank+groupSize;
+    let checkX2 = x >= 0.05*oPlotSize+xBlank+2*groupSize && x <= 1.95*oPlotSize+xBlank+2*groupSize;
+    let checkX20 = x >= 0.05*csPlotSize+xBlank+csPlotSize+xBlank+2*groupSize && x <= 0.95*csPlotSize+xBlank+csPlotSize+xBlank+2*groupSize;
+    let checkX = checkX0||checkX1||checkX2||checkX00||checkX10||checkX20;
+    let correctnumplot = (newnumplot === 0) ? numplot : Math.floor(newnumplot/3);
+    let checkYi = [];
+    let checkY = false;
+    for (let i = 0; i < correctnumplot; i++) {
+        checkYi[i] = y >= 0.05*oPlotSize+yBlank+48+i*(csPlotSize+ygBlank) && y <= 0.95*oPlotSize+yBlank+50+oPlotSize+2+i*(csPlotSize+ygBlank);
+        checkY = checkY || checkYi[i];
+    }
+    if (checkX&&checkY) {
+        isMouseOVer = true;
+        needupdate = true;
+    } else {
+        isMouseOVer = false;
+        needupdate = true;
+    }
+}

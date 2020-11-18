@@ -20,6 +20,7 @@ class Visual_feature_2D {
                     for (let y = x+1; y < n_variable; y++) {
                         let y_var = experiment.variableInfo[y];
                         if (experiment.data[instance][y_var]) {
+                            let outliers = Visual_feature_2D.checkOutliers(experiment.data[instance][x_var],experiment.data[instance][y_var]);
                             if (this.smooth) {
                                 let loopLength = [];
                                 let loopNum = 0;
@@ -44,7 +45,7 @@ class Visual_feature_2D {
                                                             let concave_area = hulls.concaveHullArea(hulls.concaveHull(experiment.alpha,sites));
                                                             let convex_area = hulls.convexHullArea(hulls.convexHull(sites));
                                                             let ratio = Visual_feature_2D.circularRatio(sites);
-                                                            if (convex_score*ratio[0] >= 0.1) {
+                                                            if (convex_score*ratio[0] >= 0) {
                                                                 loopLength[loopNum] = [t,tt,convex_score*ratio[0],convex_score,ratio[0],my_area,ratio[1],concave_area,convex_area];
                                                                 loopNum += 1;
                                                             }
@@ -69,21 +70,33 @@ class Visual_feature_2D {
                                             let x3 = experiment.data[instance][x_var][tt], y3 = experiment.data[instance][y_var][tt];
                                             let x4 = experiment.data[instance][x_var][tt+1], y4 = experiment.data[instance][y_var][tt+1];
                                             if (x3 !== Infinity && y3 !== Infinity && x4 !== Infinity && y4 !== Infinity) {
-                                                if ( Visual_feature_2D.checkIntersection(x1,y1,x2,y2,x3,y3,x4,y4)) {
-                                                    if (tt-t>=experiment.offset) {
+                                                if ( Visual_feature_2D.checkIntersection(x1,y1,x2,y2,x3,y3,x4,y4) && tt-t>=experiment.offset) {
+                                                    // no outliers in loop
+                                                    let check = true;
+                                                    if (outliers.length > 0) {
+                                                        for (let c = 0; c < outliers.length; c++) {
+                                                            if (outliers[c] > t && outliers[c] < tt) {
+                                                                check = false;
+                                                                break;
+                                                            }
+                                                        }
+                                                    }
+                                                    if (check) {
                                                         let sites = [];
                                                         for (let j = t; j <= tt; j++) {
                                                             sites[j-t] = [experiment.data[instance][x_var][j],experiment.data[instance][y_var][j]];
                                                         }
                                                         let inLoop = Visual_feature_2D.checkSmallLoop(sites);
-                                                        let my_area = Visual_feature_2D.area(sites);
-                                                        if (inLoop===sites.length && my_area >= experiment.area) {
+                                                        // let my_area = Visual_feature_2D.area(sites);
+                                                        // if (inLoop===sites.length && my_area >= experiment.area) {
+                                                        if (inLoop===sites.length) {
                                                             let convex_score = Visual_feature_2D.convex_score(instance,x_var,y_var,sites);
-                                                            let concave_area = hulls.concaveHullArea(hulls.concaveHull(experiment.alpha,sites));
-                                                            let convex_area = hulls.convexHullArea(hulls.convexHull(sites));
+                                                            // let concave_area = hulls.concaveHullArea(hulls.concaveHull(experiment.alpha,sites));
+                                                            // let convex_area = hulls.convexHullArea(hulls.convexHull(sites));
                                                             let ratio = Visual_feature_2D.circularRatio(sites);
-                                                            if (convex_score*ratio[0] > 0.1) {
-                                                                loopLength[loopNum] = [t,tt,convex_score*ratio[0],convex_score,ratio[0],my_area,ratio[1],concave_area,convex_area];
+                                                            if (convex_score*ratio[0] > 0) {
+                                                                // loopLength[loopNum] = [t,tt,convex_score*ratio[0],convex_score,ratio[0],my_area,ratio[1],concave_area,convex_area];
+                                                                loopLength[loopNum] = [t,tt,convex_score*ratio[0]];
                                                                 loopNum += 1;
                                                             }
                                                         }
@@ -91,6 +104,8 @@ class Visual_feature_2D {
                                                         break;
                                                     }
                                                 }
+                                            } else {
+                                                break;
                                             }
                                         }
                                     }
@@ -134,7 +149,8 @@ class Visual_feature_2D {
         let loopSize = sites.length;
         let convex_score = 0;
         for (let i = 0; i < loopSize - 2; i++) {
-            if (Visual_feature_2D.computeCosine(sites[i][0],sites[i][1],sites[i+1][0],sites[i+1][1],sites[i+2][0],sites[i+2][1]) > 0) {
+            let alpha = Visual_feature_2D.computeCosine(sites[i][0],sites[i][1],sites[i+1][0],sites[i+1][1],sites[i+2][0],sites[i+2][1]);
+            if (alpha > 0.75 && alpha < 1) {
                 convex_score += 1;
             }
         }
@@ -200,44 +216,57 @@ class Visual_feature_2D {
 
     // compute area
     static area (sites) {
-        let n_bin = 40;
-        let binSize = 1/n_bin;
-        let cellArray = [];
-        for (let i = 0; i < n_bin; i++) {
-            cellArray[i] = [];
-            for (let j = 0; j < n_bin; j++) {
-                cellArray[i][j] = 0;
-            }
-        }
-        // compute from center
-        let xCenter = d3.mean(sites.map(element=>element[0]));
-        let yCenter = d3.mean(sites.map(element=>element[1]));
-        for (let t = 0; t < sites.length-1; t++) {
-            let xMin = Math.floor(Math.min(...[xCenter,sites[t][0],sites[t+1][0]])/binSize);
-            let xMax = Math.ceil(Math.max(...[xCenter,sites[t][0],sites[t+1][0]])/binSize);
-            let yMin = Math.floor(Math.min(...[yCenter,sites[t][1],sites[t+1][1]])/binSize);
-            let yMax = Math.ceil(Math.max(...[yCenter,sites[t][1],sites[t+1][1]])/binSize);
-            for (let i = xMin; i <= xMax; i++) {
-                for (let j = yMin; j <= yMax; j++) {
-                    let xCell = i*binSize+binSize/2;
-                    let yCell = j*binSize+binSize/2;
-                    if (Visual_feature_2D.checkInsideTriangle(xCell,yCell,xCenter,yCenter,sites[t][0],sites[t][1],sites[t+1][0],sites[t+1][1])) {
-                        cellArray[i][j] += 1;
-                    }
+        if (sites.length < 4) return 0;
+        else {
+            let check = true;
+            for (let i = 0; i < sites.length-3; i++) {
+                for (let j = i + 2; j < sites.length - 1; j++) {
+                    check = check && !Visual_feature_2D.checkIntersection(sites[i][0],sites[i][1],sites[i+1][0],sites[i+1][1],sites[j][0],sites[j][1],sites[j+1][0],sites[j+1][1]);
+                    if (!check) break;
                 }
             }
-        }
-        let countBin = 0;
-        let x_min = Math.floor(Math.min(...sites.map(element=>element[0]))/binSize);
-        let x_max = Math.ceil(Math.max(...sites.map(element=>element[0]))/binSize);
-        let y_min = Math.floor(Math.min(...sites.map(element=>element[1]))/binSize);
-        let y_max = Math.ceil(Math.max(...sites.map(element=>element[1]))/binSize);
-        for (let i = x_min; i < x_max; i++) {
-            for (let j = y_min; j < y_max; j++) {
-                if (cellArray[i][j]%2===1) countBin += 1;
+            if (!check) return 0;
+            else {
+                let n_bin = 40;
+                let binSize = 1/n_bin;
+                let cellArray = [];
+                for (let i = 0; i < n_bin; i++) {
+                    cellArray[i] = [];
+                    for (let j = 0; j < n_bin; j++) {
+                        cellArray[i][j] = 0;
+                    }
+                }
+                // compute from center
+                let xCenter = d3.mean(sites.map(element=>element[0]));
+                let yCenter = d3.mean(sites.map(element=>element[1]));
+                for (let t = 0; t < sites.length-1; t++) {
+                    let xMin = Math.floor(Math.min(...[xCenter,sites[t][0],sites[t+1][0]])/binSize);
+                    let xMax = Math.ceil(Math.max(...[xCenter,sites[t][0],sites[t+1][0]])/binSize);
+                    let yMin = Math.floor(Math.min(...[yCenter,sites[t][1],sites[t+1][1]])/binSize);
+                    let yMax = Math.ceil(Math.max(...[yCenter,sites[t][1],sites[t+1][1]])/binSize);
+                    for (let i = xMin; i <= xMax; i++) {
+                        for (let j = yMin; j <= yMax; j++) {
+                            let xCell = i*binSize+binSize/2;
+                            let yCell = j*binSize+binSize/2;
+                            if (Visual_feature_2D.checkInsideTriangle(xCell,yCell,xCenter,yCenter,sites[t][0],sites[t][1],sites[t+1][0],sites[t+1][1])) {
+                                cellArray[i][j] += 1;
+                            }
+                        }
+                    }
+                }
+                let countBin = 0;
+                let x_min = Math.floor(Math.min(...sites.map(element=>element[0]))/binSize);
+                let x_max = Math.ceil(Math.max(...sites.map(element=>element[0]))/binSize);
+                let y_min = Math.floor(Math.min(...sites.map(element=>element[1]))/binSize);
+                let y_max = Math.ceil(Math.max(...sites.map(element=>element[1]))/binSize);
+                for (let i = x_min; i < x_max; i++) {
+                    for (let j = y_min; j < y_max; j++) {
+                        if (cellArray[i][j]%2===1) countBin += 1;
+                    }
+                }
+                return (countBin*binSize*binSize >= 0.01) ? countBin*binSize*binSize : 0;
             }
         }
-        return countBin*binSize*binSize;
     }
 
     // compute ratio of area and the cover squared
@@ -248,9 +277,11 @@ class Visual_feature_2D {
         let yMax = Math.max(...sites.map(element=>element[1]));
         let yMin = Math.min(...sites.map(element=>element[1]));
         let yRange = yMax - yMin;
-        let edge_square = (xRange > yRange) ? xRange : yRange;
+        // let edge_square = (xRange > yRange) ? xRange : yRange;
+        let box = xRange*yRange;
         let area = Visual_feature_2D.area(sites);
-        return [(4/Math.PI)*area/Math.pow(edge_square,2),Math.pow(edge_square,2)];
+        // return [(4/Math.PI)*area/Math.pow(edge_square,2),Math.pow(edge_square,2)];
+        return [(4/Math.PI)*area/box,box];
     }
 
     // check small loop inside the big loop
@@ -270,6 +301,26 @@ class Visual_feature_2D {
             if (result !== n_timePoint) break;
         }
         return result;
+    }
+
+    // check outliers
+    static checkOutliers (xArr,yArr) {
+        let N = xArr.length;
+        let L = [];
+        for (let i = 1; i < N; i++) {
+            L[i-1] = Math.sqrt(Math.pow(xArr[i]-xArr[i-1],2)+Math.pow(yArr[i]-yArr[i-1],2));
+        }
+        let sArr = L.map(e=>e).sort((a,b)=>a-b);
+        let q1 = sArr[Math.floor((N-1)*0.25)];
+        let q3 = sArr[Math.floor((N-1)*0.75)];
+        let iqr = 1.5*(q3-q1);
+        let uB = q3 + iqr;
+        let outliers = [];
+        for (let i = 0; i < N - 1; i++) {
+            if(i===0 || i === N - 2) if(L[i] > uB) outliers.push(i);
+            if (i > 0 && i < N - 2) if (L[i] > uB && L[i-1] > uB) outliers.push(i);
+        }
+        return outliers;
     }
 
 }

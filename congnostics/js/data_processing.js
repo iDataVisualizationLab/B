@@ -43,6 +43,13 @@ class Data_processing {
                     experiment.area = 0.000625;
                     experiment.offset = 2;
                 break;
+                case 'hpcc':
+                    sampleCode = this.data[0][i]['Series ID'].split('_')[0];
+                    variableCode = this.data[0][i]['Series ID'].split('_')[1];
+                    if (this.data[2].find(element=>element.code===variableCode)!==-1) mapSeries.push([sampleCode,variableCode,i]);
+                    experiment.area = 0.001;
+                    experiment.offset = 0;
+                    break;
                 default:
                     let sampleIndex = this.data[0][i]['Series ID'].split('_')[0];
                     sampleCode = this.data[1][sampleIndex].code;
@@ -168,6 +175,5 @@ class Data_processing {
         let Q1 = firstDiff[Math.floor((n_timePoint-1)*0.25)];
         return Q3+1.5*(Q3-Q1);
     }
-
 
 }

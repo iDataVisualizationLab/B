@@ -87,9 +87,12 @@ function RadarChart_canvas(id, data, options, name) {
     if (cfg.markedLegend) scaleMarkedLegend = d3.scaleLinear().domain(range).range(cfg.markedLegend);
 
     let colorLength = cfg.arrColor.length-1;
-    var dif = 1 / (cfg.levels-2);
-    var right = 1 + dif;
-    cfg.arrThresholds = [-dif];
+    // var dif = 1 / (cfg.levels-2);
+    var dif = 1 / (cfg.levels);
+    // var right = 1 + dif;
+    var right = 1;
+    // cfg.arrThresholds = [-dif];
+    cfg.arrThresholds = [];
     for (var i=0;i<colorLength-1;i++)
         cfg.arrThresholds.push(i*dif);
     cfg.arrThresholds.push(right);
@@ -97,7 +100,7 @@ function RadarChart_canvas(id, data, options, name) {
         .domain(cfg.arrThresholds)
         .range(cfg.arrColor)
         .interpolate(d3.interpolateHcl); //interpolateHsl interpolateHcl interpolateRgb
-
+// debugger
 
 
     if (cfg.schema){
@@ -112,11 +115,11 @@ function RadarChart_canvas(id, data, options, name) {
     }
     let deltaAng = Math.PI/10;
     // Re-adjust angles
-    minValue = range[0]-dif*(range[1]-range[0]);
-    maxValue = range[1]+dif*(range[1]-range[0]);
+    // minValue = range[0]-dif*(range[1]-range[0]);
+    // maxValue = range[1]+dif*(range[1]-range[0]);
 
     // let  radius = Math.min(cfg.w / 2, cfg.h / 2);    //Radius of the outermost circle
-    let  radius = rPlotSize/2;
+    let  radius = options.w/2;
     Format = d3.format('');               //Percentage formatting
 
     data = data.map(ditem=>{
@@ -190,7 +193,7 @@ function RadarChart_canvas(id, data, options, name) {
     let d = data[0];i = 0;
     g.beginPath();
     radarLine(data[0]);
-    // g.lineWidth = cfg.strokeWidth;
+    g.lineWidth = cfg.strokeWidth??1;
     // g.strokeStyle = cfg.color(i,d);
     g.strokeStyle = 'rgb(0,0,0)';
     // g.fillStyle = cfg.fillin?cfg.color(i,d):"none";

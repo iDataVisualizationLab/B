@@ -1,21 +1,22 @@
 let myWidth = window.innerWidth;
 let myHeight = window.innerHeight;
-let selectedDisplay = "2D";
+// let selectedDisplay = "2D";
 let currentPage = 1;
-let maxPerPage = (selectedDisplay === '1D') ? 6 : 6;
+let maxPerPage = 6;
+let maxPage = 1;
 let displayType = 'series';
 let transformDR = d3.zoomIdentity;
 let multipleMouseOver = 1.5;
 let mouseOverPosition = [];
 let trueMousePosition = [];
 let multipleHighlight = 1.5;
-let plotPosition = [];
+// let plotPosition = [];
 let pointSize = 3;
 let clickArr = [];
 let dimensionReductionData;
 let xscale, yscale;
 let measures = [];  // measures[index][sample][x-var,y-var,value], value = -1 means no data
-let nummeasure = selectedDisplay === "1D" ? 9:8;
+let nummeasure = 8;
 let limitList = [];     // for paper
 // let measurename = [
 //     'Outlying',
@@ -43,54 +44,25 @@ let limitList = [];     // for paper
 //     'Cross-correlation':9,
 //     'Length':10
 // };
-let measurename = selectedDisplay === "1D" ?
-    [
-    'Trend',
-    'Periodicity',
-    'Randomness',
-    'Mean',
-    'Dispersion',
+let measurename = [
     'Outlying',
-    'Net mean',
-    'Net dispersion',
-    'Net Outlying',
-] :
-[
-    'Outlying',
-    // 'Skinny',
-    // 'Skewed',
     'Clumpy',
-    // 'Sparse',
     'Striated',
-    'Correlation',
-    "Intersections",
-    "Circular",
     'Trend',
+    'Correlation',
+    "Circular",
     'Length',
+    "Intersections",
 ];
-let measureObj = selectedDisplay === "1D" ?
-    {
-    'Trend':0,
-    'Periodicity':1,
-    'Randomness':2,
-    'Mean':3,
-    'Dispersion':4,
-    'Outlying':5,
-    'Net mean':6,
-    'Net dispersion':7,
-    'Net Outlying':8,
-} : {
+let measureObj = {
     'Outlying':0,
-    // 'Skinny':1,
-    // 'Skewed':2,
     'Clumpy':1,
-    // 'Sparse':4,
     'Striated':2,
-    'Correlation':3,
-    "Intersections":4,
+    'Trend':3,
+    'Correlation':4,
     "Circular":5,
-    'Trend':6,
-    'Length':7
+    'Length':6,
+    "Intersections":7,
 };
 
 
@@ -268,9 +240,9 @@ let radarChartclusteropt  = {
     w: 180,
     h: 180,
     radiuschange: false,
-    levels:6,
+    levels:5,
     dotRadius:2,
-    strokeWidth:1,
+    strokeWidth:0.75,
     maxValue: 0.5,
     isNormalize:true,
     showHelperPoint: false,
@@ -297,3 +269,39 @@ let radarChartclusteropt  = {
     },
     showText: false};
 radarChartclusteropt.schema = serviceFullList;
+
+let myRadarChartClusterOpt  = {
+    margin: {top: 0, right: 0, bottom: 0, left: 0},
+    w: 180,
+    h: 180,
+    radiuschange: false,
+    levels:5,
+    dotRadius:2,
+    strokeWidth:0.75,
+    maxValue: 0.5,
+    isNormalize:true,
+    showHelperPoint: false,
+    roundStrokes: true,
+    ringStroke_width: 0.15,
+    ringColor:'black',
+    fillin:0.5,
+    boxplot:false,
+    animationDuration:1000,
+    events:{
+        axis: {
+            mouseover: function(){
+                try {
+                    const d = d3.select(d3.event.detail || this).datum();
+                    d3.selectAll('#clusterDisplay .axis' + d.idroot + '_' + d.id).classed('highlight', true);
+                    $('.tablesvg').scrollTop($('table .axis' + d.idroot + '_' + d.id)[0].offsetTop);
+                }catch(e){}
+            },
+            mouseleave: function(){
+                const d = d3.select(d3.event.detail||this).datum();
+                d3.selectAll('#clusterDisplay .axis'+d.idroot+'_'+d.id).classed('highlight',false);
+            },
+        },
+    },
+    showText: false};
+
+myRadarChartClusterOpt.schema = serviceFullList;

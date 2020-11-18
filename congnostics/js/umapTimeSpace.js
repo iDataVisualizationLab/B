@@ -1,6 +1,5 @@
 d3.umapTimeSpace = function () {
     let leaderDraw = leaderList.map(d=>d);
-    let storeDraw = [];
     let graphicopt = {
             margin: {top: myHeight*0.2, right: (myWidth-400)*0.3+60, bottom: myHeight*0.1, left: (myWidth-400)*0.1},
             width: myWidth-400,
@@ -151,21 +150,19 @@ d3.umapTimeSpace = function () {
             if (filter_by_name && filter_by_name.length)
                 front_ctx.clearRect(0, 0, graphicopt.width, graphicopt.height);
             path = {};
-            let bCountUmap = 0;
-            // let mouseOverSample, mouseOverVariable;
-            // solution.findIndex((d,i)=>{
-            //     const myTarget = datain[i];
-            //     if (d[0] === mouseOverPosition[0] && d[1] === mouseOverPosition[1]) {
-            //         mouseOverSample = myTarget.plot.split('-')[0];
-            //         mouseOverVariable = myTarget.plot.split('-')[1];
-            //         return true;
-            //     } else return false;
-            // });
 
             // interaction condition
-            let checkInteraction, checkBothInteraction;
-            checkInteraction = !((interactionOption.sample === 'noOption') && (interactionOption.variable === 'noOption'));
-            checkBothInteraction = (interactionOption.sample !== 'noOption') && (interactionOption.variable !== 'noOption');
+            let iSample = (interactionOption.sample!=='noOption') ? +interactionOption.sample : 'noOption';
+            let iVar1 = (interactionOption.variable1!=='noOption') ? +interactionOption.variable1 : 'noOption';
+            let iVar2 = (interactionOption.variable2!=='noOption') ? +interactionOption.variable2 : 'noOption';
+            let typeInteraction = 'no';
+            if (iSample!=='noOption'&&(iVar1==='noOption'||iVar1==='noOption')) typeInteraction = 'onlySample';
+            if (iSample==='noOption'&&iVar1!=='noOption'&&iVar2!=='noOption'&&iVar1!==iVar2) typeInteraction = 'onlyVariable';
+            if (iSample!=='noOption'&&iVar1!=='noOption'&&iVar2!=='noOption'&&iVar1!==iVar2) typeInteraction = 'both';
+
+            // store plots
+            let storePlots = [];
+            let storeLeader = [];
 
             // Draw points
             solution.forEach(function (d, i) {
@@ -175,292 +172,116 @@ d3.umapTimeSpace = function () {
                     path[target.name] = [];
                 path[target.name].push({name: target.name, key: target.timestep, value: d, cluster: target.cluster});
 
-                // zoom
-                // let dataDR = transformDR.apply([xscale(d[0]),yscale(d[1])]);
-
                 // interaction condition
-                let checkSample, checkVariable;
-                if (checkInteraction) {
-                    checkSample = target.plot.split('-')[0] === interactionOption.sample;
-                    switch (selectedDisplay) {
-                        case '1D':
-                            checkVariable = target.plot.split('-')[1] === interactionOption.variable;
-                            break;
-                        case '2D':
-                            checkVariable = measures[0][0][+target.plot.split('-')[1]][0] === +interactionOption.variable || measures[0][0][+target.plot.split('-')[1]][1] === +interactionOption.variable;
-                            break;
-                    }
-                }
+                let checkSample = (typeof(iSample) === 'number') ? +target.plot.split('-')[0] === iSample : false;
+                let checkVariable1 = (typeof(iVar1) === 'number') ? measures[0][+target.plot.split('-')[0]][+target.plot.split('-')[1]][0] === iVar1 : false;
+                let checkVariable2 = (typeof(iVar2) === 'number') ? measures[0][+target.plot.split('-')[0]][+target.plot.split('-')[1]][1] === iVar2 : false;
+                let checkVariable = checkVariable1 && checkVariable2;
                 let isMouseOver = (d[0] === mouseOverPosition[0]) && (d[1] === mouseOverPosition[1]);
 
                 // set up pointSize
-                if (!checkInteraction) {    // no interaction
-                    if (isMouseOver) pointSize = 3*multipleMouseOver;
-                    else pointSize = 3;
-                } else {    // interaction
-                    if (checkBothInteraction) {
-                        if (checkSample && checkVariable) pointSize = (isMouseOver) ? 3*multipleMouseOver*multipleHighlight : 3*multipleHighlight;
-                        // else pointSize = (isMouseOver) ? 3*multipleMouseOver : 3;
-                        else pointSize = 3;
-                    } else {
-                        if (checkSample || checkVariable) pointSize = (isMouseOver) ? 3*multipleMouseOver*multipleHighlight : 3*multipleHighlight;
-                        // else pointSize = (isMouseOver) ? 3*multipleMouseOver : 3;
-                        else pointSize = 3;
-                    }
+                let pointSize;
+                switch (typeInteraction) {
+                    case 'no':
+                        pointSize = (isMouseOver) ? 3*multipleMouseOver : 3;
+                        break;
+                    case 'onlySample':
+                        if (checkSample) pointSize = (isMouseOver) ? 3*multipleMouseOver*multipleHighlight : 3*multipleHighlight;
+                        else pointSize = (isMouseOver) ? 3*multipleMouseOver : 3;
+                        break;
+                    case 'onlyVariable':
+                        if (checkVariable) pointSize = (isMouseOver) ? 3*multipleMouseOver*multipleHighlight : 3*multipleHighlight;
+                        else pointSize = (isMouseOver) ? 3*multipleMouseOver : 3;
+                        break;
+                    case 'both':
+                        if (checkSample&&checkVariable) pointSize = (isMouseOver) ? 3*multipleMouseOver*multipleHighlight : 3*multipleHighlight;
+                        else pointSize = (isMouseOver) ? 3*multipleMouseOver : 3;
+                        break;
                 }
 
                 // color control - opacity
                 let fillColor = d3.color(colorarr[target.cluster].value);
-                if (!checkInteraction) {    // no interaction
-                    if (mouseOverPosition.length===0) fillColor.opacity = 0.8;
-                    // else if (isMouseOver) fillColor.opacity = 1;
-                    else if (isMouseOver) fillColor.opacity = 0.5;      // for paper
-                    else fillColor.opacity = 0.2;
-                } else {    // interaction
-                    if (checkBothInteraction) {
-                        if (checkSample && checkVariable) fillColor.opacity = 1;
-                        // else fillColor.opacity = (isMouseOver)?1:0.2;
-                        else fillColor.opacity = 0.2;
-                    } else {
-                        if (checkSample || checkVariable) fillColor.opacity = 1;
-                        // else fillColor.opacity = (isMouseOver)?1:0.2;
-                        else fillColor.opacity = 0.2;
-                    }
+                switch (typeInteraction) {
+                    case 'no':
+                        fillColor.opacity = 1;
+                        break;
+                    case 'onlySample':
+                        if (checkSample) fillColor.opacity = 1;
+                        else fillColor.opacity = 0.8;
+                        break;
+                    case 'onlyVariable':
+                        if (checkVariable) fillColor.opacity = 1;
+                        else fillColor.opacity = 0.8;
+                        break;
+                    case 'both':
+                        if (checkSample&&checkVariable) fillColor.opacity = 1;
+                        else fillColor.opacity = 0.8;
+                        break;
                 }
-                // fillColor.opacity = 0.3;        // for paper
+
+                // store plots
+                switch (typeInteraction) {
+                    case 'no':
+                        let checkClicked = (clickArr.length > 0) ? clickArr.findIndex(cd => cd.clickedData[0]===d[0]&&cd.clickedData[1]===d[1]) : -1;
+                        if (checkClicked!==-1) {
+                            storePlots.push({index:i,target:target,position:checkClicked});
+                        }
+                        break;
+                    case 'onlySample':
+                        if (checkSample) {
+                            storePlots.push({index:i,target:target,position:-1});
+                        }
+                        break;
+                    case 'onlyVariable':
+                        if (checkVariable) {
+                            storePlots.push({index:i,target:target,position:-1});
+                        }
+                        break;
+                    case 'both':
+                        if (checkSample&&checkVariable) {
+                            storePlots.push({index:i,target:target,position:-1});
+                        }
+                        break;
+                }
+                // store leader plot
+                let li = (leaderDraw.length>0) ? leaderDraw.findIndex(dd=>dd===target.plot) !== -1 : false;
+                if (li) storeLeader.push({index:i,target:target});
 
                 // begin draw point
                 background_ctx.beginPath();
-                background_ctx.fillStyle = fillColor + '';
+                if (selecteddata === 'hpcc') {
+                    if (target.user === 'hge') background_ctx.fillStyle = 'rgb(255,0,0)';
+                    else if (target.user === 'presmcdo') background_ctx.fillStyle = 'rgb(0,255,0)';
+                    else background_ctx.fillStyle = 'rgb(0,0,255)';
+                } else background_ctx.fillStyle = fillColor + '';
                 background_ctx.arc(xscale(d[0]), yscale(d[1]), pointSize,0,2*Math.PI);
                 background_ctx.fill();
-                let li = (leaderDraw.length>0) ? leaderDraw.findIndex(dd=>dd===target.plot) : -1;
-                // if (li !== -1) {drawLeaderPlot(background_ctx,leaderDraw[li],li,d); leaderDraw.splice(li,1); console.log(leaderDraw);}
-                // if (li !== -1) {storeDraw[bCountUmap] = [background_ctx,target,d]; bCountUmap+=1;}
-                if (li !== -1) {storeDraw[bCountUmap] = [background_ctx,target,[d[0],d[1]]]; bCountUmap+=1;}
             });
-            // draw clicked charts
-            solution.forEach((d,i)=>{
-                const target = datain[i];
-                target.__metrics.position = d;
-
-                // zoom
-                // let dataDR = transformDR.apply([xscale(d[0]),yscale(d[1])]);
-
-                // interaction condition
-                let checkSample, checkVariable;
-
-                if (checkInteraction) {     // interaction
-                    checkSample = target.plot.split('-')[0] === interactionOption.sample;
-                    switch (selectedDisplay) {
-                        case '1D':
-                            checkVariable = target.plot.split('-')[1] === interactionOption.variable;
-                            break;
-                        case '2D':
-                            checkVariable = measures[0][0][+target.plot.split('-')[1]][0] === +interactionOption.variable || measures[0][0][+target.plot.split('-')[1]][1] === +interactionOption.variable;
-                            break;
+            // draw clicked charts - interaction charts - leader charts
+            if (storePlots.length > 0) {    // clicked - interaction
+                let pMax = Math.ceil(storePlots.length/maxPerPage);
+                if (maxPage !== pMax) maxPage = pMax;
+                let upper = currentPage*maxPerPage-1;
+                let lower = (currentPage-1)*maxPerPage;
+                storePlots.forEach((e,i)=>{
+                    // plots on points
+                    let target = e.target;
+                    let x = xscale(solution[e.index][0]);
+                    let y = yscale(solution[e.index][1]);
+                    drawLeaderPlot(background_ctx,target,[x,y],false);
+                    // plots on the right
+                    if (currentPage <= pMax && i >= lower && i <= upper) {
+                        let position_ = (e.position!==-1) ? clickArr.length-1-e.position : i - lower;
+                        drawDoublyTimeSeries(background_ctx,target,position_,trueMousePosition);
                     }
-                    if (checkBothInteraction) {
-                        if (checkSample && checkVariable)
-                            drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],false);
-                    } else {
-                        if (checkVariable || checkSample)
-                            drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],false);
-                    }
-                } else {    // no interaction
-                    let checkClicked = (clickArr.length > 0) ? clickArr.findIndex(cd => cd.clickedData[0]===d[0]&&cd.clickedData[1]===d[1]) : -1;
-                    if (checkClicked !== -1) {
-                        // drawLeaderPlot(background_ctx,target,d);
-                        // let isMouseOver = (d[0] === mouseOverPosition[0]) && (d[1] === mouseOverPosition[1]);
-                        // if (isMouseOver) drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],true);
-                        // else drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],false);
-                        drawLeaderPlot(background_ctx,target,[xscale(d[0]),yscale(d[1])],false);
-                    }
-                }
-            });
-            // draw leader plots
-            storeDraw.forEach(dd=>{
-                let checkInteraction;
-                checkInteraction = !((interactionOption.sample === 'noOption') && (interactionOption.variable === 'noOption'));
-                if (!checkInteraction && mouseOverPosition.length === 0 && clickArr.length === 0) drawLeaderPlot(dd[0],dd[1],[xscale(dd[2][0]),yscale(dd[2][1])],false);
-            });
-            // if (graphicopt.linkConnect) {
-            //     d3.values(path).filter(d => d.length > 1 ? d.sort((a, b) => a.t - b.t) : false).forEach(path => {
-            //         // make the combination of 0->4 [0,0,1,2] , [0,1,2,3], [1,2,3,4],[2,3,4,4]
-            //         for (let i = 0; i < path.length - 1; i++) {
-            //             let a = (path[i - 1] || path[i]).value;
-            //             let b = path[i].value;
-            //             let c = path[i + 1].value;
-            //             let d = (path[i + 2] || path[i + 1]).value;
-            //             drawline(background_ctx, [a, b, c, d], path[i].cluster);
-            //         }
-            //     })
-            // }
-            //
-            // if (isradar) {
-            //     renderSvgRadar();
-            // }
-
-            // draw clicked-highlight time series
-            if (!checkInteraction) {        // no interaction
-                if (clickArr.length > maxPerPage) {
-                    for (let i = clickArr.length - 1; i > clickArr.length - maxPerPage - 1; i--) {
-                        let myIndex_ = solution.findIndex(d=>d[0] === clickArr[i].clickedData[0] && d[1] === clickArr[i].clickedData[1]);
-                        let plot_ = datain[myIndex_].plot;
-                        drawTimeSeries(background_ctx,plot_,clickArr.length-1-i,trueMousePosition);
-                    }
-                } else {
-                    for (let i = 0; i < clickArr.length; i++) {
-                        let myIndex_ = solution.findIndex(d=>d[0] === clickArr[i].clickedData[0] && d[1] === clickArr[i].clickedData[1]);
-                        let plot_ = datain[myIndex_].plot;
-                        drawTimeSeries(background_ctx,plot_,clickArr.length-1-i,trueMousePosition);
-                    }
-                }
-            } else {        // interaction
-                let myCase;
-                if ((interactionOption.sample !== 'noOption')&&(interactionOption.variable === 'noOption')) myCase = 'instances';
-                if ((interactionOption.sample === 'noOption')&&(interactionOption.variable !== 'noOption')) myCase = 'variable';
-                if ((interactionOption.sample !== 'noOption')&&(interactionOption.variable !== 'noOption')) myCase = 'both';
-
-                switch (myCase) {
-                    case 'both':
-                        switch (selectedDisplay) {
-                            case '1D':
-                                let checkData = data[+interactionOption.sample][+interactionOption.variable].findIndex(d=>d>=0) !== -1;
-                                if (checkData) {
-                                    let plot_ = interactionOption.sample + '-' + interactionOption.variable;
-                                    drawTimeSeries(background_ctx,plot_,0,trueMousePosition);
-                                }
-                                break;
-                            case '2D':
-                                measures[0][+interactionOption.sample].forEach((element,index)=>{
-                                    if (element[0] === +interactionOption.variable || element[1] === +interactionOption.variable) {
-                                        let plot_ = interactionOption.sample + '-' + index.toString();
-                                        drawTimeSeries(background_ctx,plot_,0,trueMousePosition);
-                                    }
-                                });
-                                break;
-                        }
-                        break;
-                    case 'instances':
-                        switch (selectedDisplay) {
-                            case '1D':
-                                let checkDataArr = [];
-                                let numTimeSeries = 0;
-                                data[+interactionOption.sample].forEach((d,i)=>{
-                                    checkDataArr[i] = d.findIndex(d=>d>=0) !== -1;
-                                    if (checkDataArr[i]) numTimeSeries += 1;
-                                });
-                                let indexArr = [];
-                                checkDataArr.forEach((d,i)=>{
-                                    if(d) indexArr.push(i);
-                                });
-                                let numLayout = Math.ceil(numTimeSeries/maxPerPage);
-                                let lastPageNum = numTimeSeries%maxPerPage;
-                                // change page
-                                if (clickArr.length>0) {
-                                    changePage(numLayout);
-                                    clickArr=[];
-                                }
-                                if (currentPage < numLayout) {
-                                    for (let j = maxPerPage-1; j > -1; j--) {
-                                        let plot_ = interactionOption.sample + '-' + indexArr[j+maxPerPage*(currentPage-1)].toString();
-                                        drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
-                                    }
-                                } else {
-                                    for (let j = lastPageNum - 1; j > -1; j--) {
-                                        let plot_ = interactionOption.sample + '-' + indexArr[j+maxPerPage*(numLayout-1)].toString();
-                                        drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
-                                    }
-                                }
-                                break;
-                            case '2D':
-                                let numLayout2D = Math.ceil(measures[0][+interactionOption.sample].length/maxPerPage);
-                                let lastPageNum2D = measures[0][+interactionOption.sample].length%maxPerPage;
-                                // change page
-                                if (clickArr.length>0) {
-                                    changePage(numLayout2D);
-                                    clickArr=[];
-                                }
-                                measures[0][+interactionOption.sample].forEach((element,index)=>{
-                                    if (currentPage < numLayout2D) {
-                                        for (let j = maxPerPage-1; j > -1; j--) {
-                                            let plot_ = interactionOption.sample + '-' + index.toString();
-                                            drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
-                                        }
-                                    } else {
-                                        for (let j = lastPageNum2D - 1; j > -1; j--) {
-                                            let plot_ = interactionOption.sample + '-' + index.toString();
-                                            drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
-                                        }
-                                    }
-                                });
-                                break;
-                        }
-                        break;
-                    case 'variable':
-                        switch (selectedDisplay) {
-                            case '1D':
-                                let checkDataArr2 = [];
-                                let numTimeSeries2 = 0;
-                                data.forEach((d,i)=>{
-                                    checkDataArr2[i] = d[+interactionOption.variable].findIndex(d=>d>=0) !== -1;
-                                    if (checkDataArr2[i]) numTimeSeries2 += 1;
-                                });
-                                let indexArr2 = [];
-                                checkDataArr2.forEach((d,i)=>{
-                                    if(d) indexArr2.push(i);
-                                });
-                                let numLayout2 = Math.ceil(numTimeSeries2/maxPerPage);
-                                let lastPageNum2 = numTimeSeries2%maxPerPage;
-                                // change page
-                                if (clickArr.length>0) {
-                                    changePage(numLayout2);
-                                    clickArr=[];
-                                }
-                                if (currentPage < numLayout2) {
-                                    for (let j = maxPerPage - 1; j > -1; j--) {
-                                        let plot_ = indexArr2[j+maxPerPage*(currentPage-1)].toString() + '-' + interactionOption.variable;
-                                        drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
-                                    }
-                                } else {
-                                    for (let j = lastPageNum2 - 1; j > -1; j--) {
-                                        let plot_ = indexArr2[j+maxPerPage*(numLayout2-1)].toString() + '-' + interactionOption.variable;
-                                        drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
-                                    }
-                                }
-                                break;
-                            case '2D':
-                                let numTimeSeries2D = 0;
-                                let timeSeriesIndexArr = [];
-                                measures[0].forEach((element,index)=>{
-                                    element.forEach((element_,index_)=>{
-                                        if (element_[0] === +interactionOption.variable || element_[1] === +interactionOption.variable) {timeSeriesIndexArr[numTimeSeries2D] = index.toString()+'-'+index_.toString(); numTimeSeries2D += 1;}
-                                    });
-                                });
-                                let numLayout22D = Math.ceil(timeSeriesIndexArr.length/maxPerPage);
-                                let lastPageNum22D = timeSeriesIndexArr.length%maxPerPage;
-                                // change page
-                                if (clickArr.length>0) {
-                                    changePage(numLayout22D);
-                                    clickArr=[];
-                                }
-                                if (currentPage < numLayout22D) {
-                                    for (let j = maxPerPage - 1; j > -1; j--) {
-                                        let plot_ = timeSeriesIndexArr[j+maxPerPage*(currentPage-1)];
-                                        drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
-                                    }
-                                } else {
-                                    for (let j = lastPageNum22D - 1; j > -1; j--) {
-                                        let plot_ = timeSeriesIndexArr[j+maxPerPage*(numLayout22D-1)];
-                                        drawTimeSeries(background_ctx,plot_,j,trueMousePosition);
-                                    }
-                                }
-                                break;
-                        }
-                        break;
-                }
-
+                });
+            } else if (storeLeader.length > 0) {    // leaders
+                storeLeader.forEach(e=>{
+                    let target = e.target;
+                    let x = xscale(solution[e.index][0]);
+                    let y = yscale(solution[e.index][1]);
+                    // drawLeaderPlot(background_ctx,target,[x,y],false);
+                });
             }
         }
     }
@@ -731,7 +552,7 @@ function drawLeaderPlot(ctx_,target_,plotPosition_,isMouseOver_) {
     let varIndex = plot.split("-")[1];  // for 1D only
     let xVarIndex = measures[0][sampleIndex][varIndex][0];  // measures[i][sample] needs has similar lengh
     let yVarIndex = measures[0][sampleIndex][varIndex][1];
-    let plotSize = (selectedDisplay === '1D') ? 30 : 60;
+    let plotSize = 60;
     let color = [];
     // ctx.translate(-plotSize,-plotSize/2);
     if (displayType === "rose") {
@@ -801,23 +622,21 @@ function drawLeaderPlot(ctx_,target_,plotPosition_,isMouseOver_) {
         // Draw main plots
         ctx.beginPath();
         ctx.fillStyle = "rgb(220,220,220)";
-        let strokeColor = colorCluster(cluster_info[group].name);
-        strokeColor.opacity = 0.5;      // for paper
-        ctx.strokeStyle = strokeColor;
+        // let strokeColor = colorCluster(cluster_info[group].name);
+        if (selecteddata === 'hpcc') {
+            if (target_.user === 'hge') ctx.strokeStyle = 'rgb(255,0,0)';
+            else if (target_.user === 'presmcdo') ctx.strokeStyle = 'rgb(0,255,0)';
+            else ctx.strokeStyle = 'rgb(0,0,255)';
+        } else ctx.strokeStyle = colorCluster(cluster_info[group].name);
+        // strokeColor.opacity = 0.5;      // for paper
+        // ctx.strokeStyle = strokeColor;
         ctx.lineWidth = 3;
         ctx.fill();
         ctx.stroke();
-        if (selectedDisplay === '1D') {
-            ctx.strokeRect(plotPosition[0],plotPosition[1], 2*plotSize, plotSize);
-            // ctx.strokeRect(xscale(plotPosition[0]),yscale(plotPosition[1]), 2*plotSize, plotSize);
-            ctx.fillRect(plotPosition[0],plotPosition[1], 2*plotSize, plotSize);
-            // ctx.fillRect(xscale(plotPosition[0]),yscale(plotPosition[1]), 2*plotSize, plotSize);
-        } else {
-            ctx.strokeRect(plotPosition[0],plotPosition[1], plotSize, plotSize);
-            // ctx.strokeRect(xscale(plotPosition[0]),yscale(plotPosition[1]), 2*plotSize, plotSize);
-            ctx.fillRect(plotPosition[0],plotPosition[1], plotSize, plotSize);
-            // ctx.fillRect(xscale(plotPosition[0]),yscale(plotPosition[1]), 2*plotSize, plotSize);
-        }
+        ctx.strokeRect(plotPosition[0],plotPosition[1], plotSize, plotSize);
+        // ctx.strokeRect(xscale(plotPosition[0]),yscale(plotPosition[1]), 2*plotSize, plotSize);
+        ctx.fillRect(plotPosition[0],plotPosition[1], plotSize, plotSize);
+        // ctx.fillRect(xscale(plotPosition[0]),yscale(plotPosition[1]), 2*plotSize, plotSize);
         // if (mouseOverPosition.length > 0) {
             // Variable notation
             // let notation = '';
@@ -840,64 +659,37 @@ function drawLeaderPlot(ctx_,target_,plotPosition_,isMouseOver_) {
             // ctx.fill();
         // }
         ctx.lineWidth = 1;
-        switch (selectedDisplay) {
-            case "1D":
-                timedata.forEach(function (time, step) {
-                    if (step) {
-                        if(data[sampleIndex][varIndex][step]>=0 && data[sampleIndex][varIndex][step-1]>=0 && data[sampleIndex][varIndex][step]>=0 && data[sampleIndex][varIndex][step-1]>=0) {
-                            let x1 = plotPosition[0]+0.05*plotSize+1.9*plotSize*(step-1)/timedata.length;
-                            // let x1 = xscale(plotPosition[0])+0.05*plotSize+1.9*plotSize*(step-1)/timedata.length;
-                            let x2 = plotPosition[0]+0.05*plotSize+1.9*plotSize*step/timedata.length;
-                            // let x2 = xscale(plotPosition[0])+0.05*plotSize+1.9*plotSize*step/timedata.length;
-                            let y1 = plotPosition[1]+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][varIndex][step-1]);
-                            // let y1 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][varIndex][step-1]);
-                            let y2 = plotPosition[1]+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][varIndex][step]);
-                            // let y2 = yscale(plotPosition[1])+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][varIndex][step]);
-                            color[0] = (step < timedata.length/2) ? 0 : (step-timedata.length/2)*255/(timedata.length/2);
-                            color[1] = 0;
-                            color[2] = (step < timedata.length/2) ? 255-255*step/(timedata.length/2) : 0;
-                            ctx.beginPath();
-                            ctx.moveTo(x1,y1);
-                            ctx.lineTo(x2, y2);
-                            ctx.strokeStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
-                            ctx.stroke();
-                        }
-                    }
-                });
-                break;
-            case "2D":
-                timedata.forEach((time,step)=>{
-                    if(step) {
-                        // CS plots - X(t) for 1D
-                        if(data[sampleIndex][xVarIndex][step]>=0 && data[sampleIndex][xVarIndex][step-1]>=0 && data[sampleIndex][yVarIndex][step]>=0 && data[sampleIndex][yVarIndex][step-1]>=0) {
-                            let x1 = plotPosition[0]+0.05*plotSize+0.9*plotSize*data[sampleIndex][xVarIndex][step-1];
-                            let x2 = plotPosition[0]+0.05*plotSize+0.9*plotSize*data[sampleIndex][xVarIndex][step];
-                            let y1 = plotPosition[1]+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][yVarIndex][step-1]);
-                            let y2 = plotPosition[1]+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][yVarIndex][step]);
-                            // if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2)); fill(0,0,255-255*step/(timedata.length/2));}
-                            // else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0); fill((step-timedata.length/2)*255/(timedata.length/2),0,0);}
-                            // circle(x1,y1,4);
-                            // strokeWeight(0.3);
-                            // line(x1,y1,x2,y2);
-                            // strokeWeight(1);
-                            color[0] = (step < timedata.length/2) ? 0 : (step-timedata.length/2)*255/(timedata.length/2);
-                            color[1] = 0;
-                            color[2] = (step < timedata.length/2) ? 255-255*step/(timedata.length/2) : 0;
-                            ctx.beginPath();
-                            ctx.moveTo(x1,y1);
-                            ctx.lineTo(x2, y2);
-                            ctx.arc(x2,y2,1,0,2*Math.PI);
-                            ctx.strokeStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
-                            ctx.fillStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
-                            ctx.lineWidth = 0.1;
-                            ctx.stroke();
-                            ctx.fill();
-                        }
+        timedata.forEach((time,step)=>{
+            if(step) {
+                let radius = interactionOption.time1 === step || interactionOption.time2 === step ? 3 : 1;
+                // CS plots - X(t) for 1D
+                if(data[sampleIndex][xVarIndex][step]>=0 && data[sampleIndex][xVarIndex][step-1]>=0 && data[sampleIndex][yVarIndex][step]>=0 && data[sampleIndex][yVarIndex][step-1]>=0) {
+                    let x1 = plotPosition[0]+0.05*plotSize+0.9*plotSize*data[sampleIndex][xVarIndex][step-1];
+                    let x2 = plotPosition[0]+0.05*plotSize+0.9*plotSize*data[sampleIndex][xVarIndex][step];
+                    let y1 = plotPosition[1]+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][yVarIndex][step-1]);
+                    let y2 = plotPosition[1]+0.05*plotSize+0.9*plotSize*(1-data[sampleIndex][yVarIndex][step]);
+                    // if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2)); fill(0,0,255-255*step/(timedata.length/2));}
+                    // else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0); fill((step-timedata.length/2)*255/(timedata.length/2),0,0);}
+                    // circle(x1,y1,4);
+                    // strokeWeight(0.3);
+                    // line(x1,y1,x2,y2);
+                    // strokeWeight(1);
+                    color[0] = (step < timedata.length/2) ? 0 : (step-timedata.length/2)*255/(timedata.length/2);
+                    color[1] = 0;
+                    color[2] = (step < timedata.length/2) ? 255-255*step/(timedata.length/2) : 0;
+                    ctx.beginPath();
+                    ctx.moveTo(x1,y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.arc(x2,y2,radius,0,2*Math.PI);
+                    ctx.strokeStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
+                    ctx.fillStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
+                    ctx.lineWidth = 0.1;
+                    ctx.stroke();
+                    ctx.fill();
+                }
 
-                    }
-                });
-                break;
-        }
+            }
+        });
 
     }
     // ctx.translate(plotSize,plotSize/2);
@@ -918,20 +710,19 @@ function findClosestDataPoint(mousePosition_,data_,isClicked_) {
     // map the co-ordinates of the closest point to the canvas space
     if(closest) {
         if (isClicked_) {
-            printMetrics([closest[0],closest[1]]);
             let dX = xscale(closest[0]);
             let dY = yscale(closest[1]);
             // register the click if the clicked point is in the radius of the point
-            let clickCheck = (clickArr.length > 0) ? clickArr.findIndex(d=>d.clickedData===closest) : -1;
+            let clickCheck = (clickArr.length > 0) ? clickArr.findIndex(d=>d.clickedData[0]===closest[0]&&d.clickedData[1]===closest[1]) : -1;
             if (clickCheck === -1) {
                 clickArr.push({
                     'clickedData':closest,
                 });
-                plotPosition.push([closest[0],closest[1]]);
+                // plotPosition.push([closest[0],closest[1]]);
             } else {
                 clickArr.splice(clickCheck,1);
-                let removePlotIndex = plotPosition.findIndex(d=>d[0] === closest[0] && d[1] === closest[1]);
-                if (removePlotIndex !== -1) plotPosition.splice(removePlotIndex,1);
+                // let removePlotIndex = plotPosition.findIndex(d=>d[0] === closest[0] && d[1] === closest[1]);
+                // if (removePlotIndex !== -1) plotPosition.splice(removePlotIndex,1);
             }
         } else {
             mouseOverPosition = [closest[0],closest[1]];
@@ -940,17 +731,17 @@ function findClosestDataPoint(mousePosition_,data_,isClicked_) {
         if(isClicked_) if (chooseType === "radar") chooseType = "series";
         else chooseType = "radar";
     }
-    switch (visualizingOption) {
-        case 'PCA':
-            pcaTS.renderPCA();
-            break;
-        case 'tSNE':
-            tsneTS.renderTSNE();
-            break;
-        case 'UMAP':
-            umapTS.renderUMAP();
-            break;
-    }
+    // switch (visualizingOption) {
+    //     case 'PCA':
+    //         pcaTS.renderPCA();
+    //         break;
+    //     case 'tSNE':
+    //         tsneTS.renderTSNE();
+    //         break;
+    //     case 'UMAP':
+    //         umapTS.renderUMAP();
+    //         break;
+    // }
 }
 
 // CHANGE TYPE OF CHART IN DIMENSION REDUCTION TECHNIQUES
@@ -958,13 +749,13 @@ function onClickFunction() {
     let mouse = d3.mouse(this);
 
     // in interaction mode
-    if ((interactionOption.sample !== 'noOption') || (interactionOption.variable !== 'noOption')) {
-        let leftButtonPosition = [(myWidth-300)*0.7,50];
-        let rightButtonPosition = [(myWidth-300)*0.7+50,50];
+    if (interactionOption.sample!=='noOption'||(interactionOption.variable1!=='noOption'&&interactionOption.variable2!=='noOption'&&interactionOption.variable1!==interactionOption.variable2)) {
+        let leftButtonPosition = [(myWidth-300)*0.7,30];
+        let rightButtonPosition = [(myWidth-300)*0.7+40,30];
         let buttonSize = [20,20];
 
         let quitButtonSize = [120,20];
-        let quitButtonPosition = [(myWidth-300)*0.7+80,50];
+        let quitButtonPosition = [(myWidth-300)*0.7+100,30];
 
         let checkChangePage1 = (mouse[0]>=leftButtonPosition[0]) && (mouse[0]<=leftButtonPosition[0]+buttonSize[0]) && (mouse[1]>=leftButtonPosition[1]) && (mouse[1]<=leftButtonPosition[1]+buttonSize[1]);
         let checkChangePage2 = (mouse[0]>=rightButtonPosition[0]) && (mouse[0]<=rightButtonPosition[0]+buttonSize[0]) && (mouse[1]>=rightButtonPosition[1]) && (mouse[1]<=rightButtonPosition[1]+buttonSize[1]);
@@ -972,18 +763,18 @@ function onClickFunction() {
 
         // change the page
         if (checkChangePage1 || checkChangePage2) {
-            clickArr.push({
-                'Page': true,
-            });
+            changePage(maxPage);
         }
 
         // turn off interaction mode
         if (checkQuitInteraction) {
-            clickArr = [];      // delete clickArr after changing mode
+            clickArr.length = 0;      // delete clickArr after changing mode
             interactionOption.sample = 'noOption';
-            interactionOption.variable = 'noOption';
+            interactionOption.variable1 = 'noOption';
+            interactionOption.variable2 = 'noOption';
             $('#dataInstances').val('noOption').selected = true;
-            $('#variable').val('noOption').selected = true;
+            $('#variable1').val('noOption').selected = true;
+            $('#variable2').val('noOption').selected = true;
         }
 
         // draw again
@@ -1005,12 +796,10 @@ function onClickFunction() {
         // click turn off button of time series
         let buttonPosition = [];
         let buttonSize = [12,12];
-        // let plotSize = (selectedDisplay === '1D') ? [(myWidth-400)*0.25,(myHeight-200)/maxPerPage] : [(myHeight-300)/maxPerPage,(myHeight-300)/maxPerPage];
-        let plotSize = (selectedDisplay === '1D') ? [2*(myHeight-200)/maxPerPage,(myHeight-200)/maxPerPage] : [(myHeight-300)/maxPerPage,(myHeight-300)/maxPerPage];
+        let plotSize = [(myHeight-300)/maxPerPage,(myHeight-300)/maxPerPage];
         let checkClickPoint = true;
         clickArr.forEach((d,i)=>{
-            // let plotPosition = (selectedDisplay === '1D') ? [(myWidth-300)*0.7,100+(clickArr.length-1-i)*plotSize[1]+5] : [(myWidth-300)*0.7,80+(clickArr.length-1-i)*(plotSize[1]+40)];
-            let plotPosition = (selectedDisplay === '1D') ? [(myWidth-300)*0.7,100+position_*(plotSize[1]+5)] : [(myWidth-300)*0.7,80+position_*(plotSize[1]+40)];
+            let plotPosition = [(myWidth-300)*0.7,80+(clickArr.length-1-i)*(plotSize[1]+40)];
             buttonPosition[i] = [plotPosition[0]+plotSize[0]+3,plotPosition[1]];
         });
         buttonPosition.forEach((d,i)=>{
@@ -1018,31 +807,21 @@ function onClickFunction() {
            checkClickPoint = checkClickPoint && !checkButton;
            if(checkButton) clickArr.splice(i,1);
         });
-        if (!checkClickPoint) {
-            switch (visualizingOption) {
-                case 'PCA':
-                    pcaTS.renderPCA();
-                    break;
-                case 'tSNE':
-                    tsneTS.renderTSNE();
-                    break;
-                case 'UMAP':
-                    umapTS.renderUMAP();
-                    break;
-            }
-        } else if(dimensionReductionData.length > 0) findClosestDataPoint(mouse,dimensionReductionData,true);
+        if (checkClickPoint && dimensionReductionData.length > 0) {
+            findClosestDataPoint(mouse,dimensionReductionData,true);
+        }
+        switch (visualizingOption) {
+            case 'PCA':
+                pcaTS.renderPCA();
+                break;
+            case 'tSNE':
+                tsneTS.renderTSNE();
+                break;
+            case 'UMAP':
+                umapTS.renderUMAP();
+                break;
+        }
     }
-    // switch (visualizingOption) {
-    //     case 'PCA':
-    //         pcaTS.renderPCA();
-    //         break;
-    //     case 'tSNE':
-    //         tsneTS.renderTSNE();
-    //         break;
-    //     case 'UMAP':
-    //         umapTS.renderUMAP();
-    //         break;
-    // }
 }
 
 // MOUSE OVER FUNCTION
@@ -1051,647 +830,309 @@ function mouseOverFunction() {
     let mouse = d3.mouse(this);
     trueMousePosition = [];
     trueMousePosition = d3.mouse(this);
-    if(dimensionReductionData.length > 0) findClosestDataPoint(mouse,dimensionReductionData,false);
-    // switch (visualizingOption) {
-    //     case 'PCA':
-    //         pcaTS.renderPCA();
-    //         break;
-    //     case 'tSNE':
-    //         tsneTS.renderTSNE();
-    //         break;
-    //     case 'UMAP':
-    //         umapTS.renderUMAP();
-    //         break;
-    // }
-}
-
-// zoom function
-function zoomFunction(contextDR,widthDR,heightDR) {
-    context.clearRect(0, 0, width, height);
-    transformDR = d3.event.transform;
-    switch (visualizingOption) {
-        case 'PCA':
-            pcaTS.renderPCA();
-            break;
-        case 'tSNE':
-            tsneTS.renderTSNE();
-            break;
-        case 'UMAP':
-            umapTS.renderUMAP();
-            break;
+    if(dimensionReductionData.length > 0) {
+        findClosestDataPoint(mouse,dimensionReductionData,false);
+        switch (visualizingOption) {
+            case 'PCA':
+                pcaTS.renderPCA();
+                break;
+            case 'tSNE':
+                tsneTS.renderTSNE();
+                break;
+            case 'UMAP':
+                umapTS.renderUMAP();
+                break;
+        }
     }
 }
 
-// draw time series
-function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
+// zoom function
+// function zoomFunction(contextDR,widthDR,heightDR) {
+//     context.clearRect(0, 0, width, height);
+//     transformDR = d3.event.transform;
+//     switch (visualizingOption) {
+//         case 'PCA':
+//             pcaTS.renderPCA();
+//             break;
+//         case 'tSNE':
+//             tsneTS.renderTSNE();
+//             break;
+//         case 'UMAP':
+//             umapTS.renderUMAP();
+//             break;
+//     }
+// }
 
-    let sampleIndex = +plot_.split('-')[0];
-    let varIndex = +plot_.split('-')[1];
-    let xVarIndex = measures[0][sampleIndex][varIndex][0];
-    let yVarIndex = measures[0][sampleIndex][varIndex][1];
-    // let plotSize = (selectedDisplay === '1D') ? [(myWidth-400)*0.25,(myHeight-200)/maxPerPage] : [(myHeight-300)/maxPerPage,(myHeight-300)/maxPerPage];
-    let plotSize = (selectedDisplay === '1D') ? [2*(myHeight-200)/maxPerPage,(myHeight-200)/maxPerPage] : [(myHeight-300)/maxPerPage,(myHeight-300)/maxPerPage];
-    let plotPosition = (selectedDisplay === '1D') ? [(myWidth-300)*0.7,100+position_*(plotSize[1]+5)] : [(myWidth-300)*0.7,80+position_*(plotSize[1]+40)];
+// draw time series
+function drawDoublyTimeSeries(ctx_,target_,position_,mousePosition_) {
+    let sampleIndex = +target_.plot.split('-')[0];
+    let iVar = +target_.plot.split('-')[1];
+    let xVarIndex = measures[0][sampleIndex][iVar][0];
+    let yVarIndex = measures[0][sampleIndex][iVar][1];
+    let plotSize = [(myHeight-300)/maxPerPage,(myHeight-300)/maxPerPage];
+    let plotPosition = [(myWidth-300)*0.7,80+position_*(plotSize[1]+40)];
     let ctx = ctx_;
-    let plotIndex = dataRadar2.findIndex(d=>{
-        return d.plot === plot_;
-    });
-    let group = dataRadar2[plotIndex].cluster;
+    let group = target_.cluster;
 
     // check interaction
-    let checkInteraction, checkBothInteraction;
-    checkInteraction = !((interactionOption.sample === 'noOption') && (interactionOption.variable === 'noOption'));
-    checkBothInteraction = (interactionOption.sample !== 'noOption') && (interactionOption.variable !== 'noOption');
 
     // draw rectangles of time series
     ctx.beginPath();
     ctx.fillStyle = "rgb(220,220,220)";
-    ctx.strokeStyle = colorCluster(cluster_info[group].name);
+    // ctx.strokeStyle = colorCluster(cluster_info[group].name);
+    if (selecteddata === 'hpcc') {
+        if (target_.user === 'hge') ctx.strokeStyle = 'rgb(255,0,0)';
+        else if (target_.user === 'presmcdo') ctx.strokeStyle = 'rgb(0,255,0)';
+        else ctx.strokeStyle = 'rgb(0,0,255)';
+    } else ctx.strokeStyle = colorCluster(cluster_info[group].name);
     ctx.lineWidth = 3;
     ctx.fill();
     ctx.stroke();
     ctx.strokeRect(plotPosition[0],plotPosition[1], plotSize[0], plotSize[1]);
     ctx.fillRect(plotPosition[0],plotPosition[1], plotSize[0], plotSize[1]);
 
-    switch (selectedDisplay) {
-        case '1D':
-            // Variable notation
-            let notationVar = '';
-            let countSpaceVar = [], myCountSpaceVar = [], countLineVar = 0, countIndexVar = 0, countFalse = 0;
-            let notationArrVar = mapvar2.get(varIndex).split('');
-            notationArrVar.forEach((d,i)=>{
-                if (d === ' ') myCountSpaceVar.push(i);
-            });
-            countSpaceVar = myCountSpaceVar.map((d,i)=>{
-                if (i) {
-                    if (d-myCountSpaceVar[i-1]>3) return d;
-                    else return false;
-                } else {
-                    if (d>2) return d;
-                    else return false;
-                }
-            });
-            countSpaceVar.forEach(d=>{if(d===false) countFalse += 1;});
+    // x Variable notation
+    let xNotation = '';
+    let xNotationArr = [];
+    let xCountSpace = [], myXCountSpace = [], xCountLine = 0, xCountIndex = 0, xCountFalse = 0;
+    xNotationArr = mapvar2.get(xVarIndex).split('');
+    xNotationArr.forEach((d,i)=>{
+        if (d === ' ') myXCountSpace.push(i);
+    });
+    xCountSpace = myXCountSpace.map((d,i)=>{
+        if (i) {
+            if (d-myXCountSpace[i-1]>3) return d;
+            else return false;
+        } else {
+            if (d>2) return d;
+            else return false;
+        }
+    });
+    xCountSpace.forEach(d=>{if(d===false) xCountFalse += 1;});
 
-            // Instance notation
-            let notationIns = '';
-            let countSpaceIns = [], myCountSpaceIns = [], countLineIns = 0, countIndexIns = 0, countFalse2 = 0;
-            let notationArrIns = mapsample2.get(sampleIndex).split('');
-            notationArrIns.forEach((d,i)=>{
-                if (d === ' ') myCountSpaceIns.push(i);
-            });
-            countSpaceIns = myCountSpaceIns.map((d,i)=>{
-                if (i) {
-                    if (d-myCountSpaceIns[i-1]>3) return d;
-                    else return false;
-                } else {
-                    if (d>2) return d;
-                    else return false;
-                }
-            });
-            countSpaceIns.forEach(d=>{if(d===false) countFalse2 += 1;});
+    // y Variable notation
+    let yNotation = '';
+    let yNotationArr = [];
+    let yCountSpace = [], myYCountSpace = [], yCountLine = 0, yCountIndex = 0, yCountFalse = 0;
+    yNotationArr = mapvar2.get(yVarIndex).split('');
+    yNotationArr.forEach((d,i)=>{
+        if (d === ' ') myYCountSpace.push(i);
+    });
+    yCountSpace = myYCountSpace.map((d,i)=>{
+        if (i) {
+            if (d-myYCountSpace[i-1]>3) return d;
+            else return false;
+        } else {
+            if (d>2) return d;
+            else return false;
+        }
+    });
+    yCountSpace.forEach(d=>{if(d===false) yCountFalse += 1;});
 
-            if (checkInteraction) {     // in interaction mode
-                if (interactionOption.sample !== 'noOption') {      // turn on instance
-                    ctx.translate(plotPosition[0]-5,plotPosition[1]+plotSize[1]);
-                    ctx.rotate(-Math.PI/2);
-                    // ctx.font = "12px Arial";
-                    ctx.font = "10px Arial";
-                    ctx.fillStyle = 'rgb(0,0,0)';
-                    if (notationArrVar.length > 14) {
-                        if (countSpaceVar.length === 0) {
-                            notationVar = '';
-                            for (let j = 0; j < 14; j++) {
-                                notationVar += notationArrVar[j];
-                            }
-                            ctx.fillText(notationVar,0,0);
-                        } else {
-                            countLineVar = 0;
-                            countSpaceVar.forEach((d,i)=>{
-                                if (d) {
-                                    notationVar = '';
-                                    if (i === 0) {
-                                        if (countSpaceVar.length>1) {
-                                            for (let j = 0; j < d; j++) {
-                                                notationVar += notationArrVar[j];
-                                            }
-                                            ctx.fillText(notationVar,0,-15*(countSpaceVar.length-countFalse));
-                                            countLineVar += 1;
-                                        } else {
-                                            for (let j = 0; j < d; j++) {
-                                                notationVar += notationArrVar[j];
-                                            }
-                                            ctx.fillText(notationVar,0,-15*(countSpaceVar.length-countFalse));
-                                            notationVar = '';
-                                            for (let j = d+1; j < notationArrVar.length; j++) {
-                                                notationVar += notationArrVar[j];
-                                            }
-                                            ctx.fillText(notationVar,0,0);
-                                            countLineVar += 1;
-                                        }
-                                    } else if (i<countSpaceVar.length-1) {
-                                        for (let j = countSpaceVar[i-1-countIndexVar]+1; j < d; j++) {
-                                            notationVar += notationArrVar[j];
-                                        }
-                                        ctx.fillText(notationVar,0,-(countSpaceVar.length-countLineVar-countFalse)*15);
-                                        countLineVar += 1;
-                                    } else {
-                                        for (let j = countSpaceVar[i-1-countIndexVar]+1; j < d; j++) {
-                                            notationVar += notationArrVar[j];
-                                        }
-                                        ctx.fillText(notationVar,0,-(countSpaceVar.length-countLineVar-countFalse)*15);
-                                        notationVar = '';
-                                        for (let j = d+1; j < notationArrVar.length; j++) {
-                                            notationVar += notationArrVar[j];
-                                        }
-                                        ctx.fillText(notationVar,0,0);
-                                        countLineVar += 1;
-                                    }
-                                    countIndexVar = 0;
-                                } else countIndexVar += 1;
-                            });
-                        }
-                    } else {
-                        ctx.fillText(mapvar2.get(varIndex),0,0);
-                    }
-                    ctx.fill();
-                    ctx.rotate(Math.PI/2);
-                    ctx.translate(-plotPosition[0]+5,-plotPosition[1]-plotSize[1]);
-                } else {        // turn on variable or bot
-                    ctx.translate(plotPosition[0]-5,plotPosition[1]+plotSize[1]);
-                    ctx.rotate(-Math.PI/2);
-                    // ctx.font = "12px Arial";
-                    ctx.font = "10px Arial";
-                    ctx.fillStyle = 'rgb(0,0,0)';
-                    if (notationArrIns.length > 14) {
-                        if (countSpaceIns.length === 0) {
-                            notationIns = '';
-                            for (let j = 0; j < 14; j++) {
-                                notationIns += notationArrIns[j];
-                            }
-                            ctx.fillText(notationIns,0,0);
-                        } else {
-                            countLineIns = 0;
-                            countSpaceIns.forEach((d,i)=>{
-                                if (d) {
-                                    notationIns = '';
-                                    if (i === 0) {
-                                        if (countSpaceIns.length-countFalse2>1) {
-                                            for (let j = 0; j < d; j++) {
-                                                notationIns += notationArrIns[j];
-                                            }
-                                            ctx.fillText(notationIns,0,-15*(countSpaceIns.length-countFalse2));
-                                            countLineIns += 1;
-                                        } else {
-                                            for (let j = 0; j < d; j++) {
-                                                notationIns += notationArrIns[j];
-                                            }
-                                            ctx.fillText(notationIns,0,-15*(countSpaceIns.length-countFalse2));
-                                            notationIns = '';
-                                            for (let j = d+1; j < notationArrIns.length; j++) {
-                                                notationIns += notationArrIns[j];
-                                            }
-                                            ctx.fillText(notationIns,0,0);
-                                            countLineIns += 1;
-                                        }
-                                    } else if (i<countSpaceIns.length-1) {
-                                        for (let j = countSpaceIns[i-1-countIndexIns]+1; j < d; j++) {
-                                            notationIns += notationArrIns[j];
-                                        }
-                                        ctx.fillText(notationIns,0,-(countSpaceIns.length-countLineIns-countFalse2)*15);
-                                        countLineIns += 1;
-                                    } else {
-                                        for (let j = countSpaceIns[i-1-countIndexIns]+1; j < d; j++) {
-                                            notationIns += notationArrIns[j];
-                                        }
-                                        ctx.fillText(notationIns,0,-(countSpaceIns.length-countLineIns-countFalse2)*15);
-                                        notationIns = '';
-                                        for (let j = d+1; j < notationArrIns.length; j++) {
-                                            notationIns += notationArrIns[j];
-                                        }
-                                        ctx.fillText(notationIns,0,0);
-                                        countLineIns += 1;
-                                    }
-                                    countIndexIns = 0;
-                                } else countIndexIns += 1;
-                            });
-                        }
-                    } else {
-                        ctx.fillText(mapsample2.get(sampleIndex),0,0);
-                    }
-                    ctx.fill();
-                    ctx.rotate(Math.PI/2);
-                    ctx.translate(-plotPosition[0]+5,-plotPosition[1]-plotSize[1]);
-                }
-            } else {    // no interaction mode
-                ctx.translate(plotPosition[0]-5,plotPosition[1]+plotSize[1]);
-                ctx.rotate(-Math.PI/2);
-                // ctx.font = "12px Arial";
-                ctx.font = "10px Arial";
-                ctx.fillStyle = 'rgb(0,0,0)';
-                if (notationArrVar.length > 14) {
-                    if (countSpaceVar.length === 0) {
-                        notationVar = '';
-                        for (let j = 0; j < 14; j++) {
-                            notationVar += notationArrVar[j];
-                        }
-                        ctx.fillText(notationVar,0,0);
-                    } else {
-                        countLineVar = 0;
-                        countSpaceVar.forEach((d,i)=>{
-                            if (d) {
-                                notationVar = '';
-                                if (i === 0) {
-                                    if (countSpaceVar.length>1) {
-                                        for (let j = 0; j < d; j++) {
-                                            notationVar += notationArrVar[j];
-                                        }
-                                        ctx.fillText(notationVar,0,-15*(countSpaceVar.length));
-                                        countLineVar += 1;
-                                    } else {
-                                        for (let j = 0; j < d; j++) {
-                                            notationVar += notationArrVar[j];
-                                        }
-                                        ctx.fillText(notationVar,0,-15*(countSpaceVar.length));
-                                        notationVar = '';
-                                        for (let j = d+1; j < notationArrVar.length; j++) {
-                                            notationVar += notationArrVar[j];
-                                        }
-                                        ctx.fillText(notationVar,0,0);
-                                        countLineVar += 1;
-                                    }
-                                } else if (i<countSpaceVar.length-1) {
-                                    for (let j = countSpaceVar[i-1-countIndexVar]+1; j < d; j++) {
-                                        notationVar += notationArrVar[j];
-                                    }
-                                    ctx.fillText(notationVar,0,-(countSpaceVar.length-countLineVar)*15);
-                                    countLineVar += 1;
-                                } else {
-                                    for (let j = countSpaceVar[i-1-countIndexVar]+1; j < d; j++) {
-                                        notationVar += notationArrVar[j];
-                                    }
-                                    ctx.fillText(notationVar,0,-(countSpaceVar.length-countLineVar)*15);
-                                    notationVar = '';
-                                    for (let j = d+1; j < notationArrVar.length; j++) {
-                                        notationVar += notationArrVar[j];
-                                    }
-                                    ctx.fillText(notationVar,0,0);
-                                    countLineVar += 1;
-                                }
-                                countIndexVar = 0;
-                            } else countIndexVar += 1;
-                        });
-                    }
-                } else {
-                    ctx.fillText(mapvar2.get(varIndex),0,0);
-                }
-                ctx.fill();
-                ctx.rotate(Math.PI/2);
-                ctx.translate(-plotPosition[0]+5,-plotPosition[1]-plotSize[1]);
-                // ctx.font = '12px Arial';
-                ctx.font = '10px Arial';
-                ctx.fillText(mapsample2.get(sampleIndex),plotPosition[0]+2,plotPosition[1]+15);
+    // Instance notation
+    let notationIns2D = '';
+    let notationArrIns2D = [];
+    let countSpaceIns2D = [], myCountSpaceIns2D = [], countLineIns2D = 0, countIndexIns2D = 0, countFalse2D = 0;
+    notationArrIns2D = mapsample2.get(sampleIndex).split('');
+    notationArrIns2D.forEach((d,i)=>{
+        if (d === ' ') myCountSpaceIns2D.push(i);
+    });
+    countSpaceIns2D = myCountSpaceIns2D.map((d,i)=>{
+        if (i) {
+            if (d-myCountSpaceIns2D[i-1]>3) return d;
+            else return false;
+        } else {
+            if (d>2) return d;
+            else return false;
+        }
+    });
+    countSpaceIns2D.forEach(d=>{if(d===false) countFalse2D += 1;});
+
+    ctx.translate(plotPosition[0]-5,plotPosition[1]+plotSize[1]);
+    ctx.rotate(-Math.PI/2);
+    ctx.font = "12px Arial";
+    ctx.fillStyle = 'rgb(0,0,0)';
+    if (yNotationArr.length > 14) {
+        if (yCountSpace.length === 0) {
+            yNotation = '';
+            for (let j = 0; j < 14; j++) {
+                yNotation += yNotationArr[j];
             }
-            break;
-            case "2D":
-                // x Variable notation
-                let xNotation = '';
-                let xNotationArr = [];
-                let xCountSpace = [], myXCountSpace = [], xCountLine = 0, xCountIndex = 0, xCountFalse = 0;
-                xNotationArr = mapvar2.get(xVarIndex).split('');
-                xNotationArr.forEach((d,i)=>{
-                    if (d === ' ') myXCountSpace.push(i);
-                });
-                xCountSpace = myXCountSpace.map((d,i)=>{
-                    if (i) {
-                        if (d-myXCountSpace[i-1]>3) return d;
-                        else return false;
+            ctx.fillText(yNotation,0,0);
+        } else {
+            yCountLine = 0;
+            yCountSpace.forEach((d,i)=>{
+                if (d) {
+                    yNotation = '';
+                    if (i === 0) {
+                        if (yCountSpace.length>1) {
+                            for (let j = 0; j < d; j++) {
+                                yNotation += yNotationArr[j];
+                            }
+                            ctx.fillText(yNotation,0,-15*(yCountSpace.length-yCountFalse));
+                            yCountLine += 1;
+                        } else {
+                            for (let j = 0; j < d; j++) {
+                                yNotation += yNotationArr[j];
+                            }
+                            ctx.fillText(yNotation,0,-15*(yCountSpace.length-yCountFalse));
+                            yNotation = '';
+                            for (let j = d+1; j < yNotationArr.length; j++) {
+                                yNotation += yNotationArr[j];
+                            }
+                            ctx.fillText(yNotation,0,0);
+                            yCountLine += 1;
+                        }
+                    } else if (i<yCountSpace.length-1) {
+                        for (let j = yCountSpace[i-1-yCountIndex]+1; j < d; j++) {
+                            yNotation += yNotationArr[j];
+                        }
+                        ctx.fillText(yNotation,0,-(yCountSpace.length-yCountLine-yCountFalse)*15);
+                        yCountLine += 1;
                     } else {
-                        if (d>2) return d;
-                        else return false;
-                    }
-                });
-                xCountSpace.forEach(d=>{if(d===false) xCountFalse += 1;});
-
-                // y Variable notation
-                let yNotation = '';
-                let yNotationArr = [];
-                let yCountSpace = [], myYCountSpace = [], yCountLine = 0, yCountIndex = 0, yCountFalse = 0;
-                yNotationArr = mapvar2.get(yVarIndex).split('');
-                yNotationArr.forEach((d,i)=>{
-                    if (d === ' ') myYCountSpace.push(i);
-                });
-                yCountSpace = myYCountSpace.map((d,i)=>{
-                    if (i) {
-                        if (d-myYCountSpace[i-1]>3) return d;
-                        else return false;
-                    } else {
-                        if (d>2) return d;
-                        else return false;
-                    }
-                });
-                yCountSpace.forEach(d=>{if(d===false) yCountFalse += 1;});
-
-                // Instance notation
-                let notationIns2D = '';
-                let notationArrIns2D = [];
-                let countSpaceIns2D = [], myCountSpaceIns2D = [], countLineIns2D = 0, countIndexIns2D = 0, countFalse2D = 0;
-                notationArrIns2D = mapsample2.get(sampleIndex).split('');
-                notationArrIns2D.forEach((d,i)=>{
-                    if (d === ' ') myCountSpaceIns2D.push(i);
-                });
-                countSpaceIns2D = myCountSpaceIns2D.map((d,i)=>{
-                    if (i) {
-                        if (d-myCountSpaceIns2D[i-1]>3) return d;
-                        else return false;
-                    } else {
-                        if (d>2) return d;
-                        else return false;
-                    }
-                });
-                countSpaceIns2D.forEach(d=>{if(d===false) countFalse2D += 1;});
-
-                ctx.translate(plotPosition[0]-5,plotPosition[1]+plotSize[1]);
-                ctx.rotate(-Math.PI/2);
-                ctx.font = "12px Arial";
-                ctx.fillStyle = 'rgb(0,0,0)';
-                if (yNotationArr.length > 14) {
-                    if (yCountSpace.length === 0) {
+                        for (let j = yCountSpace[i-1-yCountIndex]+1; j < d; j++) {
+                            yNotation += yNotationArr[j];
+                        }
+                        ctx.fillText(yNotation,0,-(yCountSpace.length-yCountLine-yCountFalse)*15);
                         yNotation = '';
-                        for (let j = 0; j < 14; j++) {
+                        for (let j = d+1; j < yNotationArr.length; j++) {
                             yNotation += yNotationArr[j];
                         }
                         ctx.fillText(yNotation,0,0);
-                    } else {
-                        yCountLine = 0;
-                        yCountSpace.forEach((d,i)=>{
-                            if (d) {
-                                yNotation = '';
-                                if (i === 0) {
-                                    if (yCountSpace.length>1) {
-                                        for (let j = 0; j < d; j++) {
-                                            yNotation += yNotationArr[j];
-                                        }
-                                        ctx.fillText(yNotation,0,-15*(yCountSpace.length-yCountFalse));
-                                        yCountLine += 1;
-                                    } else {
-                                        for (let j = 0; j < d; j++) {
-                                            yNotation += yNotationArr[j];
-                                        }
-                                        ctx.fillText(yNotation,0,-15*(yCountSpace.length-yCountFalse));
-                                        yNotation = '';
-                                        for (let j = d+1; j < yNotationArr.length; j++) {
-                                            yNotation += yNotationArr[j];
-                                        }
-                                        ctx.fillText(yNotation,0,0);
-                                        yCountLine += 1;
-                                    }
-                                } else if (i<yCountSpace.length-1) {
-                                    for (let j = yCountSpace[i-1-yCountIndex]+1; j < d; j++) {
-                                        yNotation += yNotationArr[j];
-                                    }
-                                    ctx.fillText(yNotation,0,-(yCountSpace.length-yCountLine-yCountFalse)*15);
-                                    yCountLine += 1;
-                                } else {
-                                    for (let j = yCountSpace[i-1-yCountIndex]+1; j < d; j++) {
-                                        yNotation += yNotationArr[j];
-                                    }
-                                    ctx.fillText(yNotation,0,-(yCountSpace.length-yCountLine-yCountFalse)*15);
-                                    yNotation = '';
-                                    for (let j = d+1; j < yNotationArr.length; j++) {
-                                        yNotation += yNotationArr[j];
-                                    }
-                                    ctx.fillText(yNotation,0,0);
-                                    yCountLine += 1;
-                                }
-                                yCountIndex = 0;
-                            } else yCountIndex += 1;
-                        });
+                        yCountLine += 1;
                     }
-                } else {
-                    ctx.fillText(mapvar2.get(yVarIndex),0,0);
-                }
+                    yCountIndex = 0;
+                } else yCountIndex += 1;
+            });
+        }
+    } else {
+        ctx.fillText(mapvar2.get(yVarIndex),0,0);
+    }
+    ctx.fill();
+    ctx.rotate(Math.PI/2);
+    ctx.translate(-plotPosition[0]+5,-plotPosition[1]-plotSize[1]);
+    ctx.translate(plotPosition[0],plotPosition[1]+plotSize[1]+10);
+
+    ctx.fillText(mapvar2.get(xVarIndex),0,0);
+    ctx.translate(-plotPosition[0],-plotPosition[1]-plotSize[1]-10);
+    ctx.translate(plotPosition[0],plotPosition[1]-3);
+    ctx.fillText(mapsample2.get(sampleIndex),0,0);
+    ctx.translate(-plotPosition[0],-plotPosition[1]+3);
+
+    // draw connected scatter plots
+    timedata.forEach(function (time, step) {
+        if (step) {
+            let radius = interactionOption.time1 === step || interactionOption.time2 === step ? 3 : 1;
+            if(data[sampleIndex][xVarIndex][step]>=0 && data[sampleIndex][xVarIndex][step-1]>=0 && data[sampleIndex][yVarIndex][step]>=0 && data[sampleIndex][yVarIndex][step-1]>=0) {
+                let x1 = plotPosition[0]+0.05*plotSize[0]+0.9*plotSize[0]*data[sampleIndex][xVarIndex][step-1];
+                let x2 = plotPosition[0]+0.05*plotSize[0]+0.9*plotSize[0]*data[sampleIndex][xVarIndex][step];
+                let y1 = plotPosition[1]+0.05*plotSize[1]+0.9*plotSize[1]*(1-data[sampleIndex][yVarIndex][step-1]);
+                let y2 = plotPosition[1]+0.05*plotSize[1]+0.9*plotSize[1]*(1-data[sampleIndex][yVarIndex][step]);
+                color[0] = (step < timedata.length/2) ? 0 : (step-timedata.length/2)*255/(timedata.length/2);
+                color[1] = 0;
+                color[2] = (step < timedata.length/2) ? 255-255*step/(timedata.length/2) : 0;
+                ctx.beginPath();
+                ctx.moveTo(x1,y1);
+                ctx.lineTo(x2, y2);
+                ctx.arc(x2,y2,radius,0,2*Math.PI);
+                ctx.strokeStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
+                ctx.fillStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
+                ctx.lineWidth = 0.3;
+                ctx.stroke();
                 ctx.fill();
-                ctx.rotate(Math.PI/2);
-                ctx.translate(-plotPosition[0]+5,-plotPosition[1]-plotSize[1]);
-                ctx.translate(plotPosition[0],plotPosition[1]+plotSize[1]+10);
-                // if (xNotationArr.length > 14) {
-                //     if (xCountSpace.length === 0) {
-                //         xNotation = '';
-                //         for (let j = 0; j < 14; j++) {
-                //             xNotation += xNotationArr[j];
-                //         }
-                //         ctx.fillText(xNotation,0,0);
-                //     } else {
-                //         xCountLine = 0;
-                //         xCountSpace.forEach((d,i)=>{
-                //             if (d) {
-                //                 xNotation = '';
-                //                 if (i === 0) {
-                //                     if (xCountSpace.length>1) {
-                //                         for (let j = 0; j < d; j++) {
-                //                             xNotation += xNotationArr[j];
-                //                         }
-                //                         ctx.fillText(xNotation,0,-15*(xCountSpace.length-xCountFalse));
-                //                         xCountLine += 1;
-                //                     } else {
-                //                         for (let j = 0; j < d; j++) {
-                //                             xNotation += xNotationArr[j];
-                //                         }
-                //                         ctx.fillText(xNotation,0,-15*(xCountSpace.length-xCountFalse));
-                //                         xNotation = '';
-                //                         for (let j = d+1; j < xNotationArr.length; j++) {
-                //                             xNotation += xNotationArr[j];
-                //                         }
-                //                         ctx.fillText(xNotation,0,0);
-                //                         xCountLine += 1;
-                //                     }
-                //                 } else if (i<xCountSpace.length-1) {
-                //                     for (let j = xCountSpace[i-1-xCountIndex]+1; j < d; j++) {
-                //                         xNotation += xNotationArr[j];
-                //                     }
-                //                     ctx.fillText(xNotation,0,-(xCountSpace.length-xCountLine-xCountFalse)*15);
-                //                     xCountLine += 1;
-                //                 } else {
-                //                     for (let j = xCountSpace[i-1-xCountIndex]+1; j < d; j++) {
-                //                         xNotation += xNotationArr[j];
-                //                     }
-                //                     ctx.fillText(xNotation,0,-(xCountSpace.length-xCountLine-xCountFalse)*15);
-                //                     xNotation = '';
-                //                     for (let j = d+1; j < xNotationArr.length; j++) {
-                //                         xNotation += xNotationArr[j];
-                //                     }
-                //                     ctx.fillText(xNotation,0,0);
-                //                     xCountLine += 1;
-                //                 }
-                //                 xCountIndex = 0;
-                //             } else xCountIndex += 1;
-                //         });
-                //     }
-                // } else {
-                //     ctx.fillText(mapvar2.get(xVarIndex),0,0);
-                // }
-                ctx.fillText(mapvar2.get(xVarIndex),0,0);
-                ctx.translate(-plotPosition[0],-plotPosition[1]-plotSize[1]-10);
-                ctx.translate(plotPosition[0],plotPosition[1]-3);
-                ctx.fillText(mapsample2.get(sampleIndex),0,0);
-                ctx.translate(-plotPosition[0],-plotPosition[1]+3);
-
-                break;
-    }
-
-
-    // draw time series
-    ctx.lineWidth = 1;
-    switch (selectedDisplay) {
-        case "1D":
-            timedata.forEach(function (time, step) {
-                if (step) {
-                    if(data[sampleIndex][varIndex][step]>=0 && data[sampleIndex][varIndex][step-1]>=0) {
-                        let x1 = plotPosition[0]+0.05*plotSize[0]+0.9*plotSize[0]*(step-1)/timedata.length;
-                        let x2 = plotPosition[0]+0.05*plotSize[0]+0.9*plotSize[0]*step/timedata.length;
-                        let y1 = plotPosition[1]+0.05*plotSize[1]+0.9*plotSize[1]*(1-data[sampleIndex][varIndex][step-1]);
-                        let y2 = plotPosition[1]+0.05*plotSize[1]+0.9*plotSize[1]*(1-data[sampleIndex][varIndex][step]);
-                        color[0] = (step < timedata.length/2) ? 0 : (step-timedata.length/2)*255/(timedata.length/2);
-                        color[1] = 0;
-                        color[2] = (step < timedata.length/2) ? 255-255*step/(timedata.length/2) : 0;
-                        ctx.beginPath();
-                        ctx.moveTo(x1,y1);
-                        ctx.lineTo(x2, y2);
-                        ctx.strokeStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
-                        ctx.stroke();
-                    }
-                }
-            });
-            break;
-        case "2D":
-            timedata.forEach(function (time, step) {
-                if (step) {
-                    if(data[sampleIndex][xVarIndex][step]>=0 && data[sampleIndex][xVarIndex][step-1]>=0 && data[sampleIndex][yVarIndex][step]>=0 && data[sampleIndex][yVarIndex][step-1]>=0) {
-                        let x1 = plotPosition[0]+0.05*plotSize[0]+0.9*plotSize[0]*data[sampleIndex][xVarIndex][step-1];
-                        let x2 = plotPosition[0]+0.05*plotSize[0]+0.9*plotSize[0]*data[sampleIndex][xVarIndex][step];
-                        let y1 = plotPosition[1]+0.05*plotSize[1]+0.9*plotSize[1]*(1-data[sampleIndex][yVarIndex][step-1]);
-                        let y2 = plotPosition[1]+0.05*plotSize[1]+0.9*plotSize[1]*(1-data[sampleIndex][yVarIndex][step]);
-                        color[0] = (step < timedata.length/2) ? 0 : (step-timedata.length/2)*255/(timedata.length/2);
-                        color[1] = 0;
-                        color[2] = (step < timedata.length/2) ? 255-255*step/(timedata.length/2) : 0;
-                        ctx.beginPath();
-                        ctx.moveTo(x1,y1);
-                        ctx.lineTo(x2, y2);
-                        ctx.arc(x2,y2,1,0,2*Math.PI);
-                        ctx.strokeStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
-                        ctx.fillStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
-                        ctx.lineWidth = 0.3;
-                        ctx.stroke();
-                        ctx.fill();
-                    }
-                }
-            });
-            break;
-    }
-
+            }
+        }
+    });
 
     // draw rose chart
-    let dataRadarChart = dataRadar2[plotIndex];
-    let angle = Math.PI*2/dataRadarChart.length;
+    // let dataRadarChart = target_;
+    let angle = Math.PI*2/target_.length;
     let rRadarChart = plotSize[1]/2.1;
     let rPlotPosition = [plotPosition[0]+plotSize[0]+rRadarChart+5,plotPosition[1]+plotSize[1]/2];
     for (let k = 5; k > 0; k--) {
         ctx.beginPath();
         ctx.arc(rPlotPosition[0],rPlotPosition[1],0.2*rRadarChart*k,0,2*Math.PI);
-        // ctx.arc(xscale(plotPosition[0]),yscale(plotPosition[1]),0.2*rRadarChart*k,0,2*Math.PI);
-        ctx.strokeStyle = "rgb(180,180,180)";
+        ctx.strokeStyle = "rgb(0,0,0)";
+        ctx.strokeWidth = 0.15;
         ctx.stroke();
-        ctx.fillStyle = "rgb(255,255,255)";
+        ctx.globalAlpha = 0.1;
+        ctx.fillStyle = "rgb(205,205,205)";
         ctx.fill();
-    }
-    dataRadarChart.forEach((d,i)=>{
-        ctx.beginPath();
-        let colorRadar;
-        switch (type[i]) {
-            case 0:
-                colorRadar = [18, 169, 101];
-                break;
-            case 1:
-                colorRadar = [232, 101, 11];
-                break;
-            case 2:
-                colorRadar = [89, 135, 222];
-                break;
-        }
-        ctx.arc(rPlotPosition[0],rPlotPosition[1],d*rRadarChart,(i-0.25)*angle-Math.PI/2,(i+0.25)*angle-Math.PI/2);
-        ctx.fillStyle = `rgb(${colorRadar[0]},${colorRadar[1]},${colorRadar[2]})`;
-        ctx.fill();
-        ctx.beginPath();
-        ctx.moveTo(rPlotPosition[0],rPlotPosition[1]);
-        ctx.lineTo(rPlotPosition[0]+d*rRadarChart*Math.cos((i-0.25)*angle-Math.PI/2),rPlotPosition[1]+d*rRadarChart*Math.sin((i-0.25)*angle-Math.PI/2));
-        ctx.lineTo(rPlotPosition[0]+d*rRadarChart*Math.cos((i+0.25)*angle-Math.PI/2),rPlotPosition[1]+d*rRadarChart*Math.sin((i+0.25)*angle-Math.PI/2));
-        ctx.fill();
+        ctx.globalAlpha = 1;
         ctx.closePath();
+    }
+    for (let k = 0; k < nummeasure; k++) {
+        let xp1 = rPlotPosition[0]+2*rRadarChart*Math.sin(Math.PI*2*k/nummeasure)/2;
+        let yp1 = rPlotPosition[1]-2*rRadarChart*Math.cos(Math.PI*2*k/nummeasure)/2;
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgb(255,255,255)';
+        ctx.lineWidth = 1;
+        ctx.moveTo(rPlotPosition[0],rPlotPosition[1]);
+        ctx.lineTo(xp1,yp1);
+        ctx.stroke();
+        ctx.closePath();
+    }
+    myRadarChartClusterOpt.pos = {x:rPlotPosition[0],y:rPlotPosition[1]};
+    myRadarChartClusterOpt.w = 2*rRadarChart;
+    myRadarChartClusterOpt.h = 2*rRadarChart;
+    let datum = target_.map((e,i)=>{
+        return {axis:measurename[i],value:e};
     });
-    // draw start chart
-    // ctx.beginPath();
-    // ctx.moveTo(rPlotPosition[0]+dataRadarChart[0]*rRadarChart*Math.cos(i*angle-Math.PI/2),rPlotPosition[1]+dataRadarChart[0]*rRadarChart*Math.sin(i*angle-Math.PI/2));
-    // dataRadarChart.forEach((d,i)=>{
-    //     if (i!==0) ctx.lineTo(rPlotPosition[0]+d*rRadarChart*Math.cos(i*angle-Math.PI/2),rPlotPosition[1]+d*rRadarChart*Math.sin(i*angle-Math.PI/2));
-    // });
-    // ctx.fillStyle = 'rgb(89, 135, 222)';
-    // ctx.fill();
-    // ctx.closePath();
+    RadarChart_c_func('#tsneScreen',[datum],myRadarChartClusterOpt,'');
+
 
     // mouse over
     let xMouse = mousePosition_[0];
     let yMouse = mousePosition_[1];
     let checkMouseOver = (xMouse >= plotPosition[0]+0.05*plotSize[0]) && (xMouse <= plotPosition[0]+0.95*plotSize[0]) && (yMouse >= plotPosition[1]+0.05*plotSize[1]) && (yMouse <= plotPosition[1]+0.95*plotSize[1]);
     if (checkMouseOver) {
-        let dX = 0.9*plotSize[0]/timedata.length;
-        let step = Math.floor((xMouse-plotPosition[0]-0.05*plotSize[0])/dX);
-        let x = plotPosition[0]+0.05*plotSize[0]+dX*step;
-        let y = data[sampleIndex][varIndex][step]>=0 ? plotPosition[1]+0.05*plotSize[1]+0.9*plotSize[1]*(1-data[sampleIndex][varIndex][step]) : 'No data';
-        // let dataValue = Math.round(dataRaw[sampleIndex][varIndex][step]).toString();
-        let dataValue = (Math.floor(dataRaw[sampleIndex][varIndex][step]) > 100) ? Math.floor(dataRaw[sampleIndex][varIndex][step]) : Math.floor(dataRaw[sampleIndex][varIndex][step]*100)/100;
-        // draw x-notation
-        ctx.beginPath();
-        ctx.fillStyle = 'rgb(0,0,0)';
-        ctx.moveTo(x,plotPosition[1]+plotSize[1]);
-        ctx.lineTo(x-5,plotPosition[1]+plotSize[1]+5);
-        ctx.lineTo(x+5,plotPosition[1]+plotSize[1]+5);
-        ctx.lineTo(x,plotPosition[1]+plotSize[1]);
-        ctx.fill();
-        ctx.closePath();
-        ctx.fillRect(x-25,plotPosition[1]+plotSize[1]+5,50,12);
-        ctx.fillStyle = 'rgb(255,255,255)';
-        ctx.font = '10px Arial';
-        ctx.fillText(timedata[step],x-23,plotPosition[1]+plotSize[1]+5+10);
-
-        // draw y-notation:
-        if (typeof (y) === 'number') {
+        let myStep = null;
+        for (let step = 0; step < timedata.length; step++) {
+            let x = plotPosition[0]+0.05*plotSize[0]+0.9*plotSize[0]*data[sampleIndex][xVarIndex][step];
+            let y = plotPosition[1]+0.05*plotSize[1]+0.9*plotSize[1]*(1-data[sampleIndex][yVarIndex][step]);
+            if (xMouse<x+3&&xMouse>x-3&&yMouse<y+3&&yMouse>y-3) {myStep = step; break;}
+        }
+        if (myStep!==null) {
+            let xValue = dataRaw[sampleIndex][xVarIndex][myStep];
+            let yValue = dataRaw[sampleIndex][yVarIndex][myStep];
+            // draw x-notation
             ctx.beginPath();
             ctx.fillStyle = 'rgb(0,0,0)';
-            ctx.moveTo(x,y);
-            ctx.lineTo(x+5,y-5);
-            ctx.lineTo(x+5,y+5);
-            ctx.lineTo(x,y);
+            ctx.moveTo(xMouse,plotPosition[1]+plotSize[1]);
+            ctx.lineTo(xMouse-5,plotPosition[1]+plotSize[1]+5);
+            ctx.lineTo(xMouse+5,plotPosition[1]+plotSize[1]+5);
+            ctx.lineTo(xMouse,plotPosition[1]+plotSize[1]);
             ctx.fill();
             ctx.closePath();
-            ctx.fillRect(x+5,y-6,26,12);
+            ctx.fillRect(xMouse-25,plotPosition[1]+plotSize[1]+5,36,12);
             ctx.fillStyle = 'rgb(255,255,255)';
             ctx.font = '10px Arial';
-            ctx.fillText(dataValue,x+7,y+4);
+            ctx.fillText(xValue,xMouse-23,plotPosition[1]+plotSize[1]+5+10);
+
+            // draw y-notation:
+            ctx.beginPath();
+            ctx.fillStyle = 'rgb(0,0,0)';
+            ctx.moveTo(xMouse,yMouse);
+            ctx.lineTo(xMouse+5,yMouse-5);
+            ctx.lineTo(xMouse+5,yMouse+5);
+            ctx.lineTo(xMouse,yMouse);
+            ctx.fill();
+            ctx.closePath();
+            ctx.fillRect(xMouse+5,yMouse-6,36,12);
+            ctx.fillStyle = 'rgb(255,255,255)';
+            ctx.font = '10px Arial';
+            ctx.fillText(yValue,xMouse+7,yMouse+4);
         }
     }
 
     // clickable button
-    if (interactionOption.sample !== 'noOption' || interactionOption.variable !== 'noOption') {
-        let leftButtonPosition = [(myWidth-300)*0.7,50];
-        // let rightButtonPosition = [(myWidth-300)*0.7+80,50];
-        let rightButtonPosition = [(myWidth-300)*0.7+50,50];
+    if (interactionOption.sample!=='noOption'||(interactionOption.variable1!=='noOption'&&interactionOption.variable2!=='noOption'&&interactionOption.variable1!==interactionOption.variable2)) {
+        let leftButtonPosition = [(myWidth-300)*0.7,30];
+        let rightButtonPosition = [(myWidth-300)*0.7+40,30];
         let buttonSize = [20,20];
 
         let quitButtonSize = [120,20];
-        let quitButtonPosition = [(myWidth-300)*0.7+80,50];
-        console.log(quitButtonPosition);
-        console.log(rightButtonPosition);
+        let quitButtonPosition = [(myWidth-300)*0.7+100,30];
 
         let checkLeft = (trueMousePosition[0]>=leftButtonPosition[0]) && (trueMousePosition[0]<=leftButtonPosition[0]+buttonSize[0]) && (trueMousePosition[1]>=leftButtonPosition[1]) && (trueMousePosition[1]<=leftButtonPosition[1]+buttonSize[1]);
         let checkRight = (trueMousePosition[0]>=rightButtonPosition[0]) && (trueMousePosition[0]<=rightButtonPosition[0]+buttonSize[0]) && (trueMousePosition[1]>=rightButtonPosition[1]) && (trueMousePosition[1]<=rightButtonPosition[1]+buttonSize[1]);
@@ -1724,9 +1165,8 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
         // ctx.font = '12px Arial';
         ctx.font = '10px Arial';
         ctx.textAlign = "center";
-        console.log(quitButtonPosition);
 
-        ctx.fillText('Quit interaction section',quitButtonPosition[0]+30,quitButtonPosition[1]+quitButtonSize[1]-5);
+        ctx.fillText('Quit interaction section',quitButtonPosition[0]+60,quitButtonPosition[1]+quitButtonSize[1]-5);
         ctx.fill();
         ctx.fillStyle = 'rgb(0,0,0)';
         // ctx.font = '16px Arial';
@@ -1758,8 +1198,8 @@ function drawTimeSeries(ctx_,plot_,position_,mousePosition_,page_) {
 
 // function Change layout when number of time series exceeds 6
 function changePage(num_) {
-    let leftButtonPosition = [(myWidth-300)*0.7,50];
-    let rightButtonPosition = [(myWidth-300)*0.7+50,50];
+    let leftButtonPosition = [(myWidth-300)*0.7,30];
+    let rightButtonPosition = [(myWidth-300)*0.7+40,30];
     let buttonSize = [20,20];
 
     let checkLeft = (trueMousePosition[0]>=leftButtonPosition[0]) && (trueMousePosition[0]<=leftButtonPosition[0]+buttonSize[0]) && (trueMousePosition[1]>=leftButtonPosition[1]) && (trueMousePosition[1]<=leftButtonPosition[1]+buttonSize[1]);
