@@ -995,13 +995,13 @@ function analyzedata() {
                 //                 if (xMin < xMax) {
                 //                     if (data[si][vi][t] !== -1 && data[si][vi][t] !== -Infinity) data[si][vi][t] = (data[si][vi][t] - xMin)/(xMax-xMin);
                 //                 } else {
-                //                     if (data[si][vi][t] !== -1 && data[si][vi][t] !== -Infinity) data[si][vi][t] = 0.5;
+                //                     if (data[si][vi][t] !== -1 && data[si][vi][t] !== -Infinity) data[si][vi][t] = -1;
                 //                 }
                 //             } else if (vi === 1) {
                 //                 if (yMin < yMax) {
                 //                     if (data[si][vi][t] !== -1 && data[si][vi][t] !== -Infinity) data[si][vi][t] = (data[si][vi][t] - yMin)/(yMax-yMin);
                 //                 } else {
-                //                     if (data[si][vi][t] !== -1 && data[si][vi][t] !== -Infinity) data[si][vi][t] = 0.5;
+                //                     if (data[si][vi][t] !== -1 && data[si][vi][t] !== -Infinity) data[si][vi][t] = -1;
                 //                 }
                 //             }
                 //         }
@@ -1194,7 +1194,7 @@ function analyzedata() {
                         if (xdata.length > 1) {
                             var dir = [0, 0, 0, 0];    // count directions for Trend
                             var countcrossing = 0;  // count #intersections
-                            var sumcos = 0;   // sum of cosine of angles
+                            // var sumcos = 0;   // sum of cosine of angles
                             // var looparr = [];
                             // var looplength = Infinity;
                             var countcosine = 0;
@@ -1221,7 +1221,7 @@ function analyzedata() {
                                 }
                                 if (xi > 0 && xi < xdata.length - 1) {
                                     // sumcos += Math.abs(calculatecos(xdata[xi - 1], ydata[xi - 1], x, ydata[xi], xdata[xi + 1], ydata[xi + 1]));
-                                    sumcos += calculatecos(xdata[xi - 1], ydata[xi - 1], x, ydata[xi], xdata[xi + 1], ydata[xi + 1]);
+                                    // sumcos += calculatecos(xdata[xi - 1], ydata[xi - 1], x, ydata[xi], xdata[xi + 1], ydata[xi + 1]);
                                     if(calculatecos(xdata[xi - 1], ydata[xi - 1], x, ydata[xi], xdata[xi + 1], ydata[xi + 1]) > 0.75) countcosine += 1;
                                 }
                             });
@@ -1444,14 +1444,14 @@ function analyzedata() {
         // calculate dot product of 2 vectors
         // get the angle
         function calculatecos(x1_, y1_, x2_, y2_, x3_, y3_) {
-            var v1x = x2_ - x1_;
-            var v1y = y2_ - y1_;
-            var v2x = x3_ - x2_;
-            var v2y = y3_ - y2_;
-            var dotproduct = v1x * v2x + v1y * v2y;
-            var v1 = Math.sqrt(v1x * v1x + v1y * v1y);
-            var v2 = Math.sqrt(v2x * v2x + v2y * v2y);
-            var cosangle;
+            let v1x = x2_ - x1_;
+            let v1y = y2_ - y1_;
+            let v2x = x3_ - x2_;
+            let v2y = y3_ - y2_;
+            let dotproduct = v1x * v2x + v1y * v2y;
+            let v1 = Math.sqrt(v1x * v1x + v1y * v1y);
+            let v2 = Math.sqrt(v2x * v2x + v2y * v2y);
+            let cosangle;
             if (v1*v2 !== 0) {
                 cosangle = dotproduct / (v1 * v2);
             } else
@@ -2285,11 +2285,11 @@ function draw() {
                     pop();
                     timedata.forEach(function (time,step) {
                         // for paper
-                        let bP1 = '2000', bP2 = '2005', bP3 = '2012', bP4 = '1987';
-                        let bC1 = '#542788', bC2 = '#e08214', bC3 = '#d53e4f', bC4 = '#ff0000';
+                        // let bP1 = '2000', bP2 = '2005', bP3 = '2012', bP4 = '1987';
+                        // let bC1 = '#542788', bC2 = '#e08214', bC3 = '#d53e4f', bC4 = '#ff0000';
                         if(step) {
                             let radius = interactionOption.time1 === step || interactionOption.time2 === step ? 3 : 1;
-                            // CS plots - X(t) for 1D
+                            // CS plots
                             if(data[sample][xvar][step]>=0 && data[sample][xvar][step-1]>=0 && data[sample][yvar][step]>=0 && data[sample][yvar][step-1]>=0) {
                                 let x1 = 0.05*csPlotSize+xBlank+csPlotSize+xBlank+j*groupSize+0.9*csPlotSize*data[sample][xvar][step-1];
                                 let x2 = 0.05*csPlotSize+xBlank+csPlotSize+xBlank+j*groupSize+0.9*csPlotSize*data[sample][xvar][step];
@@ -2307,14 +2307,14 @@ function draw() {
                                         let color = d3.color(experiment.colorList[checkLoop-1]);
                                         fill(color.r,color.g,color.b);
                                         stroke(color.r,color.g,color.b);
-                                        if (time === bP1) {fill(bC1); stroke(bC1);} // paper
-                                        if (time === bP2) {fill(bC2); stroke(bC2);}
-                                        if (time === bP3) {fill(bC3); stroke(bC3);}
-                                        if (time === bP4) {fill(bC4); stroke(bC4);}
+                                        // if (time === bP1) {fill(bC1); stroke(bC1);} // paper
+                                        // if (time === bP2) {fill(bC2); stroke(bC2);}
+                                        // if (time === bP3) {fill(bC3); stroke(bC3);}
+                                        // if (time === bP4) {fill(bC4); stroke(bC4);}
                                         circle(x1,y1,radius);
                                         circle(x2,y2,radius);
-                                        fill(color.r,color.g,color.b);  // paper
-                                        stroke(color.r,color.g,color.b);
+                                        // fill(color.r,color.g,color.b);  // paper
+                                        // stroke(color.r,color.g,color.b);
                                         strokeWeight(0.3);
                                         line(x1,y1,x2,y2);
                                         strokeWeight(1);
@@ -2328,11 +2328,18 @@ function draw() {
                                         strokeWeight(1);
                                     }
                                 } else {
+                                    // let alpha = 0;
+                                    // if (step === 110) alpha = 255;
+                                    // if (step < 110) alpha = 50;
                                     if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2)); fill(0,0,255-255*step/(timedata.length/2));}
+                                    // if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2),alpha); fill(0,0,255-255*step/(timedata.length/2),alpha);}
                                     else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0); fill((step-timedata.length/2)*255/(timedata.length/2),0,0);}
+                                    // else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0,alpha); fill((step-timedata.length/2)*255/(timedata.length/2),0,0,alpha);}
                                     circle(x1,y1,radius);
+                                    // if (step === 110) {stroke(0,255,0); fill(0,255,255);}
                                     circle(x2,y2,radius);
                                     strokeWeight(0.3);
+                                    // if (step === 110) {strokeWeight(1); stroke(0,255,0);}
                                     line(x1,y1,x2,y2);
                                     strokeWeight(1);
                                 }
@@ -2372,14 +2379,14 @@ function draw() {
                                         let color = d3.color(experiment.colorList[checkLoop-1]);
                                         fill(color.r,color.g,color.b);
                                         stroke(color.r,color.g,color.b);
-                                        if (time === bP1) {fill(bC1); stroke(bC1);} // paper
-                                        if (time === bP2) {fill(bC2); stroke(bC2);}
-                                        if (time === bP3) {fill(bC3); stroke(bC3);}
-                                        if (time === bP4) {fill(bC4); stroke(bC4);}
+                                        // if (time === bP1) {fill(bC1); stroke(bC1);} // paper
+                                        // if (time === bP2) {fill(bC2); stroke(bC2);}
+                                        // if (time === bP3) {fill(bC3); stroke(bC3);}
+                                        // if (time === bP4) {fill(bC4); stroke(bC4);}
                                         circle(x1,y1,radius);
                                         circle(x2,y2,radius);
-                                        fill(color.r,color.g,color.b);  // paper
-                                        stroke(color.r,color.g,color.b);
+                                        // fill(color.r,color.g,color.b);  // paper
+                                        // stroke(color.r,color.g,color.b);
                                         strokeWeight(0.3);
                                         line(x1,y1,x2,y2);
                                         strokeWeight(1);
@@ -2393,11 +2400,18 @@ function draw() {
                                         strokeWeight(1);
                                     }
                                 } else {
+                                    // let alpha = 0;
+                                    // if (step === 110) alpha = 255;
+                                    // if (step < 110) alpha = 50;
                                     if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2)); fill(0,0,255-255*step/(timedata.length/2));}
+                                    // if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2),alpha); fill(0,0,255-255*step/(timedata.length/2),alpha);}
                                     else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0); fill((step-timedata.length/2)*255/(timedata.length/2),0,0);}
+                                    // else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0,alpha); fill((step-timedata.length/2)*255/(timedata.length/2),0,0,alpha);}
                                     circle(x1,y1,radius);
+                                    // if (step === 110) {stroke(0,255,0); fill(0,255,255);}
                                     circle(x2,y2,radius);
                                     strokeWeight(0.3);
+                                    // if (step === 110) {strokeWeight(1); stroke(0,255,0);}
                                     line(x1,y1,x2,y2);
                                     strokeWeight(1);
                                 }
@@ -2437,14 +2451,14 @@ function draw() {
                                         let color = d3.color(experiment.colorList[checkLoop-1]);
                                         fill(color.r,color.g,color.b);
                                         stroke(color.r,color.g,color.b);
-                                        if (time === bP1) {fill(bC1); stroke(bC1);} // paper
-                                        if (time === bP2) {fill(bC2); stroke(bC2);}
-                                        if (time === bP3) {fill(bC3); stroke(bC3);}
-                                        if (time === bP4) {fill(bC4); stroke(bC4);}
+                                        // if (time === bP1) {fill(bC1); stroke(bC1);} // paper
+                                        // if (time === bP2) {fill(bC2); stroke(bC2);}
+                                        // if (time === bP3) {fill(bC3); stroke(bC3);}
+                                        // if (time === bP4) {fill(bC4); stroke(bC4);}
                                         circle(x1,y1,radius);
                                         circle(x2,y2,radius);
-                                        fill(color.r,color.g,color.b);  // paper
-                                        stroke(color.r,color.g,color.b);
+                                        // fill(color.r,color.g,color.b);  // paper
+                                        // stroke(color.r,color.g,color.b);
                                         strokeWeight(0.3);
                                         line(x1,y1,x2,y2);
                                         strokeWeight(1);
@@ -2458,11 +2472,18 @@ function draw() {
                                         strokeWeight(1);
                                     }
                                 } else {
+                                    // let alpha = 0;
+                                    // if (step === 110) alpha = 255;
+                                    // if (step < 110) alpha = 50;
                                     if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2)); fill(0,0,255-255*step/(timedata.length/2));}
+                                    // if (step<timedata.length/2) {stroke(0,0,255-255*step/(timedata.length/2),alpha); fill(0,0,255-255*step/(timedata.length/2),alpha);}
                                     else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0); fill((step-timedata.length/2)*255/(timedata.length/2),0,0);}
+                                    // else {stroke((step-timedata.length/2)*255/(timedata.length/2),0,0,alpha); fill((step-timedata.length/2)*255/(timedata.length/2),0,0,alpha);}
                                     circle(x1,y1,radius);
+                                    // if (step === 110) {stroke(0,255,0); fill(0,255,255);}
                                     circle(x2,y2,radius);
                                     strokeWeight(0.3);
+                                    // if (step === 110) {strokeWeight(1); stroke(0,255,0);}
                                     line(x1,y1,x2,y2);
                                     strokeWeight(1);
                                 }

@@ -250,8 +250,8 @@ d3.umapTimeSpace = function () {
                 // begin draw point
                 background_ctx.beginPath();
                 if (selecteddata === 'hpcc') {
-                    if (target.user === 'hge') background_ctx.fillStyle = 'rgb(255,0,0)';
-                    else if (target.user === 'presmcdo') background_ctx.fillStyle = 'rgb(0,255,0)';
+                    if (target.user === 'wang72') background_ctx.fillStyle = 'rgb(255,0,0)';
+                    else if (target.user === "ddocimo") background_ctx.fillStyle = 'rgb(0,255,0)';
                     else background_ctx.fillStyle = 'rgb(0,0,255)';
                 } else background_ctx.fillStyle = fillColor + '';
                 background_ctx.arc(xscale(d[0]), yscale(d[1]), pointSize,0,2*Math.PI);
@@ -624,8 +624,8 @@ function drawLeaderPlot(ctx_,target_,plotPosition_,isMouseOver_) {
         ctx.fillStyle = "rgb(220,220,220)";
         // let strokeColor = colorCluster(cluster_info[group].name);
         if (selecteddata === 'hpcc') {
-            if (target_.user === 'hge') ctx.strokeStyle = 'rgb(255,0,0)';
-            else if (target_.user === 'presmcdo') ctx.strokeStyle = 'rgb(0,255,0)';
+            if (target_.user === 'wang72') ctx.strokeStyle = 'rgb(255,0,0)';
+            else if (target_.user === 'ddocimo') ctx.strokeStyle = 'rgb(0,255,0)';
             else ctx.strokeStyle = 'rgb(0,0,255)';
         } else ctx.strokeStyle = colorCluster(cluster_info[group].name);
         // strokeColor.opacity = 0.5;      // for paper
@@ -881,8 +881,8 @@ function drawDoublyTimeSeries(ctx_,target_,position_,mousePosition_) {
     ctx.fillStyle = "rgb(220,220,220)";
     // ctx.strokeStyle = colorCluster(cluster_info[group].name);
     if (selecteddata === 'hpcc') {
-        if (target_.user === 'hge') ctx.strokeStyle = 'rgb(255,0,0)';
-        else if (target_.user === 'presmcdo') ctx.strokeStyle = 'rgb(0,255,0)';
+        if (target_.user === 'wang72') ctx.strokeStyle = 'rgb(255,0,0)';
+        else if (target_.user === 'ddocimo') ctx.strokeStyle = 'rgb(0,255,0)';
         else ctx.strokeStyle = 'rgb(0,0,255)';
     } else ctx.strokeStyle = colorCluster(cluster_info[group].name);
     ctx.lineWidth = 3;
