@@ -272,7 +272,7 @@ d3.pcaTimeSpace = function () {
                     let target = e.target;
                     let x = xscale(solution[e.index][0]);
                     let y = yscale(solution[e.index][1]);
-                    // drawLeaderPlot(background_ctx,target,[x,y],false);
+                    drawLeaderPlot(background_ctx,target,[x,y],false);
                 });
             }
         }
