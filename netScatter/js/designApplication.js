@@ -206,7 +206,8 @@ class DesignApplication {
         let ctx = canvas.getContext('2d');
         // draw rectangle
         ctx.beginPath();
-        ctx.fillStyle = 'rgb(220,220,220)';
+        // ctx.fillStyle = 'rgb(220,220,220)';
+        ctx.fillStyle = 'rgb(255,255,255)';
         ctx.fillRect(plotPosition[0],plotPosition[1],plotSize[0],plotSize[1]);
         ctx.strokeStyle = 'rgb(0,0,0)';
         ctx.strokeRect(plotPosition[0],plotPosition[1],plotSize[0],plotSize[1]);
@@ -248,13 +249,13 @@ class DesignApplication {
                 let p = Geometry.LineEquation(x0,y0,x1,y1);
                 let arrowThickFactor = e.instance.length - 1;
                 let d = L/4 < 5 ? L/4 : 5;      // size of triangle in the arrow
-                d = d*(1+0.01*arrowThickFactor);
+                d = d*(1+0.02*arrowThickFactor);
                 let x2 = (x0-x1 > 0) ? x1+Math.abs(p[1])*d/Math.sqrt(p[0]*p[0]+p[1]*p[1]) : x1-Math.abs(p[1])*d/Math.sqrt(p[0]*p[0]+p[1]*p[1]);
                 let y2 = (y0-y1 > 0) ? y1+Math.abs(p[0])*d/Math.sqrt(p[0]*p[0]+p[1]*p[1]) : y1-Math.abs(p[0])*d/Math.sqrt(p[0]*p[0]+p[1]*p[1]);
-                let x3 = x2 + (y1-y2)/Math.sqrt(3);
-                let y3 = y2 - (x1-x2)/Math.sqrt(3);
-                let x4 = x2 - (y1-y2)/Math.sqrt(3);
-                let y4 = y2 + (x1-x2)/Math.sqrt(3);
+                let x3 = x2 + (y1-y2)/Math.sqrt(6);
+                let y3 = y2 - (x1-x2)/Math.sqrt(6);
+                let x4 = x2 - (y1-y2)/Math.sqrt(6);
+                let y4 = y2 + (x1-x2)/Math.sqrt(6);
                 let isOutlierL = false;
                 if (netSP.plots[index].outliers.length.length > 0) if (netSP.plots[index].outliers.length.findIndex(e_=>e_===i) !== -1) isOutlierL = true;
                 let isOutlierA = false;
@@ -270,7 +271,7 @@ class DesignApplication {
                 // else if (isOutlierA) ctx.strokeStyle = 'rgb(0,0,255)';
                 else ctx.strokeStyle = 'rgb(0,0,0)';
                 // else ctx.globalAlpha = 0.5;
-                ctx.lineWidth = 1 + 0.05*arrowThickFactor;
+                ctx.lineWidth = 0.5 + 0.1*arrowThickFactor;
                 ctx.stroke();
                 ctx.closePath();
                 ctx.beginPath();
@@ -324,17 +325,28 @@ class DesignApplication {
         }
         // draw radar chart
         netSP.metricName.forEach((e,i)=>{
+            ctx.beginPath();
+            ctx.globalAlpha = 0.1;
+            ctx.strokeStyle = 'rgb(0,0,0)';
+            ctx.moveTo(plotPosition[0],plotPosition[1]);
+            ctx.lineTo(plotPosition[0]+radius*Math.sin(i*alpha),plotPosition[1]-radius*Math.cos(i*alpha));
+            ctx.stroke();
+            ctx.lineWidth = 1;
+            ctx.globalAlpha = 1;
+            ctx.closePath();
             let r = radius*netSP.plots[index].metrics[e];
             ctx.beginPath();
             if (dataRadar2.length>0) {
                 let cluster = dataRadar2[index].cluster;
-                ctx.fillStyle = colorCluster(cluster_info[cluster].name);
-                ctx.strokeStyle = colorCluster(cluster_info[cluster].name);
+                // ctx.fillStyle = colorCluster(cluster_info[cluster].name);
+                ctx.fillStyle = 'rgb(62,62,62)';
+                // ctx.strokeStyle = colorCluster(cluster_info[cluster].name);
+                ctx.strokeStyle = 'rgb(62,62,62)';
             } else {
                 ctx.fillStyle = 'rgb(200,200,200)';
                 ctx.strokeStyle = 'rgb(200,200,200)';
             }
-            ctx.globalAlpha = 0.5;
+            // ctx.globalAlpha = 0.5;
             ctx.moveTo(plotPosition[0],plotPosition[1]);
             ctx.lineTo(plotPosition[0]+r*Math.sin(i*alpha-alpha/4),plotPosition[1]-r*Math.cos(i*alpha-alpha/4));
             ctx.lineTo(plotPosition[0]+r*Math.sin(i*alpha+alpha/4),plotPosition[1]-r*Math.cos(i*alpha+alpha/4));
@@ -343,25 +355,19 @@ class DesignApplication {
             ctx.fill();
             ctx.globalAlpha = 1;
             ctx.closePath();
-            ctx.beginPath();
-            ctx.strokeStyle = 'rgb(255,255,255)';
-            ctx.moveTo(plotPosition[0],plotPosition[1]);
-            ctx.lineTo(plotPosition[0]+radius*Math.sin(i*alpha),plotPosition[1]-radius*Math.cos(i*alpha));
-            ctx.stroke();
-            ctx.lineWidth = 1;
-            ctx.closePath();
         });
         // draw notations
         if (notation) {
             ctx.font = '9px Arial';
             netSP.metricName.forEach((e,i)=>{
+                let r = (i===3 || i=== 4 || i===5) ? radius + 7 : radius+5;
                 ctx.beginPath();
                 ctx.globalAlpha = 1;
                 ctx.fillStyle = 'rgb(0,0,0)';
                 if (i < netSP.metricName.length/2) {
                     ctx.textAlign = 'left';
                 } else ctx.textAlign = 'right';
-                ctx.fillText(netSP.metricName[i],plotPosition[0]+(radius+5)*Math.sin(i*alpha),plotPosition[1]-(radius+5)*Math.cos(i*alpha));
+                ctx.fillText(netSP.metricName[i],plotPosition[0]+r*Math.sin(i*alpha),plotPosition[1]-r*Math.cos(i*alpha));
                 ctx.textAlign = 'left';
                 ctx.closePath();
             });

@@ -95,4 +95,8 @@ let designVariable = {
     }
 }
 
-let timeMeasure = [0,0,0,0,0];
+let timeMeasure = [0,0,0,0,0,0,0,0];
+
+let paper = {
+    data: [],
+}

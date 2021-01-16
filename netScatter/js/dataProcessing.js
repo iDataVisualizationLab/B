@@ -401,7 +401,10 @@ class DataProcessing {
     // Get new values of #employees of each sector at every time point
     // format of dataRef: object of instance -> variable -> time series
     static NormalizationNetScatterPlot (dataRef) {
-        if (controlVariable.selectedData === 'covid') {
+        // measure time
+        timeMeasure[0] = performance.now();
+
+        if (controlVariable.selectedData === 'covid') {  // for covid data in teaser
             for (let i in dataRef) {
                 for (let v in dataRef[i]) {
                     // let m = (dataRef[i][v][netSP.timeInfo.length-2] - dataRef[i][v][0])/(netSP.timeInfo.length-1);
@@ -420,7 +423,7 @@ class DataProcessing {
                 }
             }
         }
-        else if (controlVariable.normalization==='similarUnit') {
+        else if (controlVariable.normalization==='similarUnit') {   // for my proposed normalization
             // Get mean of labor force
             for (let i in dataRef) {
                 let meanLF = 0;
@@ -440,7 +443,7 @@ class DataProcessing {
                     }
                 }
             }
-        } else if (controlVariable.normalization==='individual') {
+        } else if (controlVariable.normalization==='individual') {  // for each time series
             for (let i in dataRef) {
                 for (let v in dataRef[i]) {
                     let tS = dataRef[i][v].filter(e=>typeof (e)==='number');
@@ -452,6 +455,9 @@ class DataProcessing {
                 }
             }
         }
+
+        // measure time
+        timeMeasure[1] = performance.now();
     }
 
     // scale time series
@@ -508,7 +514,7 @@ class DataProcessing {
     // Adaptive binning
     static AdaptiveBinning() {
         // time measure
-        timeMeasure[1] = performance.now();
+        timeMeasure[2] = performance.now();
 
         let startBinSize = 40;
         let minNum = netSP.minNumberArrows;
@@ -579,7 +585,7 @@ class DataProcessing {
             }
         }
         // time measure
-        timeMeasure[2] = performance.now();
+        timeMeasure[3] = performance.now();
     }
 
 }
