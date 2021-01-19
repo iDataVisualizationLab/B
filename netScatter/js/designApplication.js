@@ -256,6 +256,9 @@ class DesignApplication {
                 let y3 = y2 - (x1-x2)/Math.sqrt(6);
                 let x4 = x2 - (y1-y2)/Math.sqrt(6);
                 let y4 = y2 + (x1-x2)/Math.sqrt(6);
+                // for paper
+                // let x5 = (x0-x1 > 0) ? x1+Math.abs(p[1])*2/Math.sqrt(p[0]*p[0]+p[1]*p[1]) : x1-Math.abs(p[1])*2/Math.sqrt(p[0]*p[0]+p[1]*p[1]);
+                // let y5 = (y0-y1 > 0) ? y1+Math.abs(p[0])*2/Math.sqrt(p[0]*p[0]+p[1]*p[1]) : y1-Math.abs(p[0])*2/Math.sqrt(p[0]*p[0]+p[1]*p[1]);
                 let isOutlierL = false;
                 if (netSP.plots[index].outliers.length.length > 0) if (netSP.plots[index].outliers.length.findIndex(e_=>e_===i) !== -1) isOutlierL = true;
                 let isOutlierA = false;
@@ -276,9 +279,11 @@ class DesignApplication {
                 ctx.closePath();
                 ctx.beginPath();
                 ctx.moveTo(x1,y1);
+                // ctx.moveTo(x5,y5);  // paper
                 ctx.lineTo(x3,y3);
                 ctx.lineTo(x4,y4);
                 ctx.lineTo(x1,y1);
+                // ctx.lineTo(x5,y5);  // paper
                 if (iCheck) ctx.fillStyle = 'rgb(255,0,0)';
                 // if (iCheck) ctx.globalAlpha = 1;
                 // else if (isOutlierL) ctx.fillStyle = 'rgb(0,255,0)';
@@ -326,8 +331,8 @@ class DesignApplication {
         // draw radar chart
         netSP.metricName.forEach((e,i)=>{
             ctx.beginPath();
-            ctx.globalAlpha = 0.1;
-            ctx.strokeStyle = 'rgb(0,0,0)';
+            ctx.globalAlpha = 1;
+            ctx.strokeStyle = 'rgb(255,255,255)';
             ctx.moveTo(plotPosition[0],plotPosition[1]);
             ctx.lineTo(plotPosition[0]+radius*Math.sin(i*alpha),plotPosition[1]-radius*Math.cos(i*alpha));
             ctx.stroke();
@@ -338,15 +343,15 @@ class DesignApplication {
             ctx.beginPath();
             if (dataRadar2.length>0) {
                 let cluster = dataRadar2[index].cluster;
-                // ctx.fillStyle = colorCluster(cluster_info[cluster].name);
-                ctx.fillStyle = 'rgb(62,62,62)';
-                // ctx.strokeStyle = colorCluster(cluster_info[cluster].name);
-                ctx.strokeStyle = 'rgb(62,62,62)';
+                ctx.fillStyle = colorCluster(cluster_info[cluster].name);
+                // ctx.fillStyle = 'rgb(62,62,62)';
+                ctx.strokeStyle = colorCluster(cluster_info[cluster].name);
+                // ctx.strokeStyle = 'rgb(62,62,62)';
             } else {
                 ctx.fillStyle = 'rgb(200,200,200)';
                 ctx.strokeStyle = 'rgb(200,200,200)';
             }
-            // ctx.globalAlpha = 0.5;
+            ctx.globalAlpha = 0.5;
             ctx.moveTo(plotPosition[0],plotPosition[1]);
             ctx.lineTo(plotPosition[0]+r*Math.sin(i*alpha-alpha/4),plotPosition[1]-r*Math.cos(i*alpha-alpha/4));
             ctx.lineTo(plotPosition[0]+r*Math.sin(i*alpha+alpha/4),plotPosition[1]-r*Math.cos(i*alpha+alpha/4));
