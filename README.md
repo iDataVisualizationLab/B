@@ -12,4 +12,4 @@
 
 ## Temporal flow platform
 
-[Demo Link](https://idatavisualizationlab.github.io/B/TemporalFlow/index.html
+[Demo Link](https://idatavisualizationlab.github.io/B/TemporalFlow/index.html)
