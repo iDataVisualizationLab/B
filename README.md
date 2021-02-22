@@ -9,7 +9,3 @@
 ## NetScatter
 
 [Demo Link](https://idatavisualizationlab.github.io/B/netScatter/index.html)
-
-## Temporal flow platform
-
-[Demo Link](https://idatavisualizationlab.github.io/B/TemporalFlow/index.html)
