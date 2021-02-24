@@ -24,53 +24,11 @@ class Management {
             // DataProcessing.GetZScore(data);
             // get relative change
             // DataProcessing.GetRelativeChange(data);
+
             // Normalize the net scatter plot
             DataProcessing.NormalizationNetScatterPlot(netSP.data);
+
             // DataProcessing.Z_Normalization2D(netSP.data);
-
-            // // compute max score for paper
-            // for (let i = 1; i < netSP.timeInfo.length; i++) {
-            //     let t1 = 0;
-            //     let t2 = t1 + i;
-            //     netSP.step = i;
-            //
-            //     paper.data[i-1] = {
-            //         'Outlying vector': -Infinity,
-            //         'Outlying length': -Infinity,
-            //         'Outlying angle': -Infinity,
-            //         'Correlation': -Infinity,
-            //         'Entropy': -Infinity,
-            //         'Intersection': -Infinity,
-            //         'Translation': -Infinity,
-            //         'Homogeneous': -Infinity,
-            //     };
-            //
-            //     while (t2 < netSP.timeInfo.length) {
-            //         // encode the plots
-            //         EncodePlots.NetScatterPlot();   // start here to record data
-            //         // attributes for every plot
-            //         Management.FormPlots();
-            //         // store data point to every net scatter plot
-            //         DataProcessing.NetScatterPlot(netSP.data);
-            //         // Store bins to NetSP.plot[index].arrows and points
-            //         DataProcessing.AdaptiveBinning();
-            //         // Compute quantities and metrics for every plot
-            //         Management.ComputeMetrics(i);
-            //
-            //         t1 += 1;
-            //         t2 = t1 + i;
-            //     }
-            // }
-            //
-            // // save max score to file
-            // let csv = JSON.stringify(paper.data);
-            //
-            // let hiddenElement = document.createElement('a');
-            // hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
-            // hiddenElement.target = '_blank';
-            // hiddenElement.download = 'employment_result.json';
-            // hiddenElement.click();
-
             // encode the plots
             EncodePlots.NetScatterPlot();   // start here to record data
             // attributes for every plot
@@ -84,8 +42,51 @@ class Management {
 
             // clustering and draw
             Management.ClusterAndDraw();
-
             Management.Visualization();
+
+            // // write data to myData
+            // let myData = {};
+            // let V = netSP.variableInfo.length;
+            // for (let i = 0; i < V-1; i++) {
+            //     for (let j = i+1; j < V; j++) {
+            //         let myP = netSP.variableInfo[i][1] + ' vs. ' + netSP.variableInfo[j][1];
+            //         myData[myP] = {};
+            //         for (let t = 0; t < netSP.timeInfo.length; t++) {
+            //             myData[myP][netSP.timeInfo[t]] = {};
+            //             if (t > 0) {
+            //                 let index = netSP.encode.findIndex(e=>e[0]===netSP.variableInfo[i][1] && e[1]===netSP.variableInfo[j][1] && e[2]===netSP.timeInfo[t]);
+            //                 if (index!==-1) {
+            //                     for (let v = 0; v < netSP.plots[index].arrows.length; v++) {
+            //                         let nameIndex = netSP.plots[index].arrows[v].instance[0];
+            //                         let name = netSP.instanceInfo[nameIndex][1];
+            //                         let x1 = netSP.plots[index].arrows[v].end[0];
+            //                         let y1 = netSP.plots[index].arrows[v].end[1];
+            //                         myData[myP][netSP.timeInfo[t]][name] = [x1,y1];
+            //                     }
+            //                 }
+            //             } else {
+            //                 let index = netSP.encode.findIndex(e=>e[0]===netSP.variableInfo[i][1] && e[1]===netSP.variableInfo[j][1] && e[2]===netSP.timeInfo[t+1]);
+            //                 if (index!==-1) {
+            //                     for (let v = 0; v < netSP.plots[index].arrows.length; v++) {
+            //                         let nameIndex = netSP.plots[index].arrows[v].instance[0];
+            //                         let name = netSP.instanceInfo[nameIndex][1];
+            //                         let x0 = netSP.plots[index].arrows[v].start[0];
+            //                         let y0 = netSP.plots[index].arrows[v].start[1];
+            //                         myData[myP][netSP.timeInfo[t]][name] = [x0,y0];
+            //                     }
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
+            //
+            // // save max score to file
+            // let csv = JSON.stringify(myData);
+            // let hiddenElement = document.createElement('a');
+            // hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+            // hiddenElement.target = '_blank';
+            // hiddenElement.download = 'Life_expectancy_tf.json';
+            // hiddenElement.click();
 
             codeManager.isComputing = false;
             codeManager.needComputation = false;

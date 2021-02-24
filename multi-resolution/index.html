@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Temporal Flow</title>
+
+    <style>
+        #draggable { width: 150px; height: 150px; padding: 0.5em; }
+    </style>
+
+    <!--  Library here  -->
+    <script src="lib/d3/d3.min.js"></script>
+    <!--    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">-->
+    <!--    <link rel="stylesheet" href="/resources/demos/style.css">-->
+    <script src="lib/jquery/jquery-1.12.4.js"></script>
+    <script src="lib/jquery/jquery-ui.js"></script>
+    <script type="text/javascript" src="lib/sizeof.compressed.js"></script>
+
+
+    <!--  style CSS here  -->
+    <style>
+        #controlPanel {
+            position: absolute;
+            padding: 5px;
+            border-radius: 5px;
+            z-index: 120;
+            top: 10px;
+            left: 3px;
+            width: 390px;
+            height: 120px;
+            background: rgba(204,204,204,1);
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        #mainInterface {
+            position: absolute;
+            top: 0px;
+            left: 450px;
+            background: white;
+        }
+        #plotsDiv {
+            position: absolute;
+            top: 150px;
+            left: 3px;
+            background: rgba(204,204,204,0);
+        }
+        #legendDiv {
+            position: absolute;
+            top: 0px;
+            left: 400px;
+            background: white;
+        }
+    </style>
+
+    <script>
+        $( function() {
+            $("#controlPanel").draggable();
+            $('#plotsDiv').draggable();
+        });
+    </script>
+
+</head>
+<body>
+
+<!-- control panel -->
+<div id="controlPanel" class="ui-widget-content">
+    <label for="dataset">Select dataset</label>
+    <br>
+    <select id="dataset">
+        <option selected value="employment">US employment dataset</option>
+        <option value="HPCC">HPCC dataset</option>
+<!--        <option value="stock">SP500 dataset</option>-->
+        <option value="death-birth">Death rate vs. Birth rate</option>
+        <option value="life-expectancy">Male vs. Female life expectancy</option>
+    </select>
+    <br>
+    <label for="metric">Select metric</label>
+    <br>
+    <select id="metric"></select>
+    <br>
+    <label for="plot">Select pair of variables</label>
+    <br>
+    <select id="plot"></select>
+</div>
+
+<!-- legends -->
+<div id="legendDiv">
+    <svg id="legend" style="position: relative; top: 0px; left: 10px;"></svg>
+</div>
+
+<!-- main interface -->
+<div id="mainInterface">
+    <svg id="timeline" style="position:relative; top: 10px; left: 0px;"></svg>
+    <svg id="interface" style="position: relative; top: 10px; left: 0px;"></svg>
+</div>
+
+<!-- highlighted plot on the left-hand-side -->
+<div id="plotsDiv">
+    <svg id="plots"></svg>
+</div>
+
+
+<!-- code js here -->
+<script src="src/globalVariable.js"></script>
+<script src="src/geometry.js"></script>
+<script src="src/graph.js"></script>
+<script src="src/read.js"></script>
+<script src="src/control.js"></script>
+<script src="src/computation.js"></script>
+<script src="src/visualization.js"></script>
+<script src="src/interaction.js"></script>
+<script src="src/main.js"></script>
+
+</body>
+</html>

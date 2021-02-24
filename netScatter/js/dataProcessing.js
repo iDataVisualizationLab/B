@@ -320,6 +320,7 @@ class DataProcessing {
                 y1: e.y1,
             }
         });
+
         let dataX = [], dataY = [];
         dataX = plotData.map(e=>[e.x0,e.x1]).flat();
         let maxValueX = Math.max(...dataX);
@@ -335,6 +336,7 @@ class DataProcessing {
             e.x1 = rangeX !== 0 ? (e.x1-minValueX)/rangeX : 0.5;
             e.y1 = rangeY !== 0 ? (e.y1-minValueY)/rangeY : 0.5;
         });
+
         return myData;
     }
 
