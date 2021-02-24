@@ -20,31 +20,31 @@ d3.select('#dataset').on('change',function (){
     switch (selectedData) {
         case 'employment':
             ds = [1,2,3,4,5,6,7,8,9,10,11,12];
-            selectedPlot = 'Total Nonfarm vs.Total Private';
+            selectedPlot = 'Total Nonfarm vs. Total Private';
             timelineStep = 12;
             timelineText = 1;
             break;
         case 'HPCC':
             ds = [1,2,3,4,5,6];
-            selectedPlot = 'CPU1 Temp vs.CPU2 Temp';
+            selectedPlot = 'CPU1 Temp vs. CPU2 Temp';
             timelineStep = 6;
             timelineText = 'full';
             break;
         case 'stock':
             ds = [1,2,3,4,5,6,7,8,9,10,11,12];
-            selectedPlot = 'Open vs.High';
+            selectedPlot = 'Open vs. High';
             timelineStep = 20;
             timelineText = 'full';
             break;
         case 'death-birth':
-            ds = [1,2,3,4,5,6,7,8,9,10,11,12];
-            selectedPlot = 'Death rate vs.Birth rate';
+            ds = [1,2,3,4,5,6,7,8,9,10];
+            selectedPlot = 'Death rate vs. Birth rate';
             timelineStep = 10;
             timelineText = 'full';
             break;
         case 'life-expectancy':
-            ds = [1,2,3,4,5,6,7,8,9,10,11,12];
-            selectedPlot = 'male vs.female';
+            ds = [1,2,3,4,5,6,7,8,9,10];
+            selectedPlot = 'male vs. female';
             timelineStep = 10;
             timelineText = 'full';
             break;
