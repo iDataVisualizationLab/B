@@ -10,6 +10,6 @@
 
 [Demo Link](https://idatavisualizationlab.github.io/B/netScatter/index.html)
 
-## Temporal flow platform
+## Multi-resolution for vector plots
 
-[Demo Link](https://idatavisualizationlab.github.io/B/TemporalFlow/index.html)
+[Demo Link](https://idatavisualizationlab.github.io/B/multi-resolution/index.html)
