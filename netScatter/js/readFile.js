@@ -48,11 +48,13 @@ class ReadFile {
                     variableCode = e['Type'];
                     break;
             }
-            let instance = netSP.instanceInfo.find(e_=>e_[0]===instanceCode)[1];
-            let variable = netSP.variableInfo.find(e_=>e_[0]===variableCode)[1];
-            netSP.timeInfo.forEach((e_,i_)=>{
-                data[instance][variable][i_] = isNaN(parseFloat(e[e_])) ? 'No value' : parseFloat(e[e_]);
-            });
+            let instance = netSP.instanceInfo.find(e_=>e_[0]===instanceCode)??'no';
+            let variable = netSP.variableInfo.find(e_=>e_[0]===variableCode)??'no';
+            if (instance!=='no'&&variable!=='no') {
+                netSP.timeInfo.forEach((e_,i_)=>{
+                    data[instance[1]][variable[1]][i_] = isNaN(parseFloat(e[e_])) ? 'No value' : parseFloat(e[e_]);
+                });
+            }
         });
         return data;
     }

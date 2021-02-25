@@ -39,6 +39,6 @@ let cMouse = {
     y: undefined,
 }
 const lR = 3;
-const scaleFactor = 20;
+const scaleFactor = 12;
 let clicked = false;
 let highlighted = false;

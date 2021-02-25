@@ -53,12 +53,13 @@ function drawInterface (lensing) {
         .append('path')
         .attr('class','lineChart')
         .datum(score[0])
-        .attr('fill',myColor[0])
-        .attr('d',d3.area()
+        .attr('fill','none')
+        .attr('stroke','black')
+        .attr('stroke-width',2)
+        .attr('d',d3.line()
             .curve(d3.curveNatural)
             .x((e,t)=>x[t+ds[0]])
-            .y0(chartHeight)
-            .y1((e)=> chartHeight*(1-e)));
+            .y((e)=> chartHeight*(1-e)));
     for (let r = 1; r < ds.length; r++) {
         d3.select('#interface')
             .append('clipPath')
