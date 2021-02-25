@@ -44,49 +44,49 @@ class Management {
             Management.ClusterAndDraw();
             Management.Visualization();
 
-            // write data to myData
-            let myData = {};
-            let V = netSP.variableInfo.length;
-            for (let i = 0; i < V-1; i++) {
-                for (let j = i+1; j < V; j++) {
-                    let myP = netSP.variableInfo[i][1] + ' vs. ' + netSP.variableInfo[j][1];
-                    myData[myP] = {};
-                    for (let t = 0; t < netSP.timeInfo.length; t++) {
-                        myData[myP][netSP.timeInfo[t]] = {};
-                        if (t > 0) {
-                            let index = netSP.encode.findIndex(e=>e[0]===netSP.variableInfo[i][1] && e[1]===netSP.variableInfo[j][1] && e[2]===netSP.timeInfo[t]);
-                            if (index!==-1) {
-                                for (let v = 0; v < netSP.plots[index].arrows.length; v++) {
-                                    let nameIndex = netSP.plots[index].arrows[v].instance[0];
-                                    let name = netSP.instanceInfo[nameIndex][1];
-                                    let x1 = netSP.plots[index].arrows[v].end[0];
-                                    let y1 = netSP.plots[index].arrows[v].end[1];
-                                    myData[myP][netSP.timeInfo[t]][name] = [x1,y1];
-                                }
-                            }
-                        } else {
-                            let index = netSP.encode.findIndex(e=>e[0]===netSP.variableInfo[i][1] && e[1]===netSP.variableInfo[j][1] && e[2]===netSP.timeInfo[t+1]);
-                            if (index!==-1) {
-                                for (let v = 0; v < netSP.plots[index].arrows.length; v++) {
-                                    let nameIndex = netSP.plots[index].arrows[v].instance[0];
-                                    let name = netSP.instanceInfo[nameIndex][1];
-                                    let x0 = netSP.plots[index].arrows[v].start[0];
-                                    let y0 = netSP.plots[index].arrows[v].start[1];
-                                    myData[myP][netSP.timeInfo[t]][name] = [x0,y0];
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // save max score to file
-            let csv = JSON.stringify(myData);
-            let hiddenElement = document.createElement('a');
-            hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
-            hiddenElement.target = '_blank';
-            hiddenElement.download = 'Life_expectancy_tf.json';
-            hiddenElement.click();
+            // // write data to myData
+            // let myData = {};
+            // let V = netSP.variableInfo.length;
+            // for (let i = 0; i < V-1; i++) {
+            //     for (let j = i+1; j < V; j++) {
+            //         let myP = netSP.variableInfo[i][1] + ' vs. ' + netSP.variableInfo[j][1];
+            //         myData[myP] = {};
+            //         for (let t = 0; t < netSP.timeInfo.length; t++) {
+            //             myData[myP][netSP.timeInfo[t]] = {};
+            //             if (t > 0) {
+            //                 let index = netSP.encode.findIndex(e=>e[0]===netSP.variableInfo[i][1] && e[1]===netSP.variableInfo[j][1] && e[2]===netSP.timeInfo[t]);
+            //                 if (index!==-1) {
+            //                     for (let v = 0; v < netSP.plots[index].arrows.length; v++) {
+            //                         let nameIndex = netSP.plots[index].arrows[v].instance[0];
+            //                         let name = netSP.instanceInfo[nameIndex][1];
+            //                         let x1 = netSP.plots[index].arrows[v].end[0];
+            //                         let y1 = netSP.plots[index].arrows[v].end[1];
+            //                         myData[myP][netSP.timeInfo[t]][name] = [x1,y1];
+            //                     }
+            //                 }
+            //             } else {
+            //                 let index = netSP.encode.findIndex(e=>e[0]===netSP.variableInfo[i][1] && e[1]===netSP.variableInfo[j][1] && e[2]===netSP.timeInfo[t+1]);
+            //                 if (index!==-1) {
+            //                     for (let v = 0; v < netSP.plots[index].arrows.length; v++) {
+            //                         let nameIndex = netSP.plots[index].arrows[v].instance[0];
+            //                         let name = netSP.instanceInfo[nameIndex][1];
+            //                         let x0 = netSP.plots[index].arrows[v].start[0];
+            //                         let y0 = netSP.plots[index].arrows[v].start[1];
+            //                         myData[myP][netSP.timeInfo[t]][name] = [x0,y0];
+            //                     }
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
+            //
+            // // save max score to file
+            // let csv = JSON.stringify(myData);
+            // let hiddenElement = document.createElement('a');
+            // hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+            // hiddenElement.target = '_blank';
+            // hiddenElement.download = 'Life_expectancy_tf.json';
+            // hiddenElement.click();
 
             codeManager.isComputing = false;
             codeManager.needComputation = false;
