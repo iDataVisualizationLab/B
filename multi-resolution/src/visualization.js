@@ -127,7 +127,8 @@ function drawInterface (lensing) {
                 let y1 = chartHeight*cR+chartHeight*(1-score[cR][t-ds[cR]]);
                 let text1 = tKey[t-ds[cR]]+'-'+tKey[t];
                 let vectors1 = buildPlot(t,ds[cR]);
-                drawNetScatter('interface','netScatterPlot','plot-0',x1,y1,large-2*pPadding,text1,vectors1,false,false);
+                let mySize = (large-2*pPadding > 80) ? 80 : large-2*pPadding;
+                drawNetScatter('interface','netScatterPlot','plot-0',x1,y1,mySize,text1,vectors1,false,false);
             }
         }
     }
@@ -401,7 +402,7 @@ function highlightVector (svgID,itsClass,x,y,text) {
     d3.select('#'+svgID)
         .append('text')
         .attr('x',x)
-        .attr('y',y)
+        .attr('y',y-5)
         .attr('class',itsClass)
         .style('fill','red')
         .style('font','10px Time New Roman')

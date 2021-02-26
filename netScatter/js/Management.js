@@ -25,8 +25,8 @@ class Management {
             // get relative change
             // DataProcessing.GetRelativeChange(data);
 
-            // // Normalize the net scatter plot
-            // DataProcessing.NormalizationNetScatterPlot(netSP.data);
+            // Normalize the net scatter plot
+            DataProcessing.NormalizationNetScatterPlot(netSP.data);
 
             // DataProcessing.Z_Normalization2D(netSP.data);
             // encode the plots
@@ -44,66 +44,66 @@ class Management {
             Management.ClusterAndDraw();
             Management.Visualization();
 
-            // write data to myData
-            let myData = {};
-            let myXArr = [], myYArr = [];
-            let V = netSP.variableInfo.length;
-            for (let i = 0; i < V-1; i++) {
-                for (let j = i+1; j < V; j++) {
-                    let myP = netSP.variableInfo[i][1] + ' vs. ' + netSP.variableInfo[j][1];
-                    myData[myP] = {};
-                    for (let t = 0; t < netSP.timeInfo.length; t++) {
-                        myData[myP][netSP.timeInfo[t]] = {};
-                        if (t > 0) {
-                            let index = netSP.encode.findIndex(e=>e[0]===netSP.variableInfo[i][1] && e[1]===netSP.variableInfo[j][1] && e[2]===netSP.timeInfo[t]);
-                            if (index!==-1) {
-                                for (let v = 0; v < netSP.plots[index].arrows.length; v++) {
-                                    let nameIndex = netSP.plots[index].arrows[v].instance[0];
-                                    let name = netSP.instanceInfo[nameIndex][1];
-                                    let x1 = netSP.plots[index].arrows[v].end[0];
-                                    let y1 = netSP.plots[index].arrows[v].end[1];
-                                    myData[myP][netSP.timeInfo[t]][name] = [x1,y1];
-                                    myXArr.push(x1);
-                                    myYArr.push(y1);
-                                }
-                            }
-                        } else {
-                            let index = netSP.encode.findIndex(e=>e[0]===netSP.variableInfo[i][1] && e[1]===netSP.variableInfo[j][1] && e[2]===netSP.timeInfo[t+1]);
-                            if (index!==-1) {
-                                for (let v = 0; v < netSP.plots[index].arrows.length; v++) {
-                                    let nameIndex = netSP.plots[index].arrows[v].instance[0];
-                                    let name = netSP.instanceInfo[nameIndex][1];
-                                    let x0 = netSP.plots[index].arrows[v].start[0];
-                                    let y0 = netSP.plots[index].arrows[v].start[1];
-                                    myData[myP][netSP.timeInfo[t]][name] = [x0,y0];
-                                    myYArr.push(y0);
-                                    myXArr.push(x0);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            let myXMax = Math.max(...myXArr);
-            let myXMin = Math.min(...myXArr);
-            let myYMax = Math.max(...myYArr);
-            let myYMin = Math.min(...myYArr);
-            for (let p in myData) {
-                for (let t in myData[p]) {
-                    for (let v in myData[p][t]) {
-                        myData[p][t][v][0] = (myData[p][t][v][0] - myXMin)/(myXMax-myXMin);
-                        myData[p][t][v][1] = (myData[p][t][v][1] - myYMin)/(myYMax-myYMin);
-                    }
-                }
-            }
-
-            // save max score to file
-            let csv = JSON.stringify(myData);
-            let hiddenElement = document.createElement('a');
-            hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
-            hiddenElement.target = '_blank';
-            hiddenElement.download = 'death_birth_tf.json';
-            hiddenElement.click();
+            // // write data to myData
+            // let myData = {};
+            // let myXArr = [], myYArr = [];
+            // let V = netSP.variableInfo.length;
+            // for (let i = 0; i < V-1; i++) {
+            //     for (let j = i+1; j < V; j++) {
+            //         let myP = netSP.variableInfo[i][1] + ' vs. ' + netSP.variableInfo[j][1];
+            //         myData[myP] = {};
+            //         for (let t = 0; t < netSP.timeInfo.length; t++) {
+            //             myData[myP][netSP.timeInfo[t]] = {};
+            //             if (t > 0) {
+            //                 let index = netSP.encode.findIndex(e=>e[0]===netSP.variableInfo[i][1] && e[1]===netSP.variableInfo[j][1] && e[2]===netSP.timeInfo[t]);
+            //                 if (index!==-1) {
+            //                     for (let v = 0; v < netSP.plots[index].arrows.length; v++) {
+            //                         let nameIndex = netSP.plots[index].arrows[v].instance[0];
+            //                         let name = netSP.plots[index].data[nameIndex].name;
+            //                         let x1 = netSP.plots[index].arrows[v].end[0];
+            //                         let y1 = netSP.plots[index].arrows[v].end[1];
+            //                         myData[myP][netSP.timeInfo[t]][name] = [x1,y1];
+            //                         myXArr.push(x1);
+            //                         myYArr.push(y1);
+            //                     }
+            //                 }
+            //             } else {
+            //                 let index = netSP.encode.findIndex(e=>e[0]===netSP.variableInfo[i][1] && e[1]===netSP.variableInfo[j][1] && e[2]===netSP.timeInfo[t+1]);
+            //                 if (index!==-1) {
+            //                     for (let v = 0; v < netSP.plots[index].arrows.length; v++) {
+            //                         let nameIndex = netSP.plots[index].arrows[v].instance[0];
+            //                         let name = netSP.plots[index].data[nameIndex].name;
+            //                         let x0 = netSP.plots[index].arrows[v].start[0];
+            //                         let y0 = netSP.plots[index].arrows[v].start[1];
+            //                         myData[myP][netSP.timeInfo[t]][name] = [x0,y0];
+            //                         myYArr.push(y0);
+            //                         myXArr.push(x0);
+            //                     }
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
+            // let myXMax = Math.max(...myXArr);
+            // let myXMin = Math.min(...myXArr);
+            // let myYMax = Math.max(...myYArr);
+            // let myYMin = Math.min(...myYArr);
+            // for (let p in myData) {
+            //     for (let t in myData[p]) {
+            //         for (let v in myData[p][t]) {
+            //             myData[p][t][v][0] = (myData[p][t][v][0] - myXMin)/(myXMax-myXMin);
+            //             myData[p][t][v][1] = (myData[p][t][v][1] - myYMin)/(myYMax-myYMin);
+            //         }
+            //     }
+            // }
+            //
+            // // save max score to file
+            // let csv = JSON.stringify(myData);
+            // let hiddenElement = document.createElement('a');
+            // hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+            // hiddenElement.target = '_blank';
+            // hiddenElement.download = 'Life_expectancy_tf.json';
+            // hiddenElement.click();
 
             codeManager.isComputing = false;
             codeManager.needComputation = false;

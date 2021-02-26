@@ -53,7 +53,7 @@ let codeManager = {
 
 let controlVariable = {
     selectedMetric: 'Translation',
-    selectedData: 'death_rate',
+    selectedData: 'HPCC',
     visualizing: 'LMH',
     interaction: {
         instance: 'noOption',

@@ -16,6 +16,7 @@ function plotDropDown () {
 d3.select('#dataset').on('change',function (){
     selectedData = this.value;
     clicked = false;
+    highlighted = false;
     // modify parameters
     switch (selectedData) {
         case 'employment':
@@ -59,6 +60,8 @@ d3.select('#metric').on('change',function (){
     computations();
     drawInterface(false);
     noPlot();
+    clicked = false;
+    highlighted = false;
 });
 
 // SELECTION OF PLOT
@@ -67,4 +70,6 @@ d3.select('#plot').on('change',function (){
     computations();
     drawInterface(false);
     noPlot();
+    clicked = false;
+    highlighted = false;
 });
