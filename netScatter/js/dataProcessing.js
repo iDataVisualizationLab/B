@@ -321,21 +321,21 @@ class DataProcessing {
             }
         });
 
-        let dataX = [], dataY = [];
-        dataX = plotData.map(e=>[e.x0,e.x1]).flat();
-        let maxValueX = Math.max(...dataX);
-        let minValueX = Math.min(...dataX);
-        let rangeX = maxValueX - minValueX;
-        dataY = plotData.map(e=>[e.y0,e.y1]).flat();
-        let maxValueY = Math.max(...dataY);
-        let minValueY = Math.min(...dataY);
-        let rangeY = maxValueY - minValueY;
-        myData.forEach(e=>{
-            e.x0 = rangeX !== 0 ? (e.x0-minValueX)/rangeX : 0.5;
-            e.y0 = rangeY !== 0 ? (e.y0-minValueY)/rangeY : 0.5;
-            e.x1 = rangeX !== 0 ? (e.x1-minValueX)/rangeX : 0.5;
-            e.y1 = rangeY !== 0 ? (e.y1-minValueY)/rangeY : 0.5;
-        });
+        // let dataX = [], dataY = [];
+        // dataX = plotData.map(e=>[e.x0,e.x1]).flat();
+        // let maxValueX = Math.max(...dataX);
+        // let minValueX = Math.min(...dataX);
+        // let rangeX = maxValueX - minValueX;
+        // dataY = plotData.map(e=>[e.y0,e.y1]).flat();
+        // let maxValueY = Math.max(...dataY);
+        // let minValueY = Math.min(...dataY);
+        // let rangeY = maxValueY - minValueY;
+        // myData.forEach(e=>{
+        //     e.x0 = rangeX !== 0 ? (e.x0-minValueX)/rangeX : 0.5;
+        //     e.y0 = rangeY !== 0 ? (e.y0-minValueY)/rangeY : 0.5;
+        //     e.x1 = rangeX !== 0 ? (e.x1-minValueX)/rangeX : 0.5;
+        //     e.y1 = rangeY !== 0 ? (e.y1-minValueY)/rangeY : 0.5;
+        // });
 
         return myData;
     }
