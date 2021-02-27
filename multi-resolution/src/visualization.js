@@ -247,7 +247,7 @@ function drawNetScatter (svgID,plotClass,plotID,x,y,size,notation,vectors,highli
         //     .attr('cy',y0)
         //     .attr('r',3)
         //     .attr('stroke','none')
-        //     .attr('fill','blue');
+        //     .attr('fill','green');
         // d3.select('#'+svgID)
         //     .append('circle')
         //     .attr('class',plotClass)

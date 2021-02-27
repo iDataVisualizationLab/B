@@ -35,8 +35,10 @@ class Management {
             Management.FormPlots();
             // store data point to every net scatter plot
             DataProcessing.NetScatterPlot(netSP.data);
+
             // Store bins to NetSP.plot[index].arrows and points
             DataProcessing.AdaptiveBinning();
+
             // Compute quantities and metrics for every plot
             Management.ComputeMetrics();
 
@@ -84,25 +86,25 @@ class Management {
             //         }
             //     }
             // }
-            // let myXMax = Math.max(...myXArr);
-            // let myXMin = Math.min(...myXArr);
-            // let myYMax = Math.max(...myYArr);
-            // let myYMin = Math.min(...myYArr);
-            // for (let p in myData) {
-            //     for (let t in myData[p]) {
-            //         for (let v in myData[p][t]) {
-            //             myData[p][t][v][0] = (myData[p][t][v][0] - myXMin)/(myXMax-myXMin);
-            //             myData[p][t][v][1] = (myData[p][t][v][1] - myYMin)/(myYMax-myYMin);
-            //         }
-            //     }
-            // }
+            // // let myXMax = Math.max(...myXArr);
+            // // let myXMin = Math.min(...myXArr);
+            // // let myYMax = Math.max(...myYArr);
+            // // let myYMin = Math.min(...myYArr);
+            // // for (let p in myData) {
+            // //     for (let t in myData[p]) {
+            // //         for (let v in myData[p][t]) {
+            // //             myData[p][t][v][0] = (myData[p][t][v][0] - myXMin)/(myXMax-myXMin);
+            // //             myData[p][t][v][1] = (myData[p][t][v][1] - myYMin)/(myYMax-myYMin);
+            // //         }
+            // //     }
+            // // }
             //
             // // save max score to file
             // let csv = JSON.stringify(myData);
             // let hiddenElement = document.createElement('a');
             // hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
             // hiddenElement.target = '_blank';
-            // hiddenElement.download = 'Life_expectancy_tf.json';
+            // hiddenElement.download = 'employment_tf.json';
             // hiddenElement.click();
 
             codeManager.isComputing = false;

@@ -17,6 +17,7 @@ d3.select('#dataset').on('change',function (){
     selectedData = this.value;
     clicked = false;
     highlighted = false;
+    selectedMetric = 'Outlying vector';
     // modify parameters
     switch (selectedData) {
         case 'employment':
@@ -52,6 +53,7 @@ d3.select('#dataset').on('change',function (){
     }
     // call main function
     main();
+    noPlot();
 })
 
 // SELECTION OF METRIC

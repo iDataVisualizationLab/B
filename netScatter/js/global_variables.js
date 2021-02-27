@@ -39,7 +39,7 @@ let netSP = {
     ],
     binType: 'leader',
     minNumberArrows: 50,
-    maxNumberArrows: 150,
+    maxNumberArrows: 100,
     step: 1,
 };
 

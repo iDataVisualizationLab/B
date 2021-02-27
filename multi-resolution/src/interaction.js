@@ -34,9 +34,12 @@ function mouseOut(id) {
 function mouseClick(id) {
     let element = document.getElementById(id);
     element.addEventListener('click',event=>{
-        let check = checkHighlight()[0];
-        if (!check)  clicked = !clicked;
-        if (check && clicked) highlighted = !highlighted;
+        if (!clicked) clicked = true;
+        else {
+            let check = checkHighlight()[0];
+            if (!check)  clicked = false;
+            else highlighted = !highlighted;
+        }
     });
 }
 
@@ -54,7 +57,7 @@ function checkHighlight () {
     for (let t = tS; t <= eT; t++) {
         let x1 = timelinePadding+sT*small+(t-sT)*large+0.5*large - 0.5*large + pPadding;
         let y1 = chartHeight*cR+chartHeight*(1-score[cR][t-ds[cR]]);
-        let size = large-2*pPadding;
+        let size = (large-2*pPadding > 80) ? 80 : large-2*pPadding;
         if (cMouse.x>=x1&&cMouse.x<=x1+size&&cMouse.y>=y1&&cMouse.y<=y1+size) {
             check = true;
             index = t;

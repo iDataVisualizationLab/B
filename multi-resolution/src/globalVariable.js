@@ -14,11 +14,11 @@ let data = [];
 
 // INTERFACE DESIGN
 const width = window.innerWidth;
-const height = window.innerHeight - 50;
+const height = window.innerHeight;
 let ds = [1,2,3,4,5,6,7,8,9,10,11,12];
 const timelinePadding = 20;
 const timeLineWidth = width - 450 - 50 - 2*timelinePadding;
-const chartHeight = height/ds.length;
+const chartHeight = (height-100)/ds.length;
 const myColor = ['#3288bd','#66c2a5','#abdda4','#e6f598','#ffffbf','#fee08b','#fdae61','#f46d43','#d53e4f'];
 let timelineStep = 12;
 let timelineText = 1;

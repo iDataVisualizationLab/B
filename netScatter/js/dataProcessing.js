@@ -523,7 +523,7 @@ class DataProcessing {
         let maxNum = netSP.maxNumberArrows;
         let startThreshold = 0.0296*2;
 
-        if (netSP.instanceInfo.length <= minNum) {      // no greater 50 instances => no binning
+        if (netSP.instanceInfo.length <= maxNum) {      // no greater 150 instances => no binning
             netSP.plots.forEach(e=>{
                 e.arrows.length = 0;
                 e.points.length = 0;
@@ -560,7 +560,7 @@ class DataProcessing {
                     let threshold = startThreshold;
                     let count = 0;
                     DataProcessing.LeaderBinMapping(i,threshold);
-                    while ((e.arrows.length < minNum || e.arrows.length > maxNum) && count < 10) {
+                    while ((e.arrows.length < minNum || e.arrows.length > maxNum) && count < 20) {
                         if (e.arrows.length > maxNum) {
                             threshold = threshold*1.5;
                             e.arrows.length = 0;
