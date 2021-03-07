@@ -128,7 +128,19 @@ function drawInterface (lensing) {
                 let text1 = tKey[t-ds[cR]]+'-'+tKey[t];
                 let vectors1 = buildPlot(t,ds[cR]);
                 let mySize = (large-2*pPadding > 80) ? 80 : large-2*pPadding;
-                drawNetScatter('interface','netScatterPlot','plot-0',x1,y1,mySize,text1,vectors1,false,false);
+                let options = {
+                    size: mySize,
+                    x: x1,
+                    y: y1,
+                    rectFill: 'rgba(255,255,255,0.6)',
+                    rectStroke: 'rgba(0,0,0,0.6)',
+                    rectStrokeWidth: 1,
+                    notation: text1,
+                    highlight: false,
+                    vectorColor: 'rgba(0,0,0,0.6)',
+                    interaction: false,
+                }
+                drawNetScatter('interface','netScatterPlot','plot-0',vectors1,options);
             }
         }
     }
@@ -161,83 +173,85 @@ function noPlot () {
     d3.selectAll('.rPlots').remove();
 }
 
-function drawNetScatter (svgID,plotClass,plotID,x,y,size,notation,vectors,highlight,interaction) {
+function drawNetScatter (svgID,plotClass,plotID,vectors,options) {
     d3.selectAll('.notation').remove();
-    let strokeWidth = highlight ? 2 : 1;
     // draw rectangle
     d3.select('#'+svgID)
         .append('rect')
         .attr('class',plotClass)
-        .attr('width',size)
-        .attr('height',size)
-        .attr('x',x)
-        .attr('y',y)
-        .style('fill','white')
-        .style('stroke','black')
-        .style('stroke-width',strokeWidth);
+        .attr('id',plotID)
+        .attr('width',options.size)
+        .attr('height',options.size)
+        .attr('x',options.x)
+        .attr('y',options.y)
+        .style('fill',options.rectFill)
+        .style('stroke',options.rectStroke)
+        .style('stroke-width',options.rectStrokeWidth);
     // draw notation
-    let textSize = 2*size/(notation.length+1);
-    if (textSize > 18) textSize = 18;
-    d3.select('#'+svgID)
-        .append('text')
-        .attr('class',plotClass)
-        .attr('x',x)
-        .attr('y',y-3)
-        .attr('fill','black')
-        .style('font',textSize.toString()+'px Time New Roman')
-        .text(notation);
-    if (highlight) {
-        let xVar = selectedPlot.split(' vs.')[0];
-        let yVar = selectedPlot.split(' vs.')[1];
+    if (options.notation) {
+        let textSize = 2*options.size/(options.notation.length+1);
+        if (textSize > 18) textSize = 18;
         d3.select('#'+svgID)
             .append('text')
-            .attr('class','notation')
-            .attr('x',x)
-            .attr('y',y+size+15)
+            .attr('class',plotClass)
+            .attr('x',options.x)
+            .attr('y',options.y-3)
             .attr('fill','black')
-            .style('font',(textSize-3).toString()+'px Time New Roman')
-            .text(xVar);
-        d3.select('#'+svgID)
-            .append('text')
-            .attr('class','notation')
-            .attr('x',0)
-            .attr('y',0)
-            .attr('transform','translate('+(x-3).toString()+','+(y+size).toString()+') rotate(-90)')
-            .attr('fill','black')
-            .style('font',(textSize-3).toString()+'px Time New Roman')
-            .text(yVar);
+            .style('font',textSize.toString()+'px Time New Roman')
+            .text(options.notation);
+        if (options.highlight) {
+            let xVar = selectedPlot.split(' vs.')[0];
+            let yVar = selectedPlot.split(' vs.')[1];
+            d3.select('#'+svgID)
+                .append('text')
+                .attr('class','notation')
+                .attr('x',options.x)
+                .attr('y',options.y+options.size+15)
+                .attr('fill','black')
+                .style('font',(textSize-3).toString()+'px Time New Roman')
+                .text(xVar);
+            d3.select('#'+svgID)
+                .append('text')
+                .attr('class','notation')
+                .attr('x',0)
+                .attr('y',0)
+                .attr('transform','translate('+(options.x-3).toString()+','+(options.y+size).toString()+') rotate(-90)')
+                .attr('fill','black')
+                .style('font',(textSize-3).toString()+'px Time New Roman')
+                .text(yVar);
+        }
     }
     // draw legend
-    if (selectedData === 'HPCC') {
+    if (selectedData === 'HPCC' && document.getElementById('multi-resolution').style.display === "block") {
         for (let i = 1; i < 10; i++) {
             // horizontal axis
             d3.select('#'+svgID)
                 .append('line')
                 .attr('class',plotClass)
-                .attr('x1',x+size*0.1*i)
-                .attr('y1',y+size-5)
-                .attr('x2',x+size*0.1*i)
-                .attr('y2',y+size)
+                .attr('x1',options.x+options.size*0.1*i)
+                .attr('y1',options.y+options.size-5)
+                .attr('x2',options.x+options.size*0.1*i)
+                .attr('y2',options.y+options.size)
                 .style('stroke','black')
                 .style('fill','none');
             // vertical axis
             d3.select('#'+svgID)
                 .append('line')
                 .attr('class',plotClass)
-                .attr('x1',x)
-                .attr('y1',y+size*0.1*i)
-                .attr('x2',x+5)
-                .attr('y2',y+size*0.1*i)
+                .attr('x1',options.x)
+                .attr('y1',options.y+options.size*0.1*i)
+                .attr('x2',options.x+5)
+                .attr('y2',options.y+options.size*0.1*i)
                 .style('stroke','black')
                 .style('fill','none');
         }
     }
     // draw vectors
     for (let v = 0; v < vectors.length; v++) {
-        let x0 = x + 5 + (size-10)*vectors[v][0];
-        let y0 = y + 5 + (size-10)*(1-vectors[v][1]);
-        let x1 = x + 5 + (size-10)*vectors[v][2];
-        let y1 = y + 5 + (size-10)*(1-vectors[v][3]);
+        let x0 = options.x + 5 + (options.size-10)*vectors[v][0];
+        let y0 = options.y + 5 + (options.size-10)*(1-vectors[v][1]);
+        let x1 = options.x + 5 + (options.size-10)*vectors[v][2];
+        let y1 = options.y + 5 + (options.size-10)*(1-vectors[v][3]);
         let L = Math.sqrt((x1-x0)*(x1-x0)+(y1-y0)*(y1-y0));
         // // draw points for paper
         // d3.select('#'+svgID)
@@ -258,9 +272,9 @@ function drawNetScatter (svgID,plotClass,plotID,x,y,size,notation,vectors,highli
         //     .attr('fill','red');
         // draw vectors
         if (x0 !== x1 || y0 !== y1) {
-            let d = L/4 < 5 ? L/4 : 5;      // size of triangle in the arrow
+            let d = L/4 < 6 ? L/4 : 6;      // size of triangle in the arrow
             let dd = d/Math.sqrt(3);
-            let vID = plotID+'-vector-'+vectors[v][4].toString();
+            let vID = options.interaction ? plotID+'-vector-'+vectors[v][4].toString() : plotID+'-vector-'+v.toString();
             let hID = vID+'-header';
             let myURL = 'url(#'+hID+')';
             // define vector header
@@ -280,17 +294,17 @@ function drawNetScatter (svgID,plotClass,plotID,x,y,size,notation,vectors,highli
                 .attr('class',plotClass)
                 .attr('d', d3.line()([[0,0],[0,2*dd],[d,dd]]))
                 .attr('stroke', 'none')
-                .attr('fill','rgba(0,0,0,0.6)');
+                .attr('fill',options.vectorColor);
             // draw line
             d3.select('#'+svgID)
                 .append('path')
                 .attr('class',plotClass)
                 .attr('id',vID)
                 .attr('d',d3.line()([[x0,y0],[x1,y1]]))
-                .attr('stroke','rgba(0,0,0,0.6)')
+                .attr('stroke',options.vectorColor)
                 .attr('marker-end',myURL)
                 .attr('fill','none');
-            if (interaction) {
+            if (options.interaction) {
                 mouseOver(vID);
                 mouseOver(hID);
             }
@@ -298,64 +312,68 @@ function drawNetScatter (svgID,plotClass,plotID,x,y,size,notation,vectors,highli
     }
 }
 
-function drawRadarChart (svgID,eClass,points,radius) {
-    d3.select('#'+svgID)
-        .append('rect')
-        .attr('class',eClass)
-        .attr('x',45)
-        .attr('y',435)
-        .attr('width',300)
-        .attr('height',300)
-        .style('fill','white');
-    for (let i = 1; i <= 5; i++) {
+function drawRadarChart (svgID,eClass,points,options) {
+    if (options.highlight) {
+        d3.select('#'+svgID)
+            .append('rect')
+            .attr('class',eClass)
+            .attr('x',45)
+            .attr('y',435)
+            .attr('width',300)
+            .attr('height',300)
+            .style('fill','white');
+    }
+    for (let i = 5; i >= 1; i--) {
         d3.select('#'+svgID)
             .append('circle')
             .attr('class',eClass)
-            .attr('cx',195)
-            .attr('cy',585)
-            .attr('r',10+i*0.2*radius)
-            .style('fill','rgba(200,200,200,0.1)')
-            .style('stroke','rgba(200,200,200,0.6)')
-            .style('stroke-width',0.5);
+            .attr('cx',options.cx)
+            .attr('cy',options.cy)
+            .attr('r',10+i*0.2*options.radius)
+            .style('fill',options.backgroundFill)
+            .style('stroke',options.backgroundStroke)
+            .style('stroke-width',options.backgroundStrokeWidth);
     }
     for (let i = 0; i < points.length; i++) {
         d3.select('#'+svgID)
             .append('line')
-            .attr('x1',195)
-            .attr('y1',585)
-            .attr('x2',195+Math.cos(i*2*Math.PI/mKey.length-Math.PI/2)*(10+radius))
-            .attr('y2',585+Math.sin(i*2*Math.PI/mKey.length-Math.PI/2)*(10+radius))
-            .style('stroke','rgba(200,200,200,0.6)')
+            .attr('class',eClass)
+            .attr('x1',options.cx)
+            .attr('y1',options.cy)
+            .attr('x2',options.cx+Math.cos(i*2*Math.PI/points.length-Math.PI/2)*(10+options.radius))
+            .attr('y2',options.cy+Math.sin(i*2*Math.PI/points.length-Math.PI/2)*(10+options.radius))
+            .style('stroke',options.backgroundStroke)
             .style('stroke-width',0.5)
             .style('fill','none');
-        let a = i*360/mKey.length;
-        let x = 195+Math.cos(i*2*Math.PI/mKey.length-Math.PI/2)*(15+radius);
-        let y = 585+Math.sin(i*2*Math.PI/mKey.length-Math.PI/2)*(15+radius);
+        let a = i*360/points.length;
+        let x = options.cx+Math.cos(i*2*Math.PI/points.length-Math.PI/2)*(15+options.radius);
+        let y = options.cy+Math.sin(i*2*Math.PI/points.length-Math.PI/2)*(15+options.radius);
         if (a > 90 && a < 270) {
             a = a - 180;
-            x = 195+Math.cos(i*2*Math.PI/mKey.length-Math.PI/2)*(20+radius);
-            y = 585+Math.sin(i*2*Math.PI/mKey.length-Math.PI/2)*(20+radius);
+            x = options.cx+Math.cos(i*2*Math.PI/points.length-Math.PI/2)*(20+options.radius);
+            y = options.cy+Math.sin(i*2*Math.PI/points.length-Math.PI/2)*(20+options.radius);
         }
         d3.select('#'+svgID)
             .append('text')
+            .attr('class',eClass)
             .attr('x',0)
             .attr('y',0)
-            .style('font','12px Times New Roman')
+            .style('font',options.font)
             .attr('transform','translate('+x.toString()+','+y.toString()+') rotate('+a.toString()+')')
             .style('text-anchor','middle')
-            .text(mKey[i]);
+            .text(options.text[i]);
     }
     d3.select('#'+svgID)
         .append('path')
         .attr('class',eClass)
         .datum(points)
-        .attr('fill',"rgba(200,0,0,0.3)")
+        .attr('fill',options.color)
         .attr('d',d3.areaRadial()
             .curve(d3.curveCardinalClosed)
-            .startAngle((e,i)=>i*2*Math.PI/mKey.length)
+            .startAngle((e,i)=>i*2*Math.PI/points.length)
             .innerRadius(0)
-            .outerRadius(e=>10+e*radius))
-        .attr('transform','translate(195,585)');
+            .outerRadius(e=>10+e*options.radius))
+        .attr('transform','translate('+options.cx+','+options.cy+')');
 }
 
 function highlightPlot () {
@@ -382,7 +400,19 @@ function highlightPlot () {
             .attr('viewBox',[0,0,390,780]);
         let text = tKey[index-ds[cR]]+'-'+tKey[index];
         let vectors = buildPlot(index,ds[cR]);
-        drawNetScatter('plots','rPlots','rPlot',20,20,350,text,vectors,true,true);
+        let options = {
+            size: 350,
+            x: 20,
+            y: 20,
+            rectFill: 'rgba(255,255,255,1)',
+            rectStroke: 'rgba(0,0,0,1)',
+            rectStrokeWidth: 1,
+            notation: text,
+            highlight: false,
+            vectorColor: 'rgba(0,0,0,1)',
+            interaction: true,
+        }
+        drawNetScatter('plots','rPlots','rPlot',vectors,options);
         let metrics = [];
         metrics[0] = outlyingVector(vectors);
         metrics[1] = outlyingLength(vectors);
@@ -392,7 +422,19 @@ function highlightPlot () {
         metrics[5] = intersection(vectors);
         metrics[6] = translation(vectors);
         metrics[7] = homogeneous(vectors);
-        drawRadarChart('plots','rPlots',metrics,100);
+        let rOptions = {
+            cx: 195,
+            cy: 585,
+            highlight: true,
+            radius: 100,
+            color: "rgba(200,0,0,0.3)",
+            text: mKey,
+            font: '12px Times New Roman',
+            backgroundFill: 'rgba(200,200,200,0.1)',
+            backgroundStroke: 'rgba(200,200,200,0.6)',
+            backgroundStrokeWidth: 0.5,
+        }
+        drawRadarChart('plots','rPlots',metrics,rOptions);
     } else {
         noPlot();
     }

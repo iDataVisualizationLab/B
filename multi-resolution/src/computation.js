@@ -158,14 +158,16 @@ function outlyingAngle (vectors) {
     let q1 = aArr[Math.floor(aArr.length*0.25)];
     let q2 = aArr[Math.floor(aArr.length*0.5)];
     let q3 = aArr[Math.floor(aArr.length*0.75)];
-    let uli = q3 + 1.5*(q3-q1);
-    let lli = q1 - 1.5*(q3-q1);
-    let s = 0, so = 0;
-    for (let i = 0; i < aArr.length; i++) {
-        s += Math.abs(aArr[i]-q2);
-        if (aArr[i] < lli || aArr[i] > uli) so += Math.abs(aArr[i]-q2);
-    }
-    return s ? so/s : 0;
+    if (q3 > q1) {
+        let uli = q3 + 1.5*(q3-q1);
+        let lli = q1 - 1.5*(q3-q1);
+        let s = 0, so = 0;
+        for (let i = 0; i < aArr.length; i++) {
+            s += Math.abs(aArr[i]-q2);
+            if (aArr[i] < lli || aArr[i] > uli) so += Math.abs(aArr[i]-q2);
+        }
+        return s ? so/s : 0;
+    } else return 0;
 }
 
 function correlation (vectors) {

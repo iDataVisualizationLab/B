@@ -15,16 +15,29 @@
     <script src="lib/jquery/jquery-1.12.4.js"></script>
     <script src="lib/jquery/jquery-ui.js"></script>
     <script type="text/javascript" src="lib/sizeof.compressed.js"></script>
-
+<!--    <script src="lib/ml.min.js"></script>-->
+    <script src="https://www.lactame.com/lib/ml/4.0.0/ml.min.js"></script>
 
     <!--  style CSS here  -->
     <style>
+        #multi-resolution {
+            position: absolute;
+            top: 30px;
+            left: 0px;
+            background: white;
+        }
+        #bi-plot {
+            position: absolute;
+            top: 30px;
+            left: 0px;
+            background: white;
+        }
         #controlPanel {
             position: absolute;
             padding: 5px;
             border-radius: 5px;
             z-index: 120;
-            top: 10px;
+            top: 40px;
             left: 3px;
             width: 390px;
             height: 120px;
@@ -33,69 +46,169 @@
         }
         #mainInterface {
             position: absolute;
-            top: 0px;
+            top: 30px;
             left: 450px;
             background: white;
         }
         #plotsDiv {
             position: absolute;
-            top: 150px;
+            top: 190px;
             left: 3px;
             background: rgba(204,204,204,0);
         }
         #legendDiv {
             position: absolute;
-            top: 0px;
+            top: 30px;
             left: 400px;
             background: white;
         }
+        #biPlotDiv {
+            position: absolute;
+            top: 40px;
+            left: 450px;
+            background: rgba(255,255,255,1);
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        #checkDiv {
+            position: absolute;
+            top: 40px;
+            left: 10px;
+            width: 400px;
+            height: 180px;
+            background: rgba(200,200,200,1);
+            border: 1px solid rgba(0,0,0,0.5);
+        }
+        #biPlot {
+            background: rgba(200,200,200,1);
+        }
+
+        /* Style the tab */
+        .tab {
+            overflow: hidden;
+            border: 1px solid #ccc;
+            background-color: #f1f1f1;
+        }
+
+        /* Style the buttons inside the tab */
+        .tab button {
+            background-color: inherit;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 5px 5px;
+            transition: 0.3s;
+            font-size: 13px;
+        }
+
+        /* Change background color of buttons on hover */
+        .tab button:hover {
+            background-color: #ddd;
+        }
+
+        /* Create an active/current tablink class */
+        .tab button.active {
+            background-color: #ccc;
+        }
+
+        /* Style the tab content */
+        .tabcontent {
+            display: none;
+            padding: 5px 5px;
+            border: 1px solid #ccc;
+            border-top: none;
+        }
+
     </style>
 
     <script>
         $( function() {
             $("#controlPanel").draggable();
             $('#plotsDiv').draggable();
+            $('#biPlotDiv').draggable();
         });
     </script>
 
 </head>
 <body>
 
-<!-- control panel -->
-<div id="controlPanel" class="ui-widget-content">
-    <label for="dataset">Select dataset</label>
-    <br>
-    <select id="dataset">
-        <option selected value="employment">US employment dataset</option>
-        <option value="HPCC">HPCC dataset</option>
-<!--        <option value="stock">SP500 dataset</option>-->
-        <option value="death-birth">Death rate vs. Birth rate</option>
-        <option value="life-expectancy">Male vs. Female life expectancy</option>
-    </select>
-    <br>
-    <label for="metric">Select metric</label>
-    <br>
-    <select id="metric"></select>
-    <br>
-    <label for="plot">Select pair of variables</label>
-    <br>
-    <select id="plot"></select>
+<div class="tab">
+    <button class="tablinks" onclick="changeTab(event, 'multi-resolution')">Multi-resolution view</button>
+    <button class="tablinks" onclick="changeTab(event, 'bi-plot')">biplot visualization</button>
 </div>
 
-<!-- legends -->
-<div id="legendDiv">
-    <svg id="legend" style="position: relative; top: 0px; left: 10px;"></svg>
+<!-- Multi-resolution -->
+<div id="multi-resolution" class="tabcontent">
+    <!-- control panel -->
+    <div id="controlPanel" class="ui-widget-content">
+        <label for="dataset">Select dataset</label>
+        <br>
+        <select id="dataset">
+            <option selected value="employment">US employment dataset</option>
+            <option value="HPCC">HPCC dataset</option>
+            <!--        <option value="stock">SP500 dataset</option>-->
+            <option value="death-birth">Death rate vs. Birth rate</option>
+            <option value="life-expectancy">Male vs. Female life expectancy</option>
+        </select>
+        <br>
+        <label for="metric">Select metric</label>
+        <br>
+        <select id="metric"></select>
+        <br>
+        <label for="plot">Select pair of variables</label>
+        <br>
+        <select id="plot"></select>
+    </div>
+
+    <!-- legends -->
+    <div id="legendDiv">
+        <svg id="legend" style="position: relative; top: 0px; left: 10px;"></svg>
+    </div>
+
+    <!-- main interface -->
+    <div id="mainInterface">
+        <svg id="timeline" style="position:relative; top: 10px; left: 0px;"></svg>
+        <svg id="interface" style="position: relative; top: 10px; left: 0px;"></svg>
+    </div>
+
+    <!-- highlighted plot on the left-hand-side -->
+    <div id="plotsDiv">
+        <svg id="plots"></svg>
+    </div>
 </div>
 
-<!-- main interface -->
-<div id="mainInterface">
-    <svg id="timeline" style="position:relative; top: 10px; left: 0px;"></svg>
-    <svg id="interface" style="position: relative; top: 10px; left: 0px;"></svg>
-</div>
-
-<!-- highlighted plot on the left-hand-side -->
-<div id="plotsDiv">
-    <svg id="plots"></svg>
+<!-- draw biplot -->
+<div id="bi-plot" class="tabcontent">
+    <div id="checkDiv">
+        <label for="outlying-vector">Outlying vector:</label>
+        <input type="checkbox" id="outlying-vector" checked="true">
+        <br>
+        <label for="outlying-length">Outlying length:</label>
+        <input type="checkbox" id="outlying-length" checked="true">
+        <br>
+        <label for="outlying-angle">Outlying angle:</label>
+        <input type="checkbox" id="outlying-angle" checked="true">
+        <br>
+        <label for="Correlation">Correlation:</label>
+        <input type="checkbox" id="Correlation" checked="true">
+        <br>
+        <label for="Entropy">Entropy:</label>
+        <input type="checkbox" id="Entropy" checked="true">
+        <br>
+        <label for="Intersection">Intersection:</label>
+        <input type="checkbox" id="Intersection" checked="true">
+        <br>
+        <label for="Translation">Translation:</label>
+        <input type="checkbox" id="Translation" checked="true">
+        <br>
+        <label for="Homogeneous">Homogeneous:</label>
+        <input type="checkbox" id="Homogeneous" checked="true">
+        <br>
+        <button onclick="drawBiPlot ()">Submit</button>
+    </div>
+    <div id="biPlotDiv">
+        <svg id="biPlot" style="position: relative; top: 0px; left: 0px;" width="1100" height="1020" viewBox="0 0 1100 1020"></svg>
+    </div>
 </div>
 
 
@@ -108,7 +221,10 @@
 <script src="src/computation.js"></script>
 <script src="src/visualization.js"></script>
 <script src="src/interaction.js"></script>
+<script src="src/generatePlot.js"></script>
+<script src="src/biplot.js"></script>
 <script src="src/main.js"></script>
+<script src="src/changeTab.js"></script>
 
 </body>
 </html>

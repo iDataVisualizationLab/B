@@ -84,12 +84,3 @@ function main() {
             console.log(error);
         });
 }
-
-
-
-main();
-// add event listener to timeline
-mouseMove('timeline');
-mouseOut('timeline');
-// brushing
-mouseClick('timeline');
