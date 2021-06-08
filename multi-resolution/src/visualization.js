@@ -261,7 +261,7 @@ function drawNetScatter (svgID,plotClass,plotID,vectors,options) {
         //     .attr('cy',y0)
         //     .attr('r',3)
         //     .attr('stroke','none')
-        //     .attr('fill','green');
+        //     .attr('fill','red');
         // d3.select('#'+svgID)
         //     .append('circle')
         //     .attr('class',plotClass)
@@ -269,7 +269,7 @@ function drawNetScatter (svgID,plotClass,plotID,vectors,options) {
         //     .attr('cy',y1)
         //     .attr('r',3)
         //     .attr('stroke','none')
-        //     .attr('fill','red');
+        //     .attr('fill','blue');
         // draw vectors
         if (x0 !== x1 || y0 !== y1) {
             let d = L/4 < 6 ? L/4 : 6;      // size of triangle in the arrow

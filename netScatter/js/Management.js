@@ -162,7 +162,8 @@ class Management {
             };
             let plotInfo = {
                 // size: [150,150],
-                size: [300,300],
+                // size: [300,300],
+                size: [600,600],        // for video
                 // position: controlVariable.displaySeries ? [100,700] : [100,200],
                 position: [100,200],
                 notations: {
