@@ -14,7 +14,7 @@ from sklearn.neighbors import LocalOutlierFactor
 from numpy import where
 
 
-def get_scores(data, k=5, threshold=1.5, limit=10, epsilon=0.1):
+def get_scores(data, k=5, threshold=1.5, limit=10, epsilon=0.05):
     result = {
         'anomaly': 0,
         'clumpy': 0,
@@ -74,7 +74,7 @@ def get_scores(data, k=5, threshold=1.5, limit=10, epsilon=0.1):
 # metrics and lof
 
 
-def compute_all_plots(data, k=5, threshold=1.5, limit=10, epsilon=0.1):
+def compute_all_plots(data, k=5, threshold=1.5, limit=10, epsilon=0.05):
     result = {}
     for i in data:
         result[i] = get_scores(data[i]['transformation'], k, threshold, limit, epsilon)

@@ -26,7 +26,9 @@ def get_2d(data):
 # OUTPUT
 # dict of every instance
 # for each instance:
-# PCA result in 2d space - list of point in temporal order
+# PCA result in 2d space:
+# 'transformation': list of point in temporal order
+# 'variance_ratio': for justifying the two components
 
 
 def get_pca(data):

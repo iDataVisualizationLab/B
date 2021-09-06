@@ -11,9 +11,9 @@
 
 # OUTPUT
 # data for visualization:
-# # DR result in temporal order + LOF of each point
-# # Time series of each point/instance
-# # metrics result
+# # 'data': see Read output
+# # 'dr': see Dimension_reduction output
+# # 'metrics': see Computations/metrics.python/compute_all_plots output
 
 
 import Read
