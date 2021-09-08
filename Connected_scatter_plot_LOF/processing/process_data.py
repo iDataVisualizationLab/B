@@ -36,7 +36,7 @@ def run(file_name, k, threshold, limit, w, s):
     dr_result = Dr.my_PCA.get_pca(w_data)
 
     # compute metrics
-    plots = Comp.metrics.compute_all_plots(dr_result, k, threshold, limit)
+    plots = Comp.metrics.compute_all_plots(data=dr_result, k=k, threshold=threshold, limit=limit)
 
     # return data
     return {
